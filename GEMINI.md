@@ -7,6 +7,18 @@
 This version has breaking changes — APIs, conventions, and file structure may differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+<!-- CODEGRAPH_START -->
+
+## CodeGraph
+
+In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:
+
+- **MCP tool** (when available): `codegraph_explore` answers most code questions in one call — the relevant symbols' verbatim source plus the call paths between them, including dynamic-dispatch hops grep can't follow. Name a file or symbol in the query to read its current line-numbered source. If it's listed but deferred, load it by name via tool search.
+- **Shell** (always works): `codegraph explore "<symbol names or question>"` prints the same output.
+
+If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
+<!-- CODEGRAPH_END -->
+
 ## Scope, access boundary, and precedence
 
 This is the highest-priority repository configuration for Antigravity. It controls Antigravity behavior and overrides conflicting `AGENTS.md` text.
@@ -62,6 +74,12 @@ Use only the task brief supplied by the user and files inside this repository as
 - Inspect Git state only when needed to understand the supplied work. Report factual observations; do not use Git to resolve repository state.
 - Preserve unrelated repository work. Do not use destructive commands, mass deletion, or blind conflict resolution.
 - Do not provision services, change cloud settings, rotate credentials, publish legal/privacy content, or deploy.
+
+## CHANGELOG.md maintenance
+
+- Every time you finish a set of coding tasks, invoke and execute your /update-changelog skill.
+- Updating the CHANGELOG.md file should be the last step in your execution.
+- Executing your /update-changelog skill SHOULD NOT modify any other files.
 
 ## Completion report
 
