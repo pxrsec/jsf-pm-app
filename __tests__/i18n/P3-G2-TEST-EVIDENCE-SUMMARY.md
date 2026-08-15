@@ -13,57 +13,66 @@
 
 ## Test Contracts (TC) Allocated
 
-| TC ID | VC ID | Verification Mode | Test/Procedure Path | Status |
-|-------|-------|-------------------|---------------------|--------|
-| TC-I18N-001 | VC-I18N-001 | strict-test-first | __tests__/i18n/spanish-shell.test.tsx | RED (skipped - integration) |
-| TC-I18N-002 | VC-I18N-002 | strict-test-first | __tests__/i18n/english-shell.test.tsx | RED (skipped - integration) |
-| TC-I18N-003 | VC-I18N-003 | strict-test-first | __tests__/i18n/unsupported-locale.test.tsx | RED (skipped - integration) |
-| TC-I18N-004 | VC-I18N-004 | strict-test-first | __tests__/i18n/unsupported-locale.test.tsx | RED (skipped - integration) |
-| TC-I18N-005 | VC-I18N-005 | strict-test-first | __tests__/i18n/sitemap.test.ts | RED (file missing) |
-| TC-I18N-006 | VC-I18N-006 | strict-test-first | __tests__/i18n/robots.test.ts | RED (file missing) |
-| TC-I18N-007 | VC-I18N-007 | strict-test-first | __tests__/i18n/message-catalogs.test.ts | RED (catalogs missing) |
-| TC-I18N-008 | VC-I18N-008 | strict-test-first | __tests__/i18n/key-naming.test.ts | RED (catalogs missing) |
-| TC-I18N-009 | VC-I18N-009 | verification-first | __tests__/i18n/VC-I18N-009-verification-procedure.md | RED (hardcoded strings found) |
-| TC-I18N-010 | VC-I18N-010 | strict-test-first | __tests__/i18n/privacy-page.test.tsx | RED (skipped - integration) |
+| TC ID       | VC ID       | Verification Mode  | Test/Procedure Path                                  | Status                        |
+| ----------- | ----------- | ------------------ | ---------------------------------------------------- | ----------------------------- |
+| TC-I18N-001 | VC-I18N-001 | strict-test-first  | **tests**/i18n/spanish-shell.test.tsx                | RED (skipped - integration)   |
+| TC-I18N-002 | VC-I18N-002 | strict-test-first  | **tests**/i18n/english-shell.test.tsx                | RED (skipped - integration)   |
+| TC-I18N-003 | VC-I18N-003 | strict-test-first  | **tests**/i18n/unsupported-locale.test.tsx           | RED (skipped - integration)   |
+| TC-I18N-004 | VC-I18N-004 | strict-test-first  | **tests**/i18n/unsupported-locale.test.tsx           | RED (skipped - integration)   |
+| TC-I18N-005 | VC-I18N-005 | strict-test-first  | **tests**/i18n/sitemap.test.ts                       | RED (file missing)            |
+| TC-I18N-006 | VC-I18N-006 | strict-test-first  | **tests**/i18n/robots.test.ts                        | RED (file missing)            |
+| TC-I18N-007 | VC-I18N-007 | strict-test-first  | **tests**/i18n/message-catalogs.test.ts              | RED (catalogs missing)        |
+| TC-I18N-008 | VC-I18N-008 | strict-test-first  | **tests**/i18n/key-naming.test.ts                    | RED (catalogs missing)        |
+| TC-I18N-009 | VC-I18N-009 | verification-first | **tests**/i18n/VC-I18N-009-verification-procedure.md | RED (hardcoded strings found) |
+| TC-I18N-010 | VC-I18N-010 | strict-test-first  | **tests**/i18n/privacy-page.test.tsx                 | RED (skipped - integration)   |
 
 ---
 
 ## RED Evidence - Factual Baseline (2026-08-15)
 
 ### VC-I18N-001: Spanish shell at `/` and `/privacidad`
+
 - **Command:** `npm run test` → Integration tests skipped (no Next.js test server)
 - **Result:** 2 tests skipped - implementation absent
 - **Missing:** middleware, [locale] routing, Spanish content
 
 ### VC-I18N-002: English shell at `/en/` and `/en/privacidad`
+
 - **Command:** `npm run test` → Integration tests skipped
 - **Result:** 2 tests skipped - implementation absent
 
 ### VC-I18N-003: Unsupported locale → not-found
+
 - **Command:** `npm run test` → Integration tests skipped
 - **Result:** 3 tests skipped - middleware absent
 
 ### VC-I18N-004: No `/es-MX/` alias
+
 - **Command:** `npm run test` → Integration test skipped
 - **Result:** 1 test skipped - middleware absent
 
 ### VC-I18N-005: Sitemap with canonical routes
+
 - **Command:** `npm run test` → 3 tests failed (sitemap.ts missing)
 - **Error:** `RED: Missing sitemap.ts at C:\...\src\app\sitemap.ts`
 
 ### VC-I18N-006: Robots non-production posture
+
 - **Command:** `npm run test` → 3 tests failed (robots.ts missing)
 - **Error:** `RED: Missing robots.ts at C:\...\src\app\robots.ts`
 
 ### VC-I18N-007: Message catalogs identical structure
+
 - **Command:** `npm run test` → 6 tests failed (catalogs missing)
 - **Error:** `RED: Missing message catalog C:\...\messages\es-MX.json`
 
 ### VC-I18N-008: Semantic key naming
+
 - **Command:** `npm run test` → 3 tests failed (catalogs missing)
 - **Error:** `RED: Missing message catalog C:\...\messages\es-MX.json`
 
 ### VC-I18N-009: No hardcoded visible text
+
 - **Procedure:** Manual grep for string literals in `src/app/**/*.tsx`
 - **Finding:** 8 hardcoded strings in baseline scaffold:
   - `src/app/layout.tsx:16`: "Create Next App"
@@ -77,6 +86,7 @@
 - **Result:** RED - all visible text hardcoded, no `useTranslations()` usage
 
 ### VC-I18N-010: Privacy page translations
+
 - **Command:** `npm run test` → Integration tests skipped
 - **Result:** 2 tests skipped - privacy page component absent
 
@@ -97,13 +107,13 @@ cd /c/Users/ruben/Desktop/jsf-app-dev-project/jsf-pm-app && npm run test
 
 ## Verification Commands Executed
 
-| Command | Result |
-|---------|--------|
-| `npm run test` | Exit 1 - RED baseline confirmed |
+| Command                      | Result                                  |
+| ---------------------------- | --------------------------------------- |
+| `npm run test`               | Exit 1 - RED baseline confirmed         |
 | `grep` for hardcoded strings | 8 violations found in baseline scaffold |
-| `ls -la messages/` | No such directory (RED) |
-| `ls -la src/app/sitemap.ts` | No such file (RED) |
-| `ls -la src/app/robots.ts` | No such file (RED) |
+| `ls -la messages/`           | No such directory (RED)                 |
+| `ls -la src/app/sitemap.ts`  | No such file (RED)                      |
+| `ls -la src/app/robots.ts`   | No such file (RED)                      |
 
 ---
 
