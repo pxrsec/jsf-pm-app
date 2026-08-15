@@ -28,18 +28,18 @@ Establish the localized public application shell for the Joya Star Films Project
 
 ## 2. Source Requirements
 
-| REQ ID | Normative requirement | Exact source | Notes / interpretation |
-|---|---|---|---|
-| REQ-I18N-001 | The application shell MUST serve Spanish (`es-MX`) as the default locale without a locale prefix. | ADR-021 §1.1 | Canonical Spanish routes are `/` and `/privacidad`. |
-| REQ-I18N-002 | The application shell MUST serve English (`en-US`) only under the `/en/` locale prefix. | ADR-021 §1.2-1.3 | Canonical English routes are `/en/` and `/en/privacidad`. |
-| REQ-I18N-003 | The application shell MUST NOT create a public `/es-MX/` alias route. | ADR-021 §1.4 | A future alias requires its own accepted decision. |
-| REQ-I18N-004 | Locale negotiation and routing MUST preserve the canonical mapping and reject unsupported locale segments through the application's normal not-found behavior. | ADR-021 §1.5 | No redirect from `/` to `/es-MX/`. |
-| REQ-I18N-005 | The `robots.txt` and sitemap MUST reflect the current non-production posture while listing only the canonical public routes defined in REQ-I18N-001 and REQ-I18N-002. | ADR-021 §1.6 | Non-production posture means `disallow: /` in robots and appropriate sitemap entries. |
-| REQ-I18N-006 | Message catalogs MUST be `messages/es-MX.json` and `messages/en-US.json` with identical JSON structure and complete key sets for every user-facing shell string. | ADR-021 §2.1-2.2 | Both catalogs must have the same keys. |
-| REQ-I18N-007 | Translation keys MUST be semantic, stable, dot-delimited, and lower camel case by segment. They MUST identify a UI concept, not a visual position, route, locale, typography rule, or source-language sentence. | ADR-021 §2.3 | Example: `shell.header.brandName`, not `shell.topLeft.logo`. |
-| REQ-I18N-008 | Translation key namespaces MUST be bounded by feature/domain. Initial public-shell namespaces are `shell` and `privacy`. | ADR-021 §2.4 | Keys prefixed with `shell.` or `privacy.`. |
-| REQ-I18N-009 | Spanish MUST be the product source language for visible copy. English is the translated catalog. Code, identifiers, filenames, and test descriptions remain English. | ADR-021 §2.5 | Visible copy originates in Spanish. |
-| REQ-I18N-010 | User-visible shell text MUST come from message catalogs. Visible shell text MUST NOT be hardcoded in React/Next components. | ADR-021 §2.6 | Components use `useTranslations()` or equivalent. |
+| REQ ID       | Normative requirement                                                                                                                                                                                           | Exact source     | Notes / interpretation                                                                |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------- |
+| REQ-I18N-001 | The application shell MUST serve Spanish (`es-MX`) as the default locale without a locale prefix.                                                                                                               | ADR-021 §1.1     | Canonical Spanish routes are `/` and `/privacidad`.                                   |
+| REQ-I18N-002 | The application shell MUST serve English (`en-US`) only under the `/en/` locale prefix.                                                                                                                         | ADR-021 §1.2-1.3 | Canonical English routes are `/en/` and `/en/privacidad`.                             |
+| REQ-I18N-003 | The application shell MUST NOT create a public `/es-MX/` alias route.                                                                                                                                           | ADR-021 §1.4     | A future alias requires its own accepted decision.                                    |
+| REQ-I18N-004 | Locale negotiation and routing MUST preserve the canonical mapping and reject unsupported locale segments through the application's normal not-found behavior.                                                  | ADR-021 §1.5     | No redirect from `/` to `/es-MX/`.                                                    |
+| REQ-I18N-005 | The `robots.txt` and sitemap MUST reflect the current non-production posture while listing only the canonical public routes defined in REQ-I18N-001 and REQ-I18N-002.                                           | ADR-021 §1.6     | Non-production posture means `disallow: /` in robots and appropriate sitemap entries. |
+| REQ-I18N-006 | Message catalogs MUST be `messages/es-MX.json` and `messages/en-US.json` with identical JSON structure and complete key sets for every user-facing shell string.                                                | ADR-021 §2.1-2.2 | Both catalogs must have the same keys.                                                |
+| REQ-I18N-007 | Translation keys MUST be semantic, stable, dot-delimited, and lower camel case by segment. They MUST identify a UI concept, not a visual position, route, locale, typography rule, or source-language sentence. | ADR-021 §2.3     | Example: `shell.header.brandName`, not `shell.topLeft.logo`.                          |
+| REQ-I18N-008 | Translation key namespaces MUST be bounded by feature/domain. Initial public-shell namespaces are `shell` and `privacy`.                                                                                        | ADR-021 §2.4     | Keys prefixed with `shell.` or `privacy.`.                                            |
+| REQ-I18N-009 | Spanish MUST be the product source language for visible copy. English is the translated catalog. Code, identifiers, filenames, and test descriptions remain English.                                            | ADR-021 §2.5     | Visible copy originates in Spanish.                                                   |
+| REQ-I18N-010 | User-visible shell text MUST come from message catalogs. Visible shell text MUST NOT be hardcoded in React/Next components.                                                                                     | ADR-021 §2.6     | Components use `useTranslations()` or equivalent.                                     |
 
 ## 3. In Scope
 
@@ -89,43 +89,43 @@ Not applicable — this is a public shell with no authentication, authorization,
 
 ## 8. Error and Edge-Case Behavior
 
-| Scenario | Behavior |
-|---|---|
-| Unsupported locale segment (e.g., `/fr/`, `/es-MX/`) | Normal not-found behavior (Next.js 404 page) |
-| Missing translation key in catalog | `next-intl` development warning; production fallback to key path |
-| Middleware matcher misconfiguration | Route falls through to not-found; test coverage catches regression |
-| `Accept-Language` header absent or malformed | Default to `es-MX` (Spanish) |
-| Concurrent requests with different locales | Stateless middleware; each request resolved independently |
+| Scenario                                             | Behavior                                                           |
+| ---------------------------------------------------- | ------------------------------------------------------------------ |
+| Unsupported locale segment (e.g., `/fr/`, `/es-MX/`) | Normal not-found behavior (Next.js 404 page)                       |
+| Missing translation key in catalog                   | `next-intl` development warning; production fallback to key path   |
+| Middleware matcher misconfiguration                  | Route falls through to not-found; test coverage catches regression |
+| `Accept-Language` header absent or malformed         | Default to `es-MX` (Spanish)                                       |
+| Concurrent requests with different locales           | Stateless middleware; each request resolved independently          |
 
 ## 9. Verification Criteria
 
-| VC ID | REQ ID(s) | Required behavior | Verification mode | Planned verification method | Source |
-|---|---|---|---|---|---|
-| VC-I18N-001 | REQ-I18N-001 | `GET /` returns 200 with Spanish shell content from `messages/es-MX.json` | strict-test-first | Vitest + React Testing Library: render root page, assert Spanish strings from catalog present | ADR-021 §1.1 |
-| VC-I18N-002 | REQ-I18N-002 | `GET /en/` returns 200 with English shell content from `messages/en-US.json` | strict-test-first | Vitest + RTL: render `/en/` page, assert English strings from catalog present | ADR-021 §1.2-1.3 |
-| VC-I18N-003 | REQ-I18N-003 | `GET /es-MX/` returns 404 (not-found) | strict-test-first | Vitest + SuperTest/Next.js test utils: request `/es-MX/`, assert 404 | ADR-021 §1.4 |
-| VC-I18N-004 | REQ-I18N-004 | `GET /fr/` returns 404; `GET /de/privacidad` returns 404 | strict-test-first | Vitest: request unsupported locale segments, assert 404 | ADR-021 §1.5 |
-| VC-I18N-005 | REQ-I18N-005 | `GET /sitemap.xml` lists only `/`, `/privacidad`, `/en/`, `/en/privacidad` with correct `alternates` | strict-test-first | Vitest: parse sitemap XML, assert exact route set | ADR-021 §1.6 |
-| VC-I18N-006 | REQ-I18N-005 | `GET /robots.txt` contains `User-agent: *` and `Disallow: /` | strict-test-first | Vitest: fetch robots.txt, assert non-production posture | ADR-021 §1.6 |
-| VC-I18N-007 | REQ-I18N-006 | Both `messages/es-MX.json` and `messages/en-US.json` exist, have identical key sets, and all keys are non-empty strings | strict-test-first | Vitest: read both JSON files, deep-equal key sets, assert non-empty values | ADR-021 §2.1-2.2 |
-| VC-I18N-008 | REQ-I18N-007, REQ-I18N-008 | All translation keys match regex `^[a-z]+(\.[a-z][a-zA-Z0-9]*)+$` and are prefixed with `shell.` or `privacy.` | strict-test-first | Vitest: iterate all keys in catalogs, assert naming convention | ADR-021 §2.3-2.4 |
-| VC-I18N-009 | REQ-I18N-010 | No user-visible text in `src/app/**/*.tsx` (shell components) is hardcoded; all visible strings come from `useTranslations()` | verification-first | Manual code review + grep for string literals in JSX; verify `useTranslations` usage | ADR-021 §2.6 |
-| VC-I18N-010 | REQ-I18N-001, REQ-I18N-002 | `GET /privacidad` returns 200 with Spanish privacy content; `GET /en/privacidad` returns 200 with English privacy content | strict-test-first | Vitest + RTL: render privacy pages, assert translated strings | ADR-021 §1.1-1.3 |
+| VC ID       | REQ ID(s)                  | Required behavior                                                                                                             | Verification mode  | Planned verification method                                                                   | Source           |
+| ----------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------- | ---------------- |
+| VC-I18N-001 | REQ-I18N-001               | `GET /` returns 200 with Spanish shell content from `messages/es-MX.json`                                                     | strict-test-first  | Vitest + React Testing Library: render root page, assert Spanish strings from catalog present | ADR-021 §1.1     |
+| VC-I18N-002 | REQ-I18N-002               | `GET /en/` returns 200 with English shell content from `messages/en-US.json`                                                  | strict-test-first  | Vitest + RTL: render `/en/` page, assert English strings from catalog present                 | ADR-021 §1.2-1.3 |
+| VC-I18N-003 | REQ-I18N-003               | `GET /es-MX/` returns 404 (not-found)                                                                                         | strict-test-first  | Vitest + SuperTest/Next.js test utils: request `/es-MX/`, assert 404                          | ADR-021 §1.4     |
+| VC-I18N-004 | REQ-I18N-004               | `GET /fr/` returns 404; `GET /de/privacidad` returns 404                                                                      | strict-test-first  | Vitest: request unsupported locale segments, assert 404                                       | ADR-021 §1.5     |
+| VC-I18N-005 | REQ-I18N-005               | `GET /sitemap.xml` lists only `/`, `/privacidad`, `/en/`, `/en/privacidad` with correct `alternates`                          | strict-test-first  | Vitest: parse sitemap XML, assert exact route set                                             | ADR-021 §1.6     |
+| VC-I18N-006 | REQ-I18N-005               | `GET /robots.txt` contains `User-agent: *` and `Disallow: /`                                                                  | strict-test-first  | Vitest: fetch robots.txt, assert non-production posture                                       | ADR-021 §1.6     |
+| VC-I18N-007 | REQ-I18N-006               | Both `messages/es-MX.json` and `messages/en-US.json` exist, have identical key sets, and all keys are non-empty strings       | strict-test-first  | Vitest: read both JSON files, deep-equal key sets, assert non-empty values                    | ADR-021 §2.1-2.2 |
+| VC-I18N-008 | REQ-I18N-007, REQ-I18N-008 | All translation keys match regex `^[a-z]+(\.[a-z][a-zA-Z0-9]*)+$` and are prefixed with `shell.` or `privacy.`                | strict-test-first  | Vitest: iterate all keys in catalogs, assert naming convention                                | ADR-021 §2.3-2.4 |
+| VC-I18N-009 | REQ-I18N-010               | No user-visible text in `src/app/**/*.tsx` (shell components) is hardcoded; all visible strings come from `useTranslations()` | verification-first | Manual code review + grep for string literals in JSX; verify `useTranslations` usage          | ADR-021 §2.6     |
+| VC-I18N-010 | REQ-I18N-001, REQ-I18N-002 | `GET /privacidad` returns 200 with Spanish privacy content; `GET /en/privacidad` returns 200 with English privacy content     | strict-test-first  | Vitest + RTL: render privacy pages, assert translated strings                                 | ADR-021 §1.1-1.3 |
 
 ## 10. Traceability Matrix
 
-| REQ ID | VC ID | Verification mode | TC ID / procedure | Test or evidence path | Implementation location | RED baseline | GREEN / verification evidence | Review / FIND refs | Status |
-|---|---|---|---|---|---|---|---|---|---|
-| REQ-I18N-001 | VC-I18N-001 | strict-test-first | pending | `__tests__/i18n/spanish-shell.test.tsx` | `src/app/[locale]/page.tsx` | pending | pending | pending | planned |
-| REQ-I18N-002 | VC-I18N-002 | strict-test-first | pending | `__tests__/i18n/english-shell.test.tsx` | `src/app/[locale]/page.tsx` | pending | pending | pending | planned |
-| REQ-I18N-003 | VC-I18N-003 | strict-test-first | pending | `__tests__/i18n/unsupported-locale.test.tsx` | `middleware.ts` | pending | pending | pending | planned |
-| REQ-I18N-004 | VC-I18N-004 | strict-test-first | pending | `__tests__/i18n/unsupported-locale.test.tsx` | `middleware.ts` | pending | pending | pending | planned |
-| REQ-I18N-005 | VC-I18N-005 | strict-test-first | pending | `__tests__/i18n/sitemap.test.ts` | `src/app/sitemap.ts` | pending | pending | pending | planned |
-| REQ-I18N-005 | VC-I18N-006 | strict-test-first | pending | `__tests__/i18n/robots.test.ts` | `src/app/robots.ts` | pending | pending | pending | planned |
-| REQ-I18N-006 | VC-I18N-007 | strict-test-first | pending | `__tests__/i18n/message-catalogs.test.ts` | `messages/es-MX.json`, `messages/en-US.json` | pending | pending | pending | planned |
-| REQ-I18N-007, REQ-I18N-008 | VC-I18N-008 | strict-test-first | pending | `__tests__/i18n/key-naming.test.ts` | `messages/es-MX.json`, `messages/en-US.json` | pending | pending | pending | planned |
-| REQ-I18N-009 | VC-I18N-009 | verification-first | pending | Manual review evidence | `src/app/**/*.tsx` (shell) | pending | pending | pending | planned |
-| REQ-I18N-010 | VC-I18N-010 | strict-test-first | pending | `__tests__/i18n/privacy-page.test.tsx` | `src/app/[locale]/privacidad/page.tsx` | pending | pending | pending | planned |
+| REQ ID                     | VC ID       | Verification mode  | TC ID / procedure | Test or evidence path                        | Implementation location                      | RED baseline | GREEN / verification evidence | Review / FIND refs | Status  |
+| -------------------------- | ----------- | ------------------ | ----------------- | -------------------------------------------- | -------------------------------------------- | ------------ | ----------------------------- | ------------------ | ------- |
+| REQ-I18N-001               | VC-I18N-001 | strict-test-first  | pending           | `__tests__/i18n/spanish-shell.test.tsx`      | `src/app/[locale]/page.tsx`                  | pending      | pending                       | pending            | planned |
+| REQ-I18N-002               | VC-I18N-002 | strict-test-first  | pending           | `__tests__/i18n/english-shell.test.tsx`      | `src/app/[locale]/page.tsx`                  | pending      | pending                       | pending            | planned |
+| REQ-I18N-003               | VC-I18N-003 | strict-test-first  | pending           | `__tests__/i18n/unsupported-locale.test.tsx` | `middleware.ts`                              | pending      | pending                       | pending            | planned |
+| REQ-I18N-004               | VC-I18N-004 | strict-test-first  | pending           | `__tests__/i18n/unsupported-locale.test.tsx` | `middleware.ts`                              | pending      | pending                       | pending            | planned |
+| REQ-I18N-005               | VC-I18N-005 | strict-test-first  | pending           | `__tests__/i18n/sitemap.test.ts`             | `src/app/sitemap.ts`                         | pending      | pending                       | pending            | planned |
+| REQ-I18N-005               | VC-I18N-006 | strict-test-first  | pending           | `__tests__/i18n/robots.test.ts`              | `src/app/robots.ts`                          | pending      | pending                       | pending            | planned |
+| REQ-I18N-006               | VC-I18N-007 | strict-test-first  | pending           | `__tests__/i18n/message-catalogs.test.ts`    | `messages/es-MX.json`, `messages/en-US.json` | pending      | pending                       | pending            | planned |
+| REQ-I18N-007, REQ-I18N-008 | VC-I18N-008 | strict-test-first  | pending           | `__tests__/i18n/key-naming.test.ts`          | `messages/es-MX.json`, `messages/en-US.json` | pending      | pending                       | pending            | planned |
+| REQ-I18N-009               | VC-I18N-009 | verification-first | pending           | Manual review evidence                       | `src/app/**/*.tsx` (shell)                   | pending      | pending                       | pending            | planned |
+| REQ-I18N-010               | VC-I18N-010 | strict-test-first  | pending           | `__tests__/i18n/privacy-page.test.tsx`       | `src/app/[locale]/privacidad/page.tsx`       | pending      | pending                       | pending            | planned |
 
 ## 11. Observability and Audit Requirements
 
@@ -147,21 +147,21 @@ No new observability or audit requirement. The public shell has no authenticated
 
 ## 13. Dependencies
 
-| Dependency | Owner | Status | Impact / stop condition |
-|---|---|---|---|
-| ADR-021 approved and ingested | engineering-manager | ready | Blocks P1 if not approved |
-| `next-intl` 4.x installed | fullstack-dispatcher | ready | Package.json confirms v4.13.5 |
-| Next.js App Router baseline | fullstack-dispatcher | ready | Scaffold exists at `src/app/` |
-| Test infrastructure (Vitest, RTL) | test-engineer | ready | Package.json confirms |
+| Dependency                        | Owner                | Status | Impact / stop condition       |
+| --------------------------------- | -------------------- | ------ | ----------------------------- |
+| ADR-021 approved and ingested     | engineering-manager  | ready  | Blocks P1 if not approved     |
+| `next-intl` 4.x installed         | fullstack-dispatcher | ready  | Package.json confirms v4.13.5 |
+| Next.js App Router baseline       | fullstack-dispatcher | ready  | Scaffold exists at `src/app/` |
+| Test infrastructure (Vitest, RTL) | test-engineer        | ready  | Package.json confirms         |
 
 ## 14. Open Questions and Required Decisions
 
-| OQ ID | Question | Why it matters | Owner | Mode / stop condition |
-|---|---|---|---|---|
+| OQ ID  | Question                                                                                                                                                                 | Why it matters                                           | Owner         | Mode / stop condition                                                             |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- | ------------- | --------------------------------------------------------------------------------- |
 | OQ-001 | Should the privacy page placeholder notice (`privacy.placeholderNotice`, `privacy.notLegalAdvice`) be included in this spec or deferred to a content-specific work item? | Affects message catalog completeness and test assertions | Project Owner | `non-blocking` — P2/downstream may proceed; placeholder text can be refined later |
 
 ## 15. Revision History
 
-| Version | Date | Author / updater | Classification | Affected IDs | Gate impact | Summary |
-|---|---|---|---|---|---|---|
-| 0.1 | 2026-08-15 | architect | initial draft | REQ-I18N-001..010, VC-I18N-001..010 | none | Initial specification derived from ADR-021 decisions |
+| Version | Date       | Author / updater | Classification | Affected IDs                        | Gate impact | Summary                                              |
+| ------- | ---------- | ---------------- | -------------- | ----------------------------------- | ----------- | ---------------------------------------------------- |
+| 0.1     | 2026-08-15 | architect        | initial draft  | REQ-I18N-001..010, VC-I18N-001..010 | none        | Initial specification derived from ADR-021 decisions |
