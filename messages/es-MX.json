@@ -1,0 +1,12 @@
+{
+  "shell": {
+    "brand": {
+      "name": "Joya Star Films"
+    }
+  },
+  "privacy": {
+    "title": "Política de Privacidad",
+    "placeholderNotice": "Este es un aviso provisional.",
+    "notLegalAdvice": "Esto no es asesoramiento legal."
+  }
+}
