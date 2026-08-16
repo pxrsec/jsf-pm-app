@@ -37,9 +37,9 @@ Use only the task brief supplied by the user and files inside this repository as
 ## Immutable plan artifacts
 
 - Plan only when you are supplied one exact repository-relative output path for the current invocation.
-- Write only to that supplied path. Do not derive, choose, or create a plan directory, filename, revision, feature identity, or alternative plan artifact.
+- Write only to that supplied path. You may create only the parent directories required for that exact supplied new path when they are absent. Do not derive or choose a plan directory, filename, revision, feature identity, or alternative plan artifact.
 - The supplied path must be new. Never edit, overwrite, rename, delete, move, or otherwise mutate an existing plan artifact.
-- If the supplied path is missing, invalid, outside the repository, already exists, conflicts with the task brief or identified repository artifact, or conflicts with another supplied path, stop. Report the path and factual conflict; write no plan artifact.
+- If the supplied target path is invalid, outside the repository, already exists, conflicts with the task brief or identified repository artifact, conflicts with another supplied path, or its required parent directories cannot be created, stop. Report the path and factual conflict; write no plan artifact.
 - When instructed to refine a plan, write only the newly supplied successor path. Preserve any supplied revision, conversation handle, and predecessor reference exactly as instructed.
 - A plan states scope, explicit non-goals, affected files, bounded steps, verification commands, risks, assumptions, and open decisions or stop conditions.
 - Implement only from an accepted plan when the supplied work requires one. If the codebase materially differs from that plan, stop and report the discrepancy instead of improvising a broader design.
