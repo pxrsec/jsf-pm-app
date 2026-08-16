@@ -1,0 +1,12 @@
+# Dependencies & Build Outputs
+node_modules/
+.next/
+dist/
+build/
+coverage/
+
+# Documentation & Specs
+dev-docs/
+
+# Worktrees / Temp files
+*.log
