@@ -8,5 +8,10 @@
     "title": "Política de Privacidad",
     "placeholderNotice": "Este es un aviso provisional.",
     "notLegalAdvice": "Esto no es asesoramiento legal."
+  },
+  "errors": {
+    "title": "Algo salió mal",
+    "message": "No pudimos completar esta solicitud. Inténtalo de nuevo.",
+    "retry": "Intentar de nuevo"
   }
 }

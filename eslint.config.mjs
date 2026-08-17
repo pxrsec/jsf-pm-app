@@ -5,6 +5,66 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@prisma/client",
+              message:
+                "Prisma is forbidden. Use Supabase client boundaries and migrations instead.",
+            },
+            {
+              name: "prisma",
+              message:
+                "Prisma is forbidden. Use Supabase client boundaries and migrations instead.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: [
+      "src/app/**",
+      "src/components/**",
+      "src/hooks/**",
+      "src/lib/!(supabase/admin.ts)**",
+      "proxy.ts",
+      "src/proxy.ts",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@/lib/supabase/admin",
+              message:
+                "Privileged admin Supabase client (src/lib/supabase/admin) must not be imported in client components, shared modules, or middleware.",
+            },
+            {
+              name: "src/lib/supabase/admin",
+              message:
+                "Privileged admin Supabase client (src/lib/supabase/admin) must not be imported in client components, shared modules, or middleware.",
+            },
+            {
+              name: "@prisma/client",
+              message:
+                "Prisma is forbidden. Use Supabase client boundaries and migrations instead.",
+            },
+            {
+              name: "prisma",
+              message:
+                "Prisma is forbidden. Use Supabase client boundaries and migrations instead.",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
