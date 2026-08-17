@@ -1,5 +1,12 @@
 # JSF PM App Development Changelog
 
+## [2026-08-17 @ 16:15]
+
+**🛠 Architecture**
+
+- Migrated deprecated Next.js `middleware.ts` to `proxy.ts` (`src/proxy.ts`) in accordance with Next.js 16 file conventions
+- Updated ESLint restricted imports config (`eslint.config.mjs`) to include `proxy.ts` in structural isolation rules for privileged admin client
+
 ## [2026-08-17 @ 16:02]
 
 **🚀 Features**

@@ -32,7 +32,8 @@ const eslintConfig = defineConfig([
       "src/components/**",
       "src/hooks/**",
       "src/lib/!(supabase/admin.ts)**",
-      "middleware.ts",
+      "proxy.ts",
+      "src/proxy.ts",
     ],
     rules: {
       "no-restricted-imports": [
