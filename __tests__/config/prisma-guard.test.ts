@@ -46,7 +46,9 @@ describe("TC-TST-002 / VC-TST-002: Repository guard against Prisma runtime impor
     scanDir(srcRoot);
 
     if (violations.length > 0) {
-      throw new Error(`RED: Found ${violations.length} Prisma runtime imports:\n${violations.join("\n")}`);
+      throw new Error(
+        `RED: Found ${violations.length} Prisma runtime imports:\n${violations.join("\n")}`,
+      );
     }
   });
 

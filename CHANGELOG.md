@@ -1,5 +1,22 @@
 # JSF PM App Development Changelog
 
+## [2026-08-17 @ 16:02]
+
+**🚀 Features**
+
+- Added global browser-security response headers in `next.config.ts` (Content-Security-Policy, X-Frame-Options, Referrer-Policy, Permissions-Policy, X-Content-Type-Options, Strict-Transport-Security)
+- Created typed catalog-backed error copy helper (`src/lib/error-copy.ts`) with pathname-based locale selection
+- Added localized route-segment error boundary (`src/app/[locale]/error.tsx`) and root error boundary (`src/app/global-error.tsx`)
+- Added `errors` namespace to `messages/es-MX.json` and `messages/en-US.json`
+- Implemented structured JSON logger (`src/lib/logger.ts`) with recursive sensitive-data redaction, circular reference handling, and request-scoped logger factory
+- Implemented Sentry capture seam (`src/lib/sentry.ts`) with no-op handling for unconfigured environments and sanitized exception formatting
+
+**🧪 Tests**
+
+- Added unit tests for structured logger serialization, redaction, request correlation, and safe unusual values (`src/lib/__tests__/logger.test.ts`)
+- Added unit tests for Sentry DSN resolution, environment fallback, and unconfigured no-op behavior (`src/lib/__tests__/sentry.test.ts`)
+- Updated message catalog key-naming test to recognize `errors` namespace (`__tests__/i18n/key-naming.test.ts`)
+
 ## [2026-08-17 @ 14:45]
 
 **🚀 Features**

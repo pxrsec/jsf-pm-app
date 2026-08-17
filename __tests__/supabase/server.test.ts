@@ -3,7 +3,10 @@ import fs from "fs";
 import path from "path";
 
 describe("TC-SUP-002 / VC-SUP-002: Server Supabase client factory (src/lib/supabase/server.ts)", () => {
-  const serverPath = path.resolve(__dirname, "../../src/lib/supabase/server.ts");
+  const serverPath = path.resolve(
+    __dirname,
+    "../../src/lib/supabase/server.ts",
+  );
 
   it("source file exists", () => {
     // RED: server.ts does not exist yet

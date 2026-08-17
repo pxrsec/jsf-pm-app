@@ -5,7 +5,15 @@ import path from "path";
 describe("TC-CFG-003 / VC-CFG-003: No real credential exposure in repository (static check)", () => {
   it("no real environment values, credentials, or provider keys in tracked files", () => {
     const repoRoot = path.resolve(__dirname, "../..");
-    const trackedExtensions = [".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".mjs"];
+    const trackedExtensions = [
+      ".ts",
+      ".tsx",
+      ".js",
+      ".jsx",
+      ".json",
+      ".md",
+      ".mjs",
+    ];
     const violations: string[] = [];
 
     function scanDir(dir: string) {
@@ -13,7 +21,15 @@ describe("TC-CFG-003 / VC-CFG-003: No real credential exposure in repository (st
       for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
         if (entry.isDirectory()) {
-          if (!["node_modules", ".git", ".next", "coverage", "__tests__"].includes(entry.name)) {
+          if (
+            ![
+              "node_modules",
+              ".git",
+              ".next",
+              "coverage",
+              "__tests__",
+            ].includes(entry.name)
+          ) {
             scanDir(fullPath);
           }
         } else if (trackedExtensions.some((ext) => entry.name.endsWith(ext))) {
@@ -32,7 +48,10 @@ describe("TC-CFG-003 / VC-CFG-003: No real credential exposure in repository (st
             if (matches) {
               // Filter out obvious placeholders
               const match = matches[0];
-              if (!match.includes("replace_me") && !match.includes("replace-me")) {
+              if (
+                !match.includes("replace_me") &&
+                !match.includes("replace-me")
+              ) {
                 violations.push(`${fullPath}: ${match.substring(0, 50)}...`);
               }
             }
@@ -46,7 +65,9 @@ describe("TC-CFG-003 / VC-CFG-003: No real credential exposure in repository (st
     // RED: Current repo may have .env.local with real values but those should be gitignored
     // This test checks tracked files only
     if (violations.length > 0) {
-      throw new Error(`RED: Found ${violations.length} potential credential exposures:\n${violations.join("\n")}`);
+      throw new Error(
+        `RED: Found ${violations.length} potential credential exposures:\n${violations.join("\n")}`,
+      );
     }
   });
 
@@ -62,9 +83,13 @@ describe("TC-CFG-003 / VC-CFG-003: No real credential exposure in repository (st
     expect(content).toContain("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=");
     expect(content).toContain("SUPABASE_SECRET_KEY=");
     // Should not contain real-looking values
-    expect(content).not.toMatch(/eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+/);
+    expect(content).not.toMatch(
+      /eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+/,
+    );
     // Supabase keys should be explicit placeholders with replace_me
-    expect(content).toMatch(/NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_replace_me/);
+    expect(content).toMatch(
+      /NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_replace_me/,
+    );
     expect(content).toMatch(/SUPABASE_SECRET_KEY=sb_secret_replace_me/);
   });
 });

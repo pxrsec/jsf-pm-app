@@ -3,7 +3,10 @@ import fs from "fs";
 import path from "path";
 
 describe("TC-SUP-001 / VC-SUP-001: Browser Supabase client factory (src/lib/supabase/browser.ts)", () => {
-  const browserPath = path.resolve(__dirname, "../../src/lib/supabase/browser.ts");
+  const browserPath = path.resolve(
+    __dirname,
+    "../../src/lib/supabase/browser.ts",
+  );
 
   it("source file exists", () => {
     // RED: browser.ts does not exist yet

@@ -26,7 +26,9 @@ describe("TC-SUP-003 / VC-SUP-003: Privileged Supabase client factory and import
     }
     const content = fs.readFileSync(adminPath, "utf-8");
     // Should only export factory function, not execute queries
-    expect(content).not.toMatch(/\.from\(|\.select\(|\.insert\(|\.update\(|\.delete\(|\.upsert\(/);
+    expect(content).not.toMatch(
+      /\.from\(|\.select\(|\.insert\(|\.update\(|\.delete\(|\.upsert\(/,
+    );
   });
 
   it("is server-only and not importable by client components, shared modules, or middleware", () => {

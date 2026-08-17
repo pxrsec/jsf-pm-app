@@ -15,7 +15,8 @@ describe("TC-CFG-001 / VC-CFG-001: Public configuration boundary (src/config/app
   it("exports public configuration derived from NEXT_PUBLIC_* variables", async () => {
     process.env.NEXT_PUBLIC_APP_URL = "https://app.example.com";
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test_key";
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_test_key";
 
     const { appConfig } = await import("@/config/app.config");
 
@@ -28,7 +29,8 @@ describe("TC-CFG-001 / VC-CFG-001: Public configuration boundary (src/config/app
   it("requires non-empty NEXT_PUBLIC_APP_URL (presence only, no URL-format rejection)", async () => {
     process.env.NEXT_PUBLIC_APP_URL = "";
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test_key";
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_test_key";
 
     await expect(import("@/config/app.config")).rejects.toThrow(
       /NEXT_PUBLIC_APP_URL/,
@@ -44,7 +46,8 @@ describe("TC-CFG-001 / VC-CFG-001: Public configuration boundary (src/config/app
   it("requires valid HTTPS NEXT_PUBLIC_SUPABASE_URL and non-empty publishable key", async () => {
     process.env.NEXT_PUBLIC_APP_URL = "https://app.example.com";
     process.env.NEXT_PUBLIC_SUPABASE_URL = "http://insecure.example.com";
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test_key";
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_test_key";
 
     await expect(import("@/config/app.config")).rejects.toThrow(
       /NEXT_PUBLIC_SUPABASE_URL/,
@@ -62,7 +65,8 @@ describe("TC-CFG-001 / VC-CFG-001: Public configuration boundary (src/config/app
   it("does not expose server-only configuration or the secret key", async () => {
     process.env.NEXT_PUBLIC_APP_URL = "https://app.example.com";
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test_key";
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_test_key";
     process.env.SUPABASE_SECRET_KEY = "super_secret_admin_key";
 
     const { appConfig } = await import("@/config/app.config");
@@ -75,7 +79,8 @@ describe("TC-CFG-001 / VC-CFG-001: Public configuration boundary (src/config/app
   it("configuration failure messages are safe and non-leaking", async () => {
     process.env.NEXT_PUBLIC_APP_URL = "";
     process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test_key";
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_test_key";
 
     const failure = await import("@/config/app.config").catch((e) => e);
     const message = String(failure?.message ?? failure);

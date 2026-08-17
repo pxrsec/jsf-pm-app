@@ -19,12 +19,6 @@ In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the re
 If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
 <!-- CODEGRAPH_END -->
 
-## Scope, access boundary, and precedence
-
-This is the highest-priority repository configuration for Antigravity. It controls Antigravity behavior and overrides conflicting `AGENTS.md` text.
-
-Use only the task brief supplied by the user and files inside this repository as your sources of truth.
-
 ## Execution contract
 
 1. Make the smallest coherent change required by the supplied brief and repository artifacts it identifies.
@@ -61,15 +55,10 @@ Use only the task brief supplied by the user and files inside this repository as
 - Keep application APIs same-origin. Do not add broad CORS. Validate untrusted input at server boundaries and return safe errors without stacks, secrets, provider payloads, or authorization internals.
 - Preserve server-side authorization, RLS, audit evidence, idempotency, and role-safe response boundaries. Stop and report suspected security or authorization defects.
 
-## Tests and traceability
-
-- Treat supplied tests and acceptance checks as the behavioral contract. Do not weaken, delete, skip, or rewrite them merely to make a failing result pass.
-- When a supplied artifact includes an identifier, preserve it. Add a concise implementation comment only when a non-obvious constraint or compatibility decision needs traceability.
-- Do not invent identifier schemes or add boilerplate comments to obvious code.
-- For implementation work, establish the supplied failing baseline when applicable, make the smallest change that passes it, then refactor while relevant tests remain green.
-
 ## Git and preservation
 
+- You are not allowed to perform any git mutation unless explicitly and directly instructed by the user.
+  Otherwise:
 - Perform no Git mutation. Do not create, switch, checkout, delete, rename, merge, rebase, reset, restore, stage, unstage, commit, amend, tag, push, fetch, pull, create or update a pull request, modify a remote, or rewrite history.
 - Inspect Git state only when needed to understand the supplied work. Report factual observations; do not use Git to resolve repository state.
 - Preserve unrelated repository work. Do not use destructive commands, mass deletion, or blind conflict resolution.

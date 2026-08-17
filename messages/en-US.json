@@ -8,5 +8,10 @@
     "title": "Privacy Policy",
     "placeholderNotice": "This is a placeholder notice.",
     "notLegalAdvice": "This is not legal advice."
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "message": "We could not complete this request. Please try again.",
+    "retry": "Try again"
   }
 }
