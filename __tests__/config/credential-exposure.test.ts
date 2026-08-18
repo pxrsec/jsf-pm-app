@@ -37,9 +37,9 @@ describe("TC-CFG-003 / VC-CFG-003: No real credential exposure in repository (st
           // Check for patterns that indicate real credentials
           const patterns = [
             /eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+/, // JWT tokens
-            /sb_[a-zA-Z0-9_]{20,}/, // Supabase keys
-            /sk_[a-zA-Z0-9_]{20,}/, // Secret keys
-            /sk_live_[a-zA-Z0-9_]+/, // Stripe live keys
+            /\bsb_[a-zA-Z0-9_]{20,}/, // Supabase keys
+            /\bsk_[a-zA-Z0-9_]{20,}/, // Secret keys
+            /\bsk_live_[a-zA-Z0-9_]+/, // Stripe live keys
             /supabase_secret_key\s*[:=]\s*["'][^"']+["']/i, // Secret key in code
             /SUPABASE_SECRET_KEY\s*[:=]\s*["'][^"']+["']/i,
           ];
