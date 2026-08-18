@@ -1,0 +1,1058 @@
+openapi: 3.1.1
+info:
+  title: Joya Star Films PM App API
+  version: 1.5.0-beta
+  description: |
+    Private, cookie-authenticated REST API for the Joya Star Films PM App
+    (`app.joyastarfilms.com`). This is the canonical, repository-adopted
+    contract source referenced by `jsf-pm-app-api-contracts-stable.md` v1.4
+    and refined per Sprint 02 (S02-E02-01) for direct implementation use.
+
+    Authoritative sources, in precedence order: accepted ADRs > Database
+    Schema v1.6 > this contract (HTTP shape) > PRD (product behavior).
+
+    Non-negotiable boundaries this contract assumes and never contradicts:
+    - No Prisma, no runtime `DATABASE_URL`, no ORM of any kind (ADR-022).
+      `supabase/migrations/` SQL is the only schema/policy source.
+    - `@supabase/ssr` is the exclusive runtime client pattern. The browser
+      and server both initialize with the Supabase **publishable** key
+      (modern key convention, see project decision 2.12); the **secret**
+      key is used only in trusted server/admin code paths that intentionally
+      bypass RLS, and is never reachable from any endpoint documented here.
+    - `profiles.role` is the sole authorization source; the server derives
+      the acting identity from the verified session, never from a request
+      body field.
+    - RLS and constrained database RPCs remain the authoritative boundary;
+      this contract's shapes and error codes are a defense-in-depth layer,
+      not a substitute for it.
+    - This document is locale-neutral by design (English codes; optional
+      `Accept-Language` for display copy only) and is unrelated to the
+      public marketing shell's locale-routing decisions, which govern only
+      `joyastarfilms.com` and `/privacidad`.
+
+    Provider activation status (as of Sprint 02): the WhatsApp webhook and
+    Upstash workflow paths are **documented interface contracts only**.
+    No outbound WhatsApp/email message is sent and no external provider is
+    activated by this sprint; see the `x-provider-status` extension on the
+    relevant operations.
+servers:
+  - url: https://app.joyastarfilms.com
+    description: Production (Supabase project `jsf-pm-prod`)
+  - url: https://staging.joyastarfilms.com
+    description: >-
+      Staging (Supabase project `jsf-pm-preprod`, shared with Preview).
+      Provisional: Vercel↔Supabase project linkage for this environment is
+      deferred until staging testing begins (decision 2.4); this URL is not
+      guaranteed reachable yet.
+  - url: https://{deployment-url}
+    description: Vercel Preview deployment (ephemeral, per pull request)
+    variables:
+      deployment-url:
+        default: localhost:3000
+  - url: http://localhost:3000
+    description: Local development (Supabase project `jsf-pm-dev`)
+security:
+  - SupabaseSessionCookie: []
+tags:
+  - name: Auth
+  - name: Projects
+  - name: Members
+  - name: Tasks
+  - name: Deliverables
+  - name: Collaboration
+  - name: Calendar
+  - name: Notifications
+  - name: Metrics
+  - name: Admin
+  - name: Webhooks
+  - name: Workflows
+paths:
+  /api/v1/auth/invites:
+    post:
+      operationId: createInvite
+      tags: [Auth]
+      summary: Create a recipient-bound, opaque, single-use invite
+      description: |
+        Issues an Operator or Client invitation. The server generates a
+        256-bit-or-greater opaque CSPRNG token, stores only its SHA-256 hash
+        plus trusted context, and returns the token exactly once. The token
+        carries no claims of its own; all authorization context is resolved
+        server-side from the stored `invite_tokens` row at completion time.
+        `Idempotency-Key` scopes retries to the acting PM/Admin: replaying
+        the same key with the same normalized request returns the original
+        invite response rather than minting a second token.
+      security: [{ SupabaseSessionCookie: [] }]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateInviteRequest' }
+            examples:
+              operatorInvite:
+                summary: Valid operator invite
+                value: { role: operator, email: "editor1@example.com", project_id: "5b1f7e2a-9c3d-4e11-8b2a-1a2b3c4d5e6f" }
+              invalidRole:
+                summary: Rejected — role outside allowed enum
+                value: { role: pm, email: "editor1@example.com" }
+      responses:
+        '201': { description: Invite created, content: { application/json: { schema: { $ref: '#/components/schemas/InviteResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/v1/auth/invites/complete:
+    post:
+      operationId: completeInvite
+      tags: [Auth]
+      summary: Complete an invite registration
+      description: |
+        Hashes the submitted token server-side and accepts it exactly once
+        only if the matching `invite_tokens` row is `pending` and unexpired.
+        `Idempotency-Key` guards against double-submit on mobile without
+        weakening the underlying single-use token guarantee — a replayed
+        key with an already-consumed token still returns `410` semantics
+        for the token, not a duplicated account.
+      security: []
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompleteInviteRequest' }
+            examples:
+              validCompletion:
+                summary: Valid completion payload
+                value: { token: "AbCdEfGhIjKlMnOpQrStUvWxYz0123456789-_abc", full_name: "Ana Torres", phone_e164: "+525512345678", password: "Str0ng!Passw0rd", whatsapp_opt_in: true }
+              weakPassword:
+                summary: Rejected — password below policy
+                value: { token: "AbCdEfGhIjKlMnOpQrStUvWxYz0123456789-_abc", full_name: "Ana Torres", password: "short" }
+      responses:
+        '201': { description: Account created and invite consumed, content: { application/json: { schema: { $ref: '#/components/schemas/AuthCompletionResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '410': { $ref: '#/components/responses/InviteTerminal' }
+  /api/v1/auth/magic-link:
+    post:
+      operationId: requestMagicLink
+      tags: [Auth]
+      summary: Request a client magic link without revealing account existence
+      description: |
+        Always returns a generic `202` regardless of whether the email
+        matches an account, to prevent account enumeration. Authenticates
+        an existing account only; never creates one or changes role/
+        membership. `Idempotency-Key` is required so a client's repeated
+        tap does not multiply the per-email rate-limit consumption or send
+        duplicate emails within the replay window; the response is
+        identical on replay and reveals nothing additional.
+      security: []
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MagicLinkRequest' }
+            examples:
+              validRequest:
+                summary: Valid request
+                value: { email: "client@brand.example", redirect_path: "/cliente" }
+              invalidRedirect:
+                summary: Rejected — absolute/external redirect
+                value: { email: "client@brand.example", redirect_path: "https://evil.example/phish" }
+      responses:
+        '202': { description: Always accepted when request shape/rate limit allows; body intentionally omits account-existence signal }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/v1/projects:
+    get:
+      operationId: listProjects
+      tags: [Projects]
+      summary: List projects within caller scope
+      parameters:
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/ProjectStatus' }
+        - name: archived
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        '200': { description: Project page, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectPage' } } } }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+    post:
+      operationId: createProject
+      tags: [Projects]
+      summary: Create a project and its initial memberships atomically
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateProjectRequest' }
+            examples:
+              clientProject:
+                summary: Valid client project with one primary Lead and one Client
+                value:
+                  project_type: client
+                  client_id: "c1b2a3d4-1111-4a2b-8c3d-9e0f1a2b3c4d"
+                  name: "Nike Vertical Campaign"
+                  internal_description: "Vertical spots for Nike social channels."
+                  deadline_at: "2026-09-30T18:00:00Z"
+                  members:
+                    - { user_id: "5b1f7e2a-9c3d-4e11-8b2a-1a2b3c4d5e6f", member_type: pm_lead, is_primary: true }
+                    - { user_id: "9a8b7c6d-2222-4e11-8b2a-1a2b3c4d5e6f", member_type: client }
+              missingPrimaryLead:
+                summary: Rejected — no primary Lead designated
+                value:
+                  project_type: client
+                  client_id: "c1b2a3d4-1111-4a2b-8c3d-9e0f1a2b3c4d"
+                  name: "Nike Vertical Campaign"
+                  internal_description: "Vertical spots for Nike social channels."
+                  deadline_at: "2026-09-30T18:00:00Z"
+                  members:
+                    - { user_id: "5b1f7e2a-9c3d-4e11-8b2a-1a2b3c4d5e6f", member_type: pm_lead, is_primary: false }
+      responses:
+        '201': { description: Project created, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/projects/{project_id}:
+    parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+    get:
+      operationId: getProject
+      tags: [Projects]
+      summary: Get a role-safe project representation
+      responses:
+        '200': { description: Project, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectResponse' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      operationId: updateProject
+      tags: [Projects]
+      summary: Update non-lifecycle project fields
+      description: >-
+        Rejects `status`, `completed_at`, `archived_at`, and `deleted_at`.
+        Those fields are mutated only via `/transitions`, `/recovery`, or
+        the archive command surfaced elsewhere; this keeps every lifecycle
+        change routed through the audited/transactional path.
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateProjectRequest' } } }
+      responses:
+        '200': { description: Updated project, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectResponse' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: softDeleteProject
+      tags: [Projects]
+      summary: Administrative soft-delete; cancellation and archive are separate commands
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      responses:
+        '204': { description: Soft-deleted }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/projects/{project_id}/completion-readiness:
+    get:
+      operationId: getProjectCompletionReadiness
+      tags: [Projects]
+      summary: Return the locked-at-read-time completion warning data
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+      responses:
+        '200': { description: Readiness result, content: { application/json: { schema: { $ref: '#/components/schemas/CompletionReadinessResponse' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/projects/{project_id}/transitions:
+    post:
+      operationId: transitionProject
+      tags: [Projects]
+      summary: Perform a validated project lifecycle transition
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProjectTransitionRequest' }
+            examples:
+              completeWithoutWarnings:
+                summary: Valid completion, nothing unfinished
+                value: { to_status: completed }
+              completeWithConfirmedOverride:
+                summary: Valid completion, unfinished work explicitly confirmed
+                value: { to_status: completed, confirm_unfinished: true }
+              completeBlockedByUnfinished:
+                summary: Rejected — unfinished work not confirmed
+                value: { to_status: completed, confirm_unfinished: false }
+              reopenWithReason:
+                summary: Valid reopen
+                value: { to_status: in_progress, reason: "Client requested one more revision round after sign-off." }
+      responses:
+        '200': { description: Transitioned project, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectResponse' } } } }
+        '409':
+          description: Invalid transition, stale conflict, or unconfirmed unfinished work
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+              examples:
+                unfinishedWorkRequiresConfirmation:
+                  value: { error: { code: unfinished_work_confirmation_required, message: "Unfinished tasks or deliverables remain. Re-check readiness and confirm to proceed." }, request_id: "b3f1a2c4-0000-4a2b-8c3d-9e0f1a2b3c4d" }
+  /api/v1/projects/{project_id}/recovery:
+    post:
+      operationId: recoverProject
+      tags: [Projects]
+      summary: Admin-only current-state recovery with mandatory reason
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ProjectRecoveryRequest' } } }
+      responses:
+        '200': { description: Recovered project, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectResponse' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/projects/{project_id}/members:
+    parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+    get:
+      operationId: listProjectMembers
+      tags: [Members]
+      summary: List project memberships using a caller-safe representation
+      responses:
+        '200': { description: Members, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectMembersResponse' } } } }
+    put:
+      operationId: replaceProjectMembers
+      tags: [Members]
+      summary: Reconcile project memberships atomically
+      description: >-
+        Full-set reconciliation, not a delta patch, so the exactly-one-
+        primary-Lead invariant is never transiently violated mid-request.
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ReplaceMembersRequest' } } }
+      responses:
+        '200': { description: Memberships updated, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectMembersResponse' } } } }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /api/v1/projects/{project_id}/tasks:
+    parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+    get:
+      operationId: listProjectTasks
+      tags: [Tasks]
+      summary: List tasks visible to the caller in a project
+      parameters: [{ $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' }]
+      responses:
+        '200': { description: Task page, content: { application/json: { schema: { $ref: '#/components/schemas/TaskPage' } } } }
+    post:
+      operationId: createTask
+      tags: [Tasks]
+      summary: Create a project task
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateTaskRequest' } } }
+      responses:
+        '201': { description: Task created, content: { application/json: { schema: { $ref: '#/components/schemas/TaskResponse' } } } }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /api/v1/tasks/{task_id}:
+    parameters: [{ $ref: '#/components/parameters/TaskId' }]
+    get:
+      operationId: getTask
+      tags: [Tasks]
+      summary: Get one role-safe task
+      responses: { '200': { description: Task, content: { application/json: { schema: { $ref: '#/components/schemas/TaskResponse' } } } }, '404': { $ref: '#/components/responses/NotFound' } }
+    patch:
+      operationId: updateTask
+      tags: [Tasks]
+      summary: Update non-lifecycle planning fields
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UpdateTaskRequest' } } } }
+      responses: { '200': { description: Updated task, content: { application/json: { schema: { $ref: '#/components/schemas/TaskResponse' } } } } }
+    delete:
+      operationId: softDeleteTask
+      tags: [Tasks]
+      summary: Soft-delete a mutable task
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      responses: { '204': { description: Soft-deleted } }
+  /api/v1/tasks/{task_id}/transitions:
+    post:
+      operationId: transitionTask
+      tags: [Tasks]
+      summary: Perform a validated role-aware task transition
+      parameters: [{ $ref: '#/components/parameters/TaskId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskTransitionRequest' }
+            examples:
+              clientStartsOwnRequest:
+                summary: Valid — direct Client assignee starts their own client_request
+                value: { to_status: in_progress }
+              clientCompletesWithPendingSubmission:
+                summary: Rejected — active child client_submission still pending
+                value: { to_status: completed }
+      responses:
+        '200': { description: Transitioned task, content: { application/json: { schema: { $ref: '#/components/schemas/TaskResponse' } } } }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/v1/tasks/{task_id}/deliverables:
+    parameters: [{ $ref: '#/components/parameters/TaskId' }]
+    get:
+      operationId: listTaskDeliverables
+      tags: [Deliverables]
+      summary: List caller-visible deliverables for a task
+      responses: { '200': { description: Deliverables, content: { application/json: { schema: { $ref: '#/components/schemas/DeliverablePage' } } } } }
+    post:
+      operationId: createDeliverable
+      tags: [Deliverables]
+      summary: Create a typed deliverable
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateDeliverableRequest' } } } }
+      responses: { '201': { description: Deliverable created, content: { application/json: { schema: { $ref: '#/components/schemas/DeliverableResponse' } } } }, '422': { $ref: '#/components/responses/Unprocessable' } }
+  /api/v1/deliverables/{deliverable_id}:
+    parameters: [{ $ref: '#/components/parameters/DeliverableId' }]
+    get:
+      operationId: getDeliverable
+      tags: [Deliverables]
+      summary: Get role-safe deliverable detail and version history
+      responses: { '200': { description: Deliverable, content: { application/json: { schema: { $ref: '#/components/schemas/DeliverableResponse' } } } }, '404': { $ref: '#/components/responses/NotFound' } }
+    patch:
+      operationId: updateDeliverable
+      tags: [Deliverables]
+      summary: Update non-lifecycle deliverable planning fields
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UpdateDeliverableRequest' } } } }
+      responses: { '200': { description: Updated deliverable, content: { application/json: { schema: { $ref: '#/components/schemas/DeliverableResponse' } } } } }
+    delete:
+      operationId: softDeleteDeliverable
+      tags: [Deliverables]
+      summary: Soft-delete a mutable deliverable
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      responses: { '204': { description: Soft-deleted } }
+  /api/v1/deliverables/{deliverable_id}/versions:
+    post:
+      operationId: submitProductionVersion
+      tags: [Deliverables]
+      summary: Submit an immutable production Google Drive version
+      parameters: [{ $ref: '#/components/parameters/DeliverableId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductionVersionRequest' }
+            examples:
+              validDriveUrl:
+                summary: Valid Google Drive share URL
+                value: { submission_url: "https://drive.google.com/file/d/1AbCdEfGhIjKlMnOpQrStUvWxYz/view?usp=sharing" }
+              rejectedNonDriveUrl:
+                summary: Rejected — production requires Google Drive only
+                value: { submission_url: "https://dropbox.com/s/abc123/final-cut.mp4" }
+      responses: { '201': { description: Version submitted, content: { application/json: { schema: { $ref: '#/components/schemas/DeliverableResponse' } } } }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/Unprocessable' } }
+  /api/v1/deliverables/{deliverable_id}/client-submissions:
+    post:
+      operationId: submitClientDeliverable
+      tags: [Deliverables]
+      summary: Direct Client assignee submits immutable public-HTTPS input URL
+      parameters: [{ $ref: '#/components/parameters/DeliverableId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ClientSubmissionRequest' }
+            examples:
+              validPublicHttps:
+                summary: Valid — any lexically valid public HTTPS host
+                value: { submission_url: "https://wetransfer.com/downloads/abc123def456" }
+              rejectedPrivateIpLiteral:
+                summary: Rejected — private/reserved IP literal
+                value: { submission_url: "https://192.168.1.10/brandkit.zip" }
+              rejectedEmbeddedCredentials:
+                summary: Rejected — embedded credentials
+                value: { submission_url: "https://user:pass@example.com/brandkit.zip" }
+      responses: { '201': { description: Client input submitted, content: { application/json: { schema: { $ref: '#/components/schemas/DeliverableResponse' } } } }, '409': { $ref: '#/components/responses/Conflict' }, '422': { $ref: '#/components/responses/Unprocessable' } }
+  /api/v1/deliverables/{deliverable_id}/client-submissions/reopen:
+    post:
+      operationId: reopenClientSubmission
+      tags: [Deliverables]
+      summary: Reopen a submitted client input for audited correction
+      parameters: [{ $ref: '#/components/parameters/DeliverableId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ReopenClientSubmissionRequest' } } } }
+      responses: { '200': { description: Reopened deliverable, content: { application/json: { schema: { $ref: '#/components/schemas/DeliverableResponse' } } } } }
+  /api/v1/deliverables/{deliverable_id}/reviews/internal:
+    post:
+      operationId: reviewDeliverableInternal
+      tags: [Deliverables]
+      summary: PM Lead records immutable internal review decision
+      description: >-
+        Enforces the mandatory re-review loop: a production deliverable
+        re-uploaded after `changes_requested` must pass through
+        `awaiting_internal_review` again before it can reach
+        `awaiting_client_review`. A direct bypass is rejected (resolved
+        OQ01 / OQ-DB-01).
+      parameters: [{ $ref: '#/components/parameters/DeliverableId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InternalReviewRequest' }
+            examples:
+              approve:
+                summary: Valid approval
+                value: { decision: approved }
+              requestChangesWithComment:
+                summary: Valid change request with mandatory comment
+                value: { decision: changes_requested, comments: "Color grade is too warm in the outdoor segment; please cool it by ~500K." }
+              requestChangesMissingComment:
+                summary: Rejected — comment required for changes_requested
+                value: { decision: changes_requested }
+      responses: { '200': { description: Reviewed deliverable, content: { application/json: { schema: { $ref: '#/components/schemas/DeliverableResponse' } } } }, '409': { $ref: '#/components/responses/Conflict' } }
+  /api/v1/deliverables/{deliverable_id}/reviews/client:
+    post:
+      operationId: reviewDeliverableClient
+      tags: [Deliverables]
+      summary: Project Client records immutable production-review decision
+      description: >-
+        With multiple active Client members on a project, the first valid
+        locked decision wins; a later stale attempt returns `409 conflict`
+        recording the acting Client already committed.
+      parameters: [{ $ref: '#/components/parameters/DeliverableId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ClientReviewRequest' } } } }
+      responses: { '200': { description: Reviewed deliverable, content: { application/json: { schema: { $ref: '#/components/schemas/DeliverableResponse' } } } }, '409': { $ref: '#/components/responses/Conflict' } }
+  /api/v1/deliverables/{deliverable_id}/delivery:
+    post:
+      operationId: markDeliverableDelivered
+      tags: [Deliverables]
+      summary: Record final handoff for approved production deliverable
+      parameters: [{ $ref: '#/components/parameters/DeliverableId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      responses: { '200': { description: Delivered, content: { application/json: { schema: { $ref: '#/components/schemas/DeliverableResponse' } } } }, '409': { $ref: '#/components/responses/Conflict' } }
+  /api/v1/deliverables/{deliverable_id}/link-reports:
+    post:
+      operationId: createLinkReport
+      tags: [Deliverables]
+      summary: Report an inaccessible external version without changing lifecycle status
+      description: >-
+        Never triggers a server-side reachability check. One open report
+        per `(deliverable_id, version_id)`; the reporter receives a
+        confirmation and the original version submitter is notified.
+      parameters: [{ $ref: '#/components/parameters/DeliverableId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateLinkReportRequest' } } } }
+      responses: { '201': { description: Incident created, content: { application/json: { schema: { $ref: '#/components/schemas/LinkReportResponse' } } } }, '409': { $ref: '#/components/responses/Conflict' } }
+  /api/v1/projects/{project_id}/comments:
+    parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+    get:
+      operationId: listProjectComments
+      tags: [Collaboration]
+      summary: List internal comments visible to caller
+      description: Never visible to Client callers; enforced by RLS independent of this shape.
+      parameters: [{ $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' }]
+      responses: { '200': { description: Comment page, content: { application/json: { schema: { $ref: '#/components/schemas/CommentPage' } } } } }
+    post:
+      operationId: createComment
+      tags: [Collaboration]
+      summary: Add a target-scoped internal comment
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateCommentRequest' } } } }
+      responses: { '201': { description: Comment created, content: { application/json: { schema: { $ref: '#/components/schemas/CommentResponse' } } } } }
+  /api/v1/projects/{project_id}/calendar-events:
+    parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+    get:
+      operationId: listCalendarEvents
+      tags: [Calendar]
+      summary: Return role-safe derived deadlines and manual milestones
+      parameters:
+        - name: starts_at
+          in: query
+          required: true
+          schema: { type: string, format: date-time }
+        - name: ends_at
+          in: query
+          required: true
+          schema: { type: string, format: date-time }
+      responses: { '200': { description: Calendar feed, content: { application/json: { schema: { $ref: '#/components/schemas/CalendarFeedResponse' } } } } }
+    post:
+      operationId: createCalendarEvent
+      tags: [Calendar]
+      summary: Create a manual milestone
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CreateMilestoneRequest' } } } }
+      responses: { '201': { description: Milestone created, content: { application/json: { schema: { $ref: '#/components/schemas/CalendarEventResponse' } } } } }
+  /api/v1/notifications:
+    get:
+      operationId: listNotifications
+      tags: [Notifications]
+      summary: List caller's in-app notification history
+      parameters: [{ $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' }, { name: unread_only, in: query, schema: { type: boolean } }]
+      responses: { '200': { description: Notification page, content: { application/json: { schema: { $ref: '#/components/schemas/NotificationPage' } } } } }
+  /api/v1/notifications/unread-count:
+    get:
+      operationId: getUnreadNotificationCount
+      tags: [Notifications]
+      summary: Realtime fallback unread count
+      description: Used by the client when the Supabase Realtime subscription (in_app channel only) has dropped; polled at a 30-second interval per the SAD.
+      responses: { '200': { description: Count, content: { application/json: { schema: { $ref: '#/components/schemas/UnreadCountResponse' } } } } }
+  /api/v1/notifications/{notification_id}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [Notifications]
+      summary: Mark caller-owned in-app notification read
+      parameters: [{ $ref: '#/components/parameters/NotificationId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      responses: { '200': { description: Notification read, content: { application/json: { schema: { $ref: '#/components/schemas/NotificationResponse' } } } }, '404': { $ref: '#/components/responses/NotFound' } }
+  /api/v1/notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [Notifications]
+      summary: Mark all caller-owned in-app notifications read
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      responses: { '200': { description: Number marked read, content: { application/json: { schema: { $ref: '#/components/schemas/MarkAllReadResponse' } } } } }
+  /api/v1/metrics/projects:
+    get:
+      operationId: getProjectMetrics
+      tags: [Metrics]
+      summary: Return audit-derived scoped project and completion-cycle metrics
+      parameters: [{ name: project_id, in: query, schema: { type: string, format: uuid } }, { name: starts_at, in: query, schema: { type: string, format: date-time } }, { name: ends_at, in: query, schema: { type: string, format: date-time } }]
+      responses: { '200': { description: Metrics, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectMetricsResponse' } } } }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /api/v1/admin/notification-recipients:
+    get:
+      operationId: listAdminNotificationRecipients
+      tags: [Admin]
+      summary: Read sanitized notification queue records
+      description: Never returns provider tokens, raw webhook bodies, or unredacted provider error payloads.
+      parameters: [{ $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' }, { name: delivery_status, in: query, schema: { $ref: '#/components/schemas/NotificationDeliveryStatus' } }]
+      responses: { '200': { description: Queue page, content: { application/json: { schema: { $ref: '#/components/schemas/NotificationPage' } } } }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /api/v1/admin/health:
+    get:
+      operationId: getAdminHealth
+      tags: [Admin]
+      summary: Read configuration-presence and dependency health, never secret values
+      description: >-
+        Booleans and status enums only. Never returns a publishable key,
+        secret key, or any other credential value, regardless of caller role.
+      responses: { '200': { description: Health snapshot, content: { application/json: { schema: { $ref: '#/components/schemas/AdminHealthResponse' } } } }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /api/webhooks/whatsapp:
+    get:
+      operationId: verifyWhatsappWebhook
+      tags: [Webhooks]
+      summary: Meta verification challenge
+      x-provider-status: deferred
+      description: >-
+        Documented interface only. WhatsApp/Meta is not activated in
+        Sprint 02 or any sprint prior to Epic 8; this operation exists so
+        the contract and future webhook handler stay in lockstep once
+        activation occurs.
+      security: []
+      parameters:
+        - { name: hub.mode, in: query, required: true, schema: { type: string } }
+        - { name: hub.verify_token, in: query, required: true, schema: { type: string } }
+        - { name: hub.challenge, in: query, required: true, schema: { type: string } }
+      responses: { '200': { description: Plain-text Meta challenge }, '403': { description: Invalid verification token } }
+    post:
+      operationId: receiveWhatsappWebhook
+      tags: [Webhooks]
+      summary: Verify and record monotonic WhatsApp receipt updates
+      x-provider-status: deferred
+      description: >-
+        Documented interface only; not activated in Sprint 02. See
+        `verifyWhatsappWebhook`.
+      security: [{ MetaWebhookSignature: [] }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MetaWebhookPayload' } } } }
+      responses: { '200': { description: Accepted; duplicate or stale receipt is a safe no-op }, '401': { $ref: '#/components/responses/InvalidWebhookSignature' } }
+  /api/workflows/notification-processor:
+    post:
+      operationId: runNotificationProcessor
+      tags: [Workflows]
+      summary: Upstash-signed durable outbound notification processor
+      x-provider-status: deferred
+      description: >-
+        Documented interface only; not activated in Sprint 02. Real
+        dispatch begins only once Upstash QStash schedules are configured
+        per ADR-008/E8.
+      security: [{ UpstashSignature: [] }]
+      responses: { '200': { description: Workflow accepted/continued }, '401': { $ref: '#/components/responses/Unauthenticated' } }
+  /api/workflows/alert-scheduler:
+    post:
+      operationId: runAlertScheduler
+      tags: [Workflows]
+      summary: Upstash-signed durable alert scheduler
+      x-provider-status: deferred
+      description: Documented interface only; not activated in Sprint 02.
+      security: [{ UpstashSignature: [] }]
+      responses: { '200': { description: Workflow accepted/continued }, '401': { $ref: '#/components/responses/Unauthenticated' } }
+components:
+  securitySchemes:
+    SupabaseSessionCookie:
+      type: apiKey
+      in: cookie
+      name: sb-<project-ref>-auth-token
+      description: >-
+        Supabase Auth session cookie established via `@supabase/ssr`. Both
+        browser and server clients initialize with the project's
+        **publishable key** (modern Supabase key convention; legacy
+        anon/service-role JWT keys remain functional through end of 2026
+        but are not used by this project). RLS, evaluated against the
+        authenticated `auth.uid()`, is the authoritative data boundary; the
+        publishable key itself grants no bypass. The exact cookie name is
+        project-ref-scoped and deployment-specific — clients must not
+        hardcode it. The **secret key** is never used in any cookie-
+        authenticated request path documented here; it is reserved for
+        trusted server-only admin operations outside this contract's
+        browser-facing surface.
+    MetaWebhookSignature: { type: apiKey, in: header, name: X-Hub-Signature-256 }
+    UpstashSignature: { type: apiKey, in: header, name: Upstash-Signature }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 16, maxLength: 128 } }
+    Limit: { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+    Cursor: { name: cursor, in: query, schema: { type: string, minLength: 1, maxLength: 512 } }
+    ProjectId: { name: project_id, in: path, required: true, schema: { type: string, format: uuid } }
+    TaskId: { name: task_id, in: path, required: true, schema: { type: string, format: uuid } }
+    DeliverableId: { name: deliverable_id, in: path, required: true, schema: { type: string, format: uuid } }
+    NotificationId: { name: notification_id, in: path, required: true, schema: { type: string, format: uuid } }
+  responses:
+    ValidationError: { description: Invalid request, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+    Unauthenticated: { description: Authentication required, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+    InvalidWebhookSignature: { description: Invalid Meta signature, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+    Forbidden: { description: Forbidden, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+    NotFound: { description: Not found or not visible to caller, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+    Conflict:
+      description: State, concurrency, or idempotency conflict
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+          examples:
+            staleReviewDecision:
+              summary: Another Lead/Client already committed the authoritative decision
+              value: { error: { code: conflict, message: "This deliverable was already reviewed by another user.", current_state: { status: awaiting_client_review } }, request_id: "1e2d3c4b-0000-4a2b-8c3d-9e0f1a2b3c4d" }
+            idempotencyKeyReused:
+              summary: Same key, different request body
+              value: { error: { code: idempotency_key_reused, message: "This Idempotency-Key was already used with a different request." }, request_id: "1e2d3c4b-1111-4a2b-8c3d-9e0f1a2b3c4d" }
+    InviteTerminal: { description: Invite expired or already consumed, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+    Unprocessable: { description: Semantically invalid command, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+    RateLimited: { description: Rate limited, headers: { Retry-After: { schema: { type: integer } } }, content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } } }
+  schemas:
+    # The exact schemas below are normative. No additional properties are accepted on command objects.
+    Uuid: { type: string, format: uuid }
+    DateTime: { type: string, format: date-time }
+    AppRole: { type: string, enum: [admin, pm, operator, client] }
+    ProjectStatus: { type: string, enum: [planning, in_progress, paused, completed, cancelled] }
+    ProjectType: { type: string, enum: [client, internal] }
+    MemberType: { type: string, enum: [pm_lead, pm_watcher, operator, client] }
+    TaskStatus: { type: string, enum: [pending, in_progress, in_review, completed, blocked] }
+    TaskType: { type: string, enum: [internal_work, client_request] }
+    TaskPriority: { type: string, enum: [low, medium, high, blocking] }
+    DeliverableWorkflowType: { type: string, enum: [production, client_submission] }
+    DeliverableStatus: { type: string, enum: [pending, awaiting_internal_review, awaiting_client_review, approved, changes_requested, delivered, submitted] }
+    SubmissionProvider: { type: string, enum: [google_drive, dropbox, onedrive, wetransfer, frame_io, other_https] }
+    ReviewDecision: { type: string, enum: [approved, changes_requested] }
+    NotificationDeliveryStatus: { type: string, enum: [pending, processing, sent, delivered, read, failed, cancelled] }
+    ApiError:
+      type: object
+      additionalProperties: false
+      required: [error, request_id]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message]
+          properties:
+            code: { type: string, example: invalid_transition }
+            message: { type: string, example: The requested state transition is not allowed. }
+            field_errors: { type: object, additionalProperties: { type: array, items: { type: string } } }
+            current_state: { type: object, additionalProperties: true, description: Safe authorized state summary only. }
+        request_id: { $ref: '#/components/schemas/Uuid' }
+      examples:
+        - error: { code: invalid_transition, message: "The requested state transition is not allowed.", current_state: { status: delivered } }
+          request_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+    PageMeta:
+      type: object
+      additionalProperties: false
+      required: [limit, next_cursor]
+      properties: { limit: { type: integer }, next_cursor: { type: [string, 'null'] } }
+    MemberInput:
+      type: object
+      additionalProperties: false
+      required: [user_id, member_type]
+      properties: { user_id: { $ref: '#/components/schemas/Uuid' }, member_type: { $ref: '#/components/schemas/MemberType' }, is_primary: { type: boolean, default: false }, receives_notifications: { type: boolean, default: true } }
+    Member:
+      allOf:
+        - $ref: '#/components/schemas/MemberInput'
+        - type: object
+          required: [id, full_name, joined_at]
+          properties: { id: { $ref: '#/components/schemas/Uuid' }, full_name: { type: string }, joined_at: { $ref: '#/components/schemas/DateTime' } }
+    Project:
+      type: object
+      additionalProperties: false
+      required: [id, project_type, status, name, deadline_at, created_at, updated_at]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        client_id: { type: [string, 'null'], format: uuid }
+        project_type: { $ref: '#/components/schemas/ProjectType' }
+        status: { $ref: '#/components/schemas/ProjectStatus' }
+        name: { type: string, minLength: 1, maxLength: 160 }
+        internal_description: { type: string, description: Present only for Admin/PM/authorized Operator representations. }
+        client_scope: { type: [string, 'null'], maxLength: 20000 }
+        deadline_at: { $ref: '#/components/schemas/DateTime' }
+        drive_folder_url: { type: [string, 'null'], format: uri, maxLength: 2048 }
+        completed_at: { type: [string, 'null'], format: date-time }
+        archived_at: { type: [string, 'null'], format: date-time }
+        created_at: { $ref: '#/components/schemas/DateTime' }
+        updated_at: { $ref: '#/components/schemas/DateTime' }
+    CreateProjectRequest:
+      type: object
+      additionalProperties: false
+      required: [project_type, name, internal_description, deadline_at, members]
+      properties:
+        client_id: { type: [string, 'null'], format: uuid }
+        project_type: { $ref: '#/components/schemas/ProjectType' }
+        name: { type: string, minLength: 1, maxLength: 160 }
+        internal_description: { type: string, minLength: 1, maxLength: 20000 }
+        client_scope: { type: [string, 'null'], maxLength: 20000 }
+        deadline_at: { $ref: '#/components/schemas/DateTime' }
+        drive_folder_url: { type: [string, 'null'], format: uri, maxLength: 2048 }
+        members: { type: array, minItems: 1, maxItems: 100, items: { $ref: '#/components/schemas/MemberInput' } }
+    UpdateProjectRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 160 }
+        internal_description: { type: string, minLength: 1, maxLength: 20000 }
+        client_scope: { type: [string, 'null'], maxLength: 20000 }
+        deadline_at: { $ref: '#/components/schemas/DateTime' }
+        drive_folder_url: { type: [string, 'null'], format: uri, maxLength: 2048 }
+        archived: { type: boolean }
+    ProjectTransitionRequest:
+      type: object
+      additionalProperties: false
+      required: [to_status]
+      properties:
+        to_status: { $ref: '#/components/schemas/ProjectStatus' }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        confirm_unfinished: { type: boolean, default: false }
+    ProjectRecoveryRequest:
+      type: object
+      additionalProperties: false
+      required: [to_status, reason]
+      properties: { to_status: { $ref: '#/components/schemas/ProjectStatus' }, reason: { type: string, minLength: 1, maxLength: 2000 } }
+    CompletionReadinessResponse:
+      type: object
+      additionalProperties: false
+      required: [project_id, unfinished_tasks, unfinished_deliverables, requires_confirmation]
+      properties:
+        project_id: { $ref: '#/components/schemas/Uuid' }
+        unfinished_tasks: { type: array, items: { $ref: '#/components/schemas/WorkWarning' } }
+        unfinished_deliverables: { type: array, items: { $ref: '#/components/schemas/WorkWarning' } }
+        requires_confirmation: { type: boolean }
+    WorkWarning:
+      type: object
+      additionalProperties: false
+      required: [id, title, status]
+      properties: { id: { $ref: '#/components/schemas/Uuid' }, title: { type: string }, status: { type: string } }
+    TaskResourceInput:
+      type: object
+      additionalProperties: false
+      required: [name, url]
+      properties: { name: { type: string, minLength: 1, maxLength: 120 }, url: { type: string, format: uri, maxLength: 2048 } }
+    Task:
+      type: object
+      additionalProperties: false
+      required: [id, project_id, assignee_id, task_type, title, status, priority, has_deliverables, deadline_at, created_at, updated_at]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        project_id: { $ref: '#/components/schemas/Uuid' }
+        assignee_id: { $ref: '#/components/schemas/Uuid' }
+        task_type: { $ref: '#/components/schemas/TaskType' }
+        title: { type: string, maxLength: 180 }
+        description: { type: string, maxLength: 20000 }
+        status: { $ref: '#/components/schemas/TaskStatus' }
+        priority: { $ref: '#/components/schemas/TaskPriority' }
+        has_deliverables: { type: boolean }
+        deadline_at: { $ref: '#/components/schemas/DateTime' }
+        resources: { type: array, items: { $ref: '#/components/schemas/TaskResourceInput' } }
+        created_at: { $ref: '#/components/schemas/DateTime' }
+        updated_at: { $ref: '#/components/schemas/DateTime' }
+    CreateTaskRequest:
+      type: object
+      additionalProperties: false
+      required: [assignee_id, task_type, title, description, priority, deadline_at]
+      properties:
+        assignee_id: { $ref: '#/components/schemas/Uuid' }
+        task_type: { $ref: '#/components/schemas/TaskType' }
+        title: { type: string, minLength: 1, maxLength: 180 }
+        description: { type: string, minLength: 1, maxLength: 20000 }
+        priority: { $ref: '#/components/schemas/TaskPriority' }
+        deadline_at: { $ref: '#/components/schemas/DateTime' }
+        has_deliverables: { type: boolean, default: false }
+        resources: { type: array, maxItems: 50, items: { $ref: '#/components/schemas/TaskResourceInput' } }
+    UpdateTaskRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        assignee_id: { $ref: '#/components/schemas/Uuid' }
+        title: { type: string, minLength: 1, maxLength: 180 }
+        description: { type: string, minLength: 1, maxLength: 20000 }
+        priority: { $ref: '#/components/schemas/TaskPriority' }
+        deadline_at: { $ref: '#/components/schemas/DateTime' }
+        has_deliverables: { type: boolean }
+        resources: { type: array, maxItems: 50, items: { $ref: '#/components/schemas/TaskResourceInput' } }
+    TaskTransitionRequest:
+      type: object
+      additionalProperties: false
+      required: [to_status]
+      properties: { to_status: { $ref: '#/components/schemas/TaskStatus' }, reason: { type: string, minLength: 1, maxLength: 2000 } }
+    Deliverable:
+      type: object
+      additionalProperties: false
+      required: [id, project_id, task_id, assignee_id, workflow_type, title, specifications, status, current_version_number, created_at, updated_at]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        project_id: { $ref: '#/components/schemas/Uuid' }
+        task_id: { $ref: '#/components/schemas/Uuid' }
+        assignee_id: { $ref: '#/components/schemas/Uuid' }
+        workflow_type: { $ref: '#/components/schemas/DeliverableWorkflowType' }
+        title: { type: string, maxLength: 180 }
+        specifications: { type: string, maxLength: 30000 }
+        status: { $ref: '#/components/schemas/DeliverableStatus' }
+        current_version_number: { type: integer, minimum: 0 }
+        internal_review_deadline_at: { type: [string, 'null'], format: date-time }
+        client_delivery_deadline_at: { type: [string, 'null'], format: date-time }
+        submission_deadline_at: { type: [string, 'null'], format: date-time }
+        is_stalled: { type: boolean }
+        approved_at: { type: [string, 'null'], format: date-time }
+        delivered_at: { type: [string, 'null'], format: date-time }
+        versions: { type: array, items: { $ref: '#/components/schemas/DeliverableVersion' } }
+        feedback: { type: array, items: { $ref: '#/components/schemas/DeliverableFeedback' } }
+        created_at: { $ref: '#/components/schemas/DateTime' }
+        updated_at: { $ref: '#/components/schemas/DateTime' }
+    CreateDeliverableRequest:
+      type: object
+      additionalProperties: false
+      required: [assignee_id, workflow_type, title, specifications]
+      properties:
+        assignee_id: { $ref: '#/components/schemas/Uuid' }
+        workflow_type: { $ref: '#/components/schemas/DeliverableWorkflowType' }
+        title: { type: string, minLength: 1, maxLength: 180 }
+        specifications: { type: string, minLength: 1, maxLength: 30000 }
+        internal_review_deadline_at: { type: [string, 'null'], format: date-time }
+        client_delivery_deadline_at: { type: [string, 'null'], format: date-time }
+        submission_deadline_at: { type: [string, 'null'], format: date-time }
+    UpdateDeliverableRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        assignee_id: { $ref: '#/components/schemas/Uuid' }
+        title: { type: string, minLength: 1, maxLength: 180 }
+        specifications: { type: string, minLength: 1, maxLength: 30000 }
+        internal_review_deadline_at: { type: [string, 'null'], format: date-time }
+        client_delivery_deadline_at: { type: [string, 'null'], format: date-time }
+        submission_deadline_at: { type: [string, 'null'], format: date-time }
+    ProductionVersionRequest:
+      type: object
+      additionalProperties: false
+      required: [submission_url]
+      properties: { submission_url: { type: string, format: uri, maxLength: 2048, description: Google Drive HTTPS share URL only. }, submission_note: { type: [string, 'null'], maxLength: 5000 } }
+    ClientSubmissionRequest:
+      type: object
+      additionalProperties: false
+      required: [submission_url]
+      properties: { submission_url: { type: string, format: uri, maxLength: 2048, description: Lexically validated public HTTPS URL; never server-fetched. }, submission_note: { type: [string, 'null'], maxLength: 5000 } }
+    ReopenClientSubmissionRequest:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties: { reason: { type: string, minLength: 1, maxLength: 2000 } }
+    DeliverableVersion:
+      type: object
+      additionalProperties: false
+      required: [id, version_number, submission_url, submission_provider, submitted_by, submitted_at]
+      properties: { id: { $ref: '#/components/schemas/Uuid' }, version_number: { type: integer, minimum: 1 }, submission_url: { type: string, format: uri }, submission_provider: { $ref: '#/components/schemas/SubmissionProvider' }, submitted_by: { $ref: '#/components/schemas/Uuid' }, submission_note: { type: [string, 'null'] }, submitted_at: { $ref: '#/components/schemas/DateTime' } }
+    DeliverableFeedback:
+      type: object
+      additionalProperties: false
+      required: [id, version_id, stage, decision, reviewed_by, reviewed_at]
+      properties: { id: { $ref: '#/components/schemas/Uuid' }, version_id: { $ref: '#/components/schemas/Uuid' }, stage: { type: string, enum: [internal, client] }, decision: { $ref: '#/components/schemas/ReviewDecision' }, comments: { type: [string, 'null'], maxLength: 20000 }, reviewed_by: { $ref: '#/components/schemas/Uuid' }, reviewed_at: { $ref: '#/components/schemas/DateTime' } }
+    InternalReviewRequest:
+      type: object
+      additionalProperties: false
+      required: [decision]
+      properties: { decision: { $ref: '#/components/schemas/ReviewDecision' }, comments: { type: [string, 'null'], maxLength: 20000 } }
+    ClientReviewRequest:
+      allOf: [{ $ref: '#/components/schemas/InternalReviewRequest' }]
+    CreateLinkReportRequest:
+      type: object
+      additionalProperties: false
+      required: [version_id]
+      properties: { version_id: { $ref: '#/components/schemas/Uuid' }, reason: { type: [string, 'null'], maxLength: 2000 } }
+    LinkReport:
+      type: object
+      additionalProperties: false
+      required: [id, deliverable_id, version_id, status, created_at]
+      properties: { id: { $ref: '#/components/schemas/Uuid' }, deliverable_id: { $ref: '#/components/schemas/Uuid' }, version_id: { $ref: '#/components/schemas/Uuid' }, status: { type: string, enum: [open, resolved, dismissed] }, reason: { type: [string, 'null'] }, created_at: { $ref: '#/components/schemas/DateTime' } }
+    CreateCommentRequest:
+      type: object
+      additionalProperties: false
+      required: [target_type, target_id, body]
+      properties: { target_type: { type: string, enum: [project, task, deliverable] }, target_id: { $ref: '#/components/schemas/Uuid' }, body: { type: string, minLength: 1, maxLength: 20000 } }
+    Comment:
+      type: object
+      additionalProperties: false
+      required: [id, project_id, target_type, target_id, author_id, author_capacity_snapshot, body, created_at]
+      properties: { id: { $ref: '#/components/schemas/Uuid' }, project_id: { $ref: '#/components/schemas/Uuid' }, target_type: { type: string, enum: [project, task, deliverable] }, target_id: { $ref: '#/components/schemas/Uuid' }, author_id: { $ref: '#/components/schemas/Uuid' }, author_capacity_snapshot: { type: string, enum: [admin, pm_lead, pm_watcher, operator] }, body: { type: string }, created_at: { $ref: '#/components/schemas/DateTime' }, edited_at: { type: [string, 'null'], format: date-time } }
+    CreateMilestoneRequest:
+      type: object
+      additionalProperties: false
+      required: [title, starts_at]
+      properties: { title: { type: string, minLength: 1, maxLength: 180 }, description: { type: [string, 'null'], maxLength: 10000 }, starts_at: { $ref: '#/components/schemas/DateTime' }, ends_at: { type: [string, 'null'], format: date-time }, is_all_day: { type: boolean, default: true }, color_override: { type: [string, 'null'], pattern: '^#[0-9A-Fa-f]{6}$' } }
+    CalendarEvent:
+      type: object
+      additionalProperties: false
+      required: [id, event_type, title, starts_at, is_all_day]
+      properties: { id: { $ref: '#/components/schemas/Uuid' }, event_type: { type: string, enum: [project_deadline, task_deadline, internal_review_deadline, client_delivery_deadline, milestone] }, title: { type: string }, starts_at: { $ref: '#/components/schemas/DateTime' }, ends_at: { type: [string, 'null'], format: date-time }, is_all_day: { type: boolean }, linked_entity_id: { type: [string, 'null'], format: uuid } }
+    Notification:
+      type: object
+      additionalProperties: false
+      required: [id, event_id, channel, delivery_status, created_at]
+      properties: { id: { $ref: '#/components/schemas/Uuid' }, event_id: { $ref: '#/components/schemas/Uuid' }, channel: { type: string, enum: [in_app, whatsapp, email] }, delivery_status: { $ref: '#/components/schemas/NotificationDeliveryStatus' }, title: { type: string }, body: { type: string }, route_key: { type: [string, 'null'] }, project_id: { type: [string, 'null'], format: uuid }, read_at: { type: [string, 'null'], format: date-time }, created_at: { $ref: '#/components/schemas/DateTime' } }
+    CreateInviteRequest:
+      type: object
+      additionalProperties: false
+      required: [role, email]
+      properties: { role: { type: string, enum: [operator, client] }, email: { type: string, format: email, maxLength: 320 }, project_id: { type: [string, 'null'], format: uuid }, client_id: { type: [string, 'null'], format: uuid } }
+    CompleteInviteRequest:
+      type: object
+      additionalProperties: false
+      required: [token, full_name, password]
+      properties: { token: { type: string, minLength: 43, maxLength: 128, description: 'Opaque CSPRNG invitation token; never a JWT/JWS/JWE and never logged.' }, full_name: { type: string, minLength: 1, maxLength: 120 }, phone_e164: { type: [string, 'null'], pattern: '^\\+[1-9][0-9]{7,14}$' }, password: { type: string, minLength: 12, maxLength: 128, description: 'Must contain uppercase, lowercase, digit, and allowed symbol.' }, whatsapp_opt_in: { type: boolean, default: false } }
+    MagicLinkRequest:
+      type: object
+      additionalProperties: false
+      required: [email]
+      properties: { email: { type: string, format: email, maxLength: 320 }, redirect_path: { type: [string, 'null'], maxLength: 512, description: 'Optional relative application path only. Must begin with one slash; absolute URLs, //, backslashes, control characters, and non-allowlisted paths are rejected. The server maps it to the configured environment origin.' } }
+    MetaWebhookPayload:
+      type: object
+      description: Meta Cloud API receipt payload. Handler accepts only documented status entries, extracts minimal fields, and never persists the raw body.
+      required: [object, entry]
+      properties: { object: { type: string }, entry: { type: array, items: { type: object, additionalProperties: true } } }
+    ProjectCycleMetric:
+      type: object
+      additionalProperties: false
+      required: [project_id, cycle_number, started_at, completed_at, completion_count, reopen_count]
+      properties: { project_id: { $ref: '#/components/schemas/Uuid' }, cycle_number: { type: integer, minimum: 1 }, started_at: { $ref: '#/components/schemas/DateTime' }, completed_at: { $ref: '#/components/schemas/DateTime' }, reopened_at: { type: [string, 'null'], format: date-time }, reopen_reason: { type: [string, 'null'] }, active_cycle_hours: { type: number }, completion_count: { type: integer }, reopen_count: { type: integer }, warning_overridden: { type: boolean } }
+    AdminHealthResponse:
+      type: object
+      additionalProperties: false
+      required: [deployment_version, checked_at, dependencies]
+      properties: { deployment_version: { type: string }, checked_at: { $ref: '#/components/schemas/DateTime' }, dependencies: { type: array, items: { type: object, additionalProperties: false, required: [name, configured, status], properties: { name: { type: string }, configured: { type: boolean }, status: { type: string, enum: [healthy, degraded, unavailable, unknown] } } } } }
+    ProjectResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { $ref: '#/components/schemas/Project' } } }
+    ProjectPage: { type: object, additionalProperties: false, required: [data, page], properties: { data: { type: array, items: { $ref: '#/components/schemas/Project' } }, page: { $ref: '#/components/schemas/PageMeta' } } }
+    ProjectMembersResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { type: array, items: { $ref: '#/components/schemas/Member' } } } }
+    ReplaceMembersRequest: { type: object, additionalProperties: false, required: [members], properties: { members: { type: array, minItems: 1, maxItems: 100, items: { $ref: '#/components/schemas/MemberInput' } } } }
+    TaskResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { $ref: '#/components/schemas/Task' } } }
+    TaskPage: { type: object, additionalProperties: false, required: [data, page], properties: { data: { type: array, items: { $ref: '#/components/schemas/Task' } }, page: { $ref: '#/components/schemas/PageMeta' } } }
+    DeliverableResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { $ref: '#/components/schemas/Deliverable' } } }
+    DeliverablePage: { type: object, additionalProperties: false, required: [data, page], properties: { data: { type: array, items: { $ref: '#/components/schemas/Deliverable' } }, page: { $ref: '#/components/schemas/PageMeta' } } }
+    LinkReportResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { $ref: '#/components/schemas/LinkReport' } } }
+    CommentResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { $ref: '#/components/schemas/Comment' } } }
+    CommentPage: { type: object, additionalProperties: false, required: [data, page], properties: { data: { type: array, items: { $ref: '#/components/schemas/Comment' } }, page: { $ref: '#/components/schemas/PageMeta' } } }
+    CalendarEventResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { $ref: '#/components/schemas/CalendarEvent' } } }
+    CalendarFeedResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { type: array, items: { $ref: '#/components/schemas/CalendarEvent' } } } }
+    NotificationResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { $ref: '#/components/schemas/Notification' } } }
+    NotificationPage: { type: object, additionalProperties: false, required: [data, page], properties: { data: { type: array, items: { $ref: '#/components/schemas/Notification' } }, page: { $ref: '#/components/schemas/PageMeta' } } }
+    UnreadCountResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { type: object, additionalProperties: false, required: [unread_count], properties: { unread_count: { type: integer, minimum: 0 } } } } }
+    MarkAllReadResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { type: object, additionalProperties: false, required: [marked_read], properties: { marked_read: { type: integer, minimum: 0 } } } } }
+    ProjectMetricsResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { type: array, items: { $ref: '#/components/schemas/ProjectCycleMetric' } } } }
+    InviteResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { type: object, additionalProperties: false, required: [invite_url, expires_at], properties: { invite_url: { type: string, format: uri }, expires_at: { $ref: '#/components/schemas/DateTime' } } } } }
+    AuthCompletionResponse: { type: object, additionalProperties: false, required: [data], properties: { data: { type: object, additionalProperties: false, required: [user_id, redirect_path], properties: { user_id: { $ref: '#/components/schemas/Uuid' }, redirect_path: { type: string } } } } }

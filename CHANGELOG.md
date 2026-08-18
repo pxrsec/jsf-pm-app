@@ -1,5 +1,18 @@
 # JSF PM App Development Changelog
 
+## [2026-08-18 @ 08:55]
+
+**🚀 Features**
+
+- Implemented authoritative Postgres data platform and access control schema (`supabase/migrations/20260818143500_s02_e02_authoritative_data_platform.sql`) covering 22 enums, 18 tables, 12 private authorization functions, 18 transactional RPCs, 24 partial/unique indexes, and 9 security-invoker views
+- Enforced strict RLS policies across all public tables with `auth.uid()` subquery encapsulation and immutable audit/event triggers
+- Applied migration to `jsf-pm-dev` remote Supabase database and generated untouched TypeScript database contract (`src/lib/database.types.ts`)
+- Added realtime publication for `notification_recipients` and seeded initial WhatsApp notification templates
+
+**🧪 Tests**
+
+- Updated `__tests__/config/credential-exposure.test.ts` key regex boundary patterns to prevent substring false-positives on identifier tokens like `task_resources_task_id_fkey`
+
 ## [2026-08-17 @ 16:15]
 
 **🛠 Architecture**
