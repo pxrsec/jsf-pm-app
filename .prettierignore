@@ -8,6 +8,10 @@ coverage/
 # Documentation & Specs
 dev-docs/
 CHANGELOG.md
+contracts/
+
+# Generated & Tracked Contract Artifacts
+src/lib/database.types.ts
 
 # Worktrees / Temp files
 *.log
