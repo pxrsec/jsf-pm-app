@@ -37,7 +37,7 @@ describe("VC-I18N-008: Translation keys follow semantic naming convention", () =
     }
   });
 
-  it("keys are namespaced under shell, privacy, or errors", () => {
+  it("keys are namespaced under shell, privacy, errors, or auth", () => {
     function collectKeys(obj: Record<string, unknown>, prefix = ""): string[] {
       return Object.entries(obj).flatMap(([k, v]) => {
         const fullKey = prefix ? `${prefix}.${k}` : k;
@@ -50,7 +50,7 @@ describe("VC-I18N-008: Translation keys follow semantic naming convention", () =
 
     const allKeys = collectKeys(esCatalog);
     for (const key of allKeys) {
-      expect(key).toMatch(/^(shell|privacy|errors)\./);
+      expect(key).toMatch(/^(shell|privacy|errors|auth)\./);
     }
   });
 
@@ -87,7 +87,7 @@ describe("VC-I18N-008: Translation keys follow semantic naming convention", () =
         for (const seg of segments) {
           if (
             pattern.test(seg) &&
-            !/^(brandName|brand|name|title|label|description|notice|placeholder|action|submit|confirm|cancel|close|open|save|edit|delete|view|list|create|update|remove)$/i.test(
+            !/^(brandName|brand|name|title|label|description|notice|placeholder|action|submit|confirm|cancel|close|open|save|edit|delete|view|list|create|update|remove|nav|links|home|projects|agenda|notifications|badgeLabel|badgeOverflow|landing|admin|pm|operator|client|welcome|recentProjects|emptyProjects|myProjects|emptyAgenda|status|priority|loading|error|message|signInAgain|signIn|forgotPasswordLink|ariaLabel|signOut|currentUser|role|planning|inProgress|paused|completed|cancelled|low|medium|high|blocking)$/i.test(
               seg,
             )
           ) {

@@ -28,7 +28,7 @@ const eslintConfig = defineConfig([
   },
   {
     files: [
-      "src/app/**",
+      "src/app/!(api)/**",
       "src/components/**",
       "src/hooks/**",
       "src/lib/!(supabase/admin.ts)**",
