@@ -1,10 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import type { SessionContext } from "@/lib/auth/session";
 import { SignOutButton } from "./_components/sign-out-button";
 import { NotificationBadge } from "./_components/notification-badge";
 import { MobileNavToggle } from "./_components/mobile-nav-toggle";
 import { LanguageSwitcher } from "@/components/shared/language-switcher/language-switcher";
+import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 
 interface AppNavProps {
   session: SessionContext;
@@ -35,16 +37,20 @@ export async function AppNav({ session, unreadCount }: AppNavProps) {
           : { href: "/cliente/proyectos", label: t("links.projects") };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white/95 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-6">
           <Link
             href={roleHomePath}
-            className="flex items-center gap-2 font-bold tracking-tight text-neutral-900 dark:text-white"
+            className="flex items-center gap-2 font-bold tracking-tight text-foreground"
           >
-            <span className="h-8 w-8 rounded-lg bg-amber-500 flex items-center justify-center text-white font-black text-lg">
-              J
-            </span>
+            <Image
+              src="/joya-icon.svg"
+              alt="Joya"
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-lg"
+            />
             <span className="text-lg">{brandT("name")}</span>
           </Link>
 
@@ -55,7 +61,7 @@ export async function AppNav({ session, unreadCount }: AppNavProps) {
             <Link
               href={roleHomePath}
               aria-current="page"
-              className="text-sm font-medium text-neutral-900 hover:text-amber-600 dark:text-neutral-100 dark:hover:text-amber-400 transition-colors"
+              className="text-sm font-medium text-foreground hover:text-accent transition-colors"
             >
               {t("links.home")}
             </Link>
@@ -64,7 +70,7 @@ export async function AppNav({ session, unreadCount }: AppNavProps) {
               href={roleSecondaryStub.href}
               aria-disabled="true"
               tabIndex={-1}
-              className="text-sm font-medium text-neutral-400 dark:text-neutral-500 cursor-not-allowed opacity-60"
+              className="text-sm font-medium text-muted-foreground cursor-not-allowed opacity-60"
             >
               {roleSecondaryStub.label}
             </a>
@@ -73,16 +79,17 @@ export async function AppNav({ session, unreadCount }: AppNavProps) {
 
         <div className="hidden md:flex md:items-center md:gap-4">
           <LanguageSwitcher />
+          <ThemeToggle />
 
           <div className="flex items-center gap-2">
             <NotificationBadge count={unreadCount} />
           </div>
 
           <div className="text-right">
-            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+            <p className="text-sm font-semibold text-foreground">
               {profile.full_name}
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 capitalize">
+            <p className="text-xs text-muted-foreground capitalize">
               {t(`currentUser.role.${role}` as const)}
             </p>
           </div>

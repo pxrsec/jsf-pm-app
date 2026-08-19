@@ -10,6 +10,11 @@ vi.mock("@/components/shared/language-switcher/language-switcher", () => ({
     React.createElement("div", { "data-testid": "language-switcher" }),
 }));
 
+vi.mock("@/components/shared/theme/theme-toggle", () => ({
+  ThemeToggle: () =>
+    React.createElement("div", { "data-testid": "theme-toggle" }),
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),

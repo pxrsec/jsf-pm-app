@@ -17,7 +17,7 @@ export function LanguageSwitcher() {
     <button
       type="button"
       onClick={toggleLanguage}
-      className="inline-flex items-center gap-1.5 rounded-md border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 shadow-sm hover:bg-neutral-50 hover:text-neutral-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white transition-colors"
+      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs font-semibold text-foreground shadow-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 transition-colors"
       aria-label={
         locale === "es-MX"
           ? "Cambiar idioma a Inglés"
@@ -27,19 +27,15 @@ export function LanguageSwitcher() {
     >
       <span
         className={
-          locale === "es-MX"
-            ? "font-bold text-amber-600 dark:text-amber-400"
-            : "text-neutral-400 dark:text-neutral-500"
+          locale === "es-MX" ? "font-bold text-accent" : "text-muted-foreground"
         }
       >
         ES
       </span>
-      <span className="text-neutral-300 dark:text-neutral-600">/</span>
+      <span className="text-muted-foreground/50">/</span>
       <span
         className={
-          locale === "en-US"
-            ? "font-bold text-amber-600 dark:text-amber-400"
-            : "text-neutral-400 dark:text-neutral-500"
+          locale === "en-US" ? "font-bold text-accent" : "text-muted-foreground"
         }
       >
         EN

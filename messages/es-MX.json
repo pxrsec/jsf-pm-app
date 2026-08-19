@@ -1,10 +1,20 @@
 {
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "currentLight": "Tema actual: Claro",
+    "currentDark": "Tema actual: Oscuro",
+    "switchToLight": "Cambiar a tema claro",
+    "switchToDark": "Cambiar a tema oscuro"
+  },
   "shell": {
     "brand": {
       "name": "Joya Star Films"
     },
     "nav": {
       "ariaLabel": "Navegación principal",
+      "openMenu": "Abrir menú de navegación",
+      "closeMenu": "Cerrar menú de navegación",
       "signOut": "Cerrar sesión",
       "currentUser": {
         "role": {

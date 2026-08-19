@@ -1,10 +1,20 @@
 {
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "currentLight": "Current theme: Light",
+    "currentDark": "Current theme: Dark",
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme"
+  },
   "shell": {
     "brand": {
       "name": "Joya Star Films"
     },
     "nav": {
       "ariaLabel": "Main navigation",
+      "openMenu": "Open navigation menu",
+      "closeMenu": "Close navigation menu",
       "signOut": "Sign out",
       "currentUser": {
         "role": {

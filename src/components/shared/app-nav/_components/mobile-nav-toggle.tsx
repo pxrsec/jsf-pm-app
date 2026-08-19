@@ -3,10 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { Menu, X } from "lucide-react";
 import type { AppRole, Profile } from "@/lib/auth/session";
+import { Button } from "@/components/ui/button";
 import { NotificationBadge } from "./notification-badge";
 import { SignOutButton } from "./sign-out-button";
 import { LanguageSwitcher } from "@/components/shared/language-switcher/language-switcher";
+import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 
 interface MobileNavToggleProps {
   role: AppRole;
@@ -60,57 +63,42 @@ export function MobileNavToggle({
 
   return (
     <div className="md:hidden">
-      <button
+      <Button
         ref={toggleRef}
         type="button"
+        variant="ghost"
+        size="icon"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-controls="mobile-nav-drawer"
-        aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
-        className="p-2 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+        aria-label={isOpen ? t("closeMenu") : t("openMenu")}
+        className="h-9 w-9"
       >
-        <span className="sr-only">Toggle navigation</span>
-        <svg
-          className="h-6 w-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          {isOpen ? (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          ) : (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          )}
-        </svg>
-      </button>
+        {isOpen ? (
+          <X className="h-5 w-5" aria-hidden="true" />
+        ) : (
+          <Menu className="h-5 w-5" aria-hidden="true" />
+        )}
+      </Button>
 
       {isOpen && (
         <div
           id="mobile-nav-drawer"
           ref={drawerRef}
-          className="fixed inset-x-0 top-16 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 p-4 shadow-lg flex flex-col gap-4"
+          className="fixed inset-x-0 top-16 z-50 bg-background border-b border-border p-4 shadow-lg flex flex-col gap-4"
         >
-          <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-3">
+          <div className="flex items-center justify-between border-b border-border pb-3">
             <div>
-              <p className="font-semibold text-neutral-900 dark:text-neutral-100">
+              <p className="font-semibold text-foreground">
                 {profile.full_name}
               </p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 capitalize">
+              <p className="text-xs text-muted-foreground capitalize">
                 {t(`currentUser.role.${role}` as const)}
               </p>
             </div>
             <div className="flex items-center gap-3">
               <LanguageSwitcher />
+              <ThemeToggle />
               <NotificationBadge count={unreadCount} />
             </div>
           </div>
@@ -120,7 +108,7 @@ export function MobileNavToggle({
               href={roleHomePath}
               onClick={() => setIsOpen(false)}
               aria-current="page"
-              className="px-3 py-2 rounded-md font-medium text-neutral-900 dark:text-white bg-neutral-100 dark:bg-neutral-800"
+              className="px-3 py-2 rounded-md font-medium text-foreground bg-muted"
             >
               {t("links.home")}
             </Link>
@@ -129,14 +117,14 @@ export function MobileNavToggle({
               href={roleSecondaryStub.href}
               aria-disabled="true"
               tabIndex={-1}
-              className="px-3 py-2 rounded-md font-medium text-neutral-400 dark:text-neutral-500 cursor-not-allowed opacity-60"
+              className="px-3 py-2 rounded-md font-medium text-muted-foreground cursor-not-allowed opacity-60"
             >
               {roleSecondaryStub.label}
             </a>
           </div>
 
-          <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
-            <SignOutButton className="w-full justify-center py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md" />
+          <div className="pt-2 border-t border-border">
+            <SignOutButton className="w-full justify-center py-2 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-md" />
           </div>
         </div>
       )}

@@ -56,7 +56,7 @@ export default async function ProtectedLayout({
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100">
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       <AppNav session={session} unreadCount={unreadCount} />
       <main id="main-content" tabIndex={-1} className="flex-1">
         {children}
