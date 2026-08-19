@@ -15,7 +15,7 @@ import {
   ProjectStatusDialog,
   type ProjectStatusActionType,
 } from "./project-status-dialog";
-import { TasksTabPlaceholder } from "./placeholders/tasks-tab-placeholder";
+import { TasksTab } from "../project-tasks/tasks-tab";
 import { DeliverablesTabPlaceholder } from "./placeholders/deliverables-tab-placeholder";
 import { MemberRosterTab } from "../project-members/member-roster-tab";
 import type {
@@ -23,6 +23,7 @@ import type {
   ProjectCompletionCyclesView,
   EligibleClientMember,
   Profile,
+  TaskWithAssignee,
 } from "@/lib/projects/queries";
 import type { ClientListItem } from "@/lib/clients/queries";
 
@@ -38,6 +39,8 @@ interface ProjectWorkspaceShellProps {
   eligibleClients: EligibleClientMember[];
   effectiveCapacity: "admin" | "pm_lead" | "pm_watcher";
   actorRole: "admin" | "pm";
+  initialTasks?: TaskWithAssignee[];
+  locale?: string;
   initialTab?: string;
 }
 
@@ -50,6 +53,8 @@ export function ProjectWorkspaceShell({
   eligibleClients,
   effectiveCapacity,
   actorRole,
+  initialTasks = [],
+  locale = "es",
   initialTab = "overview",
 }: ProjectWorkspaceShellProps) {
   const t = useTranslations("projects.workspace.tabs");
@@ -119,7 +124,12 @@ export function ProjectWorkspaceShell({
           </TabsContent>
 
           <TabsContent value="tasks" className="outline-hidden">
-            <TasksTabPlaceholder />
+            <TasksTab
+              project={project}
+              initialTasks={initialTasks}
+              effectiveCapacity={effectiveCapacity}
+              locale={locale}
+            />
           </TabsContent>
 
           <TabsContent value="deliverables" className="outline-hidden">

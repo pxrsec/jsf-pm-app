@@ -9,12 +9,13 @@ import {
   listEligiblePmUsers,
   listEligibleOperators,
   listEligibleClientMembers,
+  listProjectTasks,
 } from "@/lib/projects/queries";
 import { listActiveClients } from "@/lib/clients/queries";
 import { ProjectWorkspaceShell } from "@/components/shared/projects/project-workspace/project-workspace-shell";
 
 interface PmProjectDetailPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
   searchParams: Promise<{ tab?: string }>;
 }
 
@@ -22,7 +23,7 @@ export default async function PmProjectDetailPage({
   params,
   searchParams,
 }: PmProjectDetailPageProps) {
-  const { id } = await params;
+  const { id, locale } = await params;
   const { tab } = await searchParams;
 
   const cookieStore = await cookies();
@@ -51,14 +52,21 @@ export default async function PmProjectDetailPage({
   const effectiveCapacity =
     userMembership.member_type === "pm_watcher" ? "pm_watcher" : "pm_lead";
 
-  const [clients, cycles, eligiblePms, eligibleOperators, eligibleClients] =
-    await Promise.all([
-      listActiveClients(supabase),
-      getCompletionCycles(supabase, id),
-      listEligiblePmUsers(supabase),
-      listEligibleOperators(supabase),
-      listEligibleClientMembers(supabase, project.client_id),
-    ]);
+  const [
+    clients,
+    cycles,
+    eligiblePms,
+    eligibleOperators,
+    eligibleClients,
+    initialTasks,
+  ] = await Promise.all([
+    listActiveClients(supabase),
+    getCompletionCycles(supabase, id),
+    listEligiblePmUsers(supabase),
+    listEligibleOperators(supabase),
+    listEligibleClientMembers(supabase, project.client_id),
+    listProjectTasks(supabase, id),
+  ]);
 
   return (
     <ProjectWorkspaceShell
@@ -70,6 +78,8 @@ export default async function PmProjectDetailPage({
       eligibleClients={eligibleClients}
       effectiveCapacity={effectiveCapacity}
       actorRole="pm"
+      initialTasks={initialTasks}
+      locale={locale}
       initialTab={tab}
     />
   );

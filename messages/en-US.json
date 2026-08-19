@@ -349,6 +349,173 @@
         "errorSoleLead": "Cannot remove the only PM Lead. Assign another Primary Lead first.",
         "errorSoleClient": "An active client project in progress must have at least one active client member."
       }
+    },
+    "tasks": {
+      "tabTitle": "Tasks",
+      "newTaskAction": "New Task",
+      "viewKanban": "Kanban Board",
+      "viewList": "List View",
+      "overdue": "Overdue",
+      "daysRemaining": "{count} days remaining",
+      "dueToday": "Due today",
+      "hasDeliverablesBadge": "With deliverables",
+      "filters": {
+        "statusLabel": "Status",
+        "priorityLabel": "Priority",
+        "typeLabel": "Type",
+        "assigneeLabel": "Assigned to",
+        "allStatuses": "All statuses",
+        "allPriorities": "All priorities",
+        "allTypes": "All types",
+        "allAssignees": "All assignees",
+        "clearFilters": "Clear filters"
+      },
+      "taskType": {
+        "internalWork": "Internal work",
+        "clientRequest": "Client request",
+        "internalDescription": "Internal team work without client involvement.",
+        "clientRequestDescription": "Request linked to an external client.",
+        "clientRequestOnlyForClientProjects": "Client requests are only available in client projects."
+      },
+      "taskStatus": {
+        "pending": "Pending",
+        "inProgress": "In progress",
+        "inReview": "In review",
+        "completed": "Completed",
+        "blocked": "Blocked"
+      },
+      "priority": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "blocking": "Blocking"
+      },
+      "kanban": {
+        "columnEmpty": "No tasks in this status",
+        "dragHandleLabel": "Drag task: {title}",
+        "columnAriaLabel": "Column: {status} — {count} tasks",
+        "clientRequestNoReview": "Client requests cannot enter internal review.",
+        "moveNotAllowed": "This status transition is not allowed for this task.",
+        "unauthorizedMove": "You are not authorized to move this task.",
+        "movedSuccess": "Task moved to {status}.",
+        "movedError": "Error moving the task. Please try again.",
+        "notFound": "Task not found. Please refresh."
+      },
+      "list": {
+        "columns": {
+          "title": "Title",
+          "type": "Type",
+          "status": "Status",
+          "priority": "Priority",
+          "assignee": "Assigned to",
+          "deadline": "Deadline",
+          "actions": "Actions"
+        },
+        "actions": {
+          "viewDetails": "View details",
+          "edit": "Edit",
+          "changeStatus": "Change status",
+          "archive": "Archive"
+        }
+      },
+      "detail": {
+        "assignedTo": "Assigned to",
+        "deadline": "Deadline",
+        "type": "Type",
+        "statusLabel": "Change status",
+        "description": "Description",
+        "resources": "Linked resources",
+        "noResources": "No linked resources.",
+        "hasDeliverables": "This task has linked production deliverables.",
+        "editAction": "Edit",
+        "closeAction": "Close",
+        "ariaLabel": "Task details: {title}"
+      },
+      "create": {
+        "title": "New Task",
+        "description": "Create a new task for this project.",
+        "typeLabel": "Task type",
+        "titleLabel": "Title",
+        "titlePlaceholder": "e.g. Q4 campaign cover design",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "Detail objectives, expected deliverables, and context...",
+        "priorityLabel": "Priority",
+        "assigneeLabel": "Assigned to",
+        "assigneePlaceholder": "Select a team member...",
+        "deadlineLabel": "Deadline date and time",
+        "submitAction": "Create Task",
+        "cancelAction": "Cancel",
+        "submitting": "Creating...",
+        "successToast": "Task created successfully.",
+        "errorToast": "Could not create the task. Please check the entered data."
+      },
+      "edit": {
+        "title": "Edit Task",
+        "description": "Modify task fields. Task type cannot be changed.",
+        "typeReadOnly": "Task type (read-only)",
+        "titleLabel": "Title",
+        "descriptionLabel": "Description",
+        "priorityLabel": "Priority",
+        "assigneeLabel": "Assigned to",
+        "deadlineLabel": "Deadline date and time",
+        "submitAction": "Save changes",
+        "cancelAction": "Cancel",
+        "submitting": "Saving...",
+        "successToast": "Task updated successfully.",
+        "errorToast": "Could not update the task."
+      },
+      "archive": {
+        "title": "Archive this task?",
+        "description": "The task will be hidden from the workspace. This action can only be undone by an administrator.",
+        "reasonLabel": "Reason (optional)",
+        "reasonPlaceholder": "Enter reason for archiving...",
+        "confirmAction": "Archive",
+        "cancelAction": "Cancel",
+        "successToast": "Task archived.",
+        "errorToast": "Could not archive the task."
+      },
+      "statusChange": {
+        "successToast": "Status updated: {status}.",
+        "errorToast": "Could not change task status.",
+        "notAllowed": "This status transition is not allowed.",
+        "clientRequestNoReview": "Client requests cannot enter internal review."
+      },
+      "comments": {
+        "sectionTitle": "Comments",
+        "emptyState": "No comments on this task yet.",
+        "composePlaceholder": "Write a collaborative comment...",
+        "submitAction": "Comment",
+        "submitting": "Submitting...",
+        "successToast": "Comment posted.",
+        "errorToast": "Could not post the comment.",
+        "advisoryNote": "Comments are internal collaborative discussion and do not constitute formal review decisions.",
+        "loading": "Loading comments...",
+        "authorCapacity": {
+          "admin": "Administrator",
+          "pmLead": "PM Lead",
+          "pmWatcher": "PM Watcher",
+          "operator": "Operator",
+          "client": "Client"
+        }
+      },
+      "emptyState": {
+        "noTasks": "This project has no tasks yet.",
+        "noTasksDescription": "Create the first task to start managing team work.",
+        "createFirstTask": "Create first task",
+        "noFilterResults": "No tasks match the selected filters.",
+        "clearFilters": "Clear filters"
+      },
+      "errors": {
+        "unauthorized": "You are not authorized to perform this action.",
+        "invalidTransition": "This status transition is not allowed for this task.",
+        "taskTypeConstraint": "Client requests cannot enter internal review.",
+        "notFound": "Task not found. Please refresh the page.",
+        "generic": "Unexpected error. Please try again."
+      },
+      "watcherMode": {
+        "readOnlyLabel": "Read-only — Watcher capacity",
+        "cannotMutate": "PM Watchers can only read tasks and add collaborative comments."
+      }
     }
   }
 }

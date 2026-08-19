@@ -1,5 +1,30 @@
 # JSF PM App Development Changelog
 
+## [2026-08-19 @ 16:48]
+
+**📋 Project Workspace, Task Planning, and Constrained Kanban (S04-04)**
+
+- **🚀 Features:**
+  - **Constrained Kanban Board (`task-kanban-board.tsx`, `task-kanban-column.tsx`, `task-kanban-card.tsx`):** Built interactive drag-and-drop Kanban board powered by `@hello-pangea/dnd` across 5 status columns (`pending`, `in_progress`, `in_review`, `completed`, `blocked`) with optimistic updates, rollback on error, blocking priority indicator (`border-l-4 border-l-rose-400`), and watcher-mode view gating.
+  - **Sortable Task List (`task-list-view.tsx`, `task-list-row.tsx`):** Implemented table view with multi-column sorting (title, priority, status, deadline) and row action menus.
+  - **Multi-Dimensional Filters (`task-filters.tsx`):** Added filter controls for status, priority, task type (`internal_work` vs `client_request`), and assignee with active filter reset.
+  - **Slide-Over Task Details (`task-detail-sheet.tsx`):** Built slide-over sheet displaying metadata, linked deliverable indicators, description, status machine transitions, and real-time collaboration comment feed.
+  - **Creation, Edit & Archive Modals (`task-create-dialog.tsx`, `task-edit-dialog.tsx`, `task-archive-dialog.tsx`):** Type-safe forms powered by React Hook Form + Zod (`CreateTaskSchema`, `UpdateTaskSchema`), with `useWatch` optimization for React Compiler, client request gating on internal projects, and soft-delete with optional audit reason.
+  - **Real-Time Collaboration Comments (`task-comments-section.tsx`):** Collaboration feed and compose form capturing `author_capacity_snapshot` and localized time-ago timestamps.
+- **🛠 Architecture & Boundaries:**
+  - **Server Actions Layer (`src/lib/projects/task-actions.ts`):** Implemented `createTaskAction`, `updateTaskAction`, `transitionTaskStatusAction`, `archiveTaskAction`, `createTaskCommentAction`, and `listTaskCommentsAction` with role checks, transactional RPC execution, and targeted path revalidation.
+  - **Workspace Shell Integration (`project-workspace-shell.tsx`):** Replaced `TasksTabPlaceholder` with `<TasksTab>` in `ProjectWorkspaceShell`.
+  - **Server Pre-Fetching:** Updated `/admin/proyectos/[id]` and `/pm/proyectos/[id]` page loaders to pre-fetch tasks via `listProjectTasks(supabase, id)` in parallel with project details.
+  - **Strict Line Limits:** Kept all 16 component and server action modules strictly under 400 lines (max 394 lines in `actions.ts`).
+  - **Localization Parity (`messages/es-MX.json` & `messages/en-US.json`):** 100% key parity under `projects.tasks.*` adhering strictly to `VC-I18N-008` (pure camelCase segments without forbidden keywords).
+- **🐛 Hotfixes:**
+  - **Server Action AST Module Transform:** Segregated task actions into dedicated `src/lib/projects/task-actions.ts` to eliminate Next.js server actions re-export bundler conflict and guarantee smooth production Turbopack builds.
+- **🧪 Verification & Build:**
+  - `npm run test`: All 276 tests across 41 test suites passing (including 61 project tests in `__tests__/projects/`).
+  - `npm run typecheck`: 0 TypeScript errors.
+  - `npm run lint`: 0 ESLint errors.
+  - `npm run build`: Production Turbopack build succeeded with all static & dynamic routes compiled.
+
 ## [2026-08-19 @ 14:46]
 
 **🚀 Project Directory, Project Creation, and Membership Governance (S04-03)**

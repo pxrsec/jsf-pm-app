@@ -349,6 +349,173 @@
         "errorSoleLead": "No se puede remover al único PM Lead. Asigna otro Lead principal primero.",
         "errorSoleClient": "Un proyecto de cliente en ejecución debe tener al menos un miembro cliente activo."
       }
+    },
+    "tasks": {
+      "tabTitle": "Tareas",
+      "newTaskAction": "Nueva Tarea",
+      "viewKanban": "Tablero Kanban",
+      "viewList": "Vista de Lista",
+      "overdue": "Vencida",
+      "daysRemaining": "{count} días restantes",
+      "dueToday": "Vence hoy",
+      "hasDeliverablesBadge": "Con entregables",
+      "filters": {
+        "statusLabel": "Estado",
+        "priorityLabel": "Prioridad",
+        "typeLabel": "Tipo",
+        "assigneeLabel": "Asignado a",
+        "allStatuses": "Todos los estados",
+        "allPriorities": "Todas las prioridades",
+        "allTypes": "Todos los tipos",
+        "allAssignees": "Todos los asignados",
+        "clearFilters": "Limpiar filtros"
+      },
+      "taskType": {
+        "internalWork": "Trabajo interno",
+        "clientRequest": "Solicitud de cliente",
+        "internalDescription": "Trabajo interno del equipo sin intervención del cliente.",
+        "clientRequestDescription": "Solicitud vinculada a un cliente externo.",
+        "clientRequestOnlyForClientProjects": "Las solicitudes de cliente solo están disponibles en proyectos de cliente."
+      },
+      "taskStatus": {
+        "pending": "Pendiente",
+        "inProgress": "En progreso",
+        "inReview": "En revisión",
+        "completed": "Completada",
+        "blocked": "Bloqueada"
+      },
+      "priority": {
+        "low": "Baja",
+        "medium": "Media",
+        "high": "Alta",
+        "blocking": "Bloqueante"
+      },
+      "kanban": {
+        "columnEmpty": "Sin tareas en este estado",
+        "dragHandleLabel": "Arrastrar tarea: {title}",
+        "columnAriaLabel": "Columna: {status} — {count} tareas",
+        "clientRequestNoReview": "Las solicitudes de cliente no pueden entrar en revisión interna.",
+        "moveNotAllowed": "Este cambio de estado no está permitido para esta tarea.",
+        "unauthorizedMove": "No tienes autorización para mover esta tarea.",
+        "movedSuccess": "Tarea movida a {status}.",
+        "movedError": "Error al mover la tarea. Por favor intenta de nuevo.",
+        "notFound": "No se encontró la tarea. Recarga la página."
+      },
+      "list": {
+        "columns": {
+          "title": "Título",
+          "type": "Tipo",
+          "status": "Estado",
+          "priority": "Prioridad",
+          "assignee": "Asignado a",
+          "deadline": "Fecha Límite",
+          "actions": "Acciones"
+        },
+        "actions": {
+          "viewDetails": "Ver detalles",
+          "edit": "Editar",
+          "changeStatus": "Cambiar estado",
+          "archive": "Archivar"
+        }
+      },
+      "detail": {
+        "assignedTo": "Asignado a",
+        "deadline": "Fecha límite",
+        "type": "Tipo",
+        "statusLabel": "Cambiar estado",
+        "description": "Descripción",
+        "resources": "Recursos vinculados",
+        "noResources": "Sin recursos vinculados.",
+        "hasDeliverables": "Esta tarea tiene entregables de producción vinculados.",
+        "editAction": "Editar",
+        "closeAction": "Cerrar",
+        "ariaLabel": "Detalles de la tarea: {title}"
+      },
+      "create": {
+        "title": "Nueva Tarea",
+        "description": "Crea una nueva tarea para este proyecto.",
+        "typeLabel": "Tipo de tarea",
+        "titleLabel": "Título",
+        "titlePlaceholder": "Ej. Diseño de portada para campaña Q4",
+        "descriptionLabel": "Descripción",
+        "descriptionPlaceholder": "Detalla los objetivos, entregables esperados y contexto del trabajo...",
+        "priorityLabel": "Prioridad",
+        "assigneeLabel": "Asignado a",
+        "assigneePlaceholder": "Selecciona un miembro del equipo...",
+        "deadlineLabel": "Fecha y hora límite",
+        "submitAction": "Crear Tarea",
+        "cancelAction": "Cancelar",
+        "submitting": "Creando...",
+        "successToast": "Tarea creada exitosamente.",
+        "errorToast": "No se pudo crear la tarea. Verifica los datos ingresados."
+      },
+      "edit": {
+        "title": "Editar Tarea",
+        "description": "Modifica los campos de la tarea. El tipo de tarea no puede cambiarse.",
+        "typeReadOnly": "Tipo de tarea (no editable)",
+        "titleLabel": "Título",
+        "descriptionLabel": "Descripción",
+        "priorityLabel": "Prioridad",
+        "assigneeLabel": "Asignado a",
+        "deadlineLabel": "Fecha y hora límite",
+        "submitAction": "Guardar cambios",
+        "cancelAction": "Cancelar",
+        "submitting": "Guardando...",
+        "successToast": "Tarea actualizada correctamente.",
+        "errorToast": "No se pudo actualizar la tarea."
+      },
+      "archive": {
+        "title": "¿Archivar esta tarea?",
+        "description": "La tarea se ocultará del espacio de trabajo. Esta acción solo puede revertirse por un administrador.",
+        "reasonLabel": "Motivo (opcional)",
+        "reasonPlaceholder": "Ingresa el motivo del archivado...",
+        "confirmAction": "Archivar",
+        "cancelAction": "Cancelar",
+        "successToast": "Tarea archivada.",
+        "errorToast": "No se pudo archivar la tarea."
+      },
+      "statusChange": {
+        "successToast": "Estado actualizado: {status}.",
+        "errorToast": "No se pudo cambiar el estado de la tarea.",
+        "notAllowed": "Este cambio de estado no está permitido.",
+        "clientRequestNoReview": "Las solicitudes de cliente no pueden entrar en revisión interna."
+      },
+      "comments": {
+        "sectionTitle": "Comentarios",
+        "emptyState": "Aún no hay comentarios en esta tarea.",
+        "composePlaceholder": "Escribe un comentario colaborativo...",
+        "submitAction": "Comentar",
+        "submitting": "Enviando...",
+        "successToast": "Comentario publicado.",
+        "errorToast": "No se pudo publicar el comentario.",
+        "advisoryNote": "Los comentarios son discusión colaborativa interna y no constituyen decisiones formales de revisión.",
+        "loading": "Cargando comentarios...",
+        "authorCapacity": {
+          "admin": "Administrador",
+          "pmLead": "PM Lead",
+          "pmWatcher": "PM Observador",
+          "operator": "Operador",
+          "client": "Cliente"
+        }
+      },
+      "emptyState": {
+        "noTasks": "Este proyecto aún no tiene tareas.",
+        "noTasksDescription": "Crea la primera tarea para comenzar a gestionar el trabajo del equipo.",
+        "createFirstTask": "Crear primera tarea",
+        "noFilterResults": "No se encontraron tareas con los filtros seleccionados.",
+        "clearFilters": "Limpiar filtros"
+      },
+      "errors": {
+        "unauthorized": "No tienes autorización para realizar esta acción.",
+        "invalidTransition": "Este cambio de estado no está permitido para esta tarea.",
+        "taskTypeConstraint": "Las solicitudes de cliente no pueden entrar en revisión interna.",
+        "notFound": "No se encontró la tarea. Recarga la página.",
+        "generic": "Error inesperado. Por favor intenta de nuevo."
+      },
+      "watcherMode": {
+        "readOnlyLabel": "Solo lectura — capacidad observador",
+        "cannotMutate": "Los observadores de PM solo pueden leer tareas y agregar comentarios colaborativos."
+      }
     }
   }
 }
