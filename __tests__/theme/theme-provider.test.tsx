@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll } from "vitest";
 import React from "react";
 import "@testing-library/jest-dom/vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import { ThemeProvider } from "../theme-provider";
+import { ThemeProvider } from "@/components/shared/theme/theme-provider";
 import { useTheme } from "next-themes";
 
 function ThemeConsumer() {

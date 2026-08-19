@@ -3,9 +3,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
 import "@testing-library/jest-dom/vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
-import { ThemeToggle } from "../theme-toggle";
+import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 import { axe, toHaveNoViolations } from "jest-axe";
-import esCatalog from "../../../../../messages/es-MX.json";
+import esCatalog from "../../messages/es-MX.json";
 
 expect.extend(toHaveNoViolations);
 

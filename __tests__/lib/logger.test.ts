@@ -4,7 +4,7 @@ import {
   createRequestLogger,
   redactSensitiveData,
   REDACTED_VALUE,
-} from "../logger";
+} from "@/lib/logger";
 
 describe("logger", () => {
   const fixedDate = new Date("2026-08-17T12:00:00.000Z");
