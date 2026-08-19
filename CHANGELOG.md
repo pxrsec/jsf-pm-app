@@ -1,5 +1,11 @@
 # JSF PM App Development Changelog
 
+## [2026-08-19 @ 09:31]
+
+**⚙️ CI & Build Automation**
+
+- Configured build-time mock environment variables in `.github/workflows/ci.yml` (`test-build` job), providing dummy `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SECRET_KEY` during `npm run build` static route evaluation on headless CI runners
+
 ## [2026-08-18 @ 17:53]
 
 **🚀 Features & Accessibility**

@@ -50,6 +50,11 @@ jobs:
     name: test-build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_APP_URL: https://ci.example.com
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-project.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_dummy_key_00000000
+      SUPABASE_SECRET_KEY: sb_secret_ci_dummy_key_00000000
 
     steps:
       - name: Checkout
