@@ -107,20 +107,29 @@ export function MobileNavToggle({
             <Link
               href={roleHomePath}
               onClick={() => setIsOpen(false)}
-              aria-current="page"
-              className="px-3 py-2 rounded-md font-medium text-foreground bg-muted"
+              className="px-3 py-2 rounded-md font-medium text-foreground hover:bg-muted transition-colors"
             >
               {t("links.home")}
             </Link>
 
-            <a
-              href={roleSecondaryStub.href}
-              aria-disabled="true"
-              tabIndex={-1}
-              className="px-3 py-2 rounded-md font-medium text-muted-foreground cursor-not-allowed opacity-60"
-            >
-              {roleSecondaryStub.label}
-            </a>
+            {role === "admin" || role === "pm" ? (
+              <Link
+                href={roleSecondaryStub.href}
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {roleSecondaryStub.label}
+              </Link>
+            ) : (
+              <a
+                href={roleSecondaryStub.href}
+                aria-disabled="true"
+                tabIndex={-1}
+                className="px-3 py-2 rounded-md font-medium text-muted-foreground cursor-not-allowed opacity-60"
+              >
+                {roleSecondaryStub.label}
+              </a>
+            )}
           </div>
 
           <div className="pt-2 border-t border-border">

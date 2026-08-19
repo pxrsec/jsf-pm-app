@@ -60,20 +60,28 @@ export async function AppNav({ session, unreadCount }: AppNavProps) {
           >
             <Link
               href={roleHomePath}
-              aria-current="page"
-              className="text-sm font-medium text-foreground hover:text-accent transition-colors"
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
             >
               {t("links.home")}
             </Link>
 
-            <a
-              href={roleSecondaryStub.href}
-              aria-disabled="true"
-              tabIndex={-1}
-              className="text-sm font-medium text-muted-foreground cursor-not-allowed opacity-60"
-            >
-              {roleSecondaryStub.label}
-            </a>
+            {role === "admin" || role === "pm" ? (
+              <Link
+                href={roleSecondaryStub.href}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {roleSecondaryStub.label}
+              </Link>
+            ) : (
+              <a
+                href={roleSecondaryStub.href}
+                aria-disabled="true"
+                tabIndex={-1}
+                className="text-sm font-medium text-muted-foreground cursor-not-allowed opacity-60"
+              >
+                {roleSecondaryStub.label}
+              </a>
+            )}
           </nav>
         </div>
 

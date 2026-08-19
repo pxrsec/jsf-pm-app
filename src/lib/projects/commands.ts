@@ -91,6 +91,8 @@ export async function updateProject(
       updatePayload.internal_description = input.internal_description;
     if (input.deadline_at !== undefined)
       updatePayload.deadline_at = input.deadline_at;
+    if (input.client_id !== undefined)
+      updatePayload.client_id = input.client_id;
     if (input.client_scope !== undefined)
       updatePayload.client_scope = input.client_scope;
     if (input.drive_folder_url !== undefined)

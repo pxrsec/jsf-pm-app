@@ -136,7 +136,6 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
 
       expect(html).toContain('href="/admin"');
       expect(html).toContain('href="/admin/proyectos"');
-      expect(html).toContain('aria-disabled="true"');
       expect(html).not.toContain('href="/pm"');
       expect(html).not.toContain('href="/operador"');
       expect(html).not.toContain('href="/cliente"');

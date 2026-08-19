@@ -28,13 +28,6 @@ export const CreateProjectSchema = z
     drive_folder_url: z.string().url("Invalid Drive URL").nullable().optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.project_type === "client" && !data.client_id) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Client project requires a client organization",
-        path: ["client_id"],
-      });
-    }
     if (data.project_type === "internal" && data.client_id) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -50,6 +43,7 @@ export const UpdateProjectSchema = z.object({
   name: z.string().trim().min(1).max(200).optional(),
   internal_description: z.string().trim().min(1).max(2000).optional(),
   deadline_at: z.string().datetime({ offset: true }).optional(),
+  client_id: z.string().uuid("Invalid client ID").nullable().optional(),
   client_scope: z.string().trim().max(1000).nullable().optional(),
   drive_folder_url: z.string().url().nullable().optional(),
 });

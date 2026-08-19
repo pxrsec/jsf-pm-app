@@ -42,19 +42,14 @@ describe("Project Domain Schemas", () => {
       expect(result.success).toBe(true);
     });
 
-    it("rejects client project without client_id", () => {
+    it("accepts valid client project without client_id during planning stage", () => {
       const result = CreateProjectSchema.safeParse({
         name: "Website Redesign",
         project_type: "client",
-        internal_description: "Missing client org",
+        internal_description: "Early planning before client onboarding",
         deadline_at: validIsoDate,
       });
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].message).toBe(
-          "Client project requires a client organization",
-        );
-      }
+      expect(result.success).toBe(true);
     });
 
     it("rejects internal project with client_id", () => {
@@ -88,6 +83,14 @@ describe("Project Domain Schemas", () => {
     it("accepts partial updates", () => {
       const result = UpdateProjectSchema.safeParse({
         name: "Updated Name",
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("accepts attaching client_id on update", () => {
+      const result = UpdateProjectSchema.safeParse({
+        client_id: validClientId,
+        client_scope: "Updated scope",
       });
       expect(result.success).toBe(true);
     });

@@ -266,8 +266,9 @@ export async function listEligibleOperators(
 
 export async function listEligibleClientMembers(
   supabase: TypedSupabase,
-  clientId: string,
+  clientId?: string | null,
 ): Promise<EligibleClientMember[]> {
+  if (!clientId) return [];
   try {
     const { data, error } = await supabase
       .from("client_contacts")

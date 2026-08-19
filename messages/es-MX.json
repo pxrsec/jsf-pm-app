@@ -127,5 +127,228 @@
       "messageAlreadyUsed": "Esta invitación o enlace ya ha sido utilizado anteriormente.",
       "signInLink": "Ir a Iniciar Sesión"
     }
+  },
+  "projects": {
+    "directory": {
+      "title": "Proyectos",
+      "adminSubtitle": "Gestión general de proyectos del sistema",
+      "pmSubtitle": "Proyectos asignados a tu gestión",
+      "searchPlaceholder": "Buscar por nombre de proyecto o alcance...",
+      "filterStatus": "Estado",
+      "filterType": "Tipo de proyecto",
+      "allStatuses": "Todos los estados",
+      "allTypes": "Todos los tipos",
+      "newProjectAction": "Nuevo Proyecto",
+      "emptyState": {
+        "title": "No hay proyectos disponibles",
+        "description": "Comienza creando un nuevo proyecto para gestionar tareas y entregables.",
+        "noFilterResults": "No se encontraron proyectos que coincidan con los filtros seleccionados.",
+        "clearFilters": "Limpiar filtros",
+        "createCta": "Crear Proyecto"
+      },
+      "table": {
+        "columns": {
+          "name": "Proyecto",
+          "type": "Tipo",
+          "status": "Estado",
+          "deadline": "Fecha Límite",
+          "actions": "Acciones"
+        },
+        "actions": {
+          "open": "Abrir espacio de trabajo",
+          "manageTeam": "Gestionar equipo",
+          "edit": "Editar información"
+        }
+      },
+      "cards": {
+        "deadline": "Entrega:",
+        "openAction": "Abrir Proyecto"
+      }
+    },
+    "types": {
+      "client": "Cliente",
+      "internal": "Interno",
+      "unassigned": "Sin asignar",
+      "clientDescription": "Proyecto con cliente externo y entregables de producción.",
+      "internalDescription": "Proyecto operativo interno sin entregables de producción."
+    },
+    "create": {
+      "title": "Crear Nuevo Proyecto",
+      "subtitle": "Configura los parámetros iniciales y el equipo del proyecto",
+      "fields": {
+        "typeLabel": "Tipo de proyecto",
+        "nameLabel": "Nombre del proyecto",
+        "namePlaceholder": "Ej. Campaña Navideña 2026",
+        "descriptionLabel": "Descripción interna",
+        "descriptionPlaceholder": "Detalles operativos, objetivos y contexto para el equipo...",
+        "deadlineLabel": "Fecha y hora límite",
+        "driveLabel": "Enlace a carpeta de Google Drive (opcional)",
+        "drivePlaceholder": "https://drive.google.com/drive/folders/...",
+        "clientOrgLabel": "Organización del cliente (opcional en planificación)",
+        "clientOrgPlaceholder": "Selecciona un cliente...",
+        "clientScopeLabel": "Alcance visible para el cliente (opcional)",
+        "clientScopePlaceholder": "Resumen que será visible para el cliente...",
+        "initialClientContactLabel": "Contacto del cliente inicial (opcional)",
+        "initialClientContactPlaceholder": "Selecciona el contacto principal del cliente...",
+        "primaryPmLeadLabel": "PM Lead principal asignado",
+        "primaryPmLeadPlaceholder": "Selecciona un Project Manager Lead...",
+        "pmAutoAssignedNote": "Serás asignado automáticamente como el PM Lead principal de este proyecto.",
+        "submitAction": "Crear Proyecto",
+        "cancelAction": "Cancelar",
+        "creating": "Creando proyecto..."
+      },
+      "successToast": "Proyecto creado exitosamente.",
+      "errorToast": "No se pudo crear el proyecto. Revisa los datos ingresados."
+    },
+    "workspace": {
+      "breadcrumbs": {
+        "root": "Proyectos",
+        "current": "Espacio de Trabajo"
+      },
+      "summary": {
+        "primaryLeadLabel": "Lead Principal",
+        "deadlineLabel": "Entrega",
+        "editAction": "Editar",
+        "statusActions": "Estado"
+      },
+      "tabs": {
+        "overview": "Resumen",
+        "tasks": "Tareas",
+        "deliverables": "Entregables",
+        "members": "Equipo",
+        "activity": "Actividad"
+      },
+      "clientSetupBanner": {
+        "title": "Configuración de cliente pendiente",
+        "description": "Este proyecto de cliente aún no tiene una organización o miembros cliente vinculados. Puedes planificar y asignar trabajo internamente, pero se requerirá vincular al cliente antes de avanzar a estado 'En progreso' o solicitar revisiones de cliente.",
+        "linkCta": "Vincular Cliente"
+      },
+      "overview": {
+        "descriptionCardTitle": "Descripción Interna",
+        "clientScopeCardTitle": "Alcance del Cliente",
+        "noClientScope": "Sin alcance de cliente especificado.",
+        "linksCardTitle": "Almacenamiento y Enlaces",
+        "openDriveFolder": "Abrir carpeta en Google Drive",
+        "noDriveLink": "No se ha configurado una carpeta de Google Drive.",
+        "metaCardTitle": "Ficha Técnica",
+        "projectId": "ID del Proyecto",
+        "createdDate": "Fecha de Creación",
+        "associatedClient": "Cliente",
+        "unassignedClient": "Sin asignar",
+        "quickStatsTitle": "Resumen de Trabajo",
+        "tasksCount": "Tareas activas",
+        "deliverablesCount": "Entregables",
+        "teamSummaryTitle": "Equipo del Proyecto",
+        "viewAllMembers": "Ver todos ({count})",
+        "completionCyclesTitle": "Historial de Ciclos de Completado",
+        "noCycles": "No hay ciclos de completado previos.",
+        "cycleNumber": "Ciclo #{number}",
+        "completedBy": "Completado por {name}",
+        "reopenedBy": "Reabierto por {name}",
+        "reopenReason": "Motivo: {reason}"
+      },
+      "placeholders": {
+        "tasksTitle": "Planificación y Kanban de Tareas",
+        "tasksDescription": "El módulo de gestión y asignación de tareas con tablero Kanban estará disponible en el sprint S04-04.",
+        "deliverablesTitle": "Entregables de Producción",
+        "deliverablesDescription": "El módulo de entregables con enlace a Google Drive y ciclo de revisión estará disponible en S04-06.",
+        "internalDeliverablesDisabled": "Los proyectos internos no admiten entregables de producción.",
+        "clientReviewBlockedNotice": "Se requiere vincular un cliente y contacto al proyecto antes de enviar entregables a revisión de cliente."
+      },
+      "editDialog": {
+        "title": "Editar Información del Proyecto",
+        "description": "Modifica los datos operativos del proyecto. El tipo de proyecto no puede modificarse.",
+        "clientOrgLabel": "Organización del cliente",
+        "clientOrgPlaceholder": "Seleccionar cliente...",
+        "saveAction": "Guardar Cambios",
+        "cancelAction": "Cancelar",
+        "saving": "Guardando...",
+        "successToast": "Proyecto actualizado correctamente."
+      },
+      "statusDialog": {
+        "pauseTitle": "¿Pausar este proyecto?",
+        "pauseDescription": "El proyecto pasará a estado pausado. El equipo no podrá avanzar tareas hasta que se reanude.",
+        "resumeTitle": "¿Reanudar este proyecto?",
+        "resumeDescription": "El proyecto volverá a estar en progreso activo.",
+        "cancelTitle": "¿Cancelar este proyecto?",
+        "cancelDescription": "Esta acción marcará el proyecto como cancelado. Solo un Administrador podrá recuperarlo.",
+        "archiveTitle": "¿Archivar este proyecto?",
+        "archiveDescription": "El proyecto se ocultará del directorio general.",
+        "restoreTitle": "¿Restaurar este proyecto?",
+        "restoreDescription": "El proyecto volverá a mostrarse en el directorio general.",
+        "confirmAction": "Confirmar",
+        "cancelAction": "Volver"
+      }
+    },
+    "members": {
+      "title": "Equipo del Proyecto",
+      "subtitle": "Gestiona los miembros asignados y sus capacidades operativas",
+      "addMemberAction": "Agregar Miembro",
+      "stats": {
+        "total": "Total de miembros: {count}",
+        "pmLeads": "PM Leads: {count}",
+        "operators": "Operadores: {count}",
+        "clients": "Clientes: {count}"
+      },
+      "table": {
+        "columns": {
+          "member": "Miembro",
+          "systemRole": "Rol en Sistema",
+          "capacity": "Capacidad en Proyecto",
+          "notifications": "Notificaciones",
+          "joinedAt": "Fecha de Asignación",
+          "actions": "Acciones"
+        },
+        "actions": {
+          "setPrimaryLead": "Hacer PM Lead Principal",
+          "changeCapacity": "Cambiar Capacidad",
+          "remove": "Remover del Proyecto"
+        }
+      },
+      "capacities": {
+        "pmLead": "PM Lead",
+        "pmLeadPrimary": "PM Lead (Principal)",
+        "pmWatcher": "PM Observador",
+        "operator": "Operador",
+        "client": "Cliente"
+      },
+      "addDialog": {
+        "title": "Agregar Miembro al Proyecto",
+        "description": "Selecciona el usuario y define su capacidad operativa en el proyecto.",
+        "capacityLabel": "Capacidad operativa",
+        "userLabel": "Seleccionar usuario",
+        "userPlaceholder": "Busca un usuario...",
+        "isPrimaryLeadLabel": "Designar como PM Lead Principal",
+        "notificationsLabel": "Recibir notificaciones del proyecto",
+        "submitAction": "Agregar Miembro",
+        "cancelAction": "Cancelar",
+        "successToast": "Miembro agregado exitosamente."
+      },
+      "changeDialog": {
+        "title": "Cambiar Capacidad de Miembro",
+        "description": "Actualiza la capacidad operativa o configuración de notificaciones para {name}.",
+        "capacityLabel": "Nueva capacidad",
+        "notificationsLabel": "Recibir notificaciones del proyecto",
+        "submitAction": "Guardar Cambios",
+        "cancelAction": "Cancelar",
+        "successToast": "Capacidad actualizada exitosamente."
+      },
+      "setPrimaryDialog": {
+        "title": "¿Cambiar PM Lead Principal?",
+        "description": "Se asignará a {name} como el PM Lead principal del proyecto. El lead actual permanecerá como PM Lead secundario.",
+        "confirmAction": "Confirmar Asignación",
+        "cancelAction": "Cancelar",
+        "successToast": "Lead principal actualizado."
+      },
+      "removeDialog": {
+        "title": "¿Remover miembro del proyecto?",
+        "description": "¿Estás seguro de que deseas remover a {name}? Perderá el acceso al espacio de trabajo.",
+        "confirmAction": "Remover",
+        "cancelAction": "Cancelar",
+        "successToast": "Miembro removido correctamente.",
+        "errorSoleLead": "No se puede remover al único PM Lead. Asigna otro Lead principal primero.",
+        "errorSoleClient": "Un proyecto de cliente en ejecución debe tener al menos un miembro cliente activo."
+      }
+    }
   }
 }

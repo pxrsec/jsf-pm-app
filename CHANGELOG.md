@@ -1,5 +1,27 @@
 # JSF PM App Development Changelog
 
+## [2026-08-19 @ 14:46]
+
+**🚀 Project Directory, Project Creation, and Membership Governance (S04-03)**
+
+- **Flexible Client Project Creation in Planning Stage:**
+  - Added migration `20260819140000_s04_03_flexible_client_project_planning.sql` updating `private.validate_project_memberships()` to permit `0` client members and `null` `client_id` for client projects in `planning` status, while strictly enforcing $\ge 1$ client member and valid `client_id` upon advancing to active non-planning states.
+  - Updated `CreateProjectSchema` and `UpdateProjectSchema` to make `client_id` optional and attachable later.
+- **Server Actions Layer (`src/lib/projects/actions.ts`):**
+  - Implemented `createProjectAction`, `updateProjectAction`, `addProjectMemberAction`, `updateProjectMemberAction`, `removeProjectMemberAction`, `setPrimaryPmLeadAction`, `transitionProjectStatusAction`, `archiveProjectAction`, and `restoreProjectAction` with strict role authorization, atomic rollback on member init failures, and path revalidation.
+- **Navigation Integration:**
+  - Activated live navigation links for `/admin/proyectos` and `/pm/proyectos` in desktop `AppNav` and responsive `MobileNavToggle`.
+- **Project Directory Components (`src/components/shared/projects/project-directory/`):**
+  - Created `ProjectDirectoryView`, `ProjectFilters`, `ProjectTable`, `ProjectCardList`, and `ProjectEmptyState` with debounced search, status and type filters, and responsive views.
+- **Project Workspace & Governance (`src/components/shared/projects/project-workspace/` & `project-members/`):**
+  - Created `ProjectWorkspaceShell`, `ProjectHeader`, `ProjectOverviewTab` (with Setup Warning Banner and quick client linking CTA), `ProjectEditDialog`, and `ProjectStatusDialog`.
+  - Created `MemberRosterTab`, `MemberCapacityBadge` (with primary PM Lead star indicator), `AddMemberDialog`, `ChangeCapacityDialog`, `SetPrimaryLeadDialog`, and `RemoveMemberDialog`.
+- **App Router Pages (`/admin/proyectos` & `/pm/proyectos`):**
+  - Implemented full directory, creation forms (`AdminCreateForm`, `PmCreateForm`), and workspace detail pages with dedicated loading skeletons and error boundaries for both Admin and PM roles.
+- **Automated Test Suite:**
+  - Added unit and component tests in `__tests__/projects/` (`actions.test.ts`, `directory-view.test.tsx`, `membership-governance.test.tsx`, `schemas.test.ts`, `errors.test.ts`).
+- **Verification:** All 254 test cases across 38 test suites passing; `npm run typecheck` and `npm run lint` clean with zero errors.
+
 ## [2026-08-19 @ 13:20]
 
 **⚙️ Feature Data Layer & Command Boundary Reconciliation (S04-02)**

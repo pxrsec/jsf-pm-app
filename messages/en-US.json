@@ -127,5 +127,228 @@
       "messageAlreadyUsed": "This invitation or link has already been used.",
       "signInLink": "Go to Sign In"
     }
+  },
+  "projects": {
+    "directory": {
+      "title": "Projects",
+      "adminSubtitle": "System-wide project management overview",
+      "pmSubtitle": "Projects assigned to your management",
+      "searchPlaceholder": "Search by project name or scope...",
+      "filterStatus": "Status",
+      "filterType": "Project type",
+      "allStatuses": "All statuses",
+      "allTypes": "All types",
+      "newProjectAction": "New Project",
+      "emptyState": {
+        "title": "No projects available",
+        "description": "Get started by creating a new project to manage tasks and deliverables.",
+        "noFilterResults": "No projects match the selected filters.",
+        "clearFilters": "Clear filters",
+        "createCta": "Create Project"
+      },
+      "table": {
+        "columns": {
+          "name": "Project",
+          "type": "Type",
+          "status": "Status",
+          "deadline": "Deadline",
+          "actions": "Actions"
+        },
+        "actions": {
+          "open": "Open workspace",
+          "manageTeam": "Manage team",
+          "edit": "Edit information"
+        }
+      },
+      "cards": {
+        "deadline": "Deadline:",
+        "openAction": "Open Project"
+      }
+    },
+    "types": {
+      "client": "Client",
+      "internal": "Internal",
+      "unassigned": "Unassigned",
+      "clientDescription": "External client project with production deliverables.",
+      "internalDescription": "Internal operational project without production deliverables."
+    },
+    "create": {
+      "title": "Create New Project",
+      "subtitle": "Set up project parameters and initial team composition",
+      "fields": {
+        "typeLabel": "Project type",
+        "nameLabel": "Project name",
+        "namePlaceholder": "e.g. Holiday Campaign 2026",
+        "descriptionLabel": "Internal description",
+        "descriptionPlaceholder": "Operational details, goals, and team context...",
+        "deadlineLabel": "Target deadline",
+        "driveLabel": "Google Drive folder URL (optional)",
+        "drivePlaceholder": "https://drive.google.com/drive/folders/...",
+        "clientOrgLabel": "Client organization (optional in planning)",
+        "clientOrgPlaceholder": "Select a client...",
+        "clientScopeLabel": "Client-visible scope (optional)",
+        "clientScopePlaceholder": "Summary that will be visible to the client...",
+        "initialClientContactLabel": "Initial client contact (optional)",
+        "initialClientContactPlaceholder": "Select primary client contact...",
+        "primaryPmLeadLabel": "Assigned Primary PM Lead",
+        "primaryPmLeadPlaceholder": "Select a Project Manager Lead...",
+        "pmAutoAssignedNote": "You will be automatically assigned as the primary PM Lead for this project.",
+        "submitAction": "Create Project",
+        "cancelAction": "Cancel",
+        "creating": "Creating project..."
+      },
+      "successToast": "Project created successfully.",
+      "errorToast": "Failed to create project. Please verify the input fields."
+    },
+    "workspace": {
+      "breadcrumbs": {
+        "root": "Projects",
+        "current": "Workspace"
+      },
+      "summary": {
+        "primaryLeadLabel": "Primary Lead",
+        "deadlineLabel": "Deadline",
+        "editAction": "Edit",
+        "statusActions": "Status"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "tasks": "Tasks",
+        "deliverables": "Deliverables",
+        "members": "Team",
+        "activity": "Activity"
+      },
+      "clientSetupBanner": {
+        "title": "Client setup pending",
+        "description": "This client project does not have an organization or client members linked yet. You can plan and assign work internally, but linking a client will be required before advancing to 'In progress' status or requesting client reviews.",
+        "linkCta": "Link Client"
+      },
+      "overview": {
+        "descriptionCardTitle": "Internal Description",
+        "clientScopeCardTitle": "Client Scope",
+        "noClientScope": "No client scope specified.",
+        "linksCardTitle": "Storage & Links",
+        "openDriveFolder": "Open Google Drive folder",
+        "noDriveLink": "No Google Drive folder configured.",
+        "metaCardTitle": "Project Details",
+        "projectId": "Project ID",
+        "createdDate": "Created Date",
+        "associatedClient": "Client",
+        "unassignedClient": "Unassigned",
+        "quickStatsTitle": "Work Summary",
+        "tasksCount": "Active tasks",
+        "deliverablesCount": "Deliverables",
+        "teamSummaryTitle": "Project Team",
+        "viewAllMembers": "View all ({count})",
+        "completionCyclesTitle": "Completion Cycle History",
+        "noCycles": "No previous completion cycles recorded.",
+        "cycleNumber": "Cycle #{number}",
+        "completedBy": "Completed by {name}",
+        "reopenedBy": "Reopened by {name}",
+        "reopenReason": "Reason: {reason}"
+      },
+      "placeholders": {
+        "tasksTitle": "Task Planning & Kanban",
+        "tasksDescription": "Task assignment, scheduling, and Kanban management will be available in sprint S04-04.",
+        "deliverablesTitle": "Production Deliverables",
+        "deliverablesDescription": "Deliverables management with Google Drive links and review workflows will be available in S04-06.",
+        "internalDeliverablesDisabled": "Internal projects do not support production deliverables.",
+        "clientReviewBlockedNotice": "Linking a client organization and contact is required before releasing deliverables for client review."
+      },
+      "editDialog": {
+        "title": "Edit Project Information",
+        "description": "Update operational project details. The project type cannot be modified.",
+        "clientOrgLabel": "Client organization",
+        "clientOrgPlaceholder": "Select client...",
+        "saveAction": "Save Changes",
+        "cancelAction": "Cancel",
+        "saving": "Saving...",
+        "successToast": "Project updated successfully."
+      },
+      "statusDialog": {
+        "pauseTitle": "Pause this project?",
+        "pauseDescription": "The project will enter paused status. Team members cannot advance tasks until it is resumed.",
+        "resumeTitle": "Resume this project?",
+        "resumeDescription": "The project will return to active in-progress status.",
+        "cancelTitle": "Cancel this project?",
+        "cancelDescription": "This will mark the project as cancelled. Only an Administrator can recover it.",
+        "archiveTitle": "Archive this project?",
+        "archiveDescription": "The project will be hidden from the main directory.",
+        "restoreTitle": "Restore this project?",
+        "restoreDescription": "The project will be restored to the main directory.",
+        "confirmAction": "Confirm",
+        "cancelAction": "Go Back"
+      }
+    },
+    "members": {
+      "title": "Project Team",
+      "subtitle": "Manage assigned members and operational capacities",
+      "addMemberAction": "Add Member",
+      "stats": {
+        "total": "Total members: {count}",
+        "pmLeads": "PM Leads: {count}",
+        "operators": "Operators: {count}",
+        "clients": "Clients: {count}"
+      },
+      "table": {
+        "columns": {
+          "member": "Member",
+          "systemRole": "System Role",
+          "capacity": "Project Capacity",
+          "notifications": "Notifications",
+          "joinedAt": "Assigned Date",
+          "actions": "Actions"
+        },
+        "actions": {
+          "setPrimaryLead": "Make Primary PM Lead",
+          "changeCapacity": "Change Capacity",
+          "remove": "Remove from Project"
+        }
+      },
+      "capacities": {
+        "pmLead": "PM Lead",
+        "pmLeadPrimary": "PM Lead (Primary)",
+        "pmWatcher": "PM Watcher",
+        "operator": "Operator",
+        "client": "Client"
+      },
+      "addDialog": {
+        "title": "Add Project Member",
+        "description": "Select a user and specify their operational capacity on this project.",
+        "capacityLabel": "Operational capacity",
+        "userLabel": "Select user",
+        "userPlaceholder": "Search for a user...",
+        "isPrimaryLeadLabel": "Designate as Primary PM Lead",
+        "notificationsLabel": "Receive project notifications",
+        "submitAction": "Add Member",
+        "cancelAction": "Cancel",
+        "successToast": "Member added successfully."
+      },
+      "changeDialog": {
+        "title": "Change Member Capacity",
+        "description": "Update operational capacity or notification settings for {name}.",
+        "capacityLabel": "New capacity",
+        "notificationsLabel": "Receive project notifications",
+        "submitAction": "Save Changes",
+        "cancelAction": "Cancel",
+        "successToast": "Capacity updated successfully."
+      },
+      "setPrimaryDialog": {
+        "title": "Change Primary PM Lead?",
+        "description": "{name} will be designated as the primary PM Lead. The current lead will remain as an active secondary PM Lead.",
+        "confirmAction": "Confirm Assignment",
+        "cancelAction": "Cancel",
+        "successToast": "Primary lead updated."
+      },
+      "removeDialog": {
+        "title": "Remove project member?",
+        "description": "Are you sure you want to remove {name}? They will lose access to the project workspace.",
+        "confirmAction": "Remove",
+        "cancelAction": "Cancel",
+        "successToast": "Member removed successfully.",
+        "errorSoleLead": "Cannot remove the only PM Lead. Assign another Primary Lead first.",
+        "errorSoleClient": "An active client project in progress must have at least one active client member."
+      }
+    }
   }
 }
