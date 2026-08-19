@@ -2,6 +2,68 @@
   "shell": {
     "brand": {
       "name": "Joya Star Films"
+    },
+    "nav": {
+      "ariaLabel": "Main navigation",
+      "signOut": "Sign out",
+      "currentUser": {
+        "role": {
+          "admin": "Administrator",
+          "pm": "Project Manager",
+          "operator": "Operator",
+          "client": "Client"
+        }
+      },
+      "links": {
+        "home": "Home",
+        "projects": "Projects",
+        "agenda": "My Agenda"
+      },
+      "notifications": {
+        "badgeLabel": "Unread notifications",
+        "badgeOverflow": "99+"
+      }
+    },
+    "landing": {
+      "admin": {
+        "welcome": "Welcome, {name}",
+        "recentProjects": "Recent projects",
+        "emptyProjects": "No projects found."
+      },
+      "pm": {
+        "welcome": "Welcome, {name}",
+        "myProjects": "My assigned projects",
+        "emptyProjects": "You currently have no assigned projects."
+      },
+      "operator": {
+        "welcome": "Welcome, {name}",
+        "myAgenda": "My task agenda",
+        "emptyAgenda": "You have no pending tasks in your agenda."
+      },
+      "client": {
+        "welcome": "Welcome, {name}",
+        "myProjects": "My projects",
+        "emptyProjects": "You have no active projects associated."
+      }
+    },
+    "status": {
+      "planning": "Planning",
+      "inProgress": "In progress",
+      "paused": "Paused",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "blocking": "Blocking"
+    },
+    "loading": "Loading...",
+    "error": {
+      "title": "Something went wrong",
+      "message": "We could not load the application data.",
+      "signInAgain": "Sign in again"
     }
   },
   "privacy": {
@@ -13,5 +75,47 @@
     "title": "Something went wrong",
     "message": "We could not complete this request. Please try again.",
     "retry": "Try again"
+  },
+  "auth": {
+    "signIn": {
+      "title": "Sign In",
+      "emailLabel": "Email address",
+      "passwordLabel": "Password",
+      "submitLabel": "Sign in",
+      "forgotPasswordLink": "Forgot your password?",
+      "errorGeneric": "Incorrect email or password.",
+      "errorRateLimit": "Too many attempts. Please wait a few minutes before trying again."
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "emailLabel": "Email address",
+      "submitLabel": "Send reset link",
+      "successMessage": "If the email is registered, you will receive a password reset link shortly."
+    },
+    "updatePassword": {
+      "title": "Update Password",
+      "passwordLabel": "New password",
+      "confirmLabel": "Confirm password",
+      "submitLabel": "Save new password",
+      "successMessage": "Password updated successfully.",
+      "errorPolicy": "Password must be at least 12 characters and include uppercase, lowercase, numbers, and symbols."
+    },
+    "invitation": {
+      "title": "Set Up Your Account",
+      "fullNameLabel": "Full name",
+      "phoneLabel": "Phone number (optional)",
+      "passwordLabel": "Password",
+      "whatsappOptInLabel": "I wish to receive operational notifications via WhatsApp",
+      "submitLabel": "Complete registration",
+      "errorPolicy": "Password must be at least 12 characters and include uppercase, lowercase, numbers, and symbols.",
+      "errorGeneric": "We could not process your invitation. Please verify your details or request a new invite."
+    },
+    "sessionExpired": {
+      "title": "Invalid or Expired Link",
+      "messageExpired": "This link has expired for security reasons.",
+      "messageInvalid": "The link used is invalid or has been modified.",
+      "messageAlreadyUsed": "This invitation or link has already been used.",
+      "signInLink": "Go to Sign In"
+    }
   }
 }

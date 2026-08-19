@@ -2,6 +2,68 @@
   "shell": {
     "brand": {
       "name": "Joya Star Films"
+    },
+    "nav": {
+      "ariaLabel": "Navegación principal",
+      "signOut": "Cerrar sesión",
+      "currentUser": {
+        "role": {
+          "admin": "Administrador",
+          "pm": "Project Manager",
+          "operator": "Operador",
+          "client": "Cliente"
+        }
+      },
+      "links": {
+        "home": "Inicio",
+        "projects": "Proyectos",
+        "agenda": "Mi Agenda"
+      },
+      "notifications": {
+        "badgeLabel": "Notificaciones no leídas",
+        "badgeOverflow": "99+"
+      }
+    },
+    "landing": {
+      "admin": {
+        "welcome": "Bienvenido, {name}",
+        "recentProjects": "Proyectos recientes",
+        "emptyProjects": "No hay proyectos registrados."
+      },
+      "pm": {
+        "welcome": "Bienvenido, {name}",
+        "myProjects": "Mis proyectos asignados",
+        "emptyProjects": "No tienes proyectos asignados actualmente."
+      },
+      "operator": {
+        "welcome": "Bienvenido, {name}",
+        "myAgenda": "Mi agenda de tareas",
+        "emptyAgenda": "No tienes tareas pendientes en tu agenda."
+      },
+      "client": {
+        "welcome": "Bienvenido, {name}",
+        "myProjects": "Mis proyectos",
+        "emptyProjects": "No tienes proyectos activos asociados."
+      }
+    },
+    "status": {
+      "planning": "Planificación",
+      "inProgress": "En progreso",
+      "paused": "Pausado",
+      "completed": "Completado",
+      "cancelled": "Cancelado"
+    },
+    "priority": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta",
+      "blocking": "Bloqueante"
+    },
+    "loading": "Cargando...",
+    "error": {
+      "title": "Algo salió mal",
+      "message": "No pudimos cargar la información de la aplicación.",
+      "signInAgain": "Volver a iniciar sesión"
     }
   },
   "privacy": {
@@ -13,5 +75,47 @@
     "title": "Algo salió mal",
     "message": "No pudimos completar esta solicitud. Inténtalo de nuevo.",
     "retry": "Intentar de nuevo"
+  },
+  "auth": {
+    "signIn": {
+      "title": "Iniciar Sesión",
+      "emailLabel": "Correo electrónico",
+      "passwordLabel": "Contraseña",
+      "submitLabel": "Iniciar sesión",
+      "forgotPasswordLink": "¿Olvidaste tu contraseña?",
+      "errorGeneric": "Correo o contraseña incorrectos.",
+      "errorRateLimit": "Demasiados intentos. Por favor, espera unos minutos antes de volver a intentarlo."
+    },
+    "resetPassword": {
+      "title": "Restablecer Contraseña",
+      "emailLabel": "Correo electrónico",
+      "submitLabel": "Enviar enlace de recuperación",
+      "successMessage": "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña en breve."
+    },
+    "updatePassword": {
+      "title": "Actualizar Contraseña",
+      "passwordLabel": "Nueva contraseña",
+      "confirmLabel": "Confirmar contraseña",
+      "submitLabel": "Guardar nueva contraseña",
+      "successMessage": "Contraseña actualizada con éxito.",
+      "errorPolicy": "La contraseña debe tener al menos 12 caracteres e incluir mayúsculas, minúsculas, números y símbolos."
+    },
+    "invitation": {
+      "title": "Configura tu Cuenta",
+      "fullNameLabel": "Nombre completo",
+      "phoneLabel": "Teléfono (opcional)",
+      "passwordLabel": "Contraseña",
+      "whatsappOptInLabel": "Deseo recibir notificaciones operativas por WhatsApp",
+      "submitLabel": "Completar registro",
+      "errorPolicy": "La contraseña debe tener al menos 12 caracteres e incluir mayúsculas, minúsculas, números y símbolos.",
+      "errorGeneric": "No pudimos procesar tu invitación. Verifica tus datos o solicita una nueva."
+    },
+    "sessionExpired": {
+      "title": "Enlace No Válido o Expirado",
+      "messageExpired": "Este enlace ha expirado por motivos de seguridad.",
+      "messageInvalid": "El enlace utilizado no es válido o ha sido modificado.",
+      "messageAlreadyUsed": "Esta invitación o enlace ya ha sido utilizado anteriormente.",
+      "signInLink": "Ir a Iniciar Sesión"
+    }
   }
 }
