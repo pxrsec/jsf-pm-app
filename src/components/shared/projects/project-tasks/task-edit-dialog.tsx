@@ -200,13 +200,13 @@ export function TaskEditDialog({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {(["low", "medium", "high", "blocking"] as TaskPriority[]).map(
-                        (p) => (
-                          <SelectItem key={p} value={p}>
-                            <TaskPriorityBadge priority={p} />
-                          </SelectItem>
-                        ),
-                      )}
+                      {(
+                        ["low", "medium", "high", "blocking"] as TaskPriority[]
+                      ).map((p) => (
+                        <SelectItem key={p} value={p}>
+                          <TaskPriorityBadge priority={p} />
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}
@@ -220,9 +220,7 @@ export function TaskEditDialog({
 
             {/* Deadline */}
             <div className="space-y-1.5">
-              <Label htmlFor="edit-task-deadline">
-                {t("deadlineLabel")}
-              </Label>
+              <Label htmlFor="edit-task-deadline">{t("deadlineLabel")}</Label>
               <Input
                 id="edit-task-deadline"
                 type="datetime-local"

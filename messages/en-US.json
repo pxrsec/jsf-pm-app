@@ -208,8 +208,55 @@
       "summary": {
         "primaryLeadLabel": "Primary Lead",
         "deadlineLabel": "Deadline",
-        "editAction": "Edit",
-        "statusActions": "Status"
+        "editAction": "Edit Information",
+        "statusActions": "Status",
+        "completeProject": "Complete Project",
+        "reopenProject": "Reopen Project"
+      },
+      "completion": {
+        "dialogTitle": "Complete Project",
+        "dialogDescription": "Review work status before completing the project.",
+        "loadingReadiness": "Checking project status...",
+        "readyTitle": "The project is ready to be completed.",
+        "readyDescription": "No unfinished work remains.",
+        "unfinishedTitle": "There is unfinished work",
+        "unfinishedDescription": "There are {taskCount} unfinished task(s) and {deliverableCount} pending deliverable(s). You can still complete the project, but the unfinished work will remain in the record.",
+        "unfinishedTasksLabel": "Unfinished tasks:",
+        "unfinishedTasksMore": "...and {count} more",
+        "confirmAction": "Complete Project",
+        "cancelAction": "Cancel",
+        "submitting": "Completing...",
+        "successToast": "Project completed successfully.",
+        "errors": {
+          "unauthorized": "You are not authorized to complete this project.",
+          "invalidTransition": "This status transition is not allowed from the project's current state.",
+          "notFound": "Project not found. Please refresh the page.",
+          "generic": "Error completing the project. Please try again."
+        }
+      },
+      "reopen": {
+        "dialogTitle": "Reopen Project",
+        "dialogDescription": "To reopen the project, provide a reason. This will be recorded in the completion cycle history.",
+        "reasonLabel": "Reopen reason",
+        "reasonRequired": "A reopen reason is required.",
+        "reasonTooLong": "The reason cannot exceed 500 characters.",
+        "reasonPlaceholder": "e.g. Client requested additional scope revisions...",
+        "confirmAction": "Reopen Project",
+        "cancelAction": "Cancel",
+        "submitting": "Reopening...",
+        "successToast": "Project reopened successfully.",
+        "errors": {
+          "unauthorized": "You are not authorized to reopen this project.",
+          "invalidTransition": "This project cannot be reopened from its current state.",
+          "reasonRequired": "You must provide a reason to reopen the project.",
+          "notFound": "Project not found. Please refresh the page.",
+          "generic": "Error reopening the project. Please try again."
+        }
+      },
+      "completedBanner": {
+        "title": "Project Completed",
+        "completedOn": "This project was completed on {date}.",
+        "reopenAction": "Reopen Project"
       },
       "tabs": {
         "overview": "Overview",
@@ -243,6 +290,11 @@
         "completionCyclesTitle": "Completion Cycle History",
         "noCycles": "No previous completion cycles recorded.",
         "cycleNumber": "Cycle #{number}",
+        "cycleActiveBadge": "Active cycle",
+        "completedOn": "Completed on {date}",
+        "cycleDuration": "Duration: {days} days",
+        "reopenedOn": "Reopened on {date}",
+        "unfinishedOverrideBadge": "Completed with unfinished work",
         "completedBy": "Completed by {name}",
         "reopenedBy": "Reopened by {name}",
         "reopenReason": "Reason: {reason}"

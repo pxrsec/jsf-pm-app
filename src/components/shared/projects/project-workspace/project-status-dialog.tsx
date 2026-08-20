@@ -20,11 +20,7 @@ import {
 } from "@/lib/projects/actions";
 
 export type ProjectStatusActionType =
-  | "pause"
-  | "resume"
-  | "cancel"
-  | "archive"
-  | "restore";
+  "pause" | "resume" | "cancel" | "archive" | "restore" | "complete" | "reopen";
 
 interface ProjectStatusDialogProps {
   projectId: string;
@@ -46,7 +42,9 @@ export function ProjectStatusDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  if (!actionType) return null;
+  if (!actionType || actionType === "complete" || actionType === "reopen") {
+    return null;
+  }
 
   const getDialogDetails = () => {
     switch (actionType) {
@@ -78,6 +76,12 @@ export function ProjectStatusDialog({
         return {
           title: t("restoreTitle"),
           description: t("restoreDescription"),
+          isDestructive: false,
+        };
+      default:
+        return {
+          title: "",
+          description: "",
           isDestructive: false,
         };
     }

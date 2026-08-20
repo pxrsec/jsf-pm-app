@@ -60,7 +60,10 @@ export function ProjectTable({ projects, baseHref }: ProjectTableProps) {
               : null;
 
             return (
-              <TableRow key={project.id} className="hover:bg-muted/40 transition-colors">
+              <TableRow
+                key={project.id}
+                className="hover:bg-muted/40 transition-colors"
+              >
                 <TableCell className="font-medium">
                   <div className="flex flex-col">
                     <Link
@@ -79,7 +82,11 @@ export function ProjectTable({ projects, baseHref }: ProjectTableProps) {
 
                 <TableCell>
                   <Badge
-                    variant={project.project_type === "client" ? "default" : "secondary"}
+                    variant={
+                      project.project_type === "client"
+                        ? "default"
+                        : "secondary"
+                    }
                     className="text-xs font-normal"
                   >
                     {project.project_type === "client"
@@ -107,15 +114,13 @@ export function ProjectTable({ projects, baseHref }: ProjectTableProps) {
                 </TableCell>
 
                 <TableCell className="text-xs text-muted-foreground">
-                  {deadlineDate ? (
-                    format.dateTime(deadlineDate, {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })
-                  ) : (
-                    "—"
-                  )}
+                  {deadlineDate
+                    ? format.dateTime(deadlineDate, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })
+                    : "—"}
                 </TableCell>
 
                 <TableCell className="text-right">
@@ -135,7 +140,9 @@ export function ProjectTable({ projects, baseHref }: ProjectTableProps) {
                         <span>{t("actions.open")}</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => router.push(`${baseHref}/${project.id}?tab=members`)}
+                        onClick={() =>
+                          router.push(`${baseHref}/${project.id}?tab=members`)
+                        }
                         className="flex items-center gap-2 cursor-pointer"
                       >
                         <Users className="h-3.5 w-3.5" />

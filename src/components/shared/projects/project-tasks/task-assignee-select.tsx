@@ -74,10 +74,7 @@ export function TaskAssigneeSelect({
                 (
                 {tProjects(
                   selectedMember.member_type as
-                    | "pmLead"
-                    | "pmWatcher"
-                    | "operator"
-                    | "client",
+                    "pmLead" | "pmWatcher" | "operator" | "client",
                 )}
                 )
               </span>
@@ -123,7 +120,8 @@ export function TaskAssigneeSelect({
                             <CapacityIcon className="size-3 shrink-0" />
                             <span>
                               {tProjects(
-                                member.is_primary && member.member_type === "pm_lead"
+                                member.is_primary &&
+                                  member.member_type === "pm_lead"
                                   ? "pmLeadPrimary"
                                   : (member.member_type as
                                       | "pmLead"

@@ -128,7 +128,9 @@ export function ProjectEditDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="edit-project-desc">{tForm("descriptionLabel")}</Label>
+            <Label htmlFor="edit-project-desc">
+              {tForm("descriptionLabel")}
+            </Label>
             <Textarea
               id="edit-project-desc"
               value={internalDescription}
@@ -141,7 +143,9 @@ export function ProjectEditDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="edit-project-deadline">{tForm("deadlineLabel")}</Label>
+            <Label htmlFor="edit-project-deadline">
+              {tForm("deadlineLabel")}
+            </Label>
             <Input
               id="edit-project-deadline"
               type="datetime-local"

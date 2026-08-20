@@ -41,7 +41,10 @@ export function TaskFilters({
   );
 
   const hasActiveFilters = Boolean(
-    filters.status || filters.priority || filters.task_type || filters.assignee_id,
+    filters.status ||
+    filters.priority ||
+    filters.task_type ||
+    filters.assignee_id,
   );
 
   return (
@@ -101,7 +104,10 @@ export function TaskFilters({
             <SelectItem value="all" className="text-xs">
               {t("allPriorities")}
             </SelectItem>
-            <SelectItem value="blocking" className="text-xs font-semibold text-rose-700 dark:text-rose-400">
+            <SelectItem
+              value="blocking"
+              className="text-xs font-semibold text-rose-700 dark:text-rose-400"
+            >
               {tPriority("blocking")}
             </SelectItem>
             <SelectItem value="high" className="text-xs">

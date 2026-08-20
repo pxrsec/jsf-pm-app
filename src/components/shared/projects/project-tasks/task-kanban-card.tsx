@@ -3,12 +3,7 @@
 import { useTranslations } from "next-intl";
 import { format, isPast } from "date-fns";
 import { Draggable } from "@hello-pangea/dnd";
-import {
-  Calendar,
-  GripVertical,
-  Paperclip,
-  User,
-} from "lucide-react";
+import { Calendar, GripVertical, Paperclip, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -47,11 +42,7 @@ export function TaskKanbanCard({
   const assigneeCapacity = task.assignee?.role as MemberCapacity | undefined;
 
   return (
-    <Draggable
-      draggableId={task.id}
-      index={index}
-      isDragDisabled={isWatcher}
-    >
+    <Draggable draggableId={task.id} index={index} isDragDisabled={isWatcher}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
@@ -122,7 +113,9 @@ export function TaskKanbanCard({
                 </p>
                 {assigneeCapacity && (
                   <p className="text-[10px] text-muted-foreground">
-                    {tProjects(assigneeCapacity as Parameters<typeof tProjects>[0])}
+                    {tProjects(
+                      assigneeCapacity as Parameters<typeof tProjects>[0],
+                    )}
                   </p>
                 )}
               </TooltipContent>

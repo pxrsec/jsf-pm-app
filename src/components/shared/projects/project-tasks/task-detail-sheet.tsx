@@ -2,12 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { format, isPast, isToday } from "date-fns";
-import {
-  Calendar,
-  Edit2,
-  Paperclip,
-  User,
-} from "lucide-react";
+import { Calendar, Edit2, Paperclip, User } from "lucide-react";
 import {
   Sheet,
   SheetContent,

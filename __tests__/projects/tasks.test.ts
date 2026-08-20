@@ -154,7 +154,9 @@ vi.mock("next/cache", () => ({
 }));
 
 vi.mock("@/lib/auth/session", () => ({
-  requireSession: vi.fn().mockImplementation(() => Promise.resolve(mockSession)),
+  requireSession: vi
+    .fn()
+    .mockImplementation(() => Promise.resolve(mockSession)),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -361,7 +363,9 @@ describe("Task Server Actions", () => {
 
   describe("listTaskCommentsAction", () => {
     it("returns list of task comments", async () => {
-      const comments = await listTaskCommentsAction("00000000-0000-0000-0000-000000000004");
+      const comments = await listTaskCommentsAction(
+        "00000000-0000-0000-0000-000000000004",
+      );
       expect(comments).toHaveLength(1);
       expect(comments[0]?.body).toBe("First comment");
     });

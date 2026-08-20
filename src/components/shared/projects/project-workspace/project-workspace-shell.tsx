@@ -2,12 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProjectHeader } from "./project-header";
 import { ProjectOverviewTab } from "./project-overview-tab";
 import { ProjectEditDialog } from "./project-edit-dialog";
@@ -15,6 +10,9 @@ import {
   ProjectStatusDialog,
   type ProjectStatusActionType,
 } from "./project-status-dialog";
+import { CompletedProjectBanner } from "./completed-project-banner";
+import { ProjectCompleteDialog } from "../project-lifecycle/project-complete-dialog";
+import { ProjectReopenDialog } from "../project-lifecycle/project-reopen-dialog";
 import { TasksTab } from "../project-tasks/tasks-tab";
 import { DeliverablesTabPlaceholder } from "./placeholders/deliverables-tab-placeholder";
 import { MemberRosterTab } from "../project-members/member-roster-tab";
@@ -60,8 +58,20 @@ export function ProjectWorkspaceShell({
   const t = useTranslations("projects.workspace.tabs");
   const [activeTab, setActiveTab] = useState(initialTab);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isCompleteOpen, setIsCompleteOpen] = useState(false);
+  const [isReopenOpen, setIsReopenOpen] = useState(false);
   const [statusAction, setStatusAction] =
     useState<ProjectStatusActionType | null>(null);
+
+  const handleStatusDialog = (action: ProjectStatusActionType) => {
+    if (action === "complete") {
+      setIsCompleteOpen(true);
+    } else if (action === "reopen") {
+      setIsReopenOpen(true);
+    } else {
+      setStatusAction(action);
+    }
+  };
 
   const baseHref = actorRole === "admin" ? "/admin/proyectos" : "/pm/proyectos";
   const isInternal = project.project_type === "internal";
@@ -78,12 +88,25 @@ export function ProjectWorkspaceShell({
         effectiveCapacity={effectiveCapacity}
         baseHref={baseHref}
         onOpenEditDialog={() => setIsEditOpen(true)}
-        onOpenStatusDialog={(action) => setStatusAction(action)}
+        onOpenStatusDialog={handleStatusDialog}
       />
 
       {/* Main Tabs Workspace */}
-      <main className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <main className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Completed Project Banner */}
+        {project.status === "completed" && (
+          <CompletedProjectBanner
+            completedAt={project.completed_at}
+            effectiveCapacity={effectiveCapacity}
+            onReopenClick={() => setIsReopenOpen(true)}
+          />
+        )}
+
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
           <div className="border-b border-border overflow-x-auto">
             <TabsList className="h-10 bg-transparent p-0 flex space-x-6 justify-start">
               <TabsTrigger
@@ -165,6 +188,20 @@ export function ProjectWorkspaceShell({
         actionType={statusAction}
         isOpen={Boolean(statusAction)}
         onClose={() => setStatusAction(null)}
+      />
+
+      {/* Completion Preflight & Confirmation Dialog */}
+      <ProjectCompleteDialog
+        projectId={project.id}
+        isOpen={isCompleteOpen}
+        onClose={() => setIsCompleteOpen(false)}
+      />
+
+      {/* Reopen Dialog */}
+      <ProjectReopenDialog
+        projectId={project.id}
+        isOpen={isReopenOpen}
+        onClose={() => setIsReopenOpen(false)}
       />
     </div>
   );

@@ -25,13 +25,17 @@ export default function AdminProjectDetailError({
         Error al cargar el espacio de trabajo
       </h2>
       <p className="text-xs sm:text-sm text-muted-foreground max-w-md">
-        No se pudo cargar la información del proyecto o no tienes permisos para acceder.
+        No se pudo cargar la información del proyecto o no tienes permisos para
+        acceder.
       </p>
       <div className="flex items-center gap-3 pt-2">
         <Button onClick={reset} size="sm">
           Intentar nuevamente
         </Button>
-        <Link href="/admin/proyectos" className={buttonVariants({ variant: "outline", size: "sm" })}>
+        <Link
+          href="/admin/proyectos"
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
           Volver a Proyectos
         </Link>
       </div>

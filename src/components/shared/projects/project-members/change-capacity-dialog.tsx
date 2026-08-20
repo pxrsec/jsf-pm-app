@@ -102,9 +102,7 @@ function ChangeCapacityForm({
 
       {allowedCapacities.length > 1 ? (
         <div className="space-y-1.5">
-          <Label htmlFor="change-capacity-select">
-            {t("capacityLabel")}
-          </Label>
+          <Label htmlFor="change-capacity-select">{t("capacityLabel")}</Label>
           <Select
             value={capacity}
             onValueChange={(val) => setCapacity(val as ProjectMemberType)}

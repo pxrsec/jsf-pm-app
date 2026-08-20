@@ -25,7 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { TaskAssigneeSelect } from "./task-assignee-select";
 import { TaskPriorityBadge } from "./task-priority-badge";
 import { CreateTaskSchema, type CreateTaskInput } from "@/lib/projects/schemas";
@@ -191,9 +195,7 @@ export function TaskCreateDialog({
 
           {/* Description */}
           <div className="space-y-1.5">
-            <Label htmlFor="create-task-desc">
-              {t("descriptionLabel")}
-            </Label>
+            <Label htmlFor="create-task-desc">{t("descriptionLabel")}</Label>
             <Textarea
               id="create-task-desc"
               rows={3}
@@ -226,13 +228,13 @@ export function TaskCreateDialog({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {(["low", "medium", "high", "blocking"] as TaskPriority[]).map(
-                        (p) => (
-                          <SelectItem key={p} value={p}>
-                            <TaskPriorityBadge priority={p} />
-                          </SelectItem>
-                        ),
-                      )}
+                      {(
+                        ["low", "medium", "high", "blocking"] as TaskPriority[]
+                      ).map((p) => (
+                        <SelectItem key={p} value={p}>
+                          <TaskPriorityBadge priority={p} />
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}
@@ -246,9 +248,7 @@ export function TaskCreateDialog({
 
             {/* Deadline */}
             <div className="space-y-1.5">
-              <Label htmlFor="create-task-deadline">
-                {t("deadlineLabel")}
-              </Label>
+              <Label htmlFor="create-task-deadline">{t("deadlineLabel")}</Label>
               <Input
                 id="create-task-deadline"
                 type="datetime-local"

@@ -94,9 +94,7 @@ export function TaskListRow({
       <TableCell className="py-3">
         <div className="flex items-center gap-2">
           <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 font-semibold text-[10px] text-primary">
-            {task.assignee?.full_name?.charAt(0) ?? (
-              <User className="size-3" />
-            )}
+            {task.assignee?.full_name?.charAt(0) ?? <User className="size-3" />}
           </div>
           <span className="text-xs text-foreground truncate max-w-[130px]">
             {task.assignee?.full_name ?? "Sin asignar"}
@@ -110,7 +108,9 @@ export function TaskListRow({
           <div
             className={cn(
               "flex items-center gap-1.5 text-xs font-medium",
-              isOverdue ? "text-destructive font-bold" : "text-muted-foreground",
+              isOverdue
+                ? "text-destructive font-bold"
+                : "text-muted-foreground",
             )}
           >
             <Calendar className="size-3.5 shrink-0" />

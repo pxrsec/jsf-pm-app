@@ -3,11 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  Kanban,
-  List,
-  Plus,
-} from "lucide-react";
+import { Kanban, List, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TaskFilters } from "./task-filters";
 import { TaskKanbanBoard } from "./task-kanban-board";
@@ -38,8 +34,9 @@ export function TasksTab({
   const t = useTranslations("projects.tasks");
   const router = useRouter();
 
-  const [overrideTasks, setOverrideTasks] =
-    useState<TaskWithAssignee[] | null>(null);
+  const [overrideTasks, setOverrideTasks] = useState<TaskWithAssignee[] | null>(
+    null,
+  );
   const tasks = overrideTasks ?? initialTasks;
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
   const [filters, setFilters] = useState<TaskFiltersType>({});
@@ -97,7 +94,8 @@ export function TasksTab({
             {t("tabTitle")}
           </h2>
           <p className="text-xs text-muted-foreground">
-            {tasks.length} {tasks.length === 1 ? "tarea en total" : "tareas en total"}
+            {tasks.length}{" "}
+            {tasks.length === 1 ? "tarea en total" : "tareas en total"}
           </p>
         </div>
 
@@ -126,8 +124,8 @@ export function TasksTab({
             </Button>
           </div>
 
-          {/* New Task Button (PM Lead / Admin only) */}
-          {!isWatcher && (
+          {/* New Task Button (PM Lead / Admin only, when project not completed) */}
+          {!isWatcher && project.status !== "completed" && (
             <Button
               onClick={() => setIsCreateOpen(true)}
               size="sm"
@@ -162,7 +160,7 @@ export function TasksTab({
               {t("emptyState.noTasksDescription")}
             </p>
           </div>
-          {!isWatcher && (
+          {!isWatcher && project.status !== "completed" && (
             <Button
               onClick={() => setIsCreateOpen(true)}
               size="sm"

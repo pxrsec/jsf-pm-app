@@ -11,7 +11,7 @@ import {
   TransitionProjectStatusSchema,
   AddProjectMemberSchema,
   UpdateProjectMemberSchema,
-  type CreateProjectInput,
+  type CreateProjectWithTeamInput,
   type UpdateProjectInput,
   type AddProjectMemberInput,
   type UpdateProjectMemberInput,
@@ -21,11 +21,6 @@ import { mapSupabaseError, type CommandResult } from "@/lib/projects/errors";
 import type { Project, ProjectMember } from "@/lib/projects/queries";
 
 // ── Project Creation with Atomic Initial Team ────────────────────────────────
-
-export interface CreateProjectWithTeamInput extends CreateProjectInput {
-  initial_pm_lead_user_id?: string;
-  initial_client_contact_user_id?: string;
-}
 
 export async function createProjectAction(
   rawInput: CreateProjectWithTeamInput,
@@ -226,7 +221,10 @@ export async function restoreProjectAction(
   if (session.role !== "admin") {
     return {
       ok: false,
-      error: { code: "UNAUTHORIZED", message: "Only admin can restore projects" },
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Only admin can restore projects",
+      },
     };
   }
 
@@ -379,4 +377,3 @@ export async function setPrimaryPmLeadAction(
   }
   return result;
 }
-

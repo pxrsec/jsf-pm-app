@@ -40,7 +40,9 @@ export function TaskCommentsSection({
   const locale = useLocale();
   const dateLocale = locale === "es" ? es : enUS;
 
-  const [comments, setComments] = useState<CollaborationCommentWithAuthor[]>([]);
+  const [comments, setComments] = useState<CollaborationCommentWithAuthor[]>(
+    [],
+  );
   const [body, setBody] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -131,7 +133,8 @@ export function TaskCommentsSection({
         ) : (
           <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
             {comments.map((comment) => {
-              const capacity = comment.author_capacity_snapshot as MemberCapacity;
+              const capacity =
+                comment.author_capacity_snapshot as MemberCapacity;
               const capacityConfig = MEMBER_CAPACITY_MAP[capacity];
               const CapacityIcon = capacityConfig?.icon ?? User;
               const capTransKey =

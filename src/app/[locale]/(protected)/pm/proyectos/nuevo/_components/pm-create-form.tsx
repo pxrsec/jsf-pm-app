@@ -30,7 +30,9 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
   const tTypes = useTranslations("projects.types");
   const router = useRouter();
 
-  const [projectType, setProjectType] = useState<"client" | "internal">("client");
+  const [projectType, setProjectType] = useState<"client" | "internal">(
+    "client",
+  );
   const [name, setName] = useState("");
   const [internalDescription, setInternalDescription] = useState("");
   const [deadlineAt, setDeadlineAt] = useState("");
@@ -53,7 +55,9 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
       deadline_at: new Date(deadlineAt).toISOString(),
       client_id: projectType === "client" && clientId ? clientId : null,
       client_scope:
-        projectType === "client" && clientScope.trim() ? clientScope.trim() : null,
+        projectType === "client" && clientScope.trim()
+          ? clientScope.trim()
+          : null,
       drive_folder_url: driveFolderUrl.trim() ? driveFolderUrl.trim() : null,
     };
 
@@ -71,8 +75,14 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
   return (
     <div className="container max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Link href="/pm/proyectos" className="hover:text-foreground transition-colors">
+      <nav
+        aria-label="Breadcrumb"
+        className="flex items-center gap-1.5 text-xs text-muted-foreground"
+      >
+        <Link
+          href="/pm/proyectos"
+          className="hover:text-foreground transition-colors"
+        >
           Proyectos
         </Link>
         <ChevronRight className="h-3.5 w-3.5" />
@@ -80,8 +90,12 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
       </nav>
 
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("title")}</h1>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{t("subtitle")}</p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          {t("title")}
+        </h1>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+          {t("subtitle")}
+        </p>
       </div>
 
       <Card className="border-border bg-card">
@@ -95,7 +109,9 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
 
             {/* Project Type Selector */}
             <div className="space-y-2">
-              <Label className="text-xs font-medium">{tForm("typeLabel")}</Label>
+              <Label className="text-xs font-medium">
+                {tForm("typeLabel")}
+              </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div
                   onClick={() => setProjectType("client")}
@@ -105,10 +121,16 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
                       : "border-border hover:bg-muted/30"
                   }`}
                 >
-                  <Building2 className={`h-5 w-5 mt-0.5 shrink-0 ${projectType === "client" ? "text-primary" : "text-muted-foreground"}`} />
+                  <Building2
+                    className={`h-5 w-5 mt-0.5 shrink-0 ${projectType === "client" ? "text-primary" : "text-muted-foreground"}`}
+                  />
                   <div className="space-y-0.5">
-                    <p className="text-sm font-semibold text-foreground">{tTypes("client")}</p>
-                    <p className="text-xs text-muted-foreground">{tTypes("clientDescription")}</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      {tTypes("client")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {tTypes("clientDescription")}
+                    </p>
                   </div>
                 </div>
 
@@ -124,10 +146,16 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
                       : "border-border hover:bg-muted/30"
                   }`}
                 >
-                  <Briefcase className={`h-5 w-5 mt-0.5 shrink-0 ${projectType === "internal" ? "text-primary" : "text-muted-foreground"}`} />
+                  <Briefcase
+                    className={`h-5 w-5 mt-0.5 shrink-0 ${projectType === "internal" ? "text-primary" : "text-muted-foreground"}`}
+                  />
                   <div className="space-y-0.5">
-                    <p className="text-sm font-semibold text-foreground">{tTypes("internal")}</p>
-                    <p className="text-xs text-muted-foreground">{tTypes("internalDescription")}</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      {tTypes("internal")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {tTypes("internalDescription")}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -135,7 +163,9 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
 
             {/* Project Name */}
             <div className="space-y-1.5">
-              <Label htmlFor="pm-create-project-name">{tForm("nameLabel")}</Label>
+              <Label htmlFor="pm-create-project-name">
+                {tForm("nameLabel")}
+              </Label>
               <Input
                 id="pm-create-project-name"
                 value={name}
@@ -149,7 +179,9 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
 
             {/* Internal Description */}
             <div className="space-y-1.5">
-              <Label htmlFor="pm-create-project-description">{tForm("descriptionLabel")}</Label>
+              <Label htmlFor="pm-create-project-description">
+                {tForm("descriptionLabel")}
+              </Label>
               <Textarea
                 id="pm-create-project-description"
                 value={internalDescription}
@@ -164,7 +196,9 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
 
             {/* Deadline */}
             <div className="space-y-1.5">
-              <Label htmlFor="pm-create-project-deadline">{tForm("deadlineLabel")}</Label>
+              <Label htmlFor="pm-create-project-deadline">
+                {tForm("deadlineLabel")}
+              </Label>
               <Input
                 id="pm-create-project-deadline"
                 type="datetime-local"
@@ -176,7 +210,9 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
 
             {/* Drive Folder URL */}
             <div className="space-y-1.5">
-              <Label htmlFor="pm-create-project-drive-url">{tForm("driveLabel")}</Label>
+              <Label htmlFor="pm-create-project-drive-url">
+                {tForm("driveLabel")}
+              </Label>
               <Input
                 id="pm-create-project-drive-url"
                 type="url"
@@ -194,7 +230,9 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
                 </h4>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="pm-create-project-client-org">{tForm("clientOrgLabel")}</Label>
+                  <Label htmlFor="pm-create-project-client-org">
+                    {tForm("clientOrgLabel")}
+                  </Label>
                   <Select
                     value={clientId}
                     onValueChange={(val) => {
@@ -202,7 +240,9 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
                     }}
                   >
                     <SelectTrigger id="pm-create-project-client-org">
-                      <SelectValue placeholder={tForm("clientOrgPlaceholder")} />
+                      <SelectValue
+                        placeholder={tForm("clientOrgPlaceholder")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {clients.map((c) => (
@@ -215,7 +255,9 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="pm-create-project-client-scope">{tForm("clientScopeLabel")}</Label>
+                  <Label htmlFor="pm-create-project-client-scope">
+                    {tForm("clientScopeLabel")}
+                  </Label>
                   <Textarea
                     id="pm-create-project-client-scope"
                     value={clientScope}
@@ -236,10 +278,18 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
 
             {/* Submit Bar */}
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
-              <Link href="/pm/proyectos" className={buttonVariants({ variant: "outline" })}>
+              <Link
+                href="/pm/proyectos"
+                className={buttonVariants({ variant: "outline" })}
+              >
                 {tForm("cancelAction")}
               </Link>
-              <Button type="submit" disabled={isSubmitting || !name || !internalDescription || !deadlineAt}>
+              <Button
+                type="submit"
+                disabled={
+                  isSubmitting || !name || !internalDescription || !deadlineAt
+                }
+              >
                 {isSubmitting ? tForm("creating") : tForm("submitAction")}
               </Button>
             </div>

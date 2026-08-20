@@ -208,8 +208,55 @@
       "summary": {
         "primaryLeadLabel": "Lead Principal",
         "deadlineLabel": "Entrega",
-        "editAction": "Editar",
-        "statusActions": "Estado"
+        "editAction": "Editar Información",
+        "statusActions": "Estado",
+        "completeProject": "Completar Proyecto",
+        "reopenProject": "Reabrir Proyecto"
+      },
+      "completion": {
+        "dialogTitle": "Completar Proyecto",
+        "dialogDescription": "Revisa el estado del trabajo antes de completar el proyecto.",
+        "loadingReadiness": "Verificando estado del proyecto...",
+        "readyTitle": "El proyecto está listo para completarse.",
+        "readyDescription": "No hay trabajo pendiente sin terminar.",
+        "unfinishedTitle": "Hay trabajo sin terminar",
+        "unfinishedDescription": "Hay {taskCount} tarea(s) sin completar y {deliverableCount} entregable(s) pendiente(s). Puedes completar el proyecto de todas formas, pero el trabajo sin terminar quedará en el historial.",
+        "unfinishedTasksLabel": "Tareas sin completar:",
+        "unfinishedTasksMore": "...y {count} más",
+        "confirmAction": "Completar Proyecto",
+        "cancelAction": "Cancelar",
+        "submitting": "Completando...",
+        "successToast": "Proyecto completado exitosamente.",
+        "errors": {
+          "unauthorized": "No tienes autorización para completar este proyecto.",
+          "invalidTransition": "Este cambio de estado no está permitido desde el estado actual del proyecto.",
+          "notFound": "No se encontró el proyecto. Recarga la página.",
+          "generic": "Error al completar el proyecto. Por favor intenta de nuevo."
+        }
+      },
+      "reopen": {
+        "dialogTitle": "Reabrir Proyecto",
+        "dialogDescription": "Para reabrir el proyecto, escribe el motivo. Este registro quedará en el historial de ciclos.",
+        "reasonLabel": "Motivo de reapertura",
+        "reasonRequired": "El motivo de reapertura es obligatorio.",
+        "reasonTooLong": "El motivo no puede exceder 500 caracteres.",
+        "reasonPlaceholder": "Ej. El cliente solicitó revisiones adicionales al alcance del proyecto...",
+        "confirmAction": "Reabrir Proyecto",
+        "cancelAction": "Cancelar",
+        "submitting": "Reabriendo...",
+        "successToast": "Proyecto reabierto exitosamente.",
+        "errors": {
+          "unauthorized": "No tienes autorización para reabrir este proyecto.",
+          "invalidTransition": "No es posible reabrir el proyecto desde su estado actual.",
+          "reasonRequired": "Debes proporcionar un motivo para reabrir el proyecto.",
+          "notFound": "No se encontró el proyecto. Recarga la página.",
+          "generic": "Error al reabrir el proyecto. Por favor intenta de nuevo."
+        }
+      },
+      "completedBanner": {
+        "title": "Proyecto Completado",
+        "completedOn": "Este proyecto fue completado el {date}.",
+        "reopenAction": "Reabrir Proyecto"
       },
       "tabs": {
         "overview": "Resumen",
@@ -243,6 +290,11 @@
         "completionCyclesTitle": "Historial de Ciclos de Completado",
         "noCycles": "No hay ciclos de completado previos.",
         "cycleNumber": "Ciclo #{number}",
+        "cycleActiveBadge": "Ciclo activo",
+        "completedOn": "Completado el {date}",
+        "cycleDuration": "Duración: {days} días",
+        "reopenedOn": "Reabierto el {date}",
+        "unfinishedOverrideBadge": "Completado con trabajo pendiente",
         "completedBy": "Completado por {name}",
         "reopenedBy": "Reabierto por {name}",
         "reopenReason": "Motivo: {reason}"

@@ -158,16 +158,24 @@ export function AddMemberDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pm_lead">{tCapacities("pm_lead")}</SelectItem>
-                <SelectItem value="pm_watcher">{tCapacities("pm_watcher")}</SelectItem>
-                <SelectItem value="operator">{tCapacities("operator")}</SelectItem>
+                <SelectItem value="pm_lead">
+                  {tCapacities("pm_lead")}
+                </SelectItem>
+                <SelectItem value="pm_watcher">
+                  {tCapacities("pm_watcher")}
+                </SelectItem>
+                <SelectItem value="operator">
+                  {tCapacities("operator")}
+                </SelectItem>
                 <SelectItem
                   value="client"
                   disabled={isInternal || !hasClientId}
                 >
                   {tCapacities("client")}
                   {isInternal && " (No disponible en proyectos internos)"}
-                  {!isInternal && !hasClientId && " (Requiere vincular cliente primero)"}
+                  {!isInternal &&
+                    !hasClientId &&
+                    " (Requiere vincular cliente primero)"}
                 </SelectItem>
               </SelectContent>
             </Select>

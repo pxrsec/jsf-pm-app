@@ -133,13 +133,21 @@ export function MemberRosterTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[30%]">{t("table.columns.member")}</TableHead>
-              <TableHead className="w-[15%]">{t("table.columns.systemRole")}</TableHead>
-              <TableHead className="w-[20%]">{t("table.columns.capacity")}</TableHead>
+              <TableHead className="w-[30%]">
+                {t("table.columns.member")}
+              </TableHead>
+              <TableHead className="w-[15%]">
+                {t("table.columns.systemRole")}
+              </TableHead>
+              <TableHead className="w-[20%]">
+                {t("table.columns.capacity")}
+              </TableHead>
               <TableHead className="w-[10%] text-center">
                 {t("table.columns.notifications")}
               </TableHead>
-              <TableHead className="w-[15%]">{t("table.columns.joinedAt")}</TableHead>
+              <TableHead className="w-[15%]">
+                {t("table.columns.joinedAt")}
+              </TableHead>
               {!isWatcher && (
                 <TableHead className="w-[10%] text-right">
                   {t("table.columns.actions")}
@@ -152,7 +160,10 @@ export function MemberRosterTab({
               const joinedDate = new Date(member.joined_at);
 
               return (
-                <TableRow key={member.id} className="hover:bg-muted/40 transition-colors">
+                <TableRow
+                  key={member.id}
+                  className="hover:bg-muted/40 transition-colors"
+                >
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
@@ -216,16 +227,22 @@ export function MemberRosterTab({
                         >
                           <MoreHorizontal className="h-4 w-4" />
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 text-xs">
-                          {member.member_type === "pm_lead" && !member.is_primary && (
-                            <DropdownMenuItem
-                              onClick={() => setSelectedMemberForPrimary(member)}
-                              className="cursor-pointer gap-2"
-                            >
-                              <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
-                              <span>{t("table.actions.setPrimaryLead")}</span>
-                            </DropdownMenuItem>
-                          )}
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-48 text-xs"
+                        >
+                          {member.member_type === "pm_lead" &&
+                            !member.is_primary && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  setSelectedMemberForPrimary(member)
+                                }
+                                className="cursor-pointer gap-2"
+                              >
+                                <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+                                <span>{t("table.actions.setPrimaryLead")}</span>
+                              </DropdownMenuItem>
+                            )}
 
                           <DropdownMenuItem
                             onClick={() => setSelectedMemberForCapacity(member)}

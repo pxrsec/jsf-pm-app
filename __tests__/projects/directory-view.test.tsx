@@ -132,7 +132,10 @@ describe("Project Directory Components", () => {
   describe("ProjectDirectoryView", () => {
     it("renders title, search input and project lists for admin", () => {
       const html = renderToStaticMarkup(
-        <ProjectDirectoryView initialProjects={sampleProjects} actorRole="admin" />,
+        <ProjectDirectoryView
+          initialProjects={sampleProjects}
+          actorRole="admin"
+        />,
       );
 
       expect(html).toContain("Proyectos");

@@ -52,7 +52,10 @@ export function ProjectEmptyState({
       <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-sm">
         {t("description")}
       </p>
-      <Link href={newProjectHref} className={buttonVariants({ size: "sm", className: "mt-4" })}>
+      <Link
+        href={newProjectHref}
+        className={buttonVariants({ size: "sm", className: "mt-4" })}
+      >
         {t("createCta")}
       </Link>
     </div>

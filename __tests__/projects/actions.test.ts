@@ -2,81 +2,80 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { mockSupabase, mockSession, mockInsert, mockRpc } =
-  vi.hoisted(() => {
-    const mockInsert = vi.fn().mockResolvedValue({ error: null });
-    const mockDelete = vi.fn().mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ error: null }),
-    });
-    const mockUpdate = vi.fn().mockReturnValue({
+const { mockSupabase, mockSession, mockInsert, mockRpc } = vi.hoisted(() => {
+  const mockInsert = vi.fn().mockResolvedValue({ error: null });
+  const mockDelete = vi.fn().mockReturnValue({
+    eq: vi.fn().mockResolvedValue({ error: null }),
+  });
+  const mockUpdate = vi.fn().mockReturnValue({
+    eq: vi.fn().mockReturnValue({
       eq: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ error: null }),
-        }),
-        is: vi.fn().mockReturnValue({
-          select: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({
-              data: { id: "proj-123", name: "Updated Proj" },
-              error: null,
-            }),
+        eq: vi.fn().mockResolvedValue({ error: null }),
+      }),
+      is: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: { id: "proj-123", name: "Updated Proj" },
+            error: null,
           }),
         }),
       }),
-    });
-    const mockRpc = vi.fn().mockResolvedValue({ data: true, error: null });
+    }),
+  });
+  const mockRpc = vi.fn().mockResolvedValue({ data: true, error: null });
 
-    const mockSupabase = {
-      rpc: mockRpc,
-      from: vi.fn((table: string) => {
-        if (table === "project_members") {
-          return {
-            insert: mockInsert,
-            update: mockUpdate,
-            delete: mockDelete,
-          };
-        }
-        if (table === "projects") {
-          return {
-            insert: vi.fn().mockReturnValue({
-              select: vi.fn().mockReturnValue({
-                single: vi.fn().mockResolvedValue({
-                  data: {
-                    id: "proj-123",
-                    name: "Test Project",
-                    project_type: "client",
-                    status: "planning",
-                  },
-                  error: null,
-                }),
+  const mockSupabase = {
+    rpc: mockRpc,
+    from: vi.fn((table: string) => {
+      if (table === "project_members") {
+        return {
+          insert: mockInsert,
+          update: mockUpdate,
+          delete: mockDelete,
+        };
+      }
+      if (table === "projects") {
+        return {
+          insert: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: {
+                  id: "proj-123",
+                  name: "Test Project",
+                  project_type: "client",
+                  status: "planning",
+                },
+                error: null,
               }),
             }),
-            update: mockUpdate,
-            delete: mockDelete,
-          };
-        }
-        return {};
-      }),
-    };
+          }),
+          update: mockUpdate,
+          delete: mockDelete,
+        };
+      }
+      return {};
+    }),
+  };
 
-    const mockSession = {
-      user: { id: "user-pm-111", email: "pm@joya.test" },
+  const mockSession = {
+    user: { id: "user-pm-111", email: "pm@joya.test" },
+    role: "pm",
+    profile: {
+      id: "user-pm-111",
+      full_name: "PM User",
       role: "pm",
-      profile: {
-        id: "user-pm-111",
-        full_name: "PM User",
-        role: "pm",
-      },
-    };
+    },
+  };
 
-    return {
-      mockSupabase,
-      mockSession,
-      mockInsert,
-      mockUpdate,
-      mockDelete,
-      mockRpc,
-    };
-  });
+  return {
+    mockSupabase,
+    mockSession,
+    mockInsert,
+    mockUpdate,
+    mockDelete,
+    mockRpc,
+  };
+});
 
 vi.mock("@/config/app.config", () => ({
   publicConfig: {
@@ -101,7 +100,9 @@ vi.mock("next/cache", () => ({
 }));
 
 vi.mock("@/lib/auth/session", () => ({
-  requireSession: vi.fn().mockImplementation(() => Promise.resolve(mockSession)),
+  requireSession: vi
+    .fn()
+    .mockImplementation(() => Promise.resolve(mockSession)),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({

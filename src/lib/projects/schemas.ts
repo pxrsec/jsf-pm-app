@@ -39,6 +39,11 @@ export const CreateProjectSchema = z
 
 export type CreateProjectInput = z.infer<typeof CreateProjectSchema>;
 
+export interface CreateProjectWithTeamInput extends CreateProjectInput {
+  initial_pm_lead_user_id?: string;
+  initial_client_contact_user_id?: string;
+}
+
 export const UpdateProjectSchema = z.object({
   name: z.string().trim().min(1).max(200).optional(),
   internal_description: z.string().trim().min(1).max(2000).optional(),
@@ -82,6 +87,17 @@ export const RecoverProjectStatusSchema = z.object({
 export type RecoverProjectStatusInput = z.infer<
   typeof RecoverProjectStatusSchema
 >;
+
+export const ReopenProjectSchema = z.object({
+  project_id: z.string().uuid("Invalid project ID"),
+  reopen_reason: z
+    .string()
+    .trim()
+    .min(1, "Reopen reason is required")
+    .max(500, "Reopen reason cannot exceed 500 characters"),
+});
+
+export type ReopenProjectInput = z.infer<typeof ReopenProjectSchema>;
 
 // ── Membership Schemas ───────────────────────────────────────────────────────
 

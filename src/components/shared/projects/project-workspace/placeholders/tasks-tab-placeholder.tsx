@@ -2,7 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import { LayoutGrid } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 
 export function TasksTabPlaceholder() {
   const t = useTranslations("projects.workspace.placeholders");
@@ -14,7 +20,9 @@ export function TasksTabPlaceholder() {
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-2">
             <LayoutGrid className="h-6 w-6" />
           </div>
-          <CardTitle className="text-lg font-semibold">{t("tasksTitle")}</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            {t("tasksTitle")}
+          </CardTitle>
           <CardDescription className="text-xs sm:text-sm max-w-md mx-auto">
             {t("tasksDescription")}
           </CardDescription>

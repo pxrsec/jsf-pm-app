@@ -17,7 +17,10 @@ export function MemberCapacityBadge({
   const config = MEMBER_CAPACITY_MAP[capacity] ?? MEMBER_CAPACITY_MAP.operator;
   const Icon = config.icon;
 
-  const capacityKeyMap: Record<MemberCapacity, "pmLead" | "pmWatcher" | "operator" | "client"> = {
+  const capacityKeyMap: Record<
+    MemberCapacity,
+    "pmLead" | "pmWatcher" | "operator" | "client"
+  > = {
     pm_lead: "pmLead",
     pm_watcher: "pmWatcher",
     operator: "operator",

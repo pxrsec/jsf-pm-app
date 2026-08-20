@@ -28,7 +28,9 @@ export function DeliverablesTabPlaceholder({
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground mb-2">
             <Ban className="h-6 w-6" />
           </div>
-          <CardTitle className="text-base font-semibold">{t("deliverablesTitle")}</CardTitle>
+          <CardTitle className="text-base font-semibold">
+            {t("deliverablesTitle")}
+          </CardTitle>
           <CardDescription className="text-xs sm:text-sm max-w-md mx-auto mt-1 text-muted-foreground">
             {t("internalDeliverablesDisabled")}
           </CardDescription>
@@ -54,7 +56,9 @@ export function DeliverablesTabPlaceholder({
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-2">
             <Send className="h-6 w-6" />
           </div>
-          <CardTitle className="text-lg font-semibold">{t("deliverablesTitle")}</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            {t("deliverablesTitle")}
+          </CardTitle>
           <CardDescription className="text-xs sm:text-sm max-w-md mx-auto">
             {t("deliverablesDescription")}
           </CardDescription>
@@ -65,7 +69,8 @@ export function DeliverablesTabPlaceholder({
               Flujo de versiones y revisiones inmutables (S04-06)
             </span>
             <p className="text-xs text-muted-foreground">
-              Pendiente → Esperando Revisión Interna (PM) → Esperando Revisión de Cliente → Aprobado / Cambios Solicitados → Entregado
+              Pendiente → Esperando Revisión Interna (PM) → Esperando Revisión
+              de Cliente → Aprobado / Cambios Solicitados → Entregado
             </p>
           </div>
         </CardContent>

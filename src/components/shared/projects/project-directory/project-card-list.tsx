@@ -74,7 +74,9 @@ export function ProjectCardList({ projects, baseHref }: ProjectCardListProps) {
             <CardContent className="pb-3 text-xs text-muted-foreground flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <Badge
-                  variant={project.project_type === "client" ? "default" : "secondary"}
+                  variant={
+                    project.project_type === "client" ? "default" : "secondary"
+                  }
                   className="text-xs font-normal"
                 >
                   {project.project_type === "client"

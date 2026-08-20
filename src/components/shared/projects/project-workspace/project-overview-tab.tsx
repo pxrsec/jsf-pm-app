@@ -9,16 +9,11 @@ import {
   Layers,
   Send,
   AlertTriangle,
-  History,
 } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { CompletionCyclesCard } from "./completion-cycles-card";
 import type {
   ProjectDetail,
   ProjectCompletionCyclesView,
@@ -258,7 +253,9 @@ export function ProjectOverviewTab({
               </div>
 
               <div className="flex items-center justify-between border-t border-border pt-2.5">
-                <span className="text-muted-foreground">{tOverview("createdDate")}</span>
+                <span className="text-muted-foreground">
+                  {tOverview("createdDate")}
+                </span>
                 <span className="font-medium text-foreground">
                   {format.dateTime(createdDate, {
                     year: "numeric",
@@ -270,7 +267,9 @@ export function ProjectOverviewTab({
 
               {deadlineDate && (
                 <div className="flex items-center justify-between border-t border-border pt-2.5">
-                  <span className="text-muted-foreground">{t("header.deadlineLabel")}</span>
+                  <span className="text-muted-foreground">
+                    {t("summary.deadlineLabel")}
+                  </span>
                   <span className="font-medium text-foreground">
                     {format.dateTime(deadlineDate, {
                       year: "numeric",
@@ -283,12 +282,17 @@ export function ProjectOverviewTab({
 
               {isClientProject && (
                 <div className="flex items-center justify-between border-t border-border pt-2.5">
-                  <span className="text-muted-foreground">{tOverview("associatedClient")}</span>
+                  <span className="text-muted-foreground">
+                    {tOverview("associatedClient")}
+                  </span>
                   <span className="font-medium text-foreground">
                     {clientOrg ? (
                       clientOrg.display_name
                     ) : (
-                      <Badge variant="outline" className="text-[11px] font-normal">
+                      <Badge
+                        variant="outline"
+                        className="text-[11px] font-normal"
+                      >
                         {tOverview("unassignedClient")}
                       </Badge>
                     )}
@@ -338,42 +342,7 @@ export function ProjectOverviewTab({
           </Card>
 
           {/* Completion Cycles History Card */}
-          {cycles.length > 0 && (
-            <Card className="border-border bg-card">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
-                  <History className="h-4 w-4 text-muted-foreground" />
-                  <span>{tOverview("completionCyclesTitle")}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-xs">
-                {cycles.map((cycle) => (
-                  <div
-                    key={cycle.cycle_number}
-                    className="rounded-md border border-border bg-muted/20 p-2.5 space-y-1"
-                  >
-                    <div className="flex items-center justify-between font-semibold">
-                      <span>{tOverview("cycleNumber", { number: String(cycle.cycle_number) })}</span>
-                      <span className="text-[11px] text-muted-foreground">
-                        {cycle.completed_at
-                          ? format.dateTime(new Date(cycle.completed_at), {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })
-                          : ""}
-                      </span>
-                    </div>
-                    {cycle.reopen_reason && (
-                      <p className="text-muted-foreground text-[11px] italic">
-                        {tOverview("reopenReason", { reason: cycle.reopen_reason })}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
+          <CompletionCyclesCard cycles={cycles} />
         </div>
       </div>
     </div>

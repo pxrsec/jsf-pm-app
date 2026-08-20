@@ -11,10 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  TASK_STATUS_MAP,
-  type TaskStatus,
-} from "@/lib/status-maps";
+import { TASK_STATUS_MAP, type TaskStatus } from "@/lib/status-maps";
 import { STATUS_TRANSLATION_KEYS } from "./task-status-badge";
 import { transitionTaskStatusAction } from "@/lib/projects/task-actions";
 import type { TaskType } from "@/lib/projects/queries";
@@ -61,7 +58,10 @@ export function TaskStatusSelect({
   const [status, setStatus] = useState<TaskStatus>(currentStatus);
   const [isPending, setIsPending] = useState(false);
 
-  const allowedStatuses: TaskStatus[] = getAllowedNextStatuses(status, taskType);
+  const allowedStatuses: TaskStatus[] = getAllowedNextStatuses(
+    status,
+    taskType,
+  );
 
   const handleStatusChange = async (nextStatus: string | null) => {
     if (!nextStatus) return;
@@ -100,9 +100,7 @@ export function TaskStatusSelect({
         }
       } else {
         const transKey = STATUS_TRANSLATION_KEYS[targetStatus] ?? "pending";
-        toast.success(
-          tStatusChange("successToast", { status: t(transKey) }),
-        );
+        toast.success(tStatusChange("successToast", { status: t(transKey) }));
         onStatusChanged?.(targetStatus);
       }
     } catch {

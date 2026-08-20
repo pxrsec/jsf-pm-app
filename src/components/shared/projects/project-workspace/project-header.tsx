@@ -13,6 +13,7 @@ import {
   XCircle,
   Archive,
   RotateCcw,
+  CheckCircle2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,10 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PROJECT_STATUS_MAP } from "@/lib/status-maps";
-import type {
-  ProjectDetail,
-  ProjectStatus,
-} from "@/lib/projects/queries";
+import type { ProjectDetail, ProjectStatus } from "@/lib/projects/queries";
 import type { ClientListItem } from "@/lib/clients/queries";
 import type { ProjectStatusActionType } from "./project-status-dialog";
 
@@ -106,14 +104,12 @@ export function ProjectHeader({
                 className="h-8 gap-1.5 text-xs"
               >
                 <Edit2 className="h-3.5 w-3.5" />
-                <span>{t("header.editButton")}</span>
+                <span>{t("summary.editAction")}</span>
               </Button>
 
               <DropdownMenu>
-                <DropdownMenuTrigger
-                  className="inline-flex shrink-0 items-center justify-center rounded-md border border-input bg-input/20 px-2.5 py-1 text-xs font-medium transition-colors outline-none hover:bg-input/50 h-8 gap-1.5 cursor-pointer"
-                >
-                  <span>{t("header.statusActions")}</span>
+                <DropdownMenuTrigger className="inline-flex shrink-0 items-center justify-center rounded-md border border-input bg-input/20 px-2.5 py-1 text-xs font-medium transition-colors outline-none hover:bg-input/50 h-8 gap-1.5 cursor-pointer">
+                  <span>{t("summary.statusActions")}</span>
                   <MoreVertical className="h-3.5 w-3.5" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 text-xs">
@@ -137,15 +133,37 @@ export function ProjectHeader({
                     </DropdownMenuItem>
                   )}
 
-                  {project.status !== "cancelled" && (
+                  {project.status !== "completed" &&
+                    project.status !== "cancelled" && (
+                      <DropdownMenuItem
+                        onClick={() => onOpenStatusDialog("complete")}
+                        className="cursor-pointer gap-2 text-green-600 focus:text-green-700 dark:text-green-400 dark:focus:text-green-300"
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>{t("summary.completeProject")}</span>
+                      </DropdownMenuItem>
+                    )}
+
+                  {project.status === "completed" && (
                     <DropdownMenuItem
-                      onClick={() => onOpenStatusDialog("cancel")}
-                      className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+                      onClick={() => onOpenStatusDialog("reopen")}
+                      className="cursor-pointer gap-2 text-primary"
                     >
-                      <XCircle className="h-3.5 w-3.5" />
-                      <span>Cancelar Proyecto</span>
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      <span>{t("summary.reopenProject")}</span>
                     </DropdownMenuItem>
                   )}
+
+                  {project.status !== "cancelled" &&
+                    project.status !== "completed" && (
+                      <DropdownMenuItem
+                        onClick={() => onOpenStatusDialog("cancel")}
+                        className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+                      >
+                        <XCircle className="h-3.5 w-3.5" />
+                        <span>Cancelar Proyecto</span>
+                      </DropdownMenuItem>
+                    )}
 
                   <DropdownMenuSeparator />
 
@@ -193,7 +211,9 @@ export function ProjectHeader({
 
           {/* Type Badge */}
           <Badge
-            variant={project.project_type === "client" ? "default" : "secondary"}
+            variant={
+              project.project_type === "client" ? "default" : "secondary"
+            }
             className="text-xs font-normal h-6"
           >
             {project.project_type === "client"
@@ -207,7 +227,9 @@ export function ProjectHeader({
           {primaryLead && (
             <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-border bg-muted/50 text-xs text-foreground">
               <UserCheck className="h-3.5 w-3.5 text-primary" />
-              <span className="text-muted-foreground">{t("header.primaryLeadLabel")}:</span>
+              <span className="text-muted-foreground">
+                {t("summary.primaryLeadLabel")}:
+              </span>
               <span className="font-medium">
                 {primaryLead.profile?.full_name ?? "Lead"}
               </span>
@@ -219,7 +241,7 @@ export function ProjectHeader({
             <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-border bg-muted/50 text-xs text-muted-foreground">
               <Calendar className="h-3.5 w-3.5" />
               <span>
-                {t("header.deadlineLabel")}:{" "}
+                {t("summary.deadlineLabel")}:{" "}
                 {format.dateTime(deadlineDate, {
                   month: "short",
                   day: "numeric",

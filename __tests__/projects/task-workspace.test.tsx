@@ -88,9 +88,11 @@ vi.mock("next-intl", () => ({
           viewKanban: "Tablero Kanban",
           viewList: "Vista de Lista",
           "emptyState.noTasks": "Este proyecto aún no tiene tareas.",
-          "emptyState.noTasksDescription": "Crea la primera tarea para comenzar a gestionar el trabajo del equipo.",
+          "emptyState.noTasksDescription":
+            "Crea la primera tarea para comenzar a gestionar el trabajo del equipo.",
           "emptyState.createFirstTask": "Crear primera tarea",
-          "emptyState.noFilterResults": "No se encontraron tareas con los filtros seleccionados.",
+          "emptyState.noFilterResults":
+            "No se encontraron tareas con los filtros seleccionados.",
           "watcherMode.readOnlyLabel": "Solo lectura — capacidad observador",
           overdue: "Vencida",
           hasDeliverablesBadge: "Con entregables",
@@ -118,7 +120,11 @@ vi.mock("@hello-pangea/dnd", () => ({
     children,
   }: {
     children: (
-      provided: { innerRef: () => void; droppableProps: Record<string, unknown>; placeholder: null },
+      provided: {
+        innerRef: () => void;
+        droppableProps: Record<string, unknown>;
+        placeholder: null;
+      },
       snapshot: { isDraggingOver: boolean },
     ) => React.ReactNode;
   }) =>

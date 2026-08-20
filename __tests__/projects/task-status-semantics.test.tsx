@@ -24,7 +24,10 @@ vi.mock("@/config/app.config", () => ({
 vi.mock("next-intl", () => ({
   useTranslations: (namespace: string) => {
     return (key: string) => {
-      if (namespace === "projects.tasks.priority" || namespace === "tasks.priority") {
+      if (
+        namespace === "projects.tasks.priority" ||
+        namespace === "tasks.priority"
+      ) {
         const map: Record<string, string> = {
           low: "Baja",
           medium: "Media",
@@ -48,7 +51,10 @@ vi.mock("next-intl", () => ({
         };
         return map[key] ?? key;
       }
-      if (namespace === "projects.tasks.taskType" || namespace === "tasks.taskType") {
+      if (
+        namespace === "projects.tasks.taskType" ||
+        namespace === "tasks.taskType"
+      ) {
         return key === "internal_work" || key === "internalWork"
           ? "Trabajo interno"
           : "Solicitud de cliente";
@@ -70,7 +76,14 @@ vi.mock("@hello-pangea/dnd", () => ({
   Draggable: ({
     children,
   }: {
-    children: (provided: { innerRef: () => void; draggableProps: Record<string, unknown>; dragHandleProps: Record<string, unknown> }, snapshot: { isDragging: boolean }) => React.ReactNode;
+    children: (
+      provided: {
+        innerRef: () => void;
+        draggableProps: Record<string, unknown>;
+        dragHandleProps: Record<string, unknown>;
+      },
+      snapshot: { isDragging: boolean },
+    ) => React.ReactNode;
   }) =>
     children(
       {
@@ -101,7 +114,9 @@ describe("Task Status vs Priority Semantic Distinction", () => {
   });
 
   it("TaskPriorityBadge with priority='blocking' renders 'Bloqueante' text with rose background", () => {
-    const html = renderToStaticMarkup(<TaskPriorityBadge priority="blocking" />);
+    const html = renderToStaticMarkup(
+      <TaskPriorityBadge priority="blocking" />,
+    );
     expect(html).toContain("Bloqueante");
     expect(html).toContain("bg-rose-200");
   });

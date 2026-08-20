@@ -91,9 +91,7 @@ export function TaskKanbanBoard({
         }
       } else {
         const transKey = STATUS_TRANSLATION_KEYS[targetStatus] ?? "pending";
-        toast.success(
-          t("kanban.movedSuccess", { status: tStatus(transKey) }),
-        );
+        toast.success(t("kanban.movedSuccess", { status: tStatus(transKey) }));
       }
     } catch {
       // Rollback
