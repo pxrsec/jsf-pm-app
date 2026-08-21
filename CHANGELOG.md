@@ -1,5 +1,15 @@
 # JSF PM App Development Changelog
 
+## [2026-08-21 @ 13:18]
+
+**📝 Sprint 04 Closeout Record Structural Alignment & Contract Hygiene**
+
+- **📝 Closeout Verification Document Alignments (`dev-docs/specs/s04/s04-sprint-04-closeout-verification.md`):**
+  - **Committed Branch Name (§1):** Corrected branch metadata to exact committed branch `feature/s04-e04-e05-project-workspace-and-production-deliverable-lifecycle`.
+  - **Sprint Plan DoD Section (§2):** Corrected the Definition-of-Done section reference to Section 7 (`Sprint Plan DoD Criterion (§7)`).
+  - **Changed-Files Inventory Reorganization (§3):** Regrouped the full Sprint 04 file inventory into the authoritative 8-work-item sprint sequence: S04-01 (Visual Foundation & Persisted Theming), S04-02 (Workspace Command Boundary & Mutation Adapters), S04-03 (Project Directory & Membership Governance), S04-04 (Project Workspace, Task Planning & Constrained Kanban), S04-05 (Project Completion, Reopening & Audit Context), S04-06 (Deliverable Planning, Submission & Immutable History), S04-07 (Internal Review, Resubmission, Release & Final Delivery), and S04-08 (Navigation, Localization, Focused Evidence & Closeout).
+  - **Sprint 05 Hand-Off Contract Hygiene (§10):** Replaced invented `completeProjectAction` with existing authoritative `transitionProjectStatusAction` alongside `reopenProjectAction` and `getCompletionReadinessAction`.
+
 ## [2026-08-21 @ 12:55]
 
 **🚀 Deliverables English Localization Completeness & Factual Sprint 04 Closeout Record**
