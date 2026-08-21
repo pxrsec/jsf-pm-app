@@ -1,5 +1,25 @@
 # JSF PM App Development Changelog
 
+## [2026-08-21 @ 10:43]
+
+**🚀 Authoritative Internal Review, Resubmission, Release, and Final Delivery (S04-07)**
+
+- **🚀 Features:**
+  - **Authoritative PM Review & Final Delivery Actions (`src/lib/deliverables/review-actions.ts`):** Implemented direct async Server Actions (`reviewDeliverableAction`, `markDeliverableDeliveredAction`) with server-side PM Lead / Admin preauthorization, deliverable project verification, strict state transition validation, and RPC invocations (`review_deliverable` with stage pinned to `internal`, and `mark_deliverable_delivered`).
+  - **Active-PM-Lead Preauthorization Alignment (`src/lib/deliverables/auth-checks.ts`):** Aligned `verifyPmLeadCapacity` and `verifyProjectMemberAccess` with PostgreSQL authoritative function `private.is_project_lead` by verifying `profiles.is_active = true` and `profiles.deleted_at is null`.
+  - **Safe Error Mapping (`src/lib/projects/errors.ts`):** Extended `mapSupabaseError` to recognize RPC authorization phrases (`"Only active PM Lead"`) and safely classify them as `UNAUTHORIZED`.
+  - **Review & Delivery Schemas (`src/lib/deliverables/schemas.ts`):** Added `ReviewDeliverableActionSchema` (enforcing mandatory feedback comments on `changes_requested`) and `MarkDeliverableDeliveredActionSchema`.
+  - **Review Decision Status Mapping (`src/lib/status-maps.ts`):** Defined `ReviewDecision` and `REVIEW_DECISION_MAP` exporting `approved` (ShieldCheck, green token) and `changes_requested` (RotateCcw, orange token).
+  - **Controlled Review & Delivery Dialogs (`deliverable-review-dialog.tsx`, `deliverable-delivery-dialog.tsx`):** Added review modal with immutable notice, decision toggle, and character counter, alongside delivery modal featuring explicit workflow truthfulness disclaimers.
+  - **Status-Aware Workspace Gating & Extraction (`deliverables-tab.tsx`, `deliverables-filter-bar.tsx`, `deliverable-detail-sheet.tsx`, `deliverable-list.tsx`, `deliverable-card.tsx`):** Extracted `DeliverablesFilterBar` to keep all components under 300 lines (well under the 400-line repository ceiling). Implemented status-aware action gating suppressing archive/mutation actions on `delivered` status, displaying review CTA for `awaiting_internal_review`, and displaying client review waiting notice for `awaiting_client_review`. Wired `router.refresh()` and detail view re-fetch on mutations.
+  - **Full Dual-Locale Localization Parity (`messages/es-MX.json`, `messages/en-US.json`):** Localized all review/delivery dialogs, action labels, error keys, detail sheet banners, and fallback text strings.
+- **🧪 Verification & Quality:**
+  - `npx vitest run __tests__/deliverables/deliverable-actions.test.ts`: 20/20 passed.
+  - `npx vitest run __tests__/deliverables/schemas.test.ts`: 18/18 passed.
+  - `npx vitest run __tests__/projects/deliverables-workspace.test.tsx`: 13/13 passed.
+  - `npm run typecheck`: 0 errors.
+  - `npm run build`: Production Next.js Turbopack build succeeded with code 0.
+
 ## [2026-08-21 @ 09:27]
 
 **🚀 Production Deliverable Planning, Submission, and Immutable History (S04-06)**

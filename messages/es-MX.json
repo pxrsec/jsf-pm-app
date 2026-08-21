@@ -354,6 +354,11 @@
         "stalledBadge": "Estancado",
         "versionLabel": "v{version}",
         "versionZero": "v0 (Sin envíos)",
+        "unassigned": "Sin asignar",
+        "userFallback": "Usuario",
+        "pmLeadFallback": "PM Lead",
+        "teamMemberFallback": "Miembro del equipo",
+        "actionsMenuAriaLabel": "Menú de opciones",
         "columns": {
           "title": "Título",
           "status": "Estado",
@@ -365,6 +370,8 @@
         "actions": {
           "openDetails": "Ver detalles",
           "submitVersion": "Enviar enlace Drive",
+          "reviewVersion": "Revisar versión",
+          "markDelivered": "Marcar como entregado",
           "edit": "Editar",
           "archive": "Archivar"
         },
@@ -438,6 +445,36 @@
           "successToast": "Versión v{version} registrada para revisión interna.",
           "errorToast": "No se pudo registrar la versión. Verifica el enlace ingresado."
         },
+        "reviewDialog": {
+          "title": "Revisión Interna de Entregable",
+          "description": "Emite una decisión formal de revisión interna sobre la versión v{version}. La decisión quedará registrada de forma inmutable.",
+          "decisionLabel": "Decisión de revisión",
+          "approveOption": "Aprobar para revisión de cliente",
+          "approveHelp": "El entregable avanzará al estado de espera de revisión de cliente.",
+          "requestChangesOption": "Solicitar cambios",
+          "requestChangesHelp": "El entregable regresará a pendiente para que el responsable envíe una nueva versión corregida.",
+          "commentsLabel": "Comentarios de revisión",
+          "commentsOptionalPlaceholder": "Comentarios o retroalimentación opcional para el equipo...",
+          "commentsRequiredPlaceholder": "Detalla los cambios requeridos y correcciones necesarias...",
+          "commentsRequiredError": "Los comentarios son obligatorios al solicitar cambios.",
+          "immutableWarning": "Esta decisión quedará registrada en el historial inmutable y no podrá ser editada ni eliminada.",
+          "submitAction": "Registrar Decisión",
+          "cancelAction": "Cancelar",
+          "submitting": "Registrando...",
+          "approvedToast": "Entregable aprobado internamente. Ahora espera revisión de cliente.",
+          "changesRequestedToast": "Cambios solicitados. El entregable requiere una nueva versión.",
+          "staleErrorToast": "La revisión fue rechazada porque el estado del entregable cambió concurrentemente. Se ha actualizado la vista."
+        },
+        "deliveryDialog": {
+          "title": "Confirmar Entrega Final",
+          "description": "¿Confirmar que el entregable ha sido completado y entregado? Esta acción registrará el estado 'Entregado' en el flujo de trabajo.",
+          "truthfulnessNotice": "La aplicación registra el estado final en el flujo de trabajo interno. No realiza transferencias de archivos, envíos de correo, mensajes externos ni verificación de recepción externa.",
+          "confirmAction": "Marcar como Entregado",
+          "cancelAction": "Cancelar",
+          "delivering": "Registrando entrega...",
+          "successToast": "Entregable marcado como entregado exitosamente.",
+          "errorToast": "No se pudo registrar la entrega final."
+        },
         "linkReportDialog": {
           "title": "Reportar Problema con Enlace",
           "description": "Envía un reporte interno sobre el enlace de la versión v{version}. La aplicación no prueba el enlace de forma remota y el estado del entregable no cambiará.",
@@ -454,8 +491,18 @@
           "specificationsTitle": "Especificaciones Técnicas",
           "deadlinesTitle": "Fechas Límite",
           "nextActionTitle": "Acción Siguiente",
+          "productionAssigneeRole": "Responsable de producción",
+          "submissionDeadlineShort": "Envío",
+          "internalReviewDeadlineShort": "Revisión PM",
+          "clientDeliveryDeadlineShort": "Entrega Cliente",
           "submitCta": "Enviar Versión v{version}",
           "submitCtaInitial": "Enviar Primera Versión (v1)",
+          "reviewCta": "Revisar versión v{version}",
+          "deliverCta": "Marcar como entregado",
+          "awaitingClientReviewTitle": "Esperando Revisión de Cliente",
+          "awaitingClientReviewNotice": "Entregable liberado para revisión de cliente. La revisión de cliente no está disponible en este espacio de trabajo.",
+          "deliveredNotice": "Este entregable ha sido completado y entregado. El historial es de solo lectura.",
+          "internalStage": "Revisión Interna",
           "historyTitle": "Historial Inmutable de Versiones",
           "noHistory": "Aún no se ha enviado ninguna versión de este entregable.",
           "reviewHistoryRecord": "Registro formal de revisión",
@@ -482,7 +529,9 @@
           "invalidTransition": "Esta acción no está permitida en el estado actual del entregable.",
           "invariantViolation": "No se cumplen los requisitos de elegibilidad para el entregable.",
           "conflict": "Hubo un conflicto con otra operación concurrente. Recarga la página.",
-          "generic": "Ocurrió un error inesperado. Por favor intenta de nuevo."
+          "generic": "Ocurrió un error inesperado. Por favor intenta de nuevo.",
+          "staleReview": "El entregable ya no se encuentra en estado de revisión interna. Se ha actualizado la información.",
+          "staleDelivery": "El entregable debe estar aprobado antes de marcarlo como entregado. Se ha actualizado la información."
         },
         "watcherMode": {
           "readOnlyNotice": "Solo lectura — Capacidad Observador",

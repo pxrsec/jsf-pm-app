@@ -4,6 +4,8 @@ import {
   UpdateDeliverableSchema,
   SubmitDeliverableVersionSchema,
   ReviewDeliverableSchema,
+  ReviewDeliverableActionSchema,
+  MarkDeliverableDeliveredActionSchema,
   ReportBrokenLinkSchema,
 } from "@/lib/deliverables/schemas";
 
@@ -149,7 +151,61 @@ describe("Deliverable Domain Schemas", () => {
       const result = ReportBrokenLinkSchema.safeParse({
         deliverable_id: validDeliverableId,
         version_id: validVersionId,
-        reason: "",
+        reason: "   ",
+      });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe("ReviewDeliverableActionSchema", () => {
+    it("accepts approved without comments", () => {
+      const result = ReviewDeliverableActionSchema.safeParse({
+        deliverable_id: validDeliverableId,
+        decision: "approved",
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("accepts changes_requested with non-empty comments", () => {
+      const result = ReviewDeliverableActionSchema.safeParse({
+        deliverable_id: validDeliverableId,
+        decision: "changes_requested",
+        comments: "Audio fix needed at 00:30",
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("rejects changes_requested with whitespace-only comments", () => {
+      const result = ReviewDeliverableActionSchema.safeParse({
+        deliverable_id: validDeliverableId,
+        decision: "changes_requested",
+        comments: "   ",
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it("rejects invalid UUIDs", () => {
+      const result = ReviewDeliverableActionSchema.safeParse({
+        deliverable_id: "invalid-uuid",
+        decision: "approved",
+      });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe("MarkDeliverableDeliveredActionSchema", () => {
+    it("accepts valid deliverable and project UUIDs", () => {
+      const result = MarkDeliverableDeliveredActionSchema.safeParse({
+        deliverable_id: validDeliverableId,
+        project_id: validProjectId,
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("rejects invalid UUIDs", () => {
+      const result = MarkDeliverableDeliveredActionSchema.safeParse({
+        deliverable_id: "not-a-uuid",
+        project_id: validProjectId,
       });
       expect(result.success).toBe(false);
     });

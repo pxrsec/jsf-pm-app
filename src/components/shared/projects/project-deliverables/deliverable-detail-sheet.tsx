@@ -7,6 +7,10 @@ import {
   FileText,
   User,
   AlertTriangle,
+  FileCheck2,
+  Truck,
+  Info,
+  CheckCircle,
 } from "lucide-react";
 import {
   Sheet,
@@ -32,6 +36,8 @@ interface DeliverableDetailSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmitClick: () => void;
+  onReviewClick?: () => void;
+  onDeliverClick?: () => void;
   onReportLink: (version: DeliverableVersionView) => void;
 }
 
@@ -42,6 +48,8 @@ export function DeliverableDetailSheet({
   isOpen,
   onClose,
   onSubmitClick,
+  onReviewClick,
+  onDeliverClick,
   onReportLink,
 }: DeliverableDetailSheetProps) {
   const t = useTranslations("projects.workspace.deliverables");
@@ -57,8 +65,14 @@ export function DeliverableDetailSheet({
     (isAssignee || isLeadOrAdmin) &&
     (deliverable.status === "pending" ||
       deliverable.status === "changes_requested");
+  const canReview =
+    isLeadOrAdmin && deliverable.status === "awaiting_internal_review";
+  const canDeliver = isLeadOrAdmin && deliverable.status === "approved";
+  const isAwaitingClientReview =
+    deliverable.status === "awaiting_client_review";
+  const isDelivered = deliverable.status === "delivered";
 
-  const assigneeName = deliverable.assignee?.full_name || "Sin asignar";
+  const assigneeName = deliverable.assignee?.full_name || t("unassigned");
   const assigneeInitials = assigneeName
     .split(" ")
     .map((n) => n[0])
@@ -129,7 +143,7 @@ export function DeliverableDetailSheet({
                   {assigneeName}
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  Responsable de producción
+                  {t("detailSheet.productionAssigneeRole")}
                 </p>
               </div>
             </div>
@@ -164,7 +178,7 @@ export function DeliverableDetailSheet({
                 {subDeadline && (
                   <div className="bg-muted/30 p-1.5 rounded text-[11px]">
                     <span className="text-muted-foreground block text-[10px]">
-                      Envío
+                      {t("detailSheet.submissionDeadlineShort")}
                     </span>
                     <span className="font-medium">{subDeadline}</span>
                   </div>
@@ -172,7 +186,7 @@ export function DeliverableDetailSheet({
                 {revDeadline && (
                   <div className="bg-muted/30 p-1.5 rounded text-[11px]">
                     <span className="text-muted-foreground block text-[10px]">
-                      Revisión PM
+                      {t("detailSheet.internalReviewDeadlineShort")}
                     </span>
                     <span className="font-medium">{revDeadline}</span>
                   </div>
@@ -180,7 +194,7 @@ export function DeliverableDetailSheet({
                 {delDeadline && (
                   <div className="bg-muted/30 p-1.5 rounded text-[11px]">
                     <span className="text-muted-foreground block text-[10px]">
-                      Entrega Cliente
+                      {t("detailSheet.clientDeliveryDeadlineShort")}
                     </span>
                     <span className="font-medium">{delDeadline}</span>
                   </div>
@@ -190,7 +204,34 @@ export function DeliverableDetailSheet({
           )}
         </div>
 
-        {/* Next Authorized Action (Submit CTA) */}
+        {/* Action / State Banners */}
+        {canReview && (
+          <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/10 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="space-y-0.5">
+              <h4 className="text-xs font-semibold text-foreground">
+                {t("detailSheet.nextActionTitle")}
+              </h4>
+              <p className="text-xs text-muted-foreground">
+                {t("detailSheet.reviewCta", {
+                  version: String(deliverable.current_version_number || 1),
+                })}
+              </p>
+            </div>
+            <Button
+              onClick={onReviewClick}
+              size="sm"
+              className="text-xs gap-1.5 shrink-0 shadow-xs bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              <FileCheck2 className="size-3.5" />
+              <span>
+                {t("detailSheet.reviewCta", {
+                  version: String(deliverable.current_version_number || 1),
+                })}
+              </span>
+            </Button>
+          </div>
+        )}
+
         {canSubmit && (
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
             <div className="space-y-0.5">
@@ -213,6 +254,50 @@ export function DeliverableDetailSheet({
               <HardDrive className="size-3.5" />
               <span>{t("actions.submitVersion")}</span>
             </Button>
+          </div>
+        )}
+
+        {canDeliver && (
+          <div className="rounded-xl border border-teal-500/30 bg-teal-500/10 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="space-y-0.5">
+              <h4 className="text-xs font-semibold text-foreground">
+                {t("detailSheet.nextActionTitle")}
+              </h4>
+              <p className="text-xs text-muted-foreground">
+                {t("detailSheet.deliverCta")}
+              </p>
+            </div>
+            <Button
+              onClick={onDeliverClick}
+              size="sm"
+              className="text-xs gap-1.5 shrink-0 shadow-xs bg-teal-600 hover:bg-teal-700 text-white"
+            >
+              <Truck className="size-3.5" />
+              <span>{t("detailSheet.deliverCta")}</span>
+            </Button>
+          </div>
+        )}
+
+        {isAwaitingClientReview && (
+          <div className="flex items-start gap-2.5 p-3 rounded-xl border border-purple-500/20 bg-purple-500/10 text-purple-900 dark:text-purple-200 text-xs">
+            <Info className="size-4 shrink-0 mt-0.5 text-purple-600 dark:text-purple-400" />
+            <div className="space-y-0.5">
+              <p className="font-semibold">
+                {t("detailSheet.awaitingClientReviewTitle")}
+              </p>
+              <p className="text-purple-800/90 dark:text-purple-300/90 leading-relaxed">
+                {t("detailSheet.awaitingClientReviewNotice")}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {isDelivered && (
+          <div className="flex items-start gap-2.5 p-3 rounded-xl border border-teal-500/20 bg-teal-500/10 text-teal-900 dark:text-teal-200 text-xs">
+            <CheckCircle className="size-4 shrink-0 mt-0.5 text-teal-600 dark:text-teal-400" />
+            <p className="leading-relaxed">
+              {t("detailSheet.deliveredNotice")}
+            </p>
           </div>
         )}
 

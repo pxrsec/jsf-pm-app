@@ -14,10 +14,12 @@ export async function verifyPmLeadCapacity(
 
   const { data: member } = await supabase
     .from("project_members")
-    .select("member_type")
+    .select("member_type, profiles!inner(is_active, deleted_at)")
     .eq("project_id", projectId)
     .eq("user_id", userId)
     .is("deleted_at", null)
+    .eq("profiles.is_active", true)
+    .is("profiles.deleted_at", null)
     .maybeSingle();
 
   return member?.member_type === "pm_lead";
@@ -33,10 +35,12 @@ export async function verifyProjectMemberAccess(
 
   const { data: member } = await supabase
     .from("project_members")
-    .select("id")
+    .select("id, profiles!inner(is_active, deleted_at)")
     .eq("project_id", projectId)
     .eq("user_id", userId)
     .is("deleted_at", null)
+    .eq("profiles.is_active", true)
+    .is("profiles.deleted_at", null)
     .maybeSingle();
 
   return Boolean(member);

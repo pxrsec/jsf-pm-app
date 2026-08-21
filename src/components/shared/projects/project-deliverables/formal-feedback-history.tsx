@@ -1,8 +1,9 @@
 "use client";
 
 import { useTranslations, useFormatter } from "next-intl";
-import { ShieldCheck, RotateCcw, MessageSquareQuote } from "lucide-react";
+import { MessageSquareQuote } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { REVIEW_DECISION_MAP } from "@/lib/status-maps";
 import type { DeliverableFeedbackView } from "@/lib/deliverables/queries";
 
 interface FormalFeedbackHistoryProps {
@@ -24,7 +25,11 @@ export function FormalFeedbackHistory({ feedback }: FormalFeedbackHistoryProps) 
 
       <div className="space-y-2.5">
         {feedback.map((item) => {
-          const isApproved = item.decision === "approved";
+          const config =
+            REVIEW_DECISION_MAP[item.decision] ||
+            REVIEW_DECISION_MAP.approved;
+          const DecisionIcon = config.icon;
+
           const formattedDate = format.dateTime(new Date(item.reviewed_at), {
             month: "short",
             day: "numeric",
@@ -33,7 +38,7 @@ export function FormalFeedbackHistory({ feedback }: FormalFeedbackHistoryProps) 
             minute: "2-digit",
           });
 
-          const reviewerName = item.reviewer?.full_name || "PM Lead";
+          const reviewerName = item.reviewer?.full_name || t("pmLeadFallback");
           const reviewerInitials = reviewerName
             .split(" ")
             .map((n) => n[0])
@@ -46,7 +51,7 @@ export function FormalFeedbackHistory({ feedback }: FormalFeedbackHistoryProps) 
               key={item.id}
               className="rounded-lg border border-border/80 bg-muted/30 p-3 space-y-2 text-xs"
             >
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <div className="size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[9px] shrink-0">
                     {reviewerInitials}
@@ -54,6 +59,12 @@ export function FormalFeedbackHistory({ feedback }: FormalFeedbackHistoryProps) 
                   <span className="font-medium text-foreground">
                     {reviewerName}
                   </span>
+                  <Badge
+                    variant="secondary"
+                    className="text-[9px] px-1 py-0 font-normal"
+                  >
+                    {t("detailSheet.internalStage")}
+                  </Badge>
                   <span className="text-[11px] text-muted-foreground">
                     {formattedDate}
                   </span>
@@ -61,19 +72,11 @@ export function FormalFeedbackHistory({ feedback }: FormalFeedbackHistoryProps) 
 
                 <Badge
                   variant="outline"
-                  className={
-                    isApproved
-                      ? "bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20 text-[10px] gap-1 font-medium"
-                      : "bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20 text-[10px] gap-1 font-medium"
-                  }
+                  className={`text-[10px] gap-1 font-medium ${config.badgeBg} ${config.badgeFg}`}
                 >
-                  {isApproved ? (
-                    <ShieldCheck className="size-3" />
-                  ) : (
-                    <RotateCcw className="size-3" />
-                  )}
+                  <DecisionIcon className="size-3" />
                   <span>
-                    {isApproved
+                    {item.decision === "approved"
                       ? t("status.approved")
                       : t("status.changesRequested")}
                   </span>
@@ -92,3 +95,4 @@ export function FormalFeedbackHistory({ feedback }: FormalFeedbackHistoryProps) 
     </div>
   );
 }
+

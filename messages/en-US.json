@@ -354,6 +354,11 @@
         "stalledBadge": "Stalled",
         "versionLabel": "v{version}",
         "versionZero": "v0 (No submissions)",
+        "unassigned": "Unassigned",
+        "userFallback": "User",
+        "pmLeadFallback": "PM Lead",
+        "teamMemberFallback": "Team Member",
+        "actionsMenuAriaLabel": "Actions menu",
         "columns": {
           "title": "Title",
           "status": "Status",
@@ -365,6 +370,8 @@
         "actions": {
           "openDetails": "View details",
           "submitVersion": "Submit Drive link",
+          "reviewVersion": "Review version",
+          "markDelivered": "Mark as delivered",
           "edit": "Edit",
           "archive": "Archive"
         },
@@ -438,6 +445,36 @@
           "successToast": "Version v{version} recorded for internal review.",
           "errorToast": "Could not record version. Please verify the entered link."
         },
+        "reviewDialog": {
+          "title": "Internal Deliverable Review",
+          "description": "Issue a formal internal review decision for version v{version}. The decision will be recorded immutably.",
+          "decisionLabel": "Review decision",
+          "approveOption": "Approve for client review",
+          "approveHelp": "The deliverable will advance to awaiting client review.",
+          "requestChangesOption": "Request changes",
+          "requestChangesHelp": "The deliverable will return to pending for the assignee to submit a corrected version.",
+          "commentsLabel": "Review comments",
+          "commentsOptionalPlaceholder": "Optional comments or feedback for the team...",
+          "commentsRequiredPlaceholder": "Detail the required changes and necessary corrections...",
+          "commentsRequiredError": "Comments are mandatory when requesting changes.",
+          "immutableWarning": "This decision will be recorded in immutable history and cannot be edited or deleted.",
+          "submitAction": "Record Decision",
+          "cancelAction": "Cancel",
+          "submitting": "Recording...",
+          "approvedToast": "Deliverable approved internally. Now awaiting client review.",
+          "changesRequestedToast": "Changes requested. The deliverable requires a new version.",
+          "staleErrorToast": "Review was rejected because the deliverable state changed concurrently. The view has been refreshed."
+        },
+        "deliveryDialog": {
+          "title": "Confirm Final Delivery",
+          "description": "Confirm that the deliverable has been completed and delivered? This action will record the 'Delivered' state in the workflow.",
+          "truthfulnessNotice": "The application records the final status in the internal workflow. It does not perform file transfers, email dispatches, external messages, or external receipt verification.",
+          "confirmAction": "Mark as Delivered",
+          "cancelAction": "Cancel",
+          "delivering": "Recording delivery...",
+          "successToast": "Deliverable marked as delivered successfully.",
+          "errorToast": "Could not record final delivery."
+        },
         "linkReportDialog": {
           "title": "Report Link Issue",
           "description": "Submit an internal report regarding the link for version v{version}. The application does not remotely test the link and the deliverable status will not change.",
@@ -454,8 +491,18 @@
           "specificationsTitle": "Technical Specifications",
           "deadlinesTitle": "Deadlines",
           "nextActionTitle": "Next Action",
+          "productionAssigneeRole": "Production Assignee",
+          "submissionDeadlineShort": "Submission",
+          "internalReviewDeadlineShort": "PM Review",
+          "clientDeliveryDeadlineShort": "Client Delivery",
           "submitCta": "Submit Version v{version}",
           "submitCtaInitial": "Submit First Version (v1)",
+          "reviewCta": "Review version v{version}",
+          "deliverCta": "Mark as delivered",
+          "awaitingClientReviewTitle": "Awaiting Client Review",
+          "awaitingClientReviewNotice": "Deliverable released for client review. Client review is not available in this workspace.",
+          "deliveredNotice": "This deliverable has been completed and delivered. History is read-only.",
+          "internalStage": "Internal Review",
           "historyTitle": "Immutable Version History",
           "noHistory": "No versions have been submitted for this deliverable yet.",
           "reviewHistoryRecord": "Formal review record",
@@ -482,7 +529,9 @@
           "invalidTransition": "This action is not allowed in the current deliverable state.",
           "invariantViolation": "Deliverable eligibility requirements are not met.",
           "conflict": "There was a conflict with another concurrent operation. Please refresh the page.",
-          "generic": "An unexpected error occurred. Please try again."
+          "generic": "An unexpected error occurred. Please try again.",
+          "staleReview": "The deliverable is no longer awaiting internal review. Information has been refreshed.",
+          "staleDelivery": "The deliverable must be approved before marking as delivered. Information has been refreshed."
         },
         "watcherMode": {
           "readOnlyNotice": "Read-only — Watcher capacity",

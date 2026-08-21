@@ -212,3 +212,22 @@ export const MEMBER_CAPACITY_MAP: Record<MemberCapacity, CapacityConfig> = {
   operator: { icon: User, labelKey: "capacity.operator" },
   client: { icon: Users, labelKey: "capacity.client" },
 };
+
+// ── Deliverable review decision ───────────────────────────────────────────────
+
+export type ReviewDecision = "approved" | "changes_requested";
+
+export const REVIEW_DECISION_MAP: Record<ReviewDecision, StatusConfig> = {
+  approved: {
+    badgeBg: "bg-green-100 dark:bg-green-950/60",
+    badgeFg: "text-green-800 dark:text-green-200",
+    icon: ShieldCheck,
+    labelKey: "status.approved",
+  },
+  changes_requested: {
+    badgeBg: "bg-orange-100 dark:bg-orange-950/60",
+    badgeFg: "text-orange-800 dark:text-orange-200",
+    icon: RotateCcw,
+    labelKey: "status.changesRequested",
+  },
+};

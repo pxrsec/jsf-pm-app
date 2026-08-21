@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 
 vi.mock("server-only", () => ({}));
 
@@ -28,15 +28,23 @@ vi.mock("@/lib/deliverables/actions", () => ({
   reportDeliverableLinkAction: vi.fn().mockResolvedValue({ ok: true }),
 }));
 
+vi.mock("@/lib/deliverables/review-actions", () => ({
+  reviewDeliverableAction: vi.fn().mockResolvedValue({ ok: true }),
+  markDeliverableDeliveredAction: vi.fn().mockResolvedValue({ ok: true }),
+}));
+
 vi.mock("@/lib/deliverables/comment-actions", () => ({
   createDeliverableCommentAction: vi.fn().mockResolvedValue({ ok: true }),
   listDeliverableCommentsAction: vi.fn().mockResolvedValue([]),
 }));
 
+const mockPush = vi.fn();
+const mockRefresh = vi.fn();
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
-    refresh: vi.fn(),
+    push: mockPush,
+    refresh: mockRefresh,
   }),
 }));
 
@@ -76,6 +84,11 @@ vi.mock("next-intl", () => ({
         "newDeliverableAction": "Nuevo Entregable",
         "stalledBadge": "Estancado",
         "versionZero": "v0 (Sin envíos)",
+        "unassigned": "Sin asignar",
+        "userFallback": "Usuario",
+        "pmLeadFallback": "PM Lead",
+        "teamMemberFallback": "Miembro del Equipo",
+        "actionsMenuAriaLabel": "Menú de acciones",
         "detailSheet.title": "Detalle del Entregable",
         "detailSheet.historyTitle": "Historial Inmutable de Versiones",
         "detailSheet.noHistory":
@@ -83,6 +96,19 @@ vi.mock("next-intl", () => ({
         "detailSheet.reviewHistoryRecord": "Registro formal de revisión",
         "detailSheet.openExternalLink": "Abrir en Google Drive",
         "detailSheet.reportLinkAction": "Reportar problema con enlace",
+        "detailSheet.nextActionTitle": "Siguiente Acción",
+        "detailSheet.submitCta": `Enviar Versión v${params?.version ?? ""}`,
+        "detailSheet.submitCtaInitial": "Enviar Primera Versión (v1)",
+        "detailSheet.reviewCta": `Revisar versión v${params?.version ?? ""}`,
+        "detailSheet.deliverCta": "Marcar como entregado",
+        "detailSheet.awaitingClientReviewTitle": "En Espera de Revisión del Cliente",
+        "detailSheet.awaitingClientReviewNotice": "Entregable liberado para revisión de cliente.",
+        "detailSheet.deliveredNotice": "Este entregable ha sido completado y entregado.",
+        "detailSheet.internalStage": "Revisión Interna",
+        "detailSheet.productionAssigneeRole": "Responsable de producción",
+        "detailSheet.submissionDeadlineShort": "Envío",
+        "detailSheet.internalReviewDeadlineShort": "Revisión PM",
+        "detailSheet.clientDeliveryDeadlineShort": "Entrega Cliente",
         "linkReportDialog.title": "Reportar Problema con Enlace",
         "linkReportDialog.description":
           `Envía un reporte interno sobre el enlace de la versión v${params?.version ?? ""}.`,
@@ -90,8 +116,31 @@ vi.mock("next-intl", () => ({
         "linkReportDialog.cancelAction": "Cancelar",
         "linkReportDialog.submitAction": "Enviar Reporte",
         "linkReportDialog.submitting": "Enviando reporte...",
+        "reviewDialog.title": "Revisión Interna del Entregable",
+        "reviewDialog.description": `Emite un dictamen formal de revisión interna para la versión v${params?.version ?? ""}.`,
+        "reviewDialog.decisionLabel": "Dictamen de revisión",
+        "reviewDialog.approveOption": "Aprobar para revisión de cliente",
+        "reviewDialog.approveHelp": "El entregable avanzará a en espera de revisión del cliente.",
+        "reviewDialog.requestChangesOption": "Solicitar cambios",
+        "reviewDialog.requestChangesHelp": "El entregable volverá a pendiente para corregir.",
+        "reviewDialog.commentsLabel": "Comentarios de revisión",
+        "reviewDialog.commentsOptionalPlaceholder": "Comentarios opcionales...",
+        "reviewDialog.commentsRequiredPlaceholder": "Detalla los cambios solicitados...",
+        "reviewDialog.commentsRequiredError": "El comentario es obligatorio al solicitar cambios.",
+        "reviewDialog.immutableWarning": "Este dictamen quedará asentado de forma inmutable.",
+        "reviewDialog.submitAction": "Asentar Dictamen",
+        "reviewDialog.cancelAction": "Cancelar",
+        "reviewDialog.submitting": "Asentando...",
+        "deliveryDialog.title": "¿Confirmar Entrega Final?",
+        "deliveryDialog.description": "¿Confirmar que el entregable ha sido completado y entregado?",
+        "deliveryDialog.truthfulnessNotice": "La aplicación registra el estado final en el flujo de trabajo interno. No realiza transferencias de archivos, envíos de correo, mensajes externos ni verificación de recepción externa.",
+        "deliveryDialog.confirmAction": "Marcar como Entregado",
+        "deliveryDialog.cancelAction": "Cancelar",
+        "deliveryDialog.delivering": "Registrando entrega...",
         "actions.openDetails": "Ver detalles",
         "actions.submitVersion": "Enviar enlace Drive",
+        "actions.reviewVersion": "Revisar versión",
+        "actions.markDelivered": "Marcar como entregado",
         "actions.edit": "Editar",
         "actions.archive": "Archivar",
         "columns.title": "Título",
@@ -155,14 +204,27 @@ import { DeliverablesTab } from "@/components/shared/projects/project-deliverabl
 import { DeliverableHistory } from "@/components/shared/projects/project-deliverables/deliverable-history";
 import { FormalFeedbackHistory } from "@/components/shared/projects/project-deliverables/formal-feedback-history";
 import { DeliverableLinkReportDialog } from "@/components/shared/projects/project-deliverables/deliverable-link-report-dialog";
+import { DeliverableReviewDialog } from "@/components/shared/projects/project-deliverables/deliverable-review-dialog";
+import { DeliverableDeliveryDialog } from "@/components/shared/projects/project-deliverables/deliverable-delivery-dialog";
+import { DeliverableDetailSheet } from "@/components/shared/projects/project-deliverables/deliverable-detail-sheet";
+import { DeliverableList } from "@/components/shared/projects/project-deliverables/deliverable-list";
+import { DeliverableCard } from "@/components/shared/projects/project-deliverables/deliverable-card";
+import {
+  reviewDeliverableAction,
+  markDeliverableDeliveredAction,
+} from "@/lib/deliverables/review-actions";
 import type { ProjectDetail, TaskWithAssignee } from "@/lib/projects/queries";
 import type {
   DeliverableListItem,
+  DeliverableDetailView,
   DeliverableVersionView,
   DeliverableFeedbackView,
 } from "@/lib/deliverables/queries";
 
 describe("Deliverables Workspace UI", () => {
+  afterEach(() => {
+    cleanup();
+  });
   const mockInternalProject: ProjectDetail = {
     id: "proj-internal-1",
     name: "Internal Project",
@@ -490,5 +552,161 @@ describe("Deliverables Workspace UI", () => {
         /El sistema no valida ni descarga el enlace de forma remota/,
       ),
     ).toBeTruthy();
+  });
+
+  it("renders deliverable review dialog with decision options and character count", () => {
+    const mockDeliv: DeliverableListItem = {
+      ...mockDeliverables[0],
+      status: "awaiting_internal_review",
+      current_version_number: 1,
+    };
+
+    render(
+      <DeliverableReviewDialog
+        deliverable={mockDeliv}
+        isOpen={true}
+        onClose={vi.fn()}
+        onSuccess={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Revisión Interna del Entregable")).toBeTruthy();
+    expect(screen.getByText("Aprobar para revisión de cliente")).toBeTruthy();
+    expect(screen.getByText("Solicitar cambios")).toBeTruthy();
+    expect(screen.getByText(/Este dictamen quedará asentado de forma inmutable/)).toBeTruthy();
+    expect(screen.getByText("0/5000")).toBeTruthy();
+  });
+
+  it("renders deliverable delivery dialog with truthfulness disclaimer", () => {
+    const mockDeliv: DeliverableListItem = {
+      ...mockDeliverables[0],
+      status: "approved",
+      current_version_number: 2,
+    };
+
+    render(
+      <DeliverableDeliveryDialog
+        deliverable={mockDeliv}
+        projectId={mockReadyClientProject.id}
+        isOpen={true}
+        onClose={vi.fn()}
+        onSuccess={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("¿Confirmar Entrega Final?")).toBeTruthy();
+    expect(
+      screen.getByText(/La aplicación registra el estado final en el flujo de trabajo interno/),
+    ).toBeTruthy();
+    expect(screen.getByText("Marcar como Entregado")).toBeTruthy();
+  });
+
+  it("renders truthful waiting banner in detail sheet for awaiting_client_review", () => {
+    const mockDetail: DeliverableDetailView = {
+      ...mockDeliverables[0],
+      status: "awaiting_client_review",
+      current_version_number: 1,
+      versions: [],
+      feedback: [],
+    };
+
+    render(
+      <DeliverableDetailSheet
+        deliverable={mockDetail}
+        effectiveCapacity="pm_lead"
+        isOpen={true}
+        onClose={vi.fn()}
+        onSubmitClick={vi.fn()}
+        onReportLink={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("En Espera de Revisión del Cliente")).toBeTruthy();
+    expect(
+      screen.getByText("Entregable liberado para revisión de cliente."),
+    ).toBeTruthy();
+  });
+
+  it("renders read-only notice banner in detail sheet for delivered state", () => {
+    const mockDetail: DeliverableDetailView = {
+      ...mockDeliverables[0],
+      status: "delivered",
+      current_version_number: 2,
+      versions: [],
+      feedback: [],
+    };
+
+    render(
+      <DeliverableDetailSheet
+        deliverable={mockDetail}
+        effectiveCapacity="pm_lead"
+        isOpen={true}
+        onClose={vi.fn()}
+        onSubmitClick={vi.fn()}
+        onReportLink={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByText("Este entregable ha sido completado y entregado."),
+    ).toBeTruthy();
+  });
+
+  it("suppresses archive, submit, and edit menu options for delivered status in DeliverableList", () => {
+    const deliveredItem: DeliverableListItem = {
+      ...mockDeliverables[0],
+      status: "delivered",
+      current_version_number: 2,
+    };
+
+    render(
+      <DeliverableList
+        deliverables={[deliveredItem]}
+        effectiveCapacity="pm_lead"
+        onViewDetails={vi.fn()}
+        onSubmitVersion={vi.fn()}
+        onEdit={vi.fn()}
+        onArchive={vi.fn()}
+      />,
+    );
+
+    const trigger = screen.getByLabelText("Menú de acciones");
+    fireEvent.click(trigger);
+
+    expect(screen.getByText("Ver detalles")).toBeTruthy();
+    expect(screen.queryByText("Archivar")).toBeNull();
+    expect(screen.queryByText("Enviar enlace Drive")).toBeNull();
+    expect(screen.queryByText("Editar")).toBeNull();
+    expect(screen.queryByText("Revisar versión")).toBeNull();
+    expect(screen.queryByText("Marcar como entregado")).toBeNull();
+  });
+
+  it("suppresses archive, submit, and edit menu options for delivered status in DeliverableCard", () => {
+    const deliveredItem: DeliverableListItem = {
+      ...mockDeliverables[0],
+      status: "delivered",
+      current_version_number: 2,
+    };
+
+    render(
+      <DeliverableCard
+        deliverable={deliveredItem}
+        effectiveCapacity="pm_lead"
+        onViewDetails={vi.fn()}
+        onSubmitVersion={vi.fn()}
+        onEdit={vi.fn()}
+        onArchive={vi.fn()}
+      />,
+    );
+
+    const trigger = screen.getByLabelText("Menú de acciones");
+    fireEvent.click(trigger);
+
+    expect(screen.getByText("Ver detalles")).toBeTruthy();
+    expect(screen.queryByText("Archivar")).toBeNull();
+    expect(screen.queryByText("Enviar enlace Drive")).toBeNull();
+    expect(screen.queryByText("Editar")).toBeNull();
+    expect(screen.queryByText("Revisar versión")).toBeNull();
+    expect(screen.queryByText("Marcar como entregado")).toBeNull();
   });
 });

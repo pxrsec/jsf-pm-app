@@ -2,30 +2,25 @@
 
 import { useState, useMemo, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  Plus,
-  Table as TableIcon,
-  LayoutGrid,
-  FilterX,
   Building2,
   FolderLock,
   Layers,
+  FilterX,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { DeliverablesFilterBar } from "./deliverables-filter-bar";
 import { DeliverableList } from "./deliverable-list";
 import { DeliverableCard } from "./deliverable-card";
 import { DeliverableCreateDialog } from "./deliverable-create-dialog";
 import { DeliverableEditDialog } from "./deliverable-edit-dialog";
 import { DeliverableArchiveDialog } from "./deliverable-archive-dialog";
 import { DeliverableSubmitDialog } from "./deliverable-submit-dialog";
+import { DeliverableReviewDialog } from "./deliverable-review-dialog";
+import { DeliverableDeliveryDialog } from "./deliverable-delivery-dialog";
 import { DeliverableDetailSheet } from "./deliverable-detail-sheet";
 import { DeliverableLinkReportDialog } from "./deliverable-link-report-dialog";
 import { getDeliverableDetailAction } from "@/lib/deliverables/actions";
@@ -34,7 +29,6 @@ import type {
   DeliverableListItem,
   DeliverableDetailView,
   DeliverableVersionView,
-  DeliverableStatus,
 } from "@/lib/deliverables/queries";
 
 interface DeliverablesTabProps {
@@ -53,6 +47,7 @@ export function DeliverablesTab({
   currentUserId,
 }: DeliverablesTabProps) {
   const t = useTranslations("projects.workspace.deliverables");
+  const router = useRouter();
   const [, startTransition] = useTransition();
 
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
@@ -67,6 +62,10 @@ export function DeliverablesTab({
   >(null);
   const [submittingDeliverable, setSubmittingDeliverable] =
     useState<DeliverableListItem | null>(null);
+  const [reviewingDeliverable, setReviewingDeliverable] =
+    useState<DeliverableListItem | DeliverableDetailView | null>(null);
+  const [deliveringDeliverable, setDeliveringDeliverable] =
+    useState<DeliverableListItem | DeliverableDetailView | null>(null);
   const [selectedDetail, setSelectedDetail] =
     useState<DeliverableDetailView | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -107,13 +106,40 @@ export function DeliverablesTab({
 
   const handleRefresh = (msg?: string) => {
     if (msg) toast.success(msg);
+    router.refresh();
     startTransition(() => {
       if (selectedDetail) {
-        getDeliverableDetailAction(selectedDetail.id).then((fresh) => {
-          if (fresh) setSelectedDetail(fresh);
-        });
+        getDeliverableDetailAction(selectedDetail.id)
+          .then((fresh) => {
+            if (fresh) setSelectedDetail(fresh);
+            else {
+              setIsDetailOpen(false);
+              setSelectedDetail(null);
+            }
+          })
+          .catch(() => {
+            setIsDetailOpen(false);
+            setSelectedDetail(null);
+          });
       }
     });
+  };
+
+  const handleActionError = (code: string) => {
+    if (code === "NOT_FOUND") {
+      setIsDetailOpen(false);
+      setSelectedDetail(null);
+    }
+    router.refresh();
+    if (selectedDetail && code !== "NOT_FOUND") {
+      getDeliverableDetailAction(selectedDetail.id).then((fresh) => {
+        if (fresh) setSelectedDetail(fresh);
+        else {
+          setIsDetailOpen(false);
+          setSelectedDetail(null);
+        }
+      });
+    }
   };
 
   if (isInternal) {
@@ -148,117 +174,18 @@ export function DeliverablesTab({
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Select
-            value={statusFilter}
-            onValueChange={(val) => {
-              if (val) setStatusFilter(val);
-            }}
-          >
-            <SelectTrigger className="w-[170px] h-8 text-xs bg-card">
-              <SelectValue placeholder={t("filterStatus")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" className="text-xs">
-                {t("allStatuses")}
-              </SelectItem>
-              {(
-                [
-                  "pending",
-                  "awaiting_internal_review",
-                  "awaiting_client_review",
-                  "approved",
-                  "changes_requested",
-                  "delivered",
-                ] as DeliverableStatus[]
-              ).map((s) => (
-                <SelectItem key={s} value={s} className="text-xs">
-                  {t(
-                    `status.${s === "awaiting_internal_review" ? "awaitingInternalReview" : s === "awaiting_client_review" ? "awaitingClientReview" : s === "changes_requested" ? "changesRequested" : s}` as "status.pending",
-                  )}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={assigneeFilter}
-            onValueChange={(val) => {
-              if (val) setAssigneeFilter(val);
-            }}
-          >
-            <SelectTrigger className="w-[170px] h-8 text-xs bg-card">
-              <SelectValue placeholder={t("filterAssignee")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" className="text-xs">
-                {t("allAssignees")}
-              </SelectItem>
-              {project.members
-                .filter((m) => !m.deleted_at && m.profile)
-                .map((m) => (
-                  <SelectItem
-                    key={m.user_id}
-                    value={m.user_id}
-                    className="text-xs"
-                  >
-                    {m.profile?.full_name || "Usuario"}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-
-          {(statusFilter !== "all" || assigneeFilter !== "all") && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setStatusFilter("all");
-                setAssigneeFilter("all");
-              }}
-              className="h-8 px-2 text-xs text-muted-foreground gap-1"
-            >
-              <FilterX className="size-3.5" />
-              <span>{t("clearFilters")}</span>
-            </Button>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2 self-end sm:self-auto">
-          <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border/60">
-            <Button
-              variant={viewMode === "table" ? "secondary" : "ghost"}
-              size="icon"
-              onClick={() => setViewMode("table")}
-              className="size-7"
-              aria-label={t("viewTable")}
-            >
-              <TableIcon className="size-3.5" />
-            </Button>
-            <Button
-              variant={viewMode === "cards" ? "secondary" : "ghost"}
-              size="icon"
-              onClick={() => setViewMode("cards")}
-              className="size-7"
-              aria-label={t("viewCards")}
-            >
-              <LayoutGrid className="size-3.5" />
-            </Button>
-          </div>
-
-          {isLeadOrAdmin && isClientReady && (
-            <Button
-              onClick={() => setIsCreateOpen(true)}
-              size="sm"
-              className="h-8 text-xs gap-1.5 shadow-xs"
-            >
-              <Plus className="size-3.5" />
-              <span>{t("newDeliverableAction")}</span>
-            </Button>
-          )}
-        </div>
-      </div>
+      <DeliverablesFilterBar
+        project={project}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        assigneeFilter={assigneeFilter}
+        setAssigneeFilter={setAssigneeFilter}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        isLeadOrAdmin={isLeadOrAdmin}
+        isClientReady={isClientReady}
+        onOpenCreate={() => setIsCreateOpen(true)}
+      />
 
       {initialDeliverables.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-dashed border-border/80 bg-muted/10 space-y-3">
@@ -314,6 +241,8 @@ export function DeliverablesTab({
           onSubmitVersion={(d) => setSubmittingDeliverable(d)}
           onEdit={(d) => setEditingDeliverable(d)}
           onArchive={(d) => setArchivingDeliverableId(d.id)}
+          onReview={(d) => setReviewingDeliverable(d)}
+          onDeliver={(d) => setDeliveringDeliverable(d)}
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -327,6 +256,8 @@ export function DeliverablesTab({
               onSubmitVersion={(deliv) => setSubmittingDeliverable(deliv)}
               onEdit={(deliv) => setEditingDeliverable(deliv)}
               onArchive={(deliv) => setArchivingDeliverableId(deliv.id)}
+              onReview={(deliv) => setReviewingDeliverable(deliv)}
+              onDeliver={(deliv) => setDeliveringDeliverable(deliv)}
             />
           ))}
         </div>
@@ -363,6 +294,23 @@ export function DeliverablesTab({
         onSuccess={handleRefresh}
       />
 
+      <DeliverableReviewDialog
+        deliverable={reviewingDeliverable}
+        isOpen={Boolean(reviewingDeliverable)}
+        onClose={() => setReviewingDeliverable(null)}
+        onSuccess={handleRefresh}
+        onError={handleActionError}
+      />
+
+      <DeliverableDeliveryDialog
+        deliverable={deliveringDeliverable}
+        projectId={project.id}
+        isOpen={Boolean(deliveringDeliverable)}
+        onClose={() => setDeliveringDeliverable(null)}
+        onSuccess={handleRefresh}
+        onError={handleActionError}
+      />
+
       <DeliverableDetailSheet
         deliverable={selectedDetail}
         effectiveCapacity={effectiveCapacity}
@@ -372,6 +320,16 @@ export function DeliverablesTab({
         onSubmitClick={() => {
           if (selectedDetail) {
             setSubmittingDeliverable(selectedDetail);
+          }
+        }}
+        onReviewClick={() => {
+          if (selectedDetail) {
+            setReviewingDeliverable(selectedDetail);
+          }
+        }}
+        onDeliverClick={() => {
+          if (selectedDetail) {
+            setDeliveringDeliverable(selectedDetail);
           }
         }}
         onReportLink={(ver) => setReportingVersion(ver)}

@@ -8,6 +8,8 @@ import {
   Eye,
   HardDrive,
   AlertTriangle,
+  FileCheck2,
+  Truck,
 } from "lucide-react";
 import {
   Table,
@@ -36,6 +38,8 @@ interface DeliverableListProps {
   onSubmitVersion: (d: DeliverableListItem) => void;
   onEdit: (d: DeliverableListItem) => void;
   onArchive: (d: DeliverableListItem) => void;
+  onReview?: (d: DeliverableListItem) => void;
+  onDeliver?: (d: DeliverableListItem) => void;
 }
 
 export function DeliverableList({
@@ -46,6 +50,8 @@ export function DeliverableList({
   onSubmitVersion,
   onEdit,
   onArchive,
+  onReview,
+  onDeliver,
 }: DeliverableListProps) {
   const t = useTranslations("projects.workspace.deliverables");
   const format = useFormatter();
@@ -90,9 +96,16 @@ export function DeliverableList({
               (isAssignee || isLeadOrAdmin) &&
               (deliverable.status === "pending" ||
                 deliverable.status === "changes_requested");
+            const canReview =
+              isLeadOrAdmin &&
+              deliverable.status === "awaiting_internal_review";
+            const canDeliver =
+              isLeadOrAdmin && deliverable.status === "approved";
+            const canArchive =
+              isLeadOrAdmin && deliverable.status !== "delivered";
 
             const assigneeName =
-              deliverable.assignee?.full_name || "Sin asignar";
+              deliverable.assignee?.full_name || t("unassigned");
             const assigneeInitials = assigneeName
               .split(" ")
               .map((n) => n[0])
@@ -166,7 +179,7 @@ export function DeliverableList({
                     <span>{deadline}</span>
                   ) : (
                     <span className="italic text-muted-foreground/60">
-                      Sin fecha
+                      {t("deadlines.noDeadlines")}
                     </span>
                   )}
                 </TableCell>
@@ -179,7 +192,7 @@ export function DeliverableList({
                   <DropdownMenu>
                     <DropdownMenuTrigger
                       className="inline-flex shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground size-7 cursor-pointer hover:bg-muted"
-                      aria-label="Menu"
+                      aria-label={t("actionsMenuAriaLabel")}
                     >
                       <MoreHorizontal className="size-4" />
                     </DropdownMenuTrigger>
@@ -192,6 +205,16 @@ export function DeliverableList({
                         <span>{t("actions.openDetails")}</span>
                       </DropdownMenuItem>
 
+                      {canReview && onReview && (
+                        <DropdownMenuItem
+                          onClick={() => onReview(deliverable)}
+                          className="text-xs gap-2 text-indigo-600 dark:text-indigo-400 font-medium"
+                        >
+                          <FileCheck2 className="size-3.5" />
+                          <span>{t("actions.reviewVersion")}</span>
+                        </DropdownMenuItem>
+                      )}
+
                       {canSubmit && (
                         <DropdownMenuItem
                           onClick={() => onSubmitVersion(deliverable)}
@@ -199,6 +222,16 @@ export function DeliverableList({
                         >
                           <HardDrive className="size-3.5" />
                           <span>{t("actions.submitVersion")}</span>
+                        </DropdownMenuItem>
+                      )}
+
+                      {canDeliver && onDeliver && (
+                        <DropdownMenuItem
+                          onClick={() => onDeliver(deliverable)}
+                          className="text-xs gap-2 text-teal-600 dark:text-teal-400 font-medium"
+                        >
+                          <Truck className="size-3.5" />
+                          <span>{t("actions.markDelivered")}</span>
                         </DropdownMenuItem>
                       )}
 
@@ -212,7 +245,7 @@ export function DeliverableList({
                         </DropdownMenuItem>
                       )}
 
-                      {isLeadOrAdmin && (
+                      {canArchive && (
                         <>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem

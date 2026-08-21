@@ -31,6 +31,7 @@ export function mapSupabaseError(
   if (
     msg.includes("Not authorized") ||
     msg.includes("Only an active PM Lead") ||
+    msg.includes("Only active PM Lead") ||
     msg.includes("Only Admin") ||
     msg.includes("cannot post internal collaboration comments") ||
     error.code === "42501"

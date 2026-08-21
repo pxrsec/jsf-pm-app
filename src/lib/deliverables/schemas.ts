@@ -104,6 +104,42 @@ export const ReviewDeliverableSchema = z
 
 export type ReviewDeliverableInput = z.infer<typeof ReviewDeliverableSchema>;
 
+export const ReviewDeliverableActionSchema = z
+  .object({
+    deliverable_id: z.string().uuid("Invalid deliverable ID"),
+    decision: z.enum(["approved", "changes_requested"]),
+    comments: z
+      .string()
+      .trim()
+      .max(5000, "Comments are too long")
+      .nullable()
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.decision === "changes_requested") {
+      if (!data.comments || data.comments.trim().length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "A comment is required when requesting changes",
+          path: ["comments"],
+        });
+      }
+    }
+  });
+
+export type ReviewDeliverableActionInput = z.infer<
+  typeof ReviewDeliverableActionSchema
+>;
+
+export const MarkDeliverableDeliveredActionSchema = z.object({
+  deliverable_id: z.string().uuid("Invalid deliverable ID"),
+  project_id: z.string().uuid("Invalid project ID"),
+});
+
+export type MarkDeliverableDeliveredActionInput = z.infer<
+  typeof MarkDeliverableDeliveredActionSchema
+>;
+
 export const ReportBrokenLinkSchema = z.object({
   deliverable_id: z.string().uuid("Invalid deliverable ID"),
   version_id: z.string().uuid("Invalid version ID"),
