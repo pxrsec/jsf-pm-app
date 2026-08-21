@@ -1,5 +1,24 @@
 # JSF PM App Development Changelog
 
+## [2026-08-21 @ 12:55]
+
+**🚀 Deliverables English Localization Completeness & Factual Sprint 04 Closeout Record**
+
+- **🌐 Localization Completeness (Blocker 2 Resolved):**
+  - **Deliverable Component String Extraction (`deliverable-edit-dialog.tsx`, `deliverable-create-dialog.tsx`, `deliverable-history.tsx`, `deliverable-link-report-dialog.tsx`):** Extracted all remaining user-visible hardcoded strings into `projects.workspace.deliverables.*` keys across both `messages/es-MX.json` and `messages/en-US.json`. Added localized field labels (`statusLabel`, `versionLabel`, `titleLabel`, `assigneeLabel`, `assigneePlaceholder`, `userFallback`, `specificationsLabel`, `submissionDeadlineLabel`, `internalReviewDeadlineLabel`, `clientDeliveryDeadlineLabel`), submitter fallback (`teamMemberFallback`), and external link disclaimer notice (`truthfulnessNotice`).
+  - **100% Translation Parity & Key Hygiene:** Maintained strict dot-delimited lower camelCase key hierarchy verified by `__tests__/i18n/message-catalogs.test.ts` and `__tests__/i18n/key-naming.test.ts`.
+- **📝 Factual Sprint 04 Closeout Verification Record (Blocker 1 Resolved):**
+  - **DoD & Feature Grounding (`dev-docs/specs/s04/s04-sprint-04-closeout-verification.md`):** Updated the Definition-of-Done and hand-off records to strictly mirror codebase realities: documented PM Watcher advisory commenting capabilities and explicit deferral of E06 Operator / E07 Client workspaces; documented the 5-state task lifecycle (`pending`, `in_progress`, `in_review`, `completed`, `blocked`); clarified that deliverable lifecycle progresses to `awaiting_client_review` with Client decision UI deferred to E07; corrected accessibility declarations (Escape restoration, semantic landmarks, loading live regions); clarified Sentry error boundary vs localized 404 boundary handling; updated handoff contract exports to verbatim symbols (`listProjectsForAdmin`, `listProjectsForPm`, `getProjectDetail`, `createTaskAction`, `transitionTaskStatusAction`, `reportDeliverableLinkAction`, `reviewDeliverableAction`, `markDeliverableDeliveredAction`).
+- **🧪 Automated Verification Pipeline:**
+  - `npm run verify`: Exited with code 0 across all 7 verification steps.
+  - `npm run format:check`: 100% Prettier compliant.
+  - `npm run lint`: 0 errors, 0 warnings.
+  - `npm run typecheck`: 0 TypeScript errors.
+  - `npm run build`: Production Next.js 16.3.1 Turbopack build compiled all 23 routes.
+  - `npm run test`: 45 test files passed (344 passed, 0 failed, 9 skipped).
+  - `npm run test:coverage`: Full v8 coverage generated across all application modules.
+  - `npm run audit:prod`: 0 vulnerabilities.
+
 ## [2026-08-21 @ 12:10]
 
 **🚀 Navigation Localization, Route Recovery, Loading Boundaries, and Sprint 04 Closeout (S04-08)**

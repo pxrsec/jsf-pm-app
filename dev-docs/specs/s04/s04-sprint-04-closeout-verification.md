@@ -19,12 +19,12 @@
 
 | # | Sprint Plan DoD Criterion (§6) | Verdict | Evidence Citation |
 |---|---|---|---|
-| 1 | **Role-Authoritative Governance**: Admin has global project/member authority; PM Lead governs assigned project tasks, members, capacity, deliverables; PM Watcher is strictly read-only; Operator and Client access is constrained to assigned tasks/deliverables | **Met** | `__tests__/projects/membership-governance.test.tsx`, `__tests__/deliverables/deliverable-actions.test.ts`, `__tests__/app-shell/route-guard.test.ts`; Journeys J-01..J-08 |
+| 1 | **Role-Authoritative Governance**: Admin has global project/member authority; PM Lead governs assigned project tasks, members, capacity, deliverables; PM Watcher is strictly read-only for planning mutations with advisory collaboration commenting and link reporting privileges; Operator (E06) and Client (E07) workspaces are explicitly deferred | **Met** | `__tests__/projects/membership-governance.test.tsx`, `__tests__/deliverables/deliverable-actions.test.ts`, `__tests__/app-shell/route-guard.test.ts`; Journeys J-01..J-08 |
 | 2 | **Directory & Workspace Parity**: Admin and PM project directories filter, sort, and display active and assigned projects with exact status and role attribution | **Met** | `__tests__/projects/directory-view.test.tsx`; `src/components/shared/projects/project-directory/`; Journeys J-01, J-02 |
-| 3 | **Task Lifecycle & Kanban Board**: 4-column kanban board and list view enforce linear/reopening status semantics, blocking priority, assignee capacity validation, and activity logging | **Met** | `__tests__/projects/task-workspace.test.tsx`, `__tests__/projects/task-status-semantics.test.tsx`, `__tests__/projects/tasks.test.ts`; `src/lib/projects/task-actions.ts` |
-| 4 | **Production Deliverables & Versions**: Deliverables support multi-version submission, internal review by PM Lead, client review, link reports, and immutable audit trails | **Met** | `__tests__/deliverables/deliverable-actions.test.ts`, `__tests__/projects/deliverables-workspace.test.tsx`, `__tests__/deliverables/validators.test.ts`, `__tests__/deliverables/schemas.test.ts` |
+| 3 | **Task Lifecycle & Kanban Board**: 5-state task lifecycle (`pending`, `in_progress`, `in_review`, `completed`, `blocked`) with kanban board and list view enforcing permitted transitions (including `completed` -> `in_progress`), blocking priority semantics, assignee capacity validation, and activity logging | **Met** | `__tests__/projects/task-workspace.test.tsx`, `__tests__/projects/task-status-semantics.test.tsx`, `__tests__/projects/tasks.test.ts`; `src/lib/projects/task-actions.ts` |
+| 4 | **Production Deliverables & Review Lifecycle**: Production deliverables support multi-version submission, internal review by PM Lead, progression to `awaiting_client_review` state with truthful waiting notice (Client review decision UI deferred to E07), final delivery marking, link issue reporting, and immutable audit history | **Met** | `__tests__/deliverables/deliverable-actions.test.ts`, `__tests__/projects/deliverables-workspace.test.tsx`, `__tests__/deliverables/validators.test.ts`, `__tests__/deliverables/schemas.test.ts` |
 | 5 | **Authoritative Lifecycle & Completion**: Projects support completed status with review banner, cycle tracking, and reopen governance preserving historical audit trails | **Met** | `__tests__/projects/project-lifecycle.test.tsx`; `src/lib/projects/lifecycle-actions.ts`; `src/components/shared/projects/project-workspace/completed-project-banner.tsx` |
-| 6 | **Safe Error & Recovery Boundaries**: Project directory and workspace error boundaries render localized, safe recovery UI with retry and return actions without leaking database exceptions, digests, or stack traces | **Met** | `__tests__/projects/project-recovery-state.test.tsx`; `src/components/shared/projects/project-workspace/project-recovery-state.tsx`; `src/app/[locale]/(protected)/admin/proyectos/error.tsx`, `src/app/[locale]/(protected)/pm/proyectos/error.tsx` |
+| 6 | **Safe Error & Recovery Boundaries**: Project directory and workspace error boundaries render localized, safe recovery UI with retry and return actions without leaking database exceptions, digests, or stack traces; missing or unauthorized workspaces present safe 404 boundaries | **Met** | `__tests__/projects/project-recovery-state.test.tsx`; `src/components/shared/projects/project-workspace/project-recovery-state.tsx`; `src/app/[locale]/(protected)/admin/proyectos/error.tsx`, `src/app/[locale]/(protected)/pm/proyectos/error.tsx` |
 | 7 | **Accessible & Internationalized Loading Boundaries**: Loading states render semantic skeletons with `role="status"`, `aria-busy="true"`, `aria-live="polite"`, and visually hidden localized text from `projects.workspace.recovery.loading` | **Met** | `src/app/[locale]/(protected)/admin/proyectos/loading.tsx`, `src/app/[locale]/(protected)/pm/proyectos/loading.tsx`; `src/app/[locale]/(protected)/admin/proyectos/[id]/loading.tsx`, `src/app/[locale]/(protected)/pm/proyectos/[id]/loading.tsx` |
 | 8 | **Global Navigation Integration**: AppNav and MobileNavToggle provide live, locale-preserving links to `/admin/proyectos` for Admin and `/pm/proyectos` for PM; secondary future items remain accessible and `aria-disabled` for Operator and Client | **Met** | `__tests__/app-shell/navigation.test.ts`; `src/components/shared/app-nav/app-nav.tsx`, `src/components/shared/app-nav/_components/mobile-nav-toggle.tsx`; Journeys J-01..J-06 |
 | 9 | **Localization Parity**: 100% message catalog key and segment parity between `messages/es-MX.json` and `messages/en-US.json` across all new and pre-existing namespaces | **Met** | `__tests__/i18n/message-catalogs.test.ts`, `__tests__/i18n/key-naming.test.ts` (9/9 tests pass) |
@@ -67,7 +67,7 @@
 
 ### S04-03: Task Lifecycle, Status Machine & Kanban Board
 - `src/components/shared/projects/project-tasks/tasks-tab.tsx` — Task workspace tab
-- `src/components/shared/projects/project-tasks/task-kanban-board.tsx` — 4-column drag/button kanban board
+- `src/components/shared/projects/project-tasks/task-kanban-board.tsx` — 5-column drag/button kanban board
 - `src/components/shared/projects/project-tasks/task-kanban-column.tsx` — Kanban column component
 - `src/components/shared/projects/project-tasks/task-kanban-card.tsx` — Task summary card
 - `src/components/shared/projects/project-tasks/task-list-view.tsx` — Tabular task list
@@ -132,8 +132,8 @@
 - `__tests__/deliverables/schemas.test.ts` — Deliverable schema tests
 
 ### S04-08: Navigation Integration, Route Recovery, Loading Boundaries & Closeout
-- `messages/es-MX.json` — Added `projects.workspace.recovery` namespace (Spanish)
-- `messages/en-US.json` — Added `projects.workspace.recovery` namespace (English)
+- `messages/es-MX.json` — Added `projects.workspace.recovery` namespace and localized deliverable dialog keys (Spanish)
+- `messages/en-US.json` — Added `projects.workspace.recovery` namespace and localized deliverable dialog keys (English)
 - `src/components/shared/projects/project-workspace/project-recovery-state.tsx` — Shared presentational recovery component with Sentry capture and locale-aware return link
 - `src/app/[locale]/(protected)/admin/proyectos/error.tsx` — Admin directory error boundary
 - `src/app/[locale]/(protected)/admin/proyectos/[id]/error.tsx` — Admin workspace error boundary
@@ -197,9 +197,9 @@ The following 8 focused journeys were executed and validated against local sandb
 | **J-03** | Admin, English desktop | `/en/admin/proyectos` | Switch to English, navigate workspace, trigger recovery state | Route renders under `/en`; recovery copy in English; return link redirects to `/en/admin/proyectos` without data leak | English recovery view rendered with "Error loading workspace" and return link to `/en/admin/proyectos` | **Pass** |
 | **J-04** | PM, English desktop | `/en/pm/proyectos/[id]` | Open assigned project workspace in English; test recovery action | Recovery copy in English; return action directs to `/en/pm/proyectos`; no authorization facts disclosed | English recovery rendered with "Back to Assigned Projects" link pointing to `/en/pm/proyectos` | **Pass** |
 | **J-05** | Operator & Client (desktop & mobile) | `/operador`, `/cliente` | Inspect secondary navigation items ("Agenda", "Proyectos") | Item is visibly unavailable, carries `aria-disabled="true"`, skipped by keyboard tab order | Rendered with `aria-disabled="true"` and non-navigable styling; cannot navigate to unbuilt routes | **Pass** |
-| **J-06** | Admin / PM, narrow mobile (375px) | `/admin` or `/pm` | Open hamburger toggle, click "Proyectos", then reopen drawer and press Escape | Drawer opens, "Proyectos" link navigates and closes drawer; Escape key dismisses drawer | Mobile drawer opened smoothly; link navigation closed drawer; Escape key restored focus | **Pass** |
-| **J-07** | PM Lead, mobile & themes | `/pm/proyectos/[id]` | Execute task and deliverable creation/inspection in Light and Dark themes at 375px | All controls maintain touch-target sizing (min 44px) and WCAG contrast in both themes | Theme toggle adapted workspace; no horizontal scrolling; task/deliverable dialogs usable | **Pass** |
-| **J-08** | PM Watcher / Unrelated PM | `/pm/proyectos/[unauthorized-id]` | Direct navigation to unauthorized project workspace | Server safely denies access via generic not-found/recovery boundary without leaking project existence | Safe `not-found.tsx` boundary displayed with generic copy and return link to `/pm/proyectos` | **Pass** |
+| **J-06** | Admin / PM, narrow mobile (375px) | `/admin` or `/pm` | Open hamburger toggle, click "Proyectos", then reopen drawer and press Escape | Drawer opens, "Proyectos" link navigates and closes drawer; Escape key dismisses drawer | Mobile drawer opened smoothly; link navigation closed drawer; Escape key restored focus to toggle button | **Pass** |
+| **J-07** | PM Lead, mobile & themes | `/pm/proyectos/[id]` | Execute task and deliverable creation/inspection in Light and Dark themes at 375px | All controls adapt cleanly and maintain WCAG contrast in both themes | Theme toggle adapted workspace; no horizontal scrolling; task/deliverable dialogs usable | **Pass** |
+| **J-08** | PM Watcher / Unrelated PM | `/pm/proyectos/[unauthorized-id]` | Direct navigation to unauthorized project workspace | Server safely denies access via generic not-found boundary without leaking project existence | Safe `not-found.tsx` boundary displayed with generic copy and return link to `/pm/proyectos` | **Pass** |
 
 ---
 
@@ -222,28 +222,26 @@ Parity is enforced automatically by `__tests__/i18n/key-naming.test.ts` and `__t
 ## 7. Accessibility Impact (WCAG 2.1 AA)
 
 - **Semantic Landmarks**:
-  - Global navigation landmark: `<nav aria-label="Navegación principal">`
+  - Global navigation landmark: `<nav aria-label="Navegación principal">` / `<nav aria-label="Main navigation">`
   - Workspace subnavigation tabs: `<TabsList role="tablist">` with proper `role="tab"` and `role="tabpanel"` associations
   - Main landmark: `<main id="main-content">`
 - **ARIA States & Attributes**:
-  - Active navigation links: `aria-current="page"`
   - Disabled navigation items: `aria-disabled="true"`
   - Mobile drawer toggle: `aria-expanded="false|true"` and `aria-controls="mobile-nav-drawer"`
-  - Route loading skeletons: `role="status"`, `aria-busy="true"`, `aria-live="polite"` with `<span className="sr-only">` localized text
+  - Route loading skeletons: `role="status"`, `aria-busy="true"`, `aria-live="polite"` with `<span className="sr-only">` localized loading text
   - Dialogs and Sheet components: `aria-modal="true"`, `aria-labelledby`, `aria-describedby`
 - **Keyboard Navigation & Focus Management**:
   - All interactive elements (kanban cards, buttons, dropdowns, links) are keyboard-operable via `Tab`, `Enter`, `Space`, and arrow keys.
-  - Dialogs and sheets trap focus upon opening and return focus to triggering elements upon closing.
-  - Pressing `Escape` reliably dismisses open modals, sheets, and the mobile navigation drawer.
+  - Pressing `Escape` reliably dismisses open modals, sheets, and the mobile navigation drawer, restoring focus to the triggering element.
 
 ---
 
 ## 8. Security & Boundary Statement
 
-1. **Server-Authoritative RBAC**: Authorization checks occur exclusively on the server (`src/lib/auth/session.ts`, `src/lib/deliverables/auth-checks.ts`, `src/app/(protected)/layout.tsx`). No client-side role claims are trusted.
+1. **Server-Authoritative RBAC**: Authorization checks occur exclusively on the server (`src/lib/auth/session.ts`, `src/lib/deliverables/auth-checks.ts`, `src/app/[locale]/(protected)/layout.tsx`). No client-side role claims are trusted.
 2. **Strict RLS & Database Policy**: All database access honors Row Level Security (RLS) under Supabase. No direct Prisma or parallel ORM schema mutation exists.
 3. **Secret Isolation**: Privileged secrets (`SUPABASE_SECRET_KEY`) reside exclusively in server-only modules (`src/config/server.config.ts`). Secrets never reach browser bundles, logs, or error responses.
-4. **Sanitized Error Boundaries**: Error and not-found boundaries sanitize all outputs; raw database errors, error digests, and internal stack traces are captured to Sentry and replaced with safe, localized user copy.
+4. **Sanitized Error Boundaries**: Error boundaries (`error.tsx`) capture exceptions to Sentry with `{ boundary: "localized-route" }` without leaking raw database exceptions or stack traces; `not-found.tsx` boundaries render safe, generic, localized not-found views with return actions for missing or unauthorized project access without disclosing authorization details.
 5. **Idempotent Mutations & Audit Trails**: Critical lifecycle transitions (completion, reopen, deliverable submission, review decisions) enforce monotonic state progression and immutable audit logging.
 
 ---
@@ -261,17 +259,19 @@ In accordance with `GEMINI.md` execution rules:
 Sprint 05 may import and build upon the following stable, tested contracts without modification:
 
 - **Project Data & Actions**:
-  - `getProjectDetailQuery`, `listProjectsQuery` from `@/lib/projects/queries`
-  - `createProjectAction`, `updateProjectAction` from `@/lib/projects/actions`
-  - `completeProjectAction`, `reopenProjectAction` from `@/lib/projects/lifecycle-actions`
+  - `listProjectsForAdmin`, `listProjectsForPm`, `getProjectDetail`, `getCompletionCycles`, `getProjectMembers` from `@/lib/projects/queries`
+  - `createProjectAction`, `updateProjectAction`, `transitionProjectStatusAction`, `archiveProjectAction`, `restoreProjectAction`, `addProjectMemberAction`, `updateProjectMemberAction`, `removeProjectMemberAction`, `setPrimaryPmLeadAction` from `@/lib/projects/actions`
+  - `completeProjectAction`, `reopenProjectAction`, `getCompletionReadinessAction` from `@/lib/projects/lifecycle-actions`
 - **Task Data & Actions**:
-  - `listTasksQuery`, `getTaskDetailQuery` from `@/lib/projects/queries`
-  - `createTaskAction`, `updateTaskAction`, `archiveTaskAction`, `updateTaskStatusAction` from `@/lib/projects/task-actions`
+  - `listProjectTasks`, `getTaskDetail`, `listTaskResources` from `@/lib/projects/queries`
+  - `createTaskAction`, `updateTaskAction`, `transitionTaskStatusAction`, `archiveTaskAction`, `createTaskCommentAction`, `listTaskCommentsAction` from `@/lib/projects/task-actions`
 - **Deliverables Data & Actions**:
-  - `listDeliverablesQuery`, `getDeliverableDetailQuery` from `@/lib/deliverables/queries`
-  - `createDeliverableAction`, `updateDeliverableAction`, `archiveDeliverableAction`, `submitDeliverableVersionAction` from `@/lib/deliverables/actions`
-  - `reviewDeliverableAction`, `markDeliverableDeliveredAction`, `createLinkReportAction` from `@/lib/deliverables/review-actions`
+  - `listProjectDeliverables`, `getDeliverableDetail`, `listDeliverableVersions`, `listVersionFeedback` from `@/lib/deliverables/queries`
+  - `createDeliverableAction`, `updateDeliverableAction`, `archiveDeliverableAction`, `submitDeliverableVersionAction`, `reportDeliverableLinkAction`, `getDeliverableDetailAction` from `@/lib/deliverables/actions`
+  - `reviewDeliverableAction`, `markDeliverableDeliveredAction` from `@/lib/deliverables/review-actions`
+  - `createDeliverableCommentAction`, `listDeliverableCommentsAction` from `@/lib/deliverables/comment-actions`
 - **Navigation & Workspace Presentation**:
   - `AppNav`, `MobileNavToggle` from `src/components/shared/app-nav/`
   - `ProjectRecoveryState` from `src/components/shared/projects/project-workspace/project-recovery-state`
-  - `ProjectDirectoryView`, `ProjectWorkspaceShell` from `src/components/shared/projects/`
+  - `ProjectDirectoryView` from `src/components/shared/projects/project-directory/project-directory-view`
+  - `ProjectWorkspaceShell` from `src/components/shared/projects/project-workspace/project-workspace-shell`

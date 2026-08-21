@@ -199,7 +199,7 @@ export function DeliverableCreateDialog({
                     value={member.user_id}
                     className="text-xs"
                   >
-                    {member.profile?.full_name || "Usuario"} (
+                    {member.profile?.full_name || t("userFallback")} (
                     {member.member_type})
                   </SelectItem>
                 ))}

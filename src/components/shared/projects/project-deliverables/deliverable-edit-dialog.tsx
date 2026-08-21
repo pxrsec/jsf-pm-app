@@ -143,11 +143,11 @@ export function DeliverableEditDialog({
         {/* Read-Only Status & Version Context */}
         <div className="flex items-center gap-3 bg-muted/40 p-3 rounded-lg border border-border/60">
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-muted-foreground">Estado:</span>
+            <span className="text-muted-foreground">{t("statusLabel")}</span>
             <DeliverableStatusBadge status={deliverable.status} />
           </div>
           <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-muted-foreground">Versión:</span>
+            <span className="text-muted-foreground">{t("versionLabel")}</span>
             <Badge variant="secondary" className="font-mono text-xs">
               v{deliverable.current_version_number}
             </Badge>
@@ -158,7 +158,7 @@ export function DeliverableEditDialog({
           {/* Title */}
           <div className="space-y-1.5">
             <Label htmlFor="edit-title" className="text-xs font-medium">
-              Título <span className="text-destructive">*</span>
+              {t("titleLabel")} <span className="text-destructive">*</span>
             </Label>
             <Input id="edit-title" {...register("title")} className="text-xs" />
             {errors.title && (
@@ -171,7 +171,7 @@ export function DeliverableEditDialog({
           {/* Assignee Selection */}
           <div className="space-y-1.5">
             <Label htmlFor="edit-assignee" className="text-xs font-medium">
-              Responsable de producción
+              {t("assigneeLabel")}
             </Label>
             <Select
               value={selectedAssigneeId}
@@ -180,7 +180,7 @@ export function DeliverableEditDialog({
               }}
             >
               <SelectTrigger id="edit-assignee" className="text-xs">
-                <SelectValue placeholder="Selecciona un responsable..." />
+                <SelectValue placeholder={t("assigneePlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {eligibleAssignees.map((member) => (
@@ -189,7 +189,7 @@ export function DeliverableEditDialog({
                     value={member.user_id}
                     className="text-xs"
                   >
-                    {member.profile?.full_name || "Usuario"} (
+                    {member.profile?.full_name || t("userFallback")} (
                     {member.member_type})
                   </SelectItem>
                 ))}
@@ -208,7 +208,7 @@ export function DeliverableEditDialog({
               htmlFor="edit-specifications"
               className="text-xs font-medium"
             >
-              Especificaciones técnicas
+              {t("specificationsLabel")}
             </Label>
             <Textarea
               id="edit-specifications"
@@ -230,7 +230,7 @@ export function DeliverableEditDialog({
                 htmlFor="edit-sub-deadline"
                 className="text-[11px] font-medium"
               >
-                Límite de envío
+                {t("submissionDeadlineLabel")}
               </Label>
               <Input
                 id="edit-sub-deadline"
@@ -259,7 +259,7 @@ export function DeliverableEditDialog({
                 htmlFor="edit-rev-deadline"
                 className="text-[11px] font-medium"
               >
-                Límite revisión PM
+                {t("internalReviewDeadlineLabel")}
               </Label>
               <Input
                 id="edit-rev-deadline"
@@ -288,7 +288,7 @@ export function DeliverableEditDialog({
                 htmlFor="edit-del-deadline"
                 className="text-[11px] font-medium"
               >
-                Límite entrega cliente
+                {t("clientDeliveryDeadlineLabel")}
               </Label>
               <Input
                 id="edit-del-deadline"

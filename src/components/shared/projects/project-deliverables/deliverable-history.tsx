@@ -60,7 +60,7 @@ export function DeliverableHistory({
           );
 
           const submitterName =
-            version.submitter?.full_name || "Miembro del equipo";
+            version.submitter?.full_name || t("teamMemberFallback");
           const submitterInitials = submitterName
             .split(" ")
             .map((n) => n[0])

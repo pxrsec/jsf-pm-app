@@ -62,6 +62,8 @@ vi.mock("next-intl", () => ({
         const dialogMessages: Record<string, string> = {
           title: "Reportar Problema con Enlace",
           description: `Envía un reporte interno sobre el enlace de la versión v${params?.version ?? ""}.`,
+          truthfulnessNotice:
+            "Este reporte registra una alerta interna para el equipo. El sistema no valida ni descarga el enlace de forma remota y el estado del entregable no se modificará.",
           reasonLabel: "Motivo del reporte",
           reasonPlaceholder:
             "Ej. El enlace solicita permisos de acceso restringido...",

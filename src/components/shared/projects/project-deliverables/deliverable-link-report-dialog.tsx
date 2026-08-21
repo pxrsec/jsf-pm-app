@@ -84,11 +84,7 @@ export function DeliverableLinkReportDialog({
           {/* Truthfulness Notice */}
           <div className="flex items-start gap-2.5 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-amber-800 dark:text-amber-300">
             <AlertCircle className="size-4 shrink-0 mt-0.5" />
-            <p className="leading-relaxed">
-              Este reporte registra una alerta interna para el equipo. El
-              sistema no valida ni descarga el enlace de forma remota y el
-              estado del entregable no se modificará.
-            </p>
+            <p className="leading-relaxed">{t("truthfulnessNotice")}</p>
           </div>
 
           <div className="space-y-1.5">
