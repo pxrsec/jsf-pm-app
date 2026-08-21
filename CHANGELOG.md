@@ -13,8 +13,10 @@
 - **🛠 Architecture & Database:**
   - **Supabase Migrations Applied:** Applied `20260820153000_s04_06_harden_production_google_drive_submission_urls.sql` and `20260821100000_s04_06_allow_incomplete_client_project_planning.sql` on remote development database; regenerated `src/lib/database.types.ts`.
   - **Explicit Safe View Projections (`queries.ts`):** Defined strongly-typed projection interfaces (`DeliverableListItem`, `DeliverableDetailView`, `DeliverableVersionView`, `DeliverableFeedbackView`) avoiding wildcard selects or unbounded data models.
-  - **Strict Line Limit Compliance:** All 22 new and modified implementation files strictly satisfy the <= 400 lines repository rule (modularized `comment-actions.ts`).
+  - **Server Action Module Isolation (`comment-actions.ts`):** Modularized deliverable comment actions into dedicated `comment-actions.ts` and eliminated re-export statements from `"use server"` files to ensure strict Turbopack production compilation compliance.
+  - **Strict Line Limit Compliance:** All 23 new and modified implementation files strictly satisfy the <= 400 lines repository rule.
 - **🧪 Verification & Quality:**
+  - `npm run build`: Production Turbopack build succeeded with code 0 (all static and dynamic routes compiled).
   - `npx tsc --noEmit`: 0 TypeScript errors.
   - `npm test`: 44 test suites passing (312 passed tests, 0 failures), including comprehensive unit tests for URL validators, schemas, server actions, and React Testing Library workspace components.
 

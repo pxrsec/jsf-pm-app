@@ -26,6 +26,9 @@ vi.mock("@/lib/deliverables/actions", () => ({
     .fn()
     .mockResolvedValue({ ok: true, data: { version_number: 1 } }),
   reportDeliverableLinkAction: vi.fn().mockResolvedValue({ ok: true }),
+}));
+
+vi.mock("@/lib/deliverables/comment-actions", () => ({
   createDeliverableCommentAction: vi.fn().mockResolvedValue({ ok: true }),
   listDeliverableCommentsAction: vi.fn().mockResolvedValue([]),
 }));

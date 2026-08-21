@@ -10,7 +10,7 @@ import { MEMBER_CAPACITY_MAP, type MemberCapacity } from "@/lib/status-maps";
 import {
   listDeliverableCommentsAction,
   createDeliverableCommentAction,
-} from "@/lib/deliverables/actions";
+} from "@/lib/deliverables/comment-actions";
 import type { CollaborationCommentWithAuthor } from "@/lib/comments/queries";
 
 interface DeliverableCommentsSectionProps {

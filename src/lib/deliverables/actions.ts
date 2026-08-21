@@ -343,11 +343,6 @@ export async function reportDeliverableLinkAction(
   return result;
 }
 
-export {
-  createDeliverableCommentAction,
-  listDeliverableCommentsAction,
-} from "./comment-actions";
-
 export async function getDeliverableDetailAction(
   deliverableId: string,
 ): Promise<DeliverableDetailView | null> {
