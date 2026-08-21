@@ -45,6 +45,100 @@ describe("Google Drive URL Validator", () => {
     expect(
       isValidGoogleDriveUrl("http://docs.google.com/document/d/123/edit"),
     ).toBe(false);
+
+    expect(
+      isValidGoogleDriveUrl("ftp://drive.google.com/file/d/123"),
+    ).toBe(false);
+
+    expect(
+      isValidGoogleDriveUrl("file:///drive.google.com/file"),
+    ).toBe(false);
+  });
+
+  it("rejects raw whitespace, tabs, and newlines without normalization", () => {
+    expect(
+      isValidGoogleDriveUrl(
+        " https://drive.google.com/file/d/123/view",
+      ),
+    ).toBe(false);
+
+    expect(
+      isValidGoogleDriveUrl(
+        "https://drive.google.com/file/d/123/view ",
+      ),
+    ).toBe(false);
+
+    expect(
+      isValidGoogleDriveUrl(
+        "https://drive.google.com/file/d/123\n/view",
+      ),
+    ).toBe(false);
+
+    expect(
+      isValidGoogleDriveUrl(
+        "https://drive.google.com/file/d/123\t/view",
+      ),
+    ).toBe(false);
+
+    expect(
+      isValidGoogleDriveUrl(
+        "https://drive.google.com/file/d/123 /view",
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects explicit port in authority (including default port :443)", () => {
+    expect(
+      isValidGoogleDriveUrl(
+        "https://drive.google.com:443/file/d/123/view",
+      ),
+    ).toBe(false);
+
+    expect(
+      isValidGoogleDriveUrl(
+        "https://docs.google.com:443/document/d/123/edit",
+      ),
+    ).toBe(false);
+
+    expect(
+      isValidGoogleDriveUrl(
+        "https://drive.google.com:8080/file/d/123/view",
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects backslashes and control characters", () => {
+    expect(
+      isValidGoogleDriveUrl(
+        "https://drive.google.com\\file\\d\\123",
+      ),
+    ).toBe(false);
+
+    expect(
+      isValidGoogleDriveUrl(
+        "https://drive.google.com/file/\x00/view",
+      ),
+    ).toBe(false);
+
+    expect(
+      isValidGoogleDriveUrl(
+        "https://drive.google.com/file/\x1F/view",
+      ),
+    ).toBe(false);
+
+    expect(
+      isValidGoogleDriveUrl(
+        "https://drive.google.com/file/\x7F/view",
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects embedded user credentials in authority", () => {
+    expect(
+      isValidGoogleDriveUrl(
+        "https://user:password@drive.google.com/file/d/123",
+      ),
+    ).toBe(false);
   });
 
   it("rejects non-Google Drive domains", () => {
@@ -70,15 +164,25 @@ describe("Google Drive URL Validator", () => {
     expect(
       isValidGoogleDriveUrl("https://drive.google.com.evil.com/file"),
     ).toBe(false);
+    expect(
+      isValidGoogleDriveUrl("https://drive.google.com.attacker.org/file"),
+    ).toBe(false);
+  });
+
+  it("rejects byte length exceeding 2048 bytes", () => {
+    const longPath = "a".repeat(2050);
+    expect(
+      isValidGoogleDriveUrl(`https://drive.google.com/file/d/${longPath}`),
+    ).toBe(false);
   });
 
   it("rejects invalid, malformed, or empty inputs", () => {
     expect(isValidGoogleDriveUrl("")).toBe(false);
     expect(isValidGoogleDriveUrl("   ")).toBe(false);
     expect(isValidGoogleDriveUrl("not a url")).toBe(false);
-    expect(isValidGoogleDriveUrl("ftp://drive.google.com/file")).toBe(false);
     expect(isValidGoogleDriveUrl(null as unknown as string)).toBe(false);
     expect(isValidGoogleDriveUrl(undefined as unknown as string)).toBe(false);
+    expect(isValidGoogleDriveUrl(123 as unknown as string)).toBe(false);
   });
 
   it("regex matches case-insensitively", () => {

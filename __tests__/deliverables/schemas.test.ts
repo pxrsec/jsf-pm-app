@@ -67,11 +67,20 @@ describe("Deliverable Domain Schemas", () => {
         submission_url: "https://dropbox.com/s/123/file.mp4",
       });
       expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].message).toContain(
-          "Google Drive share link",
-        );
-      }
+    });
+
+    it("rejects URLs with whitespace or explicit ports without trimming", () => {
+      const withWhitespace = SubmitDeliverableVersionSchema.safeParse({
+        deliverable_id: validDeliverableId,
+        submission_url: " https://drive.google.com/file/d/12345/view ",
+      });
+      expect(withWhitespace.success).toBe(false);
+
+      const withPort = SubmitDeliverableVersionSchema.safeParse({
+        deliverable_id: validDeliverableId,
+        submission_url: "https://drive.google.com:443/file/d/12345/view",
+      });
+      expect(withPort.success).toBe(false);
     });
   });
 

@@ -11,6 +11,7 @@ import {
   listEligibleClientMembers,
   listProjectTasks,
 } from "@/lib/projects/queries";
+import { listProjectDeliverables } from "@/lib/deliverables/queries";
 import { listActiveClients } from "@/lib/clients/queries";
 import { ProjectWorkspaceShell } from "@/components/shared/projects/project-workspace/project-workspace-shell";
 
@@ -59,6 +60,7 @@ export default async function PmProjectDetailPage({
     eligibleOperators,
     eligibleClients,
     initialTasks,
+    initialDeliverables,
   ] = await Promise.all([
     listActiveClients(supabase),
     getCompletionCycles(supabase, id),
@@ -66,6 +68,7 @@ export default async function PmProjectDetailPage({
     listEligibleOperators(supabase),
     listEligibleClientMembers(supabase, project.client_id),
     listProjectTasks(supabase, id),
+    listProjectDeliverables(supabase, id),
   ]);
 
   return (
@@ -78,7 +81,9 @@ export default async function PmProjectDetailPage({
       eligibleClients={eligibleClients}
       effectiveCapacity={effectiveCapacity}
       actorRole="pm"
+      currentUserId={session.user.id}
       initialTasks={initialTasks}
+      initialDeliverables={initialDeliverables}
       locale={locale}
       initialTab={tab}
     />

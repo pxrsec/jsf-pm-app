@@ -14,8 +14,9 @@ import { CompletedProjectBanner } from "./completed-project-banner";
 import { ProjectCompleteDialog } from "../project-lifecycle/project-complete-dialog";
 import { ProjectReopenDialog } from "../project-lifecycle/project-reopen-dialog";
 import { TasksTab } from "../project-tasks/tasks-tab";
-import { DeliverablesTabPlaceholder } from "./placeholders/deliverables-tab-placeholder";
+import { DeliverablesTab } from "../project-deliverables/deliverables-tab";
 import { MemberRosterTab } from "../project-members/member-roster-tab";
+import { ProjectActivityTab } from "./project-activity-tab";
 import type {
   ProjectDetail,
   ProjectCompletionCyclesView,
@@ -23,6 +24,7 @@ import type {
   Profile,
   TaskWithAssignee,
 } from "@/lib/projects/queries";
+import type { DeliverableListItem } from "@/lib/deliverables/queries";
 import type { ClientListItem } from "@/lib/clients/queries";
 
 interface ProjectWorkspaceShellProps {
@@ -37,7 +39,9 @@ interface ProjectWorkspaceShellProps {
   eligibleClients: EligibleClientMember[];
   effectiveCapacity: "admin" | "pm_lead" | "pm_watcher";
   actorRole: "admin" | "pm";
+  currentUserId?: string;
   initialTasks?: TaskWithAssignee[];
+  initialDeliverables?: DeliverableListItem[];
   locale?: string;
   initialTab?: string;
 }
@@ -51,7 +55,9 @@ export function ProjectWorkspaceShell({
   eligibleClients,
   effectiveCapacity,
   actorRole,
+  currentUserId,
   initialTasks = [],
+  initialDeliverables = [],
   locale = "es",
   initialTab = "overview",
 }: ProjectWorkspaceShellProps) {
@@ -74,10 +80,6 @@ export function ProjectWorkspaceShell({
   };
 
   const baseHref = actorRole === "admin" ? "/admin/proyectos" : "/pm/proyectos";
-  const isInternal = project.project_type === "internal";
-  const hasClientMember = project.members.some(
-    (m) => m.member_type === "client",
-  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -125,13 +127,19 @@ export function ProjectWorkspaceShell({
                 value="deliverables"
                 className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
               >
-                {t("deliverables")}
+                {t("deliverables")} ({initialDeliverables.length})
               </TabsTrigger>
               <TabsTrigger
                 value="members"
                 className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
               >
                 {t("members")} ({project.members.length})
+              </TabsTrigger>
+              <TabsTrigger
+                value="activity"
+                className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
+              >
+                {t("activity")}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -156,9 +164,12 @@ export function ProjectWorkspaceShell({
           </TabsContent>
 
           <TabsContent value="deliverables" className="outline-hidden">
-            <DeliverablesTabPlaceholder
-              isInternal={isInternal}
-              hasClientMember={hasClientMember}
+            <DeliverablesTab
+              project={project}
+              initialDeliverables={initialDeliverables}
+              tasks={initialTasks}
+              effectiveCapacity={effectiveCapacity}
+              currentUserId={currentUserId}
             />
           </TabsContent>
 
@@ -170,6 +181,10 @@ export function ProjectWorkspaceShell({
               eligibleOperators={eligibleOperators}
               eligibleClients={eligibleClients}
             />
+          </TabsContent>
+
+          <TabsContent value="activity" className="outline-hidden">
+            <ProjectActivityTab cycles={cycles} />
           </TabsContent>
         </Tabs>
       </main>

@@ -1,5 +1,24 @@
 # JSF PM App Development Changelog
 
+## [2026-08-21 @ 09:27]
+
+**🚀 Production Deliverable Planning, Submission, and Immutable History (S04-06)**
+
+- **🚀 Features:**
+  - **Hardened Google Drive Submission URLs (`validators.ts`, `schemas.ts`):** Enforced strict lexical URL checks rejecting non-HTTPS, raw whitespace, tabs, newlines, control characters, backslashes, userinfo credentials, non-Google hosts, and explicit port specifications (including `:443`). Preserved raw URL string without trimming to maintain boundary fidelity.
+  - **PM Capacity & Eligibility Gates (`auth-checks.ts`, `actions.ts`):** Server-side enforcement restricting planning mutations (`createDeliverableAction`, `updateDeliverableAction`, `archiveDeliverableAction`) exclusively to project `pm_lead` or `admin`. Explicitly rejects `pm_watcher` from planning mutations while permitting link reporting, commenting, and read operations. Enforced comprehensive eligibility check (client project type, linked client organization, at least one active non-deleted client member, valid deliverable-enabled task, and active compatible assignee).
+  - **Full Workspace Deliverables Module (`src/components/shared/projects/project-deliverables/*`):** Created responsive tab supporting list table and card view layouts, real-time status and assignee filtering, planning modals (`DeliverableCreateDialog`, `DeliverableEditDialog`, `DeliverableArchiveDialog`), version submission modal (`DeliverableSubmitDialog`), full detail sheet (`DeliverableDetailSheet`), immutable version timeline (`DeliverableHistory`), formal review audit history (`FormalFeedbackHistory`), informal collaboration comments (`DeliverableCommentsSection`), and link report alert dialog (`DeliverableLinkReportDialog`).
+  - **Project Activity Tab (`project-activity-tab.tsx`):** Integrated dedicated activity view presenting completion cycles history projected from `project_completion_cycles_view`.
+  - **Full Dual-Locale Localization (`messages/es-MX.json`, `messages/en-US.json`):** Delivered 100% synchronized, semantic translation keys for `projects.workspace.deliverables.*` and `projects.workspace.activity.*` adhering strictly to `VC-I18N-008` naming rules.
+- **🛠 Architecture & Database:**
+  - **Supabase Migrations Applied:** Applied `20260820153000_s04_06_harden_production_google_drive_submission_urls.sql` and `20260821100000_s04_06_allow_incomplete_client_project_planning.sql` on remote development database; regenerated `src/lib/database.types.ts`.
+  - **Explicit Safe View Projections (`queries.ts`):** Defined strongly-typed projection interfaces (`DeliverableListItem`, `DeliverableDetailView`, `DeliverableVersionView`, `DeliverableFeedbackView`) avoiding wildcard selects or unbounded data models.
+  - **Strict Line Limit Compliance:** All 22 new and modified implementation files strictly satisfy the <= 400 lines repository rule (modularized `comment-actions.ts`).
+- **🧪 Verification & Quality:**
+  - `npx tsc --noEmit`: 0 TypeScript errors.
+  - `npm test`: 44 test suites passing (312 passed tests, 0 failures), including comprehensive unit tests for URL validators, schemas, server actions, and React Testing Library workspace components.
+
+
 ## [2026-08-20 @ 02:04]
 
 **🐛 Next.js Server Action Module Compilation & I18N Key Compliance Hotfixes**

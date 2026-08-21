@@ -149,7 +149,8 @@ export type DeliverableStatus =
   | "awaiting_client_review"
   | "approved"
   | "changes_requested"
-  | "delivered";
+  | "delivered"
+  | "submitted";
 
 export const DELIVERABLE_STATUS_MAP: Record<DeliverableStatus, StatusConfig> = {
   pending: {
@@ -187,6 +188,12 @@ export const DELIVERABLE_STATUS_MAP: Record<DeliverableStatus, StatusConfig> = {
     badgeFg: "text-teal-800 dark:text-teal-200",
     icon: Truck,
     labelKey: "deliverableStatus.delivered",
+  },
+  submitted: {
+    badgeBg: "bg-indigo-100 dark:bg-indigo-950/60",
+    badgeFg: "text-indigo-800 dark:text-indigo-200",
+    icon: Clock,
+    labelKey: "deliverableStatus.awaitingInternalReview",
   },
 };
 

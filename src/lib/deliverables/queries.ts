@@ -27,23 +27,87 @@ export type ReviewStage = Database["public"]["Enums"]["review_stage"];
 export type SubmissionProvider =
   Database["public"]["Enums"]["submission_provider"];
 
-export type DeliverableVersionWithSubmitter = DeliverableVersion & {
-  submitter: Pick<Profile, "id" | "full_name" | "role" | "avatar_url"> | null;
+export type ProfileSummary = {
+  id: string;
+  full_name: string;
+  role: Database["public"]["Enums"]["app_role"];
+  avatar_url: string | null;
 };
 
-export type DeliverableFeedbackWithReviewer = DeliverableFeedback & {
-  reviewer: Pick<Profile, "id" | "full_name" | "role" | "avatar_url"> | null;
+export type DeliverableVersionView = {
+  id: string;
+  deliverable_id: string;
+  version_number: number;
+  submission_url: string;
+  submission_provider: SubmissionProvider;
+  submission_note: string | null;
+  submitted_at: string;
+  submitted_by: string;
+  created_at: string;
+  submitter: ProfileSummary | null;
 };
 
-export type DeliverableDetail = Deliverable & {
-  assignee: Pick<Profile, "id" | "full_name" | "role" | "avatar_url"> | null;
-  versions: DeliverableVersionWithSubmitter[];
-  feedback: DeliverableFeedbackWithReviewer[];
+export type DeliverableFeedbackView = {
+  id: string;
+  deliverable_id: string;
+  version_id: string;
+  stage: ReviewStage;
+  decision: ReviewDecision;
+  comments: string | null;
+  reviewed_at: string;
+  reviewed_by: string;
+  created_at: string;
+  reviewer: ProfileSummary | null;
 };
 
-export type DeliverableListItem = Deliverable & {
-  assignee: Pick<Profile, "id" | "full_name" | "role" | "avatar_url"> | null;
+export type DeliverableListItem = {
+  id: string;
+  project_id: string;
+  task_id: string;
+  assignee_id: string;
+  title: string;
+  specifications: string;
+  workflow_type: DeliverableWorkflowType;
+  status: DeliverableStatus;
+  current_version_number: number;
+  is_stalled: boolean;
+  submission_deadline_at: string | null;
+  internal_review_deadline_at: string | null;
+  client_delivery_deadline_at: string | null;
+  approved_at: string | null;
+  delivered_at: string | null;
+  created_at: string;
+  updated_at: string;
+  assignee: ProfileSummary | null;
 };
+
+export type DeliverableDetailView = {
+  id: string;
+  project_id: string;
+  task_id: string;
+  assignee_id: string;
+  title: string;
+  specifications: string;
+  workflow_type: DeliverableWorkflowType;
+  status: DeliverableStatus;
+  current_version_number: number;
+  is_stalled: boolean;
+  submission_deadline_at: string | null;
+  internal_review_deadline_at: string | null;
+  client_delivery_deadline_at: string | null;
+  approved_at: string | null;
+  delivered_at: string | null;
+  created_at: string;
+  updated_at: string;
+  assignee: ProfileSummary | null;
+  versions: DeliverableVersionView[];
+  feedback: DeliverableFeedbackView[];
+};
+
+// Aliases for backwards-compatibility
+export type DeliverableVersionWithSubmitter = DeliverableVersionView;
+export type DeliverableFeedbackWithReviewer = DeliverableFeedbackView;
+export type DeliverableDetail = DeliverableDetailView;
 
 export type DeliverableFilters = {
   status?: DeliverableStatus;
@@ -54,6 +118,15 @@ export type DeliverableFilters = {
 
 type TypedSupabase = SupabaseClient<Database>;
 
+const DELIVERABLE_COLUMNS =
+  "id, project_id, task_id, assignee_id, title, specifications, workflow_type, status, current_version_number, is_stalled, submission_deadline_at, internal_review_deadline_at, client_delivery_deadline_at, approved_at, delivered_at, created_at, updated_at";
+
+const VERSION_COLUMNS =
+  "id, deliverable_id, version_number, submission_url, submission_provider, submission_note, submitted_at, submitted_by, created_at";
+
+const FEEDBACK_COLUMNS =
+  "id, deliverable_id, version_id, stage, decision, comments, reviewed_at, reviewed_by, created_at";
+
 export async function listProjectDeliverables(
   supabase: TypedSupabase,
   projectId: string,
@@ -62,7 +135,7 @@ export async function listProjectDeliverables(
   try {
     let query = supabase
       .from("deliverables")
-      .select("*, profiles(id, full_name, role, avatar_url)")
+      .select(`${DELIVERABLE_COLUMNS}, profiles(id, full_name, role, avatar_url)`)
       .eq("project_id", projectId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false });
@@ -90,15 +163,28 @@ export async function listProjectDeliverables(
       return [];
     }
 
-    type RawRow = Deliverable & {
-      profiles: Pick<
-        Profile,
-        "id" | "full_name" | "role" | "avatar_url"
-      > | null;
+    type RawRow = Omit<DeliverableListItem, "assignee"> & {
+      profiles: ProfileSummary | null;
     };
 
     return ((data ?? []) as unknown as RawRow[]).map((d) => ({
-      ...d,
+      id: d.id,
+      project_id: d.project_id,
+      task_id: d.task_id,
+      assignee_id: d.assignee_id,
+      title: d.title,
+      specifications: d.specifications,
+      workflow_type: d.workflow_type,
+      status: d.status,
+      current_version_number: d.current_version_number,
+      is_stalled: d.is_stalled,
+      submission_deadline_at: d.submission_deadline_at,
+      internal_review_deadline_at: d.internal_review_deadline_at,
+      client_delivery_deadline_at: d.client_delivery_deadline_at,
+      approved_at: d.approved_at,
+      delivered_at: d.delivered_at,
+      created_at: d.created_at,
+      updated_at: d.updated_at,
       assignee: d.profiles,
     }));
   } catch (err) {
@@ -110,11 +196,11 @@ export async function listProjectDeliverables(
 export async function getDeliverableDetail(
   supabase: TypedSupabase,
   deliverableId: string,
-): Promise<DeliverableDetail | null> {
+): Promise<DeliverableDetailView | null> {
   try {
     const { data: deliverable, error: delivError } = await supabase
       .from("deliverables")
-      .select("*, profiles(id, full_name, role, avatar_url)")
+      .select(`${DELIVERABLE_COLUMNS}, profiles(id, full_name, role, avatar_url)`)
       .eq("id", deliverableId)
       .is("deleted_at", null)
       .single();
@@ -129,7 +215,7 @@ export async function getDeliverableDetail(
 
     const { data: versions, error: verError } = await supabase
       .from("deliverable_versions")
-      .select("*, profiles(id, full_name, role, avatar_url)")
+      .select(`${VERSION_COLUMNS}, profiles(id, full_name, role, avatar_url)`)
       .eq("deliverable_id", deliverableId)
       .order("version_number", { ascending: false });
 
@@ -141,7 +227,7 @@ export async function getDeliverableDetail(
 
     const { data: feedback, error: fbError } = await supabase
       .from("deliverable_feedback")
-      .select("*, profiles(id, full_name, role, avatar_url)")
+      .select(`${FEEDBACK_COLUMNS}, profiles(id, full_name, role, avatar_url)`)
       .eq("deliverable_id", deliverableId)
       .order("reviewed_at", { ascending: true });
 
@@ -151,43 +237,66 @@ export async function getDeliverableDetail(
       });
     }
 
-    type RawVersion = DeliverableVersion & {
-      profiles: Pick<
-        Profile,
-        "id" | "full_name" | "role" | "avatar_url"
-      > | null;
+    type RawVersion = Omit<DeliverableVersionView, "submitter"> & {
+      profiles: ProfileSummary | null;
     };
-    type RawFeedback = DeliverableFeedback & {
-      profiles: Pick<
-        Profile,
-        "id" | "full_name" | "role" | "avatar_url"
-      > | null;
+    type RawFeedback = Omit<DeliverableFeedbackView, "reviewer"> & {
+      profiles: ProfileSummary | null;
     };
-    type RawDeliv = Deliverable & {
-      profiles: Pick<
-        Profile,
-        "id" | "full_name" | "role" | "avatar_url"
-      > | null;
+    type RawDeliv = Omit<DeliverableListItem, "assignee"> & {
+      profiles: ProfileSummary | null;
     };
 
     const d = deliverable as unknown as RawDeliv;
 
-    const formattedVersions: DeliverableVersionWithSubmitter[] = (
+    const formattedVersions: DeliverableVersionView[] = (
       (versions ?? []) as unknown as RawVersion[]
     ).map((v) => ({
-      ...v,
+      id: v.id,
+      deliverable_id: v.deliverable_id,
+      version_number: v.version_number,
+      submission_url: v.submission_url,
+      submission_provider: v.submission_provider,
+      submission_note: v.submission_note,
+      submitted_at: v.submitted_at,
+      submitted_by: v.submitted_by,
+      created_at: v.created_at,
       submitter: v.profiles,
     }));
 
-    const formattedFeedback: DeliverableFeedbackWithReviewer[] = (
+    const formattedFeedback: DeliverableFeedbackView[] = (
       (feedback ?? []) as unknown as RawFeedback[]
     ).map((f) => ({
-      ...f,
+      id: f.id,
+      deliverable_id: f.deliverable_id,
+      version_id: f.version_id,
+      stage: f.stage,
+      decision: f.decision,
+      comments: f.comments,
+      reviewed_at: f.reviewed_at,
+      reviewed_by: f.reviewed_by,
+      created_at: f.created_at,
       reviewer: f.profiles,
     }));
 
     return {
-      ...d,
+      id: d.id,
+      project_id: d.project_id,
+      task_id: d.task_id,
+      assignee_id: d.assignee_id,
+      title: d.title,
+      specifications: d.specifications,
+      workflow_type: d.workflow_type,
+      status: d.status,
+      current_version_number: d.current_version_number,
+      is_stalled: d.is_stalled,
+      submission_deadline_at: d.submission_deadline_at,
+      internal_review_deadline_at: d.internal_review_deadline_at,
+      client_delivery_deadline_at: d.client_delivery_deadline_at,
+      approved_at: d.approved_at,
+      delivered_at: d.delivered_at,
+      created_at: d.created_at,
+      updated_at: d.updated_at,
       assignee: d.profiles,
       versions: formattedVersions,
       feedback: formattedFeedback,
@@ -201,11 +310,11 @@ export async function getDeliverableDetail(
 export async function listDeliverableVersions(
   supabase: TypedSupabase,
   deliverableId: string,
-): Promise<DeliverableVersionWithSubmitter[]> {
+): Promise<DeliverableVersionView[]> {
   try {
     const { data, error } = await supabase
       .from("deliverable_versions")
-      .select("*, profiles(id, full_name, role, avatar_url)")
+      .select(`${VERSION_COLUMNS}, profiles(id, full_name, role, avatar_url)`)
       .eq("deliverable_id", deliverableId)
       .order("version_number", { ascending: false });
 
@@ -217,15 +326,20 @@ export async function listDeliverableVersions(
       return [];
     }
 
-    type RawVersion = DeliverableVersion & {
-      profiles: Pick<
-        Profile,
-        "id" | "full_name" | "role" | "avatar_url"
-      > | null;
+    type RawVersion = Omit<DeliverableVersionView, "submitter"> & {
+      profiles: ProfileSummary | null;
     };
 
     return ((data ?? []) as unknown as RawVersion[]).map((v) => ({
-      ...v,
+      id: v.id,
+      deliverable_id: v.deliverable_id,
+      version_number: v.version_number,
+      submission_url: v.submission_url,
+      submission_provider: v.submission_provider,
+      submission_note: v.submission_note,
+      submitted_at: v.submitted_at,
+      submitted_by: v.submitted_by,
+      created_at: v.created_at,
       submitter: v.profiles,
     }));
   } catch (err) {
@@ -237,11 +351,11 @@ export async function listDeliverableVersions(
 export async function listVersionFeedback(
   supabase: TypedSupabase,
   versionId: string,
-): Promise<DeliverableFeedbackWithReviewer[]> {
+): Promise<DeliverableFeedbackView[]> {
   try {
     const { data, error } = await supabase
       .from("deliverable_feedback")
-      .select("*, profiles(id, full_name, role, avatar_url)")
+      .select(`${FEEDBACK_COLUMNS}, profiles(id, full_name, role, avatar_url)`)
       .eq("version_id", versionId)
       .order("reviewed_at", { ascending: true });
 
@@ -251,15 +365,20 @@ export async function listVersionFeedback(
       return [];
     }
 
-    type RawFeedback = DeliverableFeedback & {
-      profiles: Pick<
-        Profile,
-        "id" | "full_name" | "role" | "avatar_url"
-      > | null;
+    type RawFeedback = Omit<DeliverableFeedbackView, "reviewer"> & {
+      profiles: ProfileSummary | null;
     };
 
     return ((data ?? []) as unknown as RawFeedback[]).map((f) => ({
-      ...f,
+      id: f.id,
+      deliverable_id: f.deliverable_id,
+      version_id: f.version_id,
+      stage: f.stage,
+      decision: f.decision,
+      comments: f.comments,
+      reviewed_at: f.reviewed_at,
+      reviewed_by: f.reviewed_by,
+      created_at: f.created_at,
       reviewer: f.profiles,
     }));
   } catch (err) {

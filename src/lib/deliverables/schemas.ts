@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GOOGLE_DRIVE_URL_REGEX } from "./validators";
+import { isValidGoogleDriveUrl } from "./validators";
 
 export const CreateDeliverableSchema = z.object({
   project_id: z.string().uuid("Invalid project ID"),
@@ -61,11 +61,10 @@ export type UpdateDeliverableInput = z.infer<typeof UpdateDeliverableSchema>;
 export const SubmitDeliverableVersionSchema = z.object({
   deliverable_id: z.string().uuid("Invalid deliverable ID"),
   submission_url: z
-    .string()
-    .trim()
-    .regex(
-      GOOGLE_DRIVE_URL_REGEX,
-      "Submission URL must be a valid Google Drive share link (https://drive.google.com/... or https://docs.google.com/...)",
+    .string({ required_error: "Submission URL is required" })
+    .refine(
+      (val) => isValidGoogleDriveUrl(val),
+      "Submission URL must be a valid Google Drive HTTPS share link (https://drive.google.com/... or https://docs.google.com/...)",
     ),
   submission_note: z
     .string()
