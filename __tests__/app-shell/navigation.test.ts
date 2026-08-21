@@ -196,7 +196,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(html).toContain("Project Manager");
     });
 
-    it("renders operator navigation with /operador and disabled agenda item", async () => {
+    it("renders operator navigation with /operador and active /operador/agenda link", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
@@ -213,8 +213,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
 
       expect(html).toContain('href="/operador"');
       expect(html).toContain('href="/operador/agenda"');
-      expect(html).toContain('aria-disabled="true"');
-      expect(html).toContain('tabindex="-1"');
+      expect(html).not.toContain('aria-disabled="true"');
       expect(html).not.toContain('href="/admin"');
       expect(html).not.toContain('href="/pm"');
       expect(html).toContain("Operator User");
@@ -329,7 +328,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(projectLink).toHaveAttribute("href", "/admin/proyectos");
     });
 
-    it("renders disabled agenda affordance in drawer for operator", () => {
+    it("renders active agenda link in drawer for operator", () => {
       const profile = createMockProfile({
         id: "u-3",
         full_name: "Operator User",
@@ -349,9 +348,10 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       });
       fireEvent.click(toggleButton);
 
-      const agendaItem = screen.getByText("Mi Agenda");
-      expect(agendaItem).toHaveAttribute("aria-disabled", "true");
-      expect(agendaItem).toHaveAttribute("tabindex", "-1");
+      const agendaLink = screen.getByRole("link", { name: "Mi Agenda" });
+      expect(agendaLink).toBeInTheDocument();
+      expect(agendaLink).toHaveAttribute("href", "/operador/agenda");
+      expect(agendaLink).not.toHaveAttribute("aria-disabled");
     });
   });
 });

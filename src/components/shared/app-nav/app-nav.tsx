@@ -65,7 +65,7 @@ export async function AppNav({ session, unreadCount }: AppNavProps) {
               {t("links.home")}
             </Link>
 
-            {role === "admin" || role === "pm" ? (
+            {role === "admin" || role === "pm" || role === "operator" ? (
               <Link
                 href={secondaryNavigationItem.href}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"

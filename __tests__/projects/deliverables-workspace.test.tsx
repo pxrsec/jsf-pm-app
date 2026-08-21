@@ -366,6 +366,7 @@ describe("Deliverables Workspace UI", () => {
       task_type: "internal_work",
       has_deliverables: true,
       assignee_id: "user-pm-1",
+      assigned_at: "2026-08-20T10:00:00.000Z",
       deadline_at: "",
       started_at: null,
       completed_at: null,

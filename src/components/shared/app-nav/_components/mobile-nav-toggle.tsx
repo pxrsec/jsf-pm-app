@@ -112,7 +112,7 @@ export function MobileNavToggle({
               {t("links.home")}
             </Link>
 
-            {role === "admin" || role === "pm" ? (
+            {role === "admin" || role === "pm" || role === "operator" ? (
               <Link
                 href={secondaryNavigationItem.href}
                 onClick={() => setIsOpen(false)}

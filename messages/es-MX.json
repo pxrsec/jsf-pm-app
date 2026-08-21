@@ -817,6 +817,66 @@
         "readOnlyLabel": "Solo lectura — capacidad observador",
         "cannotMutate": "Los observadores de PM solo pueden leer tareas y agregar comentarios colaborativos."
       }
+    },
+    "operatorAgenda": {
+      "title": "Mi Agenda",
+      "subtitle": "Tareas y entregables asignados bajo tu responsabilidad",
+      "browseProjectsLink": "Ver proyectos asignados",
+      "empty": {
+        "title": "No hay tareas pendientes",
+        "description": "No tienes tareas asignadas actualmente en tu agenda.",
+        "browseProjectsAction": "Ver proyectos con trabajo asignado"
+      },
+      "urgency": {
+        "new": "Nueva asignación",
+        "newAria": "Nueva asignación: asignada hace menos de 24 horas",
+        "normal": "Normal",
+        "normalAria": "Trabajo activo normal",
+        "upcoming": "Próxima a vencer",
+        "upcomingAria": "Próxima a vencer: entrega entre 24 y 72 horas",
+        "urgent": "Urgente",
+        "urgentAria": "Urgente: entrega en menos de 24 horas",
+        "overdue": "Vencida",
+        "overdueAria": "Vencida: la fecha límite ha expirado",
+        "completed": "Completada hoy",
+        "completedAria": "Completada hoy"
+      },
+      "card": {
+        "deliverablesCount": "{count} entregables",
+        "version": "v{version}",
+        "assignedAt": "Asignada: {date}",
+        "deadlineAt": "Límite: {date}",
+        "completedAt": "Completada: {date}",
+        "viewProjectAria": "Ver tareas del proyecto {projectName}"
+      },
+      "completedSection": {
+        "title": "Completadas hoy",
+        "description": "Trabajo finalizado durante el día de hoy"
+      }
+    },
+    "operatorProjects": {
+      "title": "Mis Proyectos Asignados",
+      "subtitle": "Proyectos con tareas asignadas bajo tu responsabilidad",
+      "backToAgenda": "Volver a Mi Agenda",
+      "backToProjects": "Volver a Mis Proyectos",
+      "empty": {
+        "title": "Sin proyectos asignados",
+        "description": "No tienes proyectos con tareas asignadas actualmente.",
+        "returnToAgenda": "Ir a Mi Agenda"
+      },
+      "card": {
+        "ownTaskCount": "{count} tareas asignadas",
+        "nearestDeadline": "Próxima entrega: {date}",
+        "openProjectAria": "Ver tareas asignadas en {projectName}"
+      },
+      "projectDetail": {
+        "ownTasksSummary": "{count} tareas asignadas en este proyecto"
+      },
+      "absence": {
+        "title": "Proyecto no disponible",
+        "description": "No se encontró el proyecto solicitado o no tienes tareas asignadas en él.",
+        "returnAction": "Volver a Mis Proyectos"
+      }
     }
   }
 }

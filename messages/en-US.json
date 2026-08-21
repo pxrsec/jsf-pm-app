@@ -817,6 +817,66 @@
         "readOnlyLabel": "Read-only — Watcher capacity",
         "cannotMutate": "PM Watchers can only read tasks and add collaborative comments."
       }
+    },
+    "operatorAgenda": {
+      "title": "My Agenda",
+      "subtitle": "Tasks and deliverables assigned under your responsibility",
+      "browseProjectsLink": "View assigned projects",
+      "empty": {
+        "title": "No pending tasks",
+        "description": "You currently have no tasks assigned in your agenda.",
+        "browseProjectsAction": "View projects with assigned work"
+      },
+      "urgency": {
+        "new": "New assignment",
+        "newAria": "New assignment: assigned less than 24 hours ago",
+        "normal": "Normal",
+        "normalAria": "Normal active work",
+        "upcoming": "Due soon",
+        "upcomingAria": "Due soon: deadline between 24 and 72 hours",
+        "urgent": "Urgent",
+        "urgentAria": "Urgent: deadline in less than 24 hours",
+        "overdue": "Overdue",
+        "overdueAria": "Overdue: deadline has passed",
+        "completed": "Completed today",
+        "completedAria": "Completed today"
+      },
+      "card": {
+        "deliverablesCount": "{count} deliverables",
+        "version": "v{version}",
+        "assignedAt": "Assigned: {date}",
+        "deadlineAt": "Deadline: {date}",
+        "completedAt": "Completed: {date}",
+        "viewProjectAria": "View tasks for project {projectName}"
+      },
+      "completedSection": {
+        "title": "Completed today",
+        "description": "Work finished during today"
+      }
+    },
+    "operatorProjects": {
+      "title": "My Assigned Projects",
+      "subtitle": "Projects with tasks assigned under your responsibility",
+      "backToAgenda": "Back to My Agenda",
+      "backToProjects": "Back to My Projects",
+      "empty": {
+        "title": "No assigned projects",
+        "description": "You currently have no projects with assigned tasks.",
+        "returnToAgenda": "Go to My Agenda"
+      },
+      "card": {
+        "ownTaskCount": "{count} assigned tasks",
+        "nearestDeadline": "Nearest deadline: {date}",
+        "openProjectAria": "View assigned tasks in {projectName}"
+      },
+      "projectDetail": {
+        "ownTasksSummary": "{count} assigned tasks in this project"
+      },
+      "absence": {
+        "title": "Project not available",
+        "description": "The requested project was not found or you do not have assigned tasks in it.",
+        "returnAction": "Back to My Projects"
+      }
     }
   }
 }
