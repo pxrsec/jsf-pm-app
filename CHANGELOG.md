@@ -1,5 +1,28 @@
 # JSF PM App Development Changelog
 
+## [2026-08-21 @ 16:19]
+
+**🚀 S05-02: Operator My Day Agenda & Own-Work Navigation**
+
+- **🚀 Features:**
+  - **Operator My Day Agenda (`/operador/agenda` & `/en/operador/agenda`):** Delivered the server-rendered cross-project Operator agenda displaying own assigned tasks, authoritative urgency badges (`new`, `normal`, `upcoming`, `urgent`, `overdue`, `completed`), task statuses, project context, linked deliverable counts, and formatted deadlines.
+  - **Completed-Today Section:** Implemented a distinct, read-only completed-today section for tasks completed within the Operator's stored local day retention window.
+  - **Projects with Own-Work Index (`/operador/proyectos`):** Implemented the own-work project browser showing distinct safe project cards with own assigned task counts, present urgency badges, nearest deadline, and accessible navigation.
+  - **Per-Project Own-Task List (`/operador/proyectos/[project-id]`):** Implemented project-scoped task list with generic safe absence/denial state preventing identifier probing.
+  - **Navigation Activation:** Activated live, keyboard-focusable locale-aware link to `/operador/agenda` in desktop `AppNav` and mobile `MobileNavToggle`.
+
+- **🛠 Architecture:**
+  - **Dedicated Server Read Boundary (`src/lib/operator/queries.ts`):** Created typed server-only query module reading strictly from `operator_agenda_view` using explicit field projection.
+  - **Task & Deliverable Deduplication:** Multi-deliverable rows for a single task are deduplicated into unified task records with deliverable summary arrays.
+  - **Urgency Validation & Ordering:** Enforced authoritative urgency validation and Section 5.3 fallback sort order (`overdue` → `urgent` → `upcoming` → `new` → `normal` → `completed`) with task ID tie-breaking.
+  - **Pure RSC Presentation:** All operator views and presentation components are built as pure React Server Components with no client-side badge dependencies.
+  - **Bilingual Localization:** Added matching semantic keys under `projects.operatorAgenda` and `projects.operatorProjects` in `messages/es-MX.json` and `messages/en-US.json`.
+
+- **🧪 Testing & Quality:**
+  - **Query Suite (`__tests__/operator/operator-queries.test.ts`):** Added 10 tests covering explicit field projection, deduplication, Section 5.3 sort order, project grouping, and safe handling of missing/invalid categories and IDs.
+  - **Route & Presentation Suite (`__tests__/operator/operator-agenda-routes.test.tsx`):** Added 7 tests validating card rendering across all 6 urgency categories, completed-today section, empty states, and an automated translation catalog parity assertion.
+  - **Navigation Suite (`__tests__/app-shell/navigation.test.ts`):** Updated operator assertions to verify active desktop and mobile drawer navigation.
+
 ## [2026-08-21 @ 13:18]
 
 **📝 Sprint 04 Closeout Record Structural Alignment & Contract Hygiene**
