@@ -1179,6 +1179,7 @@ export type Database = {
       }
       tasks: {
         Row: {
+          assigned_at: string
           assignee_id: string
           completed_at: string | null
           created_at: string
@@ -1198,6 +1199,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          assigned_at?: string
           assignee_id: string
           completed_at?: string | null
           created_at?: string
@@ -1217,6 +1219,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          assigned_at?: string
           assignee_id?: string
           completed_at?: string | null
           created_at?: string
@@ -1609,6 +1612,7 @@ export type Database = {
       }
       operator_agenda_view: {
         Row: {
+          assigned_at: string | null
           client_delivery_deadline_at: string | null
           current_version_number: number | null
           deliverable_id: string | null
