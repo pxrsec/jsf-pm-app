@@ -4,13 +4,7 @@ import { useState, useMemo, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  Building2,
-  FolderLock,
-  Layers,
-  FilterX,
-  Plus,
-} from "lucide-react";
+import { Building2, FolderLock, Layers, FilterX, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DeliverablesFilterBar } from "./deliverables-filter-bar";
 import { DeliverableList } from "./deliverable-list";
@@ -62,10 +56,12 @@ export function DeliverablesTab({
   >(null);
   const [submittingDeliverable, setSubmittingDeliverable] =
     useState<DeliverableListItem | null>(null);
-  const [reviewingDeliverable, setReviewingDeliverable] =
-    useState<DeliverableListItem | DeliverableDetailView | null>(null);
-  const [deliveringDeliverable, setDeliveringDeliverable] =
-    useState<DeliverableListItem | DeliverableDetailView | null>(null);
+  const [reviewingDeliverable, setReviewingDeliverable] = useState<
+    DeliverableListItem | DeliverableDetailView | null
+  >(null);
+  const [deliveringDeliverable, setDeliveringDeliverable] = useState<
+    DeliverableListItem | DeliverableDetailView | null
+  >(null);
   const [selectedDetail, setSelectedDetail] =
     useState<DeliverableDetailView | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);

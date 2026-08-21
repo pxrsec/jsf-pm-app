@@ -47,7 +47,6 @@ describe("TC-CFG-002 / VC-CFG-002: Server-only configuration boundary", () => {
 
     // RED: server.config.ts does not exist yet
     const serverConfig = await import("@/config/server.config").catch((e) => e);
-    const _message = String(serverConfig?.message ?? serverConfig);
 
     // If module loads, verify it doesn't export the secret value
     if (typeof serverConfig === "object" && serverConfig !== null) {

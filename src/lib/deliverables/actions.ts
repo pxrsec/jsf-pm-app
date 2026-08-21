@@ -49,7 +49,10 @@ export async function createDeliverableAction(
   if (!parsed.success) {
     return {
       ok: false,
-      error: { code: "VALIDATION_FAILED", message: "Invalid deliverable input" },
+      error: {
+        code: "VALIDATION_FAILED",
+        message: "Invalid deliverable input",
+      },
     };
   }
 
@@ -86,7 +89,11 @@ export async function createDeliverableAction(
     };
   }
 
-  const result = await createDeliverable(supabase, parsed.data, session.user.id);
+  const result = await createDeliverable(
+    supabase,
+    parsed.data,
+    session.user.id,
+  );
   if (result.ok) revalidateProjectWorkspaces(parsed.data.project_id);
   return result;
 }
@@ -100,7 +107,10 @@ export async function updateDeliverableAction(params: {
   if (!parsed.success) {
     return {
       ok: false,
-      error: { code: "VALIDATION_FAILED", message: "Invalid deliverable update input" },
+      error: {
+        code: "VALIDATION_FAILED",
+        message: "Invalid deliverable update input",
+      },
     };
   }
 
@@ -133,15 +143,22 @@ export async function updateDeliverableAction(params: {
     .maybeSingle();
 
   if (!deliverable) {
-    return { ok: false, error: { code: "NOT_FOUND", message: "Deliverable not found" } };
+    return {
+      ok: false,
+      error: { code: "NOT_FOUND", message: "Deliverable not found" },
+    };
   }
 
-  if (deliverable.status !== "pending" && deliverable.status !== "changes_requested") {
+  if (
+    deliverable.status !== "pending" &&
+    deliverable.status !== "changes_requested"
+  ) {
     return {
       ok: false,
       error: {
         code: "INVALID_TRANSITION",
-        message: "Planning edits are only allowed in pending or changes_requested",
+        message:
+          "Planning edits are only allowed in pending or changes_requested",
       },
     };
   }
@@ -158,7 +175,9 @@ export async function updateDeliverableAction(params: {
 
     if (
       !assigneeMember ||
-      !["pm_lead", "pm_watcher", "operator"].includes(assigneeMember.member_type)
+      !["pm_lead", "pm_watcher", "operator"].includes(
+        assigneeMember.member_type,
+      )
     ) {
       return {
         ok: false,
@@ -240,7 +259,10 @@ export async function submitDeliverableVersionAction(
     .maybeSingle();
 
   if (!deliverable) {
-    return { ok: false, error: { code: "NOT_FOUND", message: "Deliverable not found" } };
+    return {
+      ok: false,
+      error: { code: "NOT_FOUND", message: "Deliverable not found" },
+    };
   }
 
   const isAssignee = deliverable.assignee_id === session.user.id;
@@ -264,7 +286,10 @@ export async function submitDeliverableVersionAction(
     };
   }
 
-  if (deliverable.status !== "pending" && deliverable.status !== "changes_requested") {
+  if (
+    deliverable.status !== "pending" &&
+    deliverable.status !== "changes_requested"
+  ) {
     return {
       ok: false,
       error: {
@@ -286,7 +311,10 @@ export async function reportDeliverableLinkAction(
   if (!parsed.success) {
     return {
       ok: false,
-      error: { code: "VALIDATION_FAILED", message: "Invalid link report reason" },
+      error: {
+        code: "VALIDATION_FAILED",
+        message: "Invalid link report reason",
+      },
     };
   }
 
@@ -302,7 +330,10 @@ export async function reportDeliverableLinkAction(
     .maybeSingle();
 
   if (!deliverable) {
-    return { ok: false, error: { code: "NOT_FOUND", message: "Deliverable not found" } };
+    return {
+      ok: false,
+      error: { code: "NOT_FOUND", message: "Deliverable not found" },
+    };
   }
 
   const { data: version } = await supabase

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
@@ -52,14 +52,13 @@ export function DeliverableReviewDialog({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      setDecision("approved");
-      setComments("");
-      setValidationError(null);
-      setIsSubmitting(false);
-    }
-  }, [isOpen]);
+  const handleClose = () => {
+    setDecision("approved");
+    setComments("");
+    setValidationError(null);
+    setIsSubmitting(false);
+    onClose();
+  };
 
   if (!deliverable) return null;
 
@@ -90,7 +89,7 @@ export function DeliverableReviewDialog({
       });
 
       if (result.ok) {
-        onClose();
+        handleClose();
         onSuccess(
           decision === "approved"
             ? t("reviewDialog.approvedToast")
@@ -104,18 +103,15 @@ export function DeliverableReviewDialog({
           );
         } else if (errCode === "UNAUTHORIZED") {
           toast.error(t("errors.unauthorized"));
-          onClose();
+          handleClose();
           onError?.(errCode);
         } else if (errCode === "NOT_FOUND") {
           toast.error(t("errors.notFound"));
-          onClose();
+          handleClose();
           onError?.(errCode);
-        } else if (
-          errCode === "INVALID_TRANSITION" ||
-          errCode === "CONFLICT"
-        ) {
+        } else if (errCode === "INVALID_TRANSITION" || errCode === "CONFLICT") {
           toast.error(t("reviewDialog.staleErrorToast"));
-          onClose();
+          handleClose();
           onError?.(errCode);
         } else {
           toast.error(t("errors.generic"));
@@ -129,7 +125,7 @@ export function DeliverableReviewDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader className="space-y-2 text-left">
@@ -266,7 +262,7 @@ export function DeliverableReviewDialog({
               type="button"
               variant="outline"
               size="sm"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isSubmitting}
               className="text-xs"
             >

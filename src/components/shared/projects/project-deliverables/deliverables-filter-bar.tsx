@@ -1,12 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import {
-  Plus,
-  Table as TableIcon,
-  LayoutGrid,
-  FilterX,
-} from "lucide-react";
+import { Plus, Table as TableIcon, LayoutGrid, FilterX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,

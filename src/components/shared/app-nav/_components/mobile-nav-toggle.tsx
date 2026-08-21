@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { Menu, X } from "lucide-react";
 import type { AppRole, Profile } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
@@ -52,7 +52,7 @@ export function MobileNavToggle({
           ? "/operador"
           : "/cliente";
 
-  const roleSecondaryStub =
+  const secondaryNavigationItem =
     role === "admin"
       ? { href: "/admin/proyectos", label: t("links.projects") }
       : role === "pm"
@@ -114,20 +114,20 @@ export function MobileNavToggle({
 
             {role === "admin" || role === "pm" ? (
               <Link
-                href={roleSecondaryStub.href}
+                href={secondaryNavigationItem.href}
                 onClick={() => setIsOpen(false)}
                 className="px-3 py-2 rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
-                {roleSecondaryStub.label}
+                {secondaryNavigationItem.label}
               </Link>
             ) : (
               <a
-                href={roleSecondaryStub.href}
+                href={secondaryNavigationItem.href}
                 aria-disabled="true"
                 tabIndex={-1}
                 className="px-3 py-2 rounded-md font-medium text-muted-foreground cursor-not-allowed opacity-60"
               >
-                {roleSecondaryStub.label}
+                {secondaryNavigationItem.label}
               </a>
             )}
           </div>

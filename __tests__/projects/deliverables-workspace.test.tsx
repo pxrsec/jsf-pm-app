@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
@@ -63,7 +63,8 @@ vi.mock("next-intl", () => ({
           title: "Reportar Problema con Enlace",
           description: `Envía un reporte interno sobre el enlace de la versión v${params?.version ?? ""}.`,
           reasonLabel: "Motivo del reporte",
-          reasonPlaceholder: "Ej. El enlace solicita permisos de acceso restringido...",
+          reasonPlaceholder:
+            "Ej. El enlace solicita permisos de acceso restringido...",
           cancelAction: "Cancelar",
           submitAction: "Enviar Reporte",
           submitting: "Enviando reporte...",
@@ -71,24 +72,24 @@ vi.mock("next-intl", () => ({
         return dialogMessages[key] ?? key;
       }
       const messages: Record<string, string> = {
-        "internalIneligibleTitle": "Entregables no disponibles",
-        "internalIneligibleDescription":
+        internalIneligibleTitle: "Entregables no disponibles",
+        internalIneligibleDescription:
           "Los proyectos internos no admiten entregables de producción.",
-        "incompleteClientSetupTitle": "Configuración de cliente pendiente",
-        "incompleteClientSetupDescription":
+        incompleteClientSetupTitle: "Configuración de cliente pendiente",
+        incompleteClientSetupDescription:
           "Se requiere vincular una organización de cliente y al menos un contacto activo antes de crear o enviar entregables de producción.",
-        "emptyStateTitle": "No hay entregables planificados",
-        "emptyStateDescription":
+        emptyStateTitle: "No hay entregables planificados",
+        emptyStateDescription:
           "Planifica el primer entregable de producción vinculado a una tarea del proyecto.",
-        "emptyStateAction": "Planificar primer entregable",
-        "newDeliverableAction": "Nuevo Entregable",
-        "stalledBadge": "Estancado",
-        "versionZero": "v0 (Sin envíos)",
-        "unassigned": "Sin asignar",
-        "userFallback": "Usuario",
-        "pmLeadFallback": "PM Lead",
-        "teamMemberFallback": "Miembro del Equipo",
-        "actionsMenuAriaLabel": "Menú de acciones",
+        emptyStateAction: "Planificar primer entregable",
+        newDeliverableAction: "Nuevo Entregable",
+        stalledBadge: "Estancado",
+        versionZero: "v0 (Sin envíos)",
+        unassigned: "Sin asignar",
+        userFallback: "Usuario",
+        pmLeadFallback: "PM Lead",
+        teamMemberFallback: "Miembro del Equipo",
+        actionsMenuAriaLabel: "Menú de acciones",
         "detailSheet.title": "Detalle del Entregable",
         "detailSheet.historyTitle": "Historial Inmutable de Versiones",
         "detailSheet.noHistory":
@@ -101,17 +102,19 @@ vi.mock("next-intl", () => ({
         "detailSheet.submitCtaInitial": "Enviar Primera Versión (v1)",
         "detailSheet.reviewCta": `Revisar versión v${params?.version ?? ""}`,
         "detailSheet.deliverCta": "Marcar como entregado",
-        "detailSheet.awaitingClientReviewTitle": "En Espera de Revisión del Cliente",
-        "detailSheet.awaitingClientReviewNotice": "Entregable liberado para revisión de cliente.",
-        "detailSheet.deliveredNotice": "Este entregable ha sido completado y entregado.",
+        "detailSheet.awaitingClientReviewTitle":
+          "En Espera de Revisión del Cliente",
+        "detailSheet.awaitingClientReviewNotice":
+          "Entregable liberado para revisión de cliente.",
+        "detailSheet.deliveredNotice":
+          "Este entregable ha sido completado y entregado.",
         "detailSheet.internalStage": "Revisión Interna",
         "detailSheet.productionAssigneeRole": "Responsable de producción",
         "detailSheet.submissionDeadlineShort": "Envío",
         "detailSheet.internalReviewDeadlineShort": "Revisión PM",
         "detailSheet.clientDeliveryDeadlineShort": "Entrega Cliente",
         "linkReportDialog.title": "Reportar Problema con Enlace",
-        "linkReportDialog.description":
-          `Envía un reporte interno sobre el enlace de la versión v${params?.version ?? ""}.`,
+        "linkReportDialog.description": `Envía un reporte interno sobre el enlace de la versión v${params?.version ?? ""}.`,
         "linkReportDialog.reasonLabel": "Motivo del reporte",
         "linkReportDialog.cancelAction": "Cancelar",
         "linkReportDialog.submitAction": "Enviar Reporte",
@@ -120,20 +123,27 @@ vi.mock("next-intl", () => ({
         "reviewDialog.description": `Emite un dictamen formal de revisión interna para la versión v${params?.version ?? ""}.`,
         "reviewDialog.decisionLabel": "Dictamen de revisión",
         "reviewDialog.approveOption": "Aprobar para revisión de cliente",
-        "reviewDialog.approveHelp": "El entregable avanzará a en espera de revisión del cliente.",
+        "reviewDialog.approveHelp":
+          "El entregable avanzará a en espera de revisión del cliente.",
         "reviewDialog.requestChangesOption": "Solicitar cambios",
-        "reviewDialog.requestChangesHelp": "El entregable volverá a pendiente para corregir.",
+        "reviewDialog.requestChangesHelp":
+          "El entregable volverá a pendiente para corregir.",
         "reviewDialog.commentsLabel": "Comentarios de revisión",
         "reviewDialog.commentsOptionalPlaceholder": "Comentarios opcionales...",
-        "reviewDialog.commentsRequiredPlaceholder": "Detalla los cambios solicitados...",
-        "reviewDialog.commentsRequiredError": "El comentario es obligatorio al solicitar cambios.",
-        "reviewDialog.immutableWarning": "Este dictamen quedará asentado de forma inmutable.",
+        "reviewDialog.commentsRequiredPlaceholder":
+          "Detalla los cambios solicitados...",
+        "reviewDialog.commentsRequiredError":
+          "El comentario es obligatorio al solicitar cambios.",
+        "reviewDialog.immutableWarning":
+          "Este dictamen quedará asentado de forma inmutable.",
         "reviewDialog.submitAction": "Asentar Dictamen",
         "reviewDialog.cancelAction": "Cancelar",
         "reviewDialog.submitting": "Asentando...",
         "deliveryDialog.title": "¿Confirmar Entrega Final?",
-        "deliveryDialog.description": "¿Confirmar que el entregable ha sido completado y entregado?",
-        "deliveryDialog.truthfulnessNotice": "La aplicación registra el estado final en el flujo de trabajo interno. No realiza transferencias de archivos, envíos de correo, mensajes externos ni verificación de recepción externa.",
+        "deliveryDialog.description":
+          "¿Confirmar que el entregable ha sido completado y entregado?",
+        "deliveryDialog.truthfulnessNotice":
+          "La aplicación registra el estado final en el flujo de trabajo interno. No realiza transferencias de archivos, envíos de correo, mensajes externos ni verificación de recepción externa.",
         "deliveryDialog.confirmAction": "Marcar como Entregado",
         "deliveryDialog.cancelAction": "Cancelar",
         "deliveryDialog.delivering": "Registrando entrega...",
@@ -149,25 +159,25 @@ vi.mock("next-intl", () => ({
         "columns.assignee": "Asignado a",
         "columns.deadlines": "Fechas Límite",
         "columns.actions": "Acciones",
-        "filterStatus": "Filtrar por estado...",
-        "filterAssignee": "Filtrar por asignado...",
-        "allStatuses": "Todos los estados",
-        "allAssignees": "Todos los miembros",
-        "clearFilters": "Limpiar filtros",
-        "viewTable": "Tabla",
-        "viewCards": "Tarjetas",
+        filterStatus: "Filtrar por estado...",
+        filterAssignee: "Filtrar por asignado...",
+        allStatuses: "Todos los estados",
+        allAssignees: "Todos los miembros",
+        clearFilters: "Limpiar filtros",
+        viewTable: "Tabla",
+        viewCards: "Tarjetas",
         "status.pending": "Pendiente",
         "status.awaitingInternalReview": "Esperando Revisión Interna",
         "status.awaitingClientReview": "Esperando Revisión de Cliente",
         "status.approved": "Aprobado",
         "status.changesRequested": "Cambios Solicitados",
         "status.delivered": "Entregado",
-        "pending": "Pendiente",
-        "awaitingInternalReview": "Esperando Revisión Interna",
-        "awaitingClientReview": "Esperando Revisión de Cliente",
-        "approved": "Aprobado",
-        "changesRequested": "Cambios Solicitados",
-        "delivered": "Entregado",
+        pending: "Pendiente",
+        awaitingInternalReview: "Esperando Revisión Interna",
+        awaitingClientReview: "Esperando Revisión de Cliente",
+        approved: "Aprobado",
+        changesRequested: "Cambios Solicitados",
+        delivered: "Entregado",
         "deadlines.noDeadlines": "Sin fechas límite",
         "watcherMode.cannotMutate":
           "Los observadores de PM pueden consultar el historial y comentar, pero no pueden planificar, editar, archivar ni enviar versiones.",
@@ -209,10 +219,6 @@ import { DeliverableDeliveryDialog } from "@/components/shared/projects/project-
 import { DeliverableDetailSheet } from "@/components/shared/projects/project-deliverables/deliverable-detail-sheet";
 import { DeliverableList } from "@/components/shared/projects/project-deliverables/deliverable-list";
 import { DeliverableCard } from "@/components/shared/projects/project-deliverables/deliverable-card";
-import {
-  reviewDeliverableAction,
-  markDeliverableDeliveredAction,
-} from "@/lib/deliverables/review-actions";
 import type { ProjectDetail, TaskWithAssignee } from "@/lib/projects/queries";
 import type {
   DeliverableListItem,
@@ -520,7 +526,9 @@ describe("Deliverables Workspace UI", () => {
 
     expect(html).toContain("Registro formal de revisión");
     expect(html).toContain("Cambios Solicitados");
-    expect(html).toContain("Please fix the color grading in the intro sequence.");
+    expect(html).toContain(
+      "Please fix the color grading in the intro sequence.",
+    );
   });
 
   it("renders link report dialog with truthfulness notice", () => {
@@ -573,7 +581,9 @@ describe("Deliverables Workspace UI", () => {
     expect(screen.getByText("Revisión Interna del Entregable")).toBeTruthy();
     expect(screen.getByText("Aprobar para revisión de cliente")).toBeTruthy();
     expect(screen.getByText("Solicitar cambios")).toBeTruthy();
-    expect(screen.getByText(/Este dictamen quedará asentado de forma inmutable/)).toBeTruthy();
+    expect(
+      screen.getByText(/Este dictamen quedará asentado de forma inmutable/),
+    ).toBeTruthy();
     expect(screen.getByText("0/5000")).toBeTruthy();
   });
 
@@ -596,7 +606,9 @@ describe("Deliverables Workspace UI", () => {
 
     expect(screen.getByText("¿Confirmar Entrega Final?")).toBeTruthy();
     expect(
-      screen.getByText(/La aplicación registra el estado final en el flujo de trabajo interno/),
+      screen.getByText(
+        /La aplicación registra el estado final en el flujo de trabajo interno/,
+      ),
     ).toBeTruthy();
     expect(screen.getByText("Marcar como Entregado")).toBeTruthy();
   });

@@ -48,13 +48,16 @@ export function DeliverableHistory({
             (f) => f.version_id === version.id,
           );
 
-          const formattedDate = format.dateTime(new Date(version.submitted_at), {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          });
+          const formattedDate = format.dateTime(
+            new Date(version.submitted_at),
+            {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            },
+          );
 
           const submitterName =
             version.submitter?.full_name || "Miembro del equipo";

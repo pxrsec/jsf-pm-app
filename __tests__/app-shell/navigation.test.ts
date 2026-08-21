@@ -1,9 +1,37 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { render, screen, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
 import esCatalog from "../../messages/es-MX.json";
 
 vi.mock("server-only", () => ({}));
+
+vi.mock("@/i18n/routing", () => ({
+  Link: ({
+    href,
+    children,
+    className,
+    onClick,
+  }: {
+    href: string;
+    children: React.ReactNode;
+    className?: string;
+    onClick?: () => void;
+  }) =>
+    React.createElement(
+      "a",
+      { href, className, onClick, "data-testid": "locale-link" },
+      children,
+    ),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  usePathname: () => "/",
+}));
 
 vi.mock("@/components/shared/language-switcher/language-switcher", () => ({
   LanguageSwitcher: () =>
@@ -119,7 +147,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
   const baseUser = { id: "u-1", email: "user@jsf.internal" };
 
   describe("AppNav Server Component per role", () => {
-    it("renders admin navigation with /admin link and hides other role links", async () => {
+    it("renders admin navigation with /admin and live /admin/proyectos link", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
@@ -136,6 +164,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
 
       expect(html).toContain('href="/admin"');
       expect(html).toContain('href="/admin/proyectos"');
+      expect(html).not.toContain('aria-disabled="true"');
       expect(html).not.toContain('href="/pm"');
       expect(html).not.toContain('href="/operador"');
       expect(html).not.toContain('href="/cliente"');
@@ -144,7 +173,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(html).toContain('aria-label="Navegación principal"');
     });
 
-    it("renders pm navigation with /pm link and hides /admin link", async () => {
+    it("renders pm navigation with /pm and live /pm/proyectos link", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
@@ -161,12 +190,13 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
 
       expect(html).toContain('href="/pm"');
       expect(html).toContain('href="/pm/proyectos"');
+      expect(html).not.toContain('aria-disabled="true"');
       expect(html).not.toContain('href="/admin"');
       expect(html).toContain("PM User");
       expect(html).toContain("Project Manager");
     });
 
-    it("renders operator navigation with /operador link and agenda stub", async () => {
+    it("renders operator navigation with /operador and disabled agenda item", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
@@ -183,13 +213,15 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
 
       expect(html).toContain('href="/operador"');
       expect(html).toContain('href="/operador/agenda"');
+      expect(html).toContain('aria-disabled="true"');
+      expect(html).toContain('tabindex="-1"');
       expect(html).not.toContain('href="/admin"');
       expect(html).not.toContain('href="/pm"');
       expect(html).toContain("Operator User");
       expect(html).toContain("Operador");
     });
 
-    it("renders client navigation with /cliente link", async () => {
+    it("renders client navigation with /cliente and disabled projects item", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
@@ -206,6 +238,8 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
 
       expect(html).toContain('href="/cliente"');
       expect(html).toContain('href="/cliente/proyectos"');
+      expect(html).toContain('aria-disabled="true"');
+      expect(html).toContain('tabindex="-1"');
       expect(html).not.toContain('href="/admin"');
       expect(html).toContain("Client User");
       expect(html).toContain("Cliente");
@@ -265,6 +299,59 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
 
       expect(html).toContain('aria-expanded="false"');
       expect(html).toContain('aria-controls="mobile-nav-drawer"');
+    });
+
+    it("opens drawer and renders live project link for admin on toggle", () => {
+      const profile = createMockProfile({
+        id: "u-1",
+        full_name: "Admin User",
+        role: "admin",
+      });
+
+      render(
+        React.createElement(MobileNavToggle, {
+          role: "admin",
+          profile,
+          unreadCount: 2,
+        }),
+      );
+
+      const toggleButton = screen.getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+      fireEvent.click(toggleButton);
+
+      expect(
+        screen.getByRole("button", { name: "Cerrar menú de navegación" }),
+      ).toBeInTheDocument();
+      const projectLink = screen.getByRole("link", { name: "Proyectos" });
+      expect(projectLink).toBeInTheDocument();
+      expect(projectLink).toHaveAttribute("href", "/admin/proyectos");
+    });
+
+    it("renders disabled agenda affordance in drawer for operator", () => {
+      const profile = createMockProfile({
+        id: "u-3",
+        full_name: "Operator User",
+        role: "operator",
+      });
+
+      render(
+        React.createElement(MobileNavToggle, {
+          role: "operator",
+          profile,
+          unreadCount: 0,
+        }),
+      );
+
+      const toggleButton = screen.getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+      fireEvent.click(toggleButton);
+
+      const agendaItem = screen.getByText("Mi Agenda");
+      expect(agendaItem).toHaveAttribute("aria-disabled", "true");
+      expect(agendaItem).toHaveAttribute("tabindex", "-1");
     });
   });
 });

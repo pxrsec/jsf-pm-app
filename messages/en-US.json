@@ -201,6 +201,23 @@
       "errorToast": "Failed to create project. Please verify the input fields."
     },
     "workspace": {
+      "recovery": {
+        "directory": {
+          "title": "Error loading projects",
+          "description": "An unexpected error occurred while loading the project directory. Please try again."
+        },
+        "workspace": {
+          "title": "Error loading workspace",
+          "description": "Unable to load project information or you do not have permission to access it."
+        },
+        "pmWorkspace": {
+          "description": "Unable to load project information or you are not assigned to this project."
+        },
+        "retryAction": "Try again",
+        "returnToProjectsAction": "Return to Projects",
+        "returnToAssignedProjectsAction": "Return to My Projects",
+        "loading": "Loading content..."
+      },
       "breadcrumbs": {
         "root": "Projects",
         "current": "Workspace"

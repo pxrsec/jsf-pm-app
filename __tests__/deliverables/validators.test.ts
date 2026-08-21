@@ -46,90 +46,64 @@ describe("Google Drive URL Validator", () => {
       isValidGoogleDriveUrl("http://docs.google.com/document/d/123/edit"),
     ).toBe(false);
 
-    expect(
-      isValidGoogleDriveUrl("ftp://drive.google.com/file/d/123"),
-    ).toBe(false);
+    expect(isValidGoogleDriveUrl("ftp://drive.google.com/file/d/123")).toBe(
+      false,
+    );
 
-    expect(
-      isValidGoogleDriveUrl("file:///drive.google.com/file"),
-    ).toBe(false);
+    expect(isValidGoogleDriveUrl("file:///drive.google.com/file")).toBe(false);
   });
 
   it("rejects raw whitespace, tabs, and newlines without normalization", () => {
     expect(
-      isValidGoogleDriveUrl(
-        " https://drive.google.com/file/d/123/view",
-      ),
+      isValidGoogleDriveUrl(" https://drive.google.com/file/d/123/view"),
     ).toBe(false);
 
     expect(
-      isValidGoogleDriveUrl(
-        "https://drive.google.com/file/d/123/view ",
-      ),
+      isValidGoogleDriveUrl("https://drive.google.com/file/d/123/view "),
     ).toBe(false);
 
     expect(
-      isValidGoogleDriveUrl(
-        "https://drive.google.com/file/d/123\n/view",
-      ),
+      isValidGoogleDriveUrl("https://drive.google.com/file/d/123\n/view"),
     ).toBe(false);
 
     expect(
-      isValidGoogleDriveUrl(
-        "https://drive.google.com/file/d/123\t/view",
-      ),
+      isValidGoogleDriveUrl("https://drive.google.com/file/d/123\t/view"),
     ).toBe(false);
 
     expect(
-      isValidGoogleDriveUrl(
-        "https://drive.google.com/file/d/123 /view",
-      ),
+      isValidGoogleDriveUrl("https://drive.google.com/file/d/123 /view"),
     ).toBe(false);
   });
 
   it("rejects explicit port in authority (including default port :443)", () => {
     expect(
-      isValidGoogleDriveUrl(
-        "https://drive.google.com:443/file/d/123/view",
-      ),
+      isValidGoogleDriveUrl("https://drive.google.com:443/file/d/123/view"),
     ).toBe(false);
 
     expect(
-      isValidGoogleDriveUrl(
-        "https://docs.google.com:443/document/d/123/edit",
-      ),
+      isValidGoogleDriveUrl("https://docs.google.com:443/document/d/123/edit"),
     ).toBe(false);
 
     expect(
-      isValidGoogleDriveUrl(
-        "https://drive.google.com:8080/file/d/123/view",
-      ),
+      isValidGoogleDriveUrl("https://drive.google.com:8080/file/d/123/view"),
     ).toBe(false);
   });
 
   it("rejects backslashes and control characters", () => {
     expect(
-      isValidGoogleDriveUrl(
-        "https://drive.google.com\\file\\d\\123",
-      ),
+      isValidGoogleDriveUrl("https://drive.google.com\\file\\d\\123"),
     ).toBe(false);
 
     expect(
-      isValidGoogleDriveUrl(
-        "https://drive.google.com/file/\x00/view",
-      ),
+      isValidGoogleDriveUrl("https://drive.google.com/file/\x00/view"),
     ).toBe(false);
 
     expect(
-      isValidGoogleDriveUrl(
-        "https://drive.google.com/file/\x1F/view",
-      ),
+      isValidGoogleDriveUrl("https://drive.google.com/file/\x1F/view"),
     ).toBe(false);
 
     expect(
-      isValidGoogleDriveUrl(
-        "https://drive.google.com/file/\x7F/view",
-      ),
+      isValidGoogleDriveUrl("https://drive.google.com/file/\x7F/view"),
     ).toBe(false);
   });
 

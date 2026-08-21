@@ -26,26 +26,43 @@ export function DeliverableCommentsSection({
   const tMembers = useTranslations("projects.members.capacities");
   const format = useFormatter();
 
-  const [comments, setComments] = useState<CollaborationCommentWithAuthor[]>([]);
+  const [comments, setComments] = useState<CollaborationCommentWithAuthor[]>(
+    [],
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [body, setBody] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchComments = useCallback(async () => {
+  const refreshComments = useCallback(async () => {
     try {
       const data = await listDeliverableCommentsAction(deliverableId);
       setComments(data);
     } catch {
       // safe fallback
-    } finally {
-      setIsLoading(false);
     }
   }, [deliverableId]);
 
   useEffect(() => {
-    fetchComments();
-  }, [fetchComments]);
+    let isMounted = true;
+    listDeliverableCommentsAction(deliverableId)
+      .then((data) => {
+        if (isMounted) {
+          setComments(data);
+          setIsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setComments([]);
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [deliverableId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +81,7 @@ export function DeliverableCommentsSection({
 
     if (result.ok) {
       setBody("");
-      fetchComments();
+      refreshComments();
     } else {
       setError(result.error.message);
     }
@@ -109,9 +126,7 @@ export function DeliverableCommentsSection({
               .toUpperCase();
 
             const capacityConfig =
-              MEMBER_CAPACITY_MAP[
-                c.author_capacity_snapshot as MemberCapacity
-              ];
+              MEMBER_CAPACITY_MAP[c.author_capacity_snapshot as MemberCapacity];
             const CapacityIcon = capacityConfig?.icon;
             const capacityKey =
               c.author_capacity_snapshot === "pm_lead"
@@ -147,9 +162,7 @@ export function DeliverableCommentsSection({
                         variant="secondary"
                         className="text-[9px] px-1.5 py-0 h-4 font-normal gap-1 text-muted-foreground"
                       >
-                        {CapacityIcon && (
-                          <CapacityIcon className="size-2.5" />
-                        )}
+                        {CapacityIcon && <CapacityIcon className="size-2.5" />}
                         <span>{tMembers(capacityKey as "pmLead")}</span>
                       </Badge>
                     )}

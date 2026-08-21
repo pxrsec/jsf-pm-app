@@ -201,6 +201,23 @@
       "errorToast": "No se pudo crear el proyecto. Revisa los datos ingresados."
     },
     "workspace": {
+      "recovery": {
+        "directory": {
+          "title": "Error al cargar proyectos",
+          "description": "Ocurrió un error inesperado al cargar el directorio de proyectos. Inténtalo de nuevo."
+        },
+        "workspace": {
+          "title": "Error al cargar el espacio de trabajo",
+          "description": "No se pudo cargar la información del proyecto o no tienes permisos para acceder."
+        },
+        "pmWorkspace": {
+          "description": "No se pudo cargar la información del proyecto o no tienes asignación en este proyecto."
+        },
+        "retryAction": "Intentar nuevamente",
+        "returnToProjectsAction": "Volver a Proyectos",
+        "returnToAssignedProjectsAction": "Volver a Mis Proyectos",
+        "loading": "Cargando contenido..."
+      },
       "breadcrumbs": {
         "root": "Proyectos",
         "current": "Espacio de Trabajo"

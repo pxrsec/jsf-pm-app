@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+type MockChain = {
+  eq?: ReturnType<typeof vi.fn>;
+  is?: ReturnType<typeof vi.fn>;
+  maybeSingle?: ReturnType<typeof vi.fn>;
+  then?: ReturnType<typeof vi.fn>;
+};
+
 vi.mock("server-only", () => ({}));
 
 const { mockSupabase, mockSession } = vi.hoisted(() => {
@@ -74,7 +81,7 @@ describe("Deliverable Server Actions", () => {
     it("rejects when actor is PM Watcher in target project", async () => {
       mockSupabase.from.mockImplementation((table: string) => {
         if (table === "project_members") {
-          const chain: any = {
+          const chain: MockChain = {
             eq: vi.fn(() => chain),
             is: vi.fn(() => chain),
             maybeSingle: vi.fn().mockResolvedValue({
@@ -106,7 +113,7 @@ describe("Deliverable Server Actions", () => {
     it("rejects when project is not client type or lacks client organization", async () => {
       mockSupabase.from.mockImplementation((table: string) => {
         if (table === "project_members") {
-          const chain: any = {
+          const chain: MockChain = {
             eq: vi.fn(() => chain),
             is: vi.fn(() => chain),
             maybeSingle: vi.fn().mockResolvedValue({
@@ -157,9 +164,9 @@ describe("Deliverable Server Actions", () => {
       mockSupabase.from.mockImplementation((table: string) => {
         if (table === "project_members") {
           return {
-            select: vi.fn().mockImplementation((cols: string) => {
+            select: vi.fn().mockImplementation(() => {
               let queriedUserId: string | null = null;
-              const chain: any = {
+              const chain: MockChain = {
                 eq: vi.fn((field: string, val: unknown) => {
                   if (field === "user_id") {
                     queriedUserId = String(val);
@@ -263,7 +270,7 @@ describe("Deliverable Server Actions", () => {
     it("rejects editing when deliverable is in review state", async () => {
       mockSupabase.from.mockImplementation((table: string) => {
         if (table === "project_members") {
-          const chain: any = {
+          const chain: MockChain = {
             eq: vi.fn(() => chain),
             is: vi.fn(() => chain),
             maybeSingle: vi.fn().mockResolvedValue({
@@ -312,7 +319,7 @@ describe("Deliverable Server Actions", () => {
     it("rejects PM Watcher from archiving deliverable", async () => {
       mockSupabase.from.mockImplementation((table: string) => {
         if (table === "project_members") {
-          const chain: any = {
+          const chain: MockChain = {
             eq: vi.fn(() => chain),
             is: vi.fn(() => chain),
             maybeSingle: vi.fn().mockResolvedValue({
@@ -439,7 +446,7 @@ describe("Deliverable Server Actions", () => {
           };
         }
         if (table === "project_members") {
-          const chain: any = {
+          const chain: MockChain = {
             eq: vi.fn(() => chain),
             is: vi.fn(() => chain),
             maybeSingle: vi.fn().mockResolvedValue({
@@ -843,7 +850,8 @@ describe("Deliverable Server Actions", () => {
       mockSupabase.rpc.mockResolvedValue({
         data: null,
         error: {
-          message: "Illegal transition: deliverable is not in awaiting_internal_review",
+          message:
+            "Illegal transition: deliverable is not in awaiting_internal_review",
         },
       });
 
@@ -1006,9 +1014,12 @@ describe("Deliverable Server Actions", () => {
       });
 
       expect(result.ok).toBe(true);
-      expect(mockSupabase.rpc).toHaveBeenCalledWith("mark_deliverable_delivered", {
-        p_deliverable_id: validDeliverableId,
-      });
+      expect(mockSupabase.rpc).toHaveBeenCalledWith(
+        "mark_deliverable_delivered",
+        {
+          p_deliverable_id: validDeliverableId,
+        },
+      );
       expect(revalidatePath).toHaveBeenCalledWith(
         `/admin/proyectos/${validProjectId}`,
       );

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit3, Loader2 } from "lucide-react";
 import {
@@ -75,7 +75,7 @@ export function DeliverableEditDialog({
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     reset,
     formState: { errors, isSubmitting },
   } = form;
@@ -93,9 +93,9 @@ export function DeliverableEditDialog({
     }
   }, [deliverable, reset]);
 
-  if (!deliverable) return null;
+  const selectedAssigneeId = useWatch({ control, name: "assignee_id" });
 
-  const selectedAssigneeId = watch("assignee_id");
+  if (!deliverable) return null;
 
   const onSubmit = async (data: UpdateDeliverableInput) => {
     setServerError(null);
@@ -160,11 +160,7 @@ export function DeliverableEditDialog({
             <Label htmlFor="edit-title" className="text-xs font-medium">
               Título <span className="text-destructive">*</span>
             </Label>
-            <Input
-              id="edit-title"
-              {...register("title")}
-              className="text-xs"
-            />
+            <Input id="edit-title" {...register("title")} className="text-xs" />
             {errors.title && (
               <p className="text-[11px] text-destructive">
                 {errors.title.message}
@@ -208,7 +204,10 @@ export function DeliverableEditDialog({
 
           {/* Specifications */}
           <div className="space-y-1.5">
-            <Label htmlFor="edit-specifications" className="text-xs font-medium">
+            <Label
+              htmlFor="edit-specifications"
+              className="text-xs font-medium"
+            >
               Especificaciones técnicas
             </Label>
             <Textarea
@@ -246,7 +245,9 @@ export function DeliverableEditDialog({
                 onChange={(e) =>
                   setValue(
                     "submission_deadline_at",
-                    e.target.value ? new Date(e.target.value).toISOString() : null,
+                    e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : null,
                   )
                 }
                 className="text-xs"
@@ -273,7 +274,9 @@ export function DeliverableEditDialog({
                 onChange={(e) =>
                   setValue(
                     "internal_review_deadline_at",
-                    e.target.value ? new Date(e.target.value).toISOString() : null,
+                    e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : null,
                   )
                 }
                 className="text-xs"
@@ -300,7 +303,9 @@ export function DeliverableEditDialog({
                 onChange={(e) =>
                   setValue(
                     "client_delivery_deadline_at",
-                    e.target.value ? new Date(e.target.value).toISOString() : null,
+                    e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : null,
                   )
                 }
                 className="text-xs"

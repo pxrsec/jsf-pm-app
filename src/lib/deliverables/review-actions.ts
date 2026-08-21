@@ -35,8 +35,7 @@ export async function reviewDeliverableAction(
       ok: false,
       error: {
         code: "VALIDATION_FAILED",
-        message:
-          parsed.error.issues[0]?.message ?? "Invalid review parameters",
+        message: parsed.error.issues[0]?.message ?? "Invalid review parameters",
       },
     };
   }
@@ -117,8 +116,7 @@ export async function markDeliverableDeliveredAction(
       ok: false,
       error: {
         code: "UNAUTHORIZED",
-        message:
-          "Only active PM Lead or Admin can mark deliverable delivered",
+        message: "Only active PM Lead or Admin can mark deliverable delivered",
       },
     };
   }

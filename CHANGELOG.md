@@ -1,5 +1,29 @@
 # JSF PM App Development Changelog
 
+## [2026-08-21 @ 12:10]
+
+**🚀 Navigation Localization, Route Recovery, Loading Boundaries, and Sprint 04 Closeout (S04-08)**
+
+- **🚀 Features & Integration:**
+  - **Locale-Preserving Global Navigation (`src/components/shared/app-nav/app-nav.tsx`, `mobile-nav-toggle.tsx`):** Integrated Next-Intl routing `Link` into `AppNav` and `MobileNavToggle` to preserve canonical `/en` and `/es` locale prefixes. Activated live links for Admin (`/admin/proyectos`) and PM (`/pm/proyectos`), while keeping Operator and Client future-work items visibly unavailable and `aria-disabled="true"`.
+  - **Shared Project Recovery State Component (`src/components/shared/projects/project-workspace/project-recovery-state.tsx`):** Created a safe presentational recovery component capturing exceptions to Sentry with `{ boundary: "localized-route" }`, rendering localized title/description, retry button (`reset`), and optional locale-aware return link without leaking raw database exceptions, digests, or stack traces.
+  - **Route Error & Not-Found Boundaries:** Updated Admin and PM directory and workspace route error boundaries (`admin/proyectos/error.tsx`, `admin/proyectos/[id]/error.tsx`, `pm/proyectos/error.tsx`, `pm/proyectos/[id]/error.tsx`) to consume `ProjectRecoveryState`. Added safe localized `not-found.tsx` boundaries for unauthorized/missing project handling.
+  - **Accessible Internationalized Loading Boundaries:** Updated Admin and PM directory and workspace `loading.tsx` boundaries to Server Components with `role="status"`, `aria-busy="true"`, `aria-live="polite"`, and screen-reader localized loading text from `projects.workspace.recovery.loading`.
+  - **100% Translation Parity (`messages/es-MX.json`, `messages/en-US.json`):** Added `projects.workspace.recovery` namespace with full Spanish and English parity covering directory, workspace, retry, and return actions.
+- **🛠 Architecture & Code Hygiene:**
+  - **ESLint & React Compiler Compliance:** Refactored `deliverable-comments-section.tsx` and `deliverable-review-dialog.tsx` to eliminate synchronous `setState` in `useEffect`. Replaced `watch()` with `useWatch()` in deliverable dialogs for React Compiler compatibility.
+  - **Strict TypeScript & Test Suite Hardening:** Eliminated explicit `any` usage in test suites (`deliverable-actions.test.ts`), added `// @vitest-environment jsdom` and `@testing-library/jest-dom/vitest` matchers to DOM tests, and added `@/i18n/routing` mocks to integration tests.
+- **🧪 Sprint 04 Closeout & Full Verification:**
+  - `npm run verify`: Exited with code 0 across all 7 verification gates.
+  - `npm run format:check`: 100% Prettier compliant.
+  - `npm run lint`: 0 errors, 0 warnings.
+  - `npm run typecheck`: 0 TypeScript errors (`tsc --noEmit`).
+  - `npm run build`: Production Next.js 16.3.1 Turbopack build succeeded (all 23 static/dynamic routes compiled).
+  - `npm run test`: 45 test files passed (344 passed, 0 failed, 9 skipped).
+  - `npm run test:coverage`: Full v8 coverage generated across all application modules.
+  - `npm run audit:prod`: 0 vulnerabilities.
+  - Closeout verification record written to `dev-docs/specs/s04/s04-sprint-04-closeout-verification.md`.
+
 ## [2026-08-21 @ 10:43]
 
 **🚀 Authoritative Internal Review, Resubmission, Release, and Final Delivery (S04-07)**

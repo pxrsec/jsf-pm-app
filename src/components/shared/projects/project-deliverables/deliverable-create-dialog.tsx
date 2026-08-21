@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Loader2 } from "lucide-react";
 import {
@@ -81,13 +81,13 @@ export function DeliverableCreateDialog({
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     reset,
     formState: { errors, isSubmitting },
   } = form;
 
-  const selectedTaskId = watch("task_id");
-  const selectedAssigneeId = watch("assignee_id");
+  const selectedTaskId = useWatch({ control, name: "task_id" });
+  const selectedAssigneeId = useWatch({ control, name: "assignee_id" });
 
   const onSubmit = async (data: CreateDeliverableInput) => {
     setServerError(null);
@@ -165,11 +165,7 @@ export function DeliverableCreateDialog({
               </SelectTrigger>
               <SelectContent>
                 {eligibleTasks.map((task) => (
-                  <SelectItem
-                    key={task.id}
-                    value={task.id}
-                    className="text-xs"
-                  >
+                  <SelectItem key={task.id} value={task.id} className="text-xs">
                     {task.title}
                   </SelectItem>
                 ))}
@@ -254,7 +250,9 @@ export function DeliverableCreateDialog({
                 onChange={(e) =>
                   setValue(
                     "submission_deadline_at",
-                    e.target.value ? new Date(e.target.value).toISOString() : null,
+                    e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : null,
                   )
                 }
                 className="text-xs"
@@ -274,7 +272,9 @@ export function DeliverableCreateDialog({
                 onChange={(e) =>
                   setValue(
                     "internal_review_deadline_at",
-                    e.target.value ? new Date(e.target.value).toISOString() : null,
+                    e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : null,
                   )
                 }
                 className="text-xs"
@@ -294,7 +294,9 @@ export function DeliverableCreateDialog({
                 onChange={(e) =>
                   setValue(
                     "client_delivery_deadline_at",
-                    e.target.value ? new Date(e.target.value).toISOString() : null,
+                    e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : null,
                   )
                 }
                 className="text-xs"

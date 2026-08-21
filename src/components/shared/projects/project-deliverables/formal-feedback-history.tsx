@@ -10,7 +10,9 @@ interface FormalFeedbackHistoryProps {
   feedback: DeliverableFeedbackView[];
 }
 
-export function FormalFeedbackHistory({ feedback }: FormalFeedbackHistoryProps) {
+export function FormalFeedbackHistory({
+  feedback,
+}: FormalFeedbackHistoryProps) {
   const t = useTranslations("projects.workspace.deliverables");
   const format = useFormatter();
 
@@ -26,8 +28,7 @@ export function FormalFeedbackHistory({ feedback }: FormalFeedbackHistoryProps) 
       <div className="space-y-2.5">
         {feedback.map((item) => {
           const config =
-            REVIEW_DECISION_MAP[item.decision] ||
-            REVIEW_DECISION_MAP.approved;
+            REVIEW_DECISION_MAP[item.decision] || REVIEW_DECISION_MAP.approved;
           const DecisionIcon = config.icon;
 
           const formattedDate = format.dateTime(new Date(item.reviewed_at), {
@@ -95,4 +96,3 @@ export function FormalFeedbackHistory({ feedback }: FormalFeedbackHistoryProps) 
     </div>
   );
 }
-

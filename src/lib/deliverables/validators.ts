@@ -56,4 +56,3 @@ export function isValidGoogleDriveUrl(url: string): boolean {
 
   return true;
 }
-

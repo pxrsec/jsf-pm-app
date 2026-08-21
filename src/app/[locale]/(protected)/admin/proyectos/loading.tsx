@@ -1,8 +1,17 @@
+import { getTranslations } from "next-intl/server";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function AdminProjectsLoading() {
+export default async function AdminProjectsLoading() {
+  const t = await getTranslations("projects.workspace.recovery");
+
   return (
-    <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div
+      role="status"
+      aria-busy="true"
+      aria-live="polite"
+      className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6"
+    >
+      <span className="sr-only">{t("loading")}</span>
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <Skeleton className="h-8 w-40" />

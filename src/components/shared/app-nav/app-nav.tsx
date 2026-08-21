@@ -1,6 +1,6 @@
-import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/routing";
 import type { SessionContext } from "@/lib/auth/session";
 import { SignOutButton } from "./_components/sign-out-button";
 import { NotificationBadge } from "./_components/notification-badge";
@@ -27,7 +27,7 @@ export async function AppNav({ session, unreadCount }: AppNavProps) {
           ? "/operador"
           : "/cliente";
 
-  const roleSecondaryStub =
+  const secondaryNavigationItem =
     role === "admin"
       ? { href: "/admin/proyectos", label: t("links.projects") }
       : role === "pm"
@@ -67,19 +67,19 @@ export async function AppNav({ session, unreadCount }: AppNavProps) {
 
             {role === "admin" || role === "pm" ? (
               <Link
-                href={roleSecondaryStub.href}
+                href={secondaryNavigationItem.href}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                {roleSecondaryStub.label}
+                {secondaryNavigationItem.label}
               </Link>
             ) : (
               <a
-                href={roleSecondaryStub.href}
+                href={secondaryNavigationItem.href}
                 aria-disabled="true"
                 tabIndex={-1}
                 className="text-sm font-medium text-muted-foreground cursor-not-allowed opacity-60"
               >
-                {roleSecondaryStub.label}
+                {secondaryNavigationItem.label}
               </a>
             )}
           </nav>

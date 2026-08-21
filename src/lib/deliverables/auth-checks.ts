@@ -47,8 +47,7 @@ export async function verifyProjectMemberAccess(
 }
 
 export type EligibilityCheckResult =
-  | { ok: true }
-  | { ok: false; message: string };
+  { ok: true } | { ok: false; message: string };
 
 export async function verifyDeliverableEligibility(
   supabase: TypedSupabase,

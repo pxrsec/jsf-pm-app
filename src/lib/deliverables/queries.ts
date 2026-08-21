@@ -135,7 +135,9 @@ export async function listProjectDeliverables(
   try {
     let query = supabase
       .from("deliverables")
-      .select(`${DELIVERABLE_COLUMNS}, profiles(id, full_name, role, avatar_url)`)
+      .select(
+        `${DELIVERABLE_COLUMNS}, profiles(id, full_name, role, avatar_url)`,
+      )
       .eq("project_id", projectId)
       .is("deleted_at", null)
       .order("created_at", { ascending: false });
@@ -200,7 +202,9 @@ export async function getDeliverableDetail(
   try {
     const { data: deliverable, error: delivError } = await supabase
       .from("deliverables")
-      .select(`${DELIVERABLE_COLUMNS}, profiles(id, full_name, role, avatar_url)`)
+      .select(
+        `${DELIVERABLE_COLUMNS}, profiles(id, full_name, role, avatar_url)`,
+      )
       .eq("id", deliverableId)
       .is("deleted_at", null)
       .single();
