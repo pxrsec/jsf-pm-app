@@ -10,7 +10,7 @@ vi.mock("@sentry/nextjs", () => ({
   captureException: mockCaptureException,
 }));
 
-import { getSentryDsn, isSentryEnabled, captureException } from "../sentry";
+import { getSentryDsn, isSentryEnabled, captureException } from "@/lib/sentry";
 
 describe("sentry", () => {
   const originalEnv = process.env;

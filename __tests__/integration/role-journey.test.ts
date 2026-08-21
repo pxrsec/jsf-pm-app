@@ -30,6 +30,24 @@ vi.mock("@/components/shared/language-switcher/language-switcher", () => ({
     React.createElement("div", { "data-testid": "language-switcher" }),
 }));
 
+vi.mock("@/i18n/routing", () => ({
+  Link: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string;
+    children: React.ReactNode;
+  }) => React.createElement("a", { href, ...props }, children),
+  usePathname: () => "/",
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+  getPathname: ({ href }: { href: string }) => href,
+  routing: {
+    locales: ["es", "en"],
+    defaultLocale: "es",
+  },
+}));
+
 const esCatalog = JSON.parse(
   fs.readFileSync(
     path.resolve(__dirname, "../../messages/es-MX.json"),

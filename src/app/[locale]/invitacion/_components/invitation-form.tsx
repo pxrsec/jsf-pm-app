@@ -4,6 +4,10 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { CompleteInviteSchema } from "@/lib/validation/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface InvitationFormProps {
   token: string;
@@ -81,66 +85,49 @@ export function InvitationForm({ token }: InvitationFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-md space-y-6 rounded-xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+      className="w-full max-w-md space-y-6 rounded-xl border border-border bg-card p-8 shadow-sm text-card-foreground"
     >
-      <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+      <h1 className="text-2xl font-bold tracking-tight text-foreground">
         {t("title")}
       </h1>
 
       {errorMessage && (
         <div
           role="alert"
-          className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/50 dark:text-red-300"
+          className="rounded-md bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20"
         >
           {errorMessage}
         </div>
       )}
 
       <div className="space-y-4">
-        <div>
-          <label
-            htmlFor="fullName"
-            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-          >
-            {t("fullNameLabel")}
-          </label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="fullName">{t("fullNameLabel")}</Label>
+          <Input
             id="fullName"
             type="text"
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             disabled={isLoading}
-            className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:border-zinc-100 dark:focus:ring-zinc-100"
           />
         </div>
 
-        <div>
-          <label
-            htmlFor="phone"
-            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-          >
-            {t("phoneLabel")}
-          </label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="phone">{t("phoneLabel")}</Label>
+          <Input
             id="phone"
             type="tel"
             placeholder="+525512345678"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             disabled={isLoading}
-            className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:border-zinc-100 dark:focus:ring-zinc-100"
           />
         </div>
 
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-          >
-            {t("passwordLabel")}
-          </label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="password">{t("passwordLabel")}</Label>
+          <Input
             id="password"
             type="password"
             autoComplete="new-password"
@@ -148,39 +135,28 @@ export function InvitationForm({ token }: InvitationFormProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
-            className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 text-sm shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:border-zinc-100 dark:focus:ring-zinc-100"
           />
         </div>
 
-        <div className="flex items-start">
-          <div className="flex h-5 items-center">
-            <input
-              id="whatsappOptIn"
-              type="checkbox"
-              checked={whatsappOptIn}
-              onChange={(e) => setWhatsappOptIn(e.target.checked)}
-              disabled={isLoading}
-              className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:focus:ring-zinc-100"
-            />
-          </div>
-          <div className="ml-3 text-sm">
-            <label
-              htmlFor="whatsappOptIn"
-              className="text-zinc-600 dark:text-zinc-400"
-            >
-              {t("whatsappOptInLabel")}
-            </label>
-          </div>
+        <div className="flex items-center space-x-2 pt-1">
+          <Checkbox
+            id="whatsappOptIn"
+            checked={whatsappOptIn}
+            onCheckedChange={(checked) => setWhatsappOptIn(checked === true)}
+            disabled={isLoading}
+          />
+          <Label
+            htmlFor="whatsappOptIn"
+            className="text-sm font-normal text-muted-foreground cursor-pointer"
+          >
+            {t("whatsappOptInLabel")}
+          </Label>
         </div>
       </div>
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="flex w-full justify-center rounded-md bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-      >
+      <Button type="submit" disabled={isLoading} className="w-full" size="lg">
         {isLoading ? "..." : t("submitLabel")}
-      </button>
+      </Button>
     </form>
   );
 }

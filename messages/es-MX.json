@@ -1,10 +1,20 @@
 {
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "currentLight": "Tema actual: Claro",
+    "currentDark": "Tema actual: Oscuro",
+    "switchToLight": "Cambiar a tema claro",
+    "switchToDark": "Cambiar a tema oscuro"
+  },
   "shell": {
     "brand": {
       "name": "Joya Star Films"
     },
     "nav": {
       "ariaLabel": "Navegación principal",
+      "openMenu": "Abrir menú de navegación",
+      "closeMenu": "Cerrar menú de navegación",
       "signOut": "Cerrar sesión",
       "currentUser": {
         "role": {
@@ -116,6 +126,697 @@
       "messageInvalid": "El enlace utilizado no es válido o ha sido modificado.",
       "messageAlreadyUsed": "Esta invitación o enlace ya ha sido utilizado anteriormente.",
       "signInLink": "Ir a Iniciar Sesión"
+    }
+  },
+  "projects": {
+    "directory": {
+      "title": "Proyectos",
+      "adminSubtitle": "Gestión general de proyectos del sistema",
+      "pmSubtitle": "Proyectos asignados a tu gestión",
+      "searchPlaceholder": "Buscar por nombre de proyecto o alcance...",
+      "filterStatus": "Estado",
+      "filterType": "Tipo de proyecto",
+      "allStatuses": "Todos los estados",
+      "allTypes": "Todos los tipos",
+      "newProjectAction": "Nuevo Proyecto",
+      "emptyState": {
+        "title": "No hay proyectos disponibles",
+        "description": "Comienza creando un nuevo proyecto para gestionar tareas y entregables.",
+        "noFilterResults": "No se encontraron proyectos que coincidan con los filtros seleccionados.",
+        "clearFilters": "Limpiar filtros",
+        "createCta": "Crear Proyecto"
+      },
+      "table": {
+        "columns": {
+          "name": "Proyecto",
+          "type": "Tipo",
+          "status": "Estado",
+          "deadline": "Fecha Límite",
+          "actions": "Acciones"
+        },
+        "actions": {
+          "open": "Abrir espacio de trabajo",
+          "manageTeam": "Gestionar equipo",
+          "edit": "Editar información"
+        }
+      },
+      "cards": {
+        "deadline": "Entrega:",
+        "openAction": "Abrir Proyecto"
+      }
+    },
+    "types": {
+      "client": "Cliente",
+      "internal": "Interno",
+      "unassigned": "Sin asignar",
+      "clientDescription": "Proyecto con cliente externo y entregables de producción.",
+      "internalDescription": "Proyecto operativo interno sin entregables de producción."
+    },
+    "create": {
+      "title": "Crear Nuevo Proyecto",
+      "subtitle": "Configura los parámetros iniciales y el equipo del proyecto",
+      "fields": {
+        "typeLabel": "Tipo de proyecto",
+        "nameLabel": "Nombre del proyecto",
+        "namePlaceholder": "Ej. Campaña Navideña 2026",
+        "descriptionLabel": "Descripción interna",
+        "descriptionPlaceholder": "Detalles operativos, objetivos y contexto para el equipo...",
+        "deadlineLabel": "Fecha y hora límite",
+        "driveLabel": "Enlace a carpeta de Google Drive (opcional)",
+        "drivePlaceholder": "https://drive.google.com/drive/folders/...",
+        "clientOrgLabel": "Organización del cliente (opcional en planificación)",
+        "clientOrgPlaceholder": "Selecciona un cliente...",
+        "clientScopeLabel": "Alcance visible para el cliente (opcional)",
+        "clientScopePlaceholder": "Resumen que será visible para el cliente...",
+        "initialClientContactLabel": "Contacto del cliente inicial (opcional)",
+        "initialClientContactPlaceholder": "Selecciona el contacto principal del cliente...",
+        "primaryPmLeadLabel": "PM Lead principal asignado",
+        "primaryPmLeadPlaceholder": "Selecciona un Project Manager Lead...",
+        "pmAutoAssignedNote": "Serás asignado automáticamente como el PM Lead principal de este proyecto.",
+        "submitAction": "Crear Proyecto",
+        "cancelAction": "Cancelar",
+        "creating": "Creando proyecto..."
+      },
+      "successToast": "Proyecto creado exitosamente.",
+      "errorToast": "No se pudo crear el proyecto. Revisa los datos ingresados."
+    },
+    "workspace": {
+      "recovery": {
+        "directory": {
+          "title": "Error al cargar proyectos",
+          "description": "Ocurrió un error inesperado al cargar el directorio de proyectos. Inténtalo de nuevo."
+        },
+        "workspace": {
+          "title": "Error al cargar el espacio de trabajo",
+          "description": "No se pudo cargar la información del proyecto o no tienes permisos para acceder."
+        },
+        "pmWorkspace": {
+          "description": "No se pudo cargar la información del proyecto o no tienes asignación en este proyecto."
+        },
+        "retryAction": "Intentar nuevamente",
+        "returnToProjectsAction": "Volver a Proyectos",
+        "returnToAssignedProjectsAction": "Volver a Mis Proyectos",
+        "loading": "Cargando contenido..."
+      },
+      "breadcrumbs": {
+        "root": "Proyectos",
+        "current": "Espacio de Trabajo"
+      },
+      "summary": {
+        "primaryLeadLabel": "Lead Principal",
+        "deadlineLabel": "Entrega",
+        "editAction": "Editar Información",
+        "statusActions": "Estado",
+        "completeProject": "Completar Proyecto",
+        "reopenProject": "Reabrir Proyecto"
+      },
+      "completion": {
+        "dialogTitle": "Completar Proyecto",
+        "dialogDescription": "Revisa el estado del trabajo antes de completar el proyecto.",
+        "loadingReadiness": "Verificando estado del proyecto...",
+        "readyTitle": "El proyecto está listo para completarse.",
+        "readyDescription": "No hay trabajo pendiente sin terminar.",
+        "unfinishedTitle": "Hay trabajo sin terminar",
+        "unfinishedDescription": "Hay {taskCount} tarea(s) sin completar y {deliverableCount} entregable(s) pendiente(s). Puedes completar el proyecto de todas formas, pero el trabajo sin terminar quedará en el historial.",
+        "unfinishedTasksLabel": "Tareas sin completar:",
+        "unfinishedTasksMore": "...y {count} más",
+        "confirmAction": "Completar Proyecto",
+        "cancelAction": "Cancelar",
+        "submitting": "Completando...",
+        "successToast": "Proyecto completado exitosamente.",
+        "errors": {
+          "unauthorized": "No tienes autorización para completar este proyecto.",
+          "invalidTransition": "Este cambio de estado no está permitido desde el estado actual del proyecto.",
+          "notFound": "No se encontró el proyecto. Recarga la página.",
+          "generic": "Error al completar el proyecto. Por favor intenta de nuevo."
+        }
+      },
+      "reopen": {
+        "dialogTitle": "Reabrir Proyecto",
+        "dialogDescription": "Para reabrir el proyecto, escribe el motivo. Este registro quedará en el historial de ciclos.",
+        "reasonLabel": "Motivo de reapertura",
+        "reasonRequired": "El motivo de reapertura es obligatorio.",
+        "reasonTooLong": "El motivo no puede exceder 500 caracteres.",
+        "reasonPlaceholder": "Ej. El cliente solicitó revisiones adicionales al alcance del proyecto...",
+        "confirmAction": "Reabrir Proyecto",
+        "cancelAction": "Cancelar",
+        "submitting": "Reabriendo...",
+        "successToast": "Proyecto reabierto exitosamente.",
+        "errors": {
+          "unauthorized": "No tienes autorización para reabrir este proyecto.",
+          "invalidTransition": "No es posible reabrir el proyecto desde su estado actual.",
+          "reasonRequired": "Debes proporcionar un motivo para reabrir el proyecto.",
+          "notFound": "No se encontró el proyecto. Recarga la página.",
+          "generic": "Error al reabrir el proyecto. Por favor intenta de nuevo."
+        }
+      },
+      "completedBanner": {
+        "title": "Proyecto Completado",
+        "completedOn": "Este proyecto fue completado el {date}.",
+        "reopenAction": "Reabrir Proyecto"
+      },
+      "tabs": {
+        "overview": "Resumen",
+        "tasks": "Tareas",
+        "deliverables": "Entregables",
+        "members": "Equipo",
+        "activity": "Actividad"
+      },
+      "clientSetupBanner": {
+        "title": "Configuración de cliente pendiente",
+        "description": "Este proyecto de cliente aún no tiene una organización o miembros cliente vinculados. Puedes planificar y asignar trabajo internamente, pero se requerirá vincular al cliente antes de avanzar a estado 'En progreso' o solicitar revisiones de cliente.",
+        "linkCta": "Vincular Cliente"
+      },
+      "overview": {
+        "descriptionCardTitle": "Descripción Interna",
+        "clientScopeCardTitle": "Alcance del Cliente",
+        "noClientScope": "Sin alcance de cliente especificado.",
+        "linksCardTitle": "Almacenamiento y Enlaces",
+        "openDriveFolder": "Abrir carpeta en Google Drive",
+        "noDriveLink": "No se ha configurado una carpeta de Google Drive.",
+        "metaCardTitle": "Ficha Técnica",
+        "projectId": "ID del Proyecto",
+        "createdDate": "Fecha de Creación",
+        "associatedClient": "Cliente",
+        "unassignedClient": "Sin asignar",
+        "quickStatsTitle": "Resumen de Trabajo",
+        "tasksCount": "Tareas activas",
+        "deliverablesCount": "Entregables",
+        "teamSummaryTitle": "Equipo del Proyecto",
+        "viewAllMembers": "Ver todos ({count})",
+        "completionCyclesTitle": "Historial de Ciclos de Completado",
+        "noCycles": "No hay ciclos de completado previos.",
+        "cycleNumber": "Ciclo #{number}",
+        "cycleActiveBadge": "Ciclo activo",
+        "completedOn": "Completado el {date}",
+        "cycleDuration": "Duración: {days} días",
+        "reopenedOn": "Reabierto el {date}",
+        "unfinishedOverrideBadge": "Completado con trabajo pendiente",
+        "completedBy": "Completado por {name}",
+        "reopenedBy": "Reabierto por {name}",
+        "reopenReason": "Motivo: {reason}"
+      },
+      "placeholders": {
+        "tasksTitle": "Planificación y Kanban de Tareas",
+        "tasksDescription": "El módulo de gestión y asignación de tareas con tablero Kanban estará disponible en el sprint S04-04.",
+        "deliverablesTitle": "Entregables de Producción",
+        "deliverablesDescription": "El módulo de entregables con enlace a Google Drive y ciclo de revisión estará disponible en S04-06.",
+        "internalDeliverablesDisabled": "Los proyectos internos no admiten entregables de producción.",
+        "clientReviewBlockedNotice": "Se requiere vincular un cliente y contacto al proyecto antes de enviar entregables a revisión de cliente."
+      },
+      "editDialog": {
+        "title": "Editar Información del Proyecto",
+        "description": "Modifica los datos operativos del proyecto. El tipo de proyecto no puede modificarse.",
+        "clientOrgLabel": "Organización del cliente",
+        "clientOrgPlaceholder": "Seleccionar cliente...",
+        "saveAction": "Guardar Cambios",
+        "cancelAction": "Cancelar",
+        "saving": "Guardando...",
+        "successToast": "Proyecto actualizado correctamente."
+      },
+      "statusDialog": {
+        "pauseTitle": "¿Pausar este proyecto?",
+        "pauseDescription": "El proyecto pasará a estado pausado. El equipo no podrá avanzar tareas hasta que se reanude.",
+        "resumeTitle": "¿Reanudar este proyecto?",
+        "resumeDescription": "El proyecto volverá a estar en progreso activo.",
+        "cancelTitle": "¿Cancelar este proyecto?",
+        "cancelDescription": "Esta acción marcará el proyecto como cancelado. Solo un Administrador podrá recuperarlo.",
+        "archiveTitle": "¿Archivar este proyecto?",
+        "archiveDescription": "El proyecto se ocultará del directorio general.",
+        "restoreTitle": "¿Restaurar este proyecto?",
+        "restoreDescription": "El proyecto volverá a mostrarse en el directorio general.",
+        "confirmAction": "Confirmar",
+        "cancelAction": "Volver"
+      },
+      "deliverables": {
+        "tabTitle": "Entregables de Producción",
+        "tabCount": "{count} entregables en total",
+        "viewTable": "Tabla",
+        "viewCards": "Tarjetas",
+        "newDeliverableAction": "Nuevo Entregable",
+        "filterStatus": "Filtrar por estado...",
+        "filterAssignee": "Filtrar por asignado...",
+        "allStatuses": "Todos los estados",
+        "allAssignees": "Todos los miembros",
+        "clearFilters": "Limpiar filtros",
+        "internalIneligibleTitle": "Entregables no disponibles",
+        "internalIneligibleDescription": "Los proyectos internos no admiten entregables de producción.",
+        "incompleteClientSetupTitle": "Configuración de cliente pendiente",
+        "incompleteClientSetupDescription": "Se requiere vincular una organización de cliente y al menos un contacto activo antes de crear o enviar entregables de producción.",
+        "emptyStateTitle": "No hay entregables planificados",
+        "emptyStateDescription": "Planifica el primer entregable de producción vinculado a una tarea del proyecto.",
+        "emptyStateAction": "Planificar primer entregable",
+        "emptyFilterTitle": "Sin resultados",
+        "emptyFilterDescription": "No se encontraron entregables con los filtros seleccionados.",
+        "stalledBadge": "Estancado",
+        "versionLabel": "v{version}",
+        "versionZero": "v0 (Sin envíos)",
+        "unassigned": "Sin asignar",
+        "userFallback": "Usuario",
+        "pmLeadFallback": "PM Lead",
+        "teamMemberFallback": "Miembro del equipo",
+        "actionsMenuAriaLabel": "Menú de opciones",
+        "columns": {
+          "title": "Título",
+          "status": "Estado",
+          "version": "Versión",
+          "assignee": "Asignado a",
+          "deadlines": "Fechas Límite",
+          "actions": "Acciones"
+        },
+        "actions": {
+          "openDetails": "Ver detalles",
+          "submitVersion": "Enviar enlace Drive",
+          "reviewVersion": "Revisar versión",
+          "markDelivered": "Marcar como entregado",
+          "edit": "Editar",
+          "archive": "Archivar"
+        },
+        "status": {
+          "pending": "Pendiente",
+          "awaitingInternalReview": "Esperando Revisión Interna",
+          "awaitingClientReview": "Esperando Revisión de Cliente",
+          "approved": "Aprobado",
+          "changesRequested": "Cambios Solicitados",
+          "delivered": "Entregado"
+        },
+        "deadlines": {
+          "submission": "Envío: {date}",
+          "internalReview": "Revisión interna: {date}",
+          "clientDelivery": "Entrega cliente: {date}",
+          "noDeadlines": "Sin fechas límite"
+        },
+        "createDialog": {
+          "title": "Nuevo Entregable de Producción",
+          "description": "Crea un entregable de producción vinculado a una tarea elegible de este proyecto.",
+          "titleLabel": "Título del entregable",
+          "titlePlaceholder": "Ej. Video promocional corte final 4K",
+          "taskLabel": "Tarea asociada",
+          "taskPlaceholder": "Selecciona una tarea...",
+          "assigneeLabel": "Responsable de producción",
+          "assigneePlaceholder": "Selecciona un miembro del equipo...",
+          "specificationsLabel": "Especificaciones técnicas y requerimientos",
+          "specificationsPlaceholder": "Formatos requeridos, codecs, resolución, notas de producción...",
+          "submissionDeadlineLabel": "Fecha límite de envío",
+          "internalReviewDeadlineLabel": "Fecha límite de revisión interna",
+          "clientDeliveryDeadlineLabel": "Fecha límite de entrega a cliente",
+          "userFallback": "Usuario",
+          "submitAction": "Planificar Entregable",
+          "cancelAction": "Cancelar",
+          "submitting": "Planificando...",
+          "successToast": "Entregable planificado exitosamente.",
+          "errorToast": "No se pudo planificar el entregable. Revisa los datos ingresados."
+        },
+        "editDialog": {
+          "title": "Editar Entregable",
+          "description": "Modifica los parámetros de planificación del entregable.",
+          "statusReadOnly": "Estado: {status}",
+          "versionReadOnly": "Versión: v{version}",
+          "statusLabel": "Estado:",
+          "versionLabel": "Versión:",
+          "titleLabel": "Título",
+          "assigneeLabel": "Responsable de producción",
+          "assigneePlaceholder": "Selecciona un responsable...",
+          "userFallback": "Usuario",
+          "specificationsLabel": "Especificaciones técnicas",
+          "submissionDeadlineLabel": "Límite de envío",
+          "internalReviewDeadlineLabel": "Límite revisión PM",
+          "clientDeliveryDeadlineLabel": "Límite entrega cliente",
+          "submitAction": "Guardar Cambios",
+          "cancelAction": "Cancelar",
+          "submitting": "Guardando...",
+          "successToast": "Entregable actualizado correctamente.",
+          "errorToast": "No se pudo actualizar el entregable."
+        },
+        "archiveDialog": {
+          "title": "¿Archivar este entregable?",
+          "description": "El entregable se ocultará del listado activo. Su historial de versiones y revisiones previas se conservará de forma inmutable.",
+          "reasonLabel": "Motivo (opcional)",
+          "reasonPlaceholder": "Ingresa el motivo del archivado...",
+          "confirmAction": "Archivar",
+          "cancelAction": "Cancelar",
+          "submitting": "Archivando...",
+          "successToast": "Entregable archivado.",
+          "errorToast": "No se pudo archivar el entregable."
+        },
+        "submitDialog": {
+          "title": "Enviar Versión a Revisión",
+          "description": "Ingresa el enlace compartido de Google Drive. La aplicación registrará una nueva versión inmutable para revisión interna sin descargar ni inspeccionar el contenido remoto.",
+          "driveLinkLabel": "Enlace de Google Drive (HTTPS)",
+          "driveLinkPlaceholder": "https://drive.google.com/file/d/... o https://docs.google.com/...",
+          "driveLinkHelp": "Solo se aceptan enlaces HTTPS de drive.google.com o docs.google.com.",
+          "noteLabel": "Nota de envío (opcional)",
+          "notePlaceholder": "Describe los cambios, notas de render o aspectos a revisar...",
+          "submitAction": "Registrar Versión",
+          "cancelAction": "Cancelar",
+          "submitting": "Registrando versión...",
+          "successToast": "Versión v{version} registrada para revisión interna.",
+          "errorToast": "No se pudo registrar la versión. Verifica el enlace ingresado."
+        },
+        "reviewDialog": {
+          "title": "Revisión Interna de Entregable",
+          "description": "Emite una decisión formal de revisión interna sobre la versión v{version}. La decisión quedará registrada de forma inmutable.",
+          "decisionLabel": "Decisión de revisión",
+          "approveOption": "Aprobar para revisión de cliente",
+          "approveHelp": "El entregable avanzará al estado de espera de revisión de cliente.",
+          "requestChangesOption": "Solicitar cambios",
+          "requestChangesHelp": "El entregable regresará a pendiente para que el responsable envíe una nueva versión corregida.",
+          "commentsLabel": "Comentarios de revisión",
+          "commentsOptionalPlaceholder": "Comentarios o retroalimentación opcional para el equipo...",
+          "commentsRequiredPlaceholder": "Detalla los cambios requeridos y correcciones necesarias...",
+          "commentsRequiredError": "Los comentarios son obligatorios al solicitar cambios.",
+          "immutableWarning": "Esta decisión quedará registrada en el historial inmutable y no podrá ser editada ni eliminada.",
+          "submitAction": "Registrar Decisión",
+          "cancelAction": "Cancelar",
+          "submitting": "Registrando...",
+          "approvedToast": "Entregable aprobado internamente. Ahora espera revisión de cliente.",
+          "changesRequestedToast": "Cambios solicitados. El entregable requiere una nueva versión.",
+          "staleErrorToast": "La revisión fue rechazada porque el estado del entregable cambió concurrentemente. Se ha actualizado la vista."
+        },
+        "deliveryDialog": {
+          "title": "Confirmar Entrega Final",
+          "description": "¿Confirmar que el entregable ha sido completado y entregado? Esta acción registrará el estado 'Entregado' en el flujo de trabajo.",
+          "truthfulnessNotice": "La aplicación registra el estado final en el flujo de trabajo interno. No realiza transferencias de archivos, envíos de correo, mensajes externos ni verificación de recepción externa.",
+          "confirmAction": "Marcar como Entregado",
+          "cancelAction": "Cancelar",
+          "delivering": "Registrando entrega...",
+          "successToast": "Entregable marcado como entregado exitosamente.",
+          "errorToast": "No se pudo registrar la entrega final."
+        },
+        "linkReportDialog": {
+          "title": "Reportar Problema con Enlace",
+          "description": "Envía un reporte interno sobre el enlace de la versión v{version}. La aplicación no prueba el enlace de forma remota y el estado del entregable no cambiará.",
+          "truthfulnessNotice": "Este reporte registra una alerta interna para el equipo. El sistema no valida ni descarga el enlace de forma remota y el estado del entregable no se modificará.",
+          "reasonLabel": "Motivo del reporte",
+          "reasonPlaceholder": "Ej. El enlace solicita permisos de acceso restringido...",
+          "submitAction": "Enviar Reporte",
+          "cancelAction": "Cancelar",
+          "submitting": "Enviando reporte...",
+          "successToast": "Reporte de enlace registrado internamente.",
+          "errorToast": "No se pudo registrar el reporte."
+        },
+        "detailSheet": {
+          "title": "Detalle del Entregable",
+          "specificationsTitle": "Especificaciones Técnicas",
+          "deadlinesTitle": "Fechas Límite",
+          "nextActionTitle": "Acción Siguiente",
+          "productionAssigneeRole": "Responsable de producción",
+          "submissionDeadlineShort": "Envío",
+          "internalReviewDeadlineShort": "Revisión PM",
+          "clientDeliveryDeadlineShort": "Entrega Cliente",
+          "submitCta": "Enviar Versión v{version}",
+          "submitCtaInitial": "Enviar Primera Versión (v1)",
+          "reviewCta": "Revisar versión v{version}",
+          "deliverCta": "Marcar como entregado",
+          "awaitingClientReviewTitle": "Esperando Revisión de Cliente",
+          "awaitingClientReviewNotice": "Entregable liberado para revisión de cliente. La revisión de cliente no está disponible en este espacio de trabajo.",
+          "deliveredNotice": "Este entregable ha sido completado y entregado. El historial es de solo lectura.",
+          "internalStage": "Revisión Interna",
+          "historyTitle": "Historial Inmutable de Versiones",
+          "noHistory": "Aún no se ha enviado ninguna versión de este entregable.",
+          "reviewHistoryRecord": "Registro formal de revisión",
+          "reviewedBy": "Revisado por {name} el {date}",
+          "submittedBy": "Enviado por {name} el {date}",
+          "openExternalLink": "Abrir en Google Drive",
+          "externalLinkNotice": "El enlace se abrirá en una nueva pestaña fuera de la aplicación.",
+          "reportLinkAction": "Reportar problema con enlace",
+          "closeAction": "Cerrar"
+        },
+        "comments": {
+          "title": "Discusión Interna",
+          "advisoryNotice": "Los comentarios son discusión colaborativa interna y no constituyen decisiones formales de revisión.",
+          "emptyState": "No hay comentarios en este entregable.",
+          "composePlaceholder": "Escribe un comentario interno...",
+          "submitAction": "Comentar",
+          "submitting": "Publicando...",
+          "successToast": "Comentario publicado.",
+          "errorToast": "No se pudo publicar el comentario."
+        },
+        "errors": {
+          "unauthorized": "No tienes autorización para realizar esta acción.",
+          "notFound": "No se encontró el entregable. Recarga la página.",
+          "invalidTransition": "Esta acción no está permitida en el estado actual del entregable.",
+          "invariantViolation": "No se cumplen los requisitos de elegibilidad para el entregable.",
+          "conflict": "Hubo un conflicto con otra operación concurrente. Recarga la página.",
+          "generic": "Ocurrió un error inesperado. Por favor intenta de nuevo.",
+          "staleReview": "El entregable ya no se encuentra en estado de revisión interna. Se ha actualizado la información.",
+          "staleDelivery": "El entregable debe estar aprobado antes de marcarlo como entregado. Se ha actualizado la información."
+        },
+        "watcherMode": {
+          "readOnlyNotice": "Solo lectura — Capacidad Observador",
+          "cannotMutate": "Los observadores de PM pueden consultar el historial y comentar, pero no pueden planificar, editar, archivar ni enviar versiones."
+        }
+      },
+      "activity": {
+        "tabTitle": "Actividad del Ciclo de Vida",
+        "description": "Historial de ciclos de completado y reapertura registrados para este proyecto.",
+        "emptyTitle": "Sin actividad de ciclo de vida",
+        "emptyDescription": "No hay actividad de ciclo de vida del proyecto todavía.",
+        "cycleTitle": "Ciclo #{number}",
+        "completedOn": "Completado el {date}",
+        "reopenedOn": "Reabierto el {date}",
+        "duration": "Duración: {days} días",
+        "unfinishedOverride": "Completado con tareas pendientes",
+        "reopenReason": "Motivo de reapertura: {reason}",
+        "activeCycleBadge": "Ciclo activo"
+      }
+    },
+    "members": {
+      "title": "Equipo del Proyecto",
+      "subtitle": "Gestiona los miembros asignados y sus capacidades operativas",
+      "addMemberAction": "Agregar Miembro",
+      "stats": {
+        "total": "Total de miembros: {count}",
+        "pmLeads": "PM Leads: {count}",
+        "operators": "Operadores: {count}",
+        "clients": "Clientes: {count}"
+      },
+      "table": {
+        "columns": {
+          "member": "Miembro",
+          "systemRole": "Rol en Sistema",
+          "capacity": "Capacidad en Proyecto",
+          "notifications": "Notificaciones",
+          "joinedAt": "Fecha de Asignación",
+          "actions": "Acciones"
+        },
+        "actions": {
+          "setPrimaryLead": "Hacer PM Lead Principal",
+          "changeCapacity": "Cambiar Capacidad",
+          "remove": "Remover del Proyecto"
+        }
+      },
+      "capacities": {
+        "pmLead": "PM Lead",
+        "pmLeadPrimary": "PM Lead (Principal)",
+        "pmWatcher": "PM Observador",
+        "operator": "Operador",
+        "client": "Cliente"
+      },
+      "addDialog": {
+        "title": "Agregar Miembro al Proyecto",
+        "description": "Selecciona el usuario y define su capacidad operativa en el proyecto.",
+        "capacityLabel": "Capacidad operativa",
+        "userLabel": "Seleccionar usuario",
+        "userPlaceholder": "Busca un usuario...",
+        "isPrimaryLeadLabel": "Designar como PM Lead Principal",
+        "notificationsLabel": "Recibir notificaciones del proyecto",
+        "submitAction": "Agregar Miembro",
+        "cancelAction": "Cancelar",
+        "successToast": "Miembro agregado exitosamente."
+      },
+      "changeDialog": {
+        "title": "Cambiar Capacidad de Miembro",
+        "description": "Actualiza la capacidad operativa o configuración de notificaciones para {name}.",
+        "capacityLabel": "Nueva capacidad",
+        "notificationsLabel": "Recibir notificaciones del proyecto",
+        "submitAction": "Guardar Cambios",
+        "cancelAction": "Cancelar",
+        "successToast": "Capacidad actualizada exitosamente."
+      },
+      "setPrimaryDialog": {
+        "title": "¿Cambiar PM Lead Principal?",
+        "description": "Se asignará a {name} como el PM Lead principal del proyecto. El lead actual permanecerá como PM Lead secundario.",
+        "confirmAction": "Confirmar Asignación",
+        "cancelAction": "Cancelar",
+        "successToast": "Lead principal actualizado."
+      },
+      "removeDialog": {
+        "title": "¿Remover miembro del proyecto?",
+        "description": "¿Estás seguro de que deseas remover a {name}? Perderá el acceso al espacio de trabajo.",
+        "confirmAction": "Remover",
+        "cancelAction": "Cancelar",
+        "successToast": "Miembro removido correctamente.",
+        "errorSoleLead": "No se puede remover al único PM Lead. Asigna otro Lead principal primero.",
+        "errorSoleClient": "Un proyecto de cliente en ejecución debe tener al menos un miembro cliente activo."
+      }
+    },
+    "tasks": {
+      "tabTitle": "Tareas",
+      "newTaskAction": "Nueva Tarea",
+      "viewKanban": "Tablero Kanban",
+      "viewList": "Vista de Lista",
+      "overdue": "Vencida",
+      "daysRemaining": "{count} días restantes",
+      "dueToday": "Vence hoy",
+      "hasDeliverablesBadge": "Con entregables",
+      "filters": {
+        "statusLabel": "Estado",
+        "priorityLabel": "Prioridad",
+        "typeLabel": "Tipo",
+        "assigneeLabel": "Asignado a",
+        "allStatuses": "Todos los estados",
+        "allPriorities": "Todas las prioridades",
+        "allTypes": "Todos los tipos",
+        "allAssignees": "Todos los asignados",
+        "clearFilters": "Limpiar filtros"
+      },
+      "taskType": {
+        "internalWork": "Trabajo interno",
+        "clientRequest": "Solicitud de cliente",
+        "internalDescription": "Trabajo interno del equipo sin intervención del cliente.",
+        "clientRequestDescription": "Solicitud vinculada a un cliente externo.",
+        "clientRequestOnlyForClientProjects": "Las solicitudes de cliente solo están disponibles en proyectos de cliente."
+      },
+      "taskStatus": {
+        "pending": "Pendiente",
+        "inProgress": "En progreso",
+        "inReview": "En revisión",
+        "completed": "Completada",
+        "blocked": "Bloqueada"
+      },
+      "priority": {
+        "low": "Baja",
+        "medium": "Media",
+        "high": "Alta",
+        "blocking": "Bloqueante"
+      },
+      "kanban": {
+        "columnEmpty": "Sin tareas en este estado",
+        "dragHandleLabel": "Arrastrar tarea: {title}",
+        "columnAriaLabel": "Columna: {status} — {count} tareas",
+        "clientRequestNoReview": "Las solicitudes de cliente no pueden entrar en revisión interna.",
+        "moveNotAllowed": "Este cambio de estado no está permitido para esta tarea.",
+        "unauthorizedMove": "No tienes autorización para mover esta tarea.",
+        "movedSuccess": "Tarea movida a {status}.",
+        "movedError": "Error al mover la tarea. Por favor intenta de nuevo.",
+        "notFound": "No se encontró la tarea. Recarga la página."
+      },
+      "list": {
+        "columns": {
+          "title": "Título",
+          "type": "Tipo",
+          "status": "Estado",
+          "priority": "Prioridad",
+          "assignee": "Asignado a",
+          "deadline": "Fecha Límite",
+          "actions": "Acciones"
+        },
+        "actions": {
+          "viewDetails": "Ver detalles",
+          "edit": "Editar",
+          "changeStatus": "Cambiar estado",
+          "archive": "Archivar"
+        }
+      },
+      "detail": {
+        "assignedTo": "Asignado a",
+        "deadline": "Fecha límite",
+        "type": "Tipo",
+        "statusLabel": "Cambiar estado",
+        "description": "Descripción",
+        "resources": "Recursos vinculados",
+        "noResources": "Sin recursos vinculados.",
+        "hasDeliverables": "Esta tarea tiene entregables de producción vinculados.",
+        "editAction": "Editar",
+        "closeAction": "Cerrar",
+        "ariaLabel": "Detalles de la tarea: {title}"
+      },
+      "create": {
+        "title": "Nueva Tarea",
+        "description": "Crea una nueva tarea para este proyecto.",
+        "typeLabel": "Tipo de tarea",
+        "titleLabel": "Título",
+        "titlePlaceholder": "Ej. Diseño de portada para campaña Q4",
+        "descriptionLabel": "Descripción",
+        "descriptionPlaceholder": "Detalla los objetivos, entregables esperados y contexto del trabajo...",
+        "priorityLabel": "Prioridad",
+        "assigneeLabel": "Asignado a",
+        "assigneePlaceholder": "Selecciona un miembro del equipo...",
+        "deadlineLabel": "Fecha y hora límite",
+        "submitAction": "Crear Tarea",
+        "cancelAction": "Cancelar",
+        "submitting": "Creando...",
+        "successToast": "Tarea creada exitosamente.",
+        "errorToast": "No se pudo crear la tarea. Verifica los datos ingresados."
+      },
+      "edit": {
+        "title": "Editar Tarea",
+        "description": "Modifica los campos de la tarea. El tipo de tarea no puede cambiarse.",
+        "typeReadOnly": "Tipo de tarea (no editable)",
+        "titleLabel": "Título",
+        "descriptionLabel": "Descripción",
+        "priorityLabel": "Prioridad",
+        "assigneeLabel": "Asignado a",
+        "deadlineLabel": "Fecha y hora límite",
+        "submitAction": "Guardar cambios",
+        "cancelAction": "Cancelar",
+        "submitting": "Guardando...",
+        "successToast": "Tarea actualizada correctamente.",
+        "errorToast": "No se pudo actualizar la tarea."
+      },
+      "archive": {
+        "title": "¿Archivar esta tarea?",
+        "description": "La tarea se ocultará del espacio de trabajo. Esta acción solo puede revertirse por un administrador.",
+        "reasonLabel": "Motivo (opcional)",
+        "reasonPlaceholder": "Ingresa el motivo del archivado...",
+        "confirmAction": "Archivar",
+        "cancelAction": "Cancelar",
+        "successToast": "Tarea archivada.",
+        "errorToast": "No se pudo archivar la tarea."
+      },
+      "statusChange": {
+        "successToast": "Estado actualizado: {status}.",
+        "errorToast": "No se pudo cambiar el estado de la tarea.",
+        "notAllowed": "Este cambio de estado no está permitido.",
+        "clientRequestNoReview": "Las solicitudes de cliente no pueden entrar en revisión interna."
+      },
+      "comments": {
+        "sectionTitle": "Comentarios",
+        "emptyState": "Aún no hay comentarios en esta tarea.",
+        "composePlaceholder": "Escribe un comentario colaborativo...",
+        "submitAction": "Comentar",
+        "submitting": "Enviando...",
+        "successToast": "Comentario publicado.",
+        "errorToast": "No se pudo publicar el comentario.",
+        "advisoryNote": "Los comentarios son discusión colaborativa interna y no constituyen decisiones formales de revisión.",
+        "loading": "Cargando comentarios...",
+        "authorCapacity": {
+          "admin": "Administrador",
+          "pmLead": "PM Lead",
+          "pmWatcher": "PM Observador",
+          "operator": "Operador",
+          "client": "Cliente"
+        }
+      },
+      "emptyState": {
+        "noTasks": "Este proyecto aún no tiene tareas.",
+        "noTasksDescription": "Crea la primera tarea para comenzar a gestionar el trabajo del equipo.",
+        "createFirstTask": "Crear primera tarea",
+        "noFilterResults": "No se encontraron tareas con los filtros seleccionados.",
+        "clearFilters": "Limpiar filtros"
+      },
+      "errors": {
+        "unauthorized": "No tienes autorización para realizar esta acción.",
+        "invalidTransition": "Este cambio de estado no está permitido para esta tarea.",
+        "taskTypeConstraint": "Las solicitudes de cliente no pueden entrar en revisión interna.",
+        "notFound": "No se encontró la tarea. Recarga la página.",
+        "generic": "Error inesperado. Por favor intenta de nuevo."
+      },
+      "watcherMode": {
+        "readOnlyLabel": "Solo lectura — capacidad observador",
+        "cannotMutate": "Los observadores de PM solo pueden leer tareas y agregar comentarios colaborativos."
+      }
     }
   }
 }

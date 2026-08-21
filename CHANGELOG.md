@@ -1,5 +1,270 @@
 # JSF PM App Development Changelog
 
+## [2026-08-21 @ 13:18]
+
+**📝 Sprint 04 Closeout Record Structural Alignment & Contract Hygiene**
+
+- **📝 Closeout Verification Document Alignments (`dev-docs/specs/s04/s04-sprint-04-closeout-verification.md`):**
+  - **Committed Branch Name (§1):** Corrected branch metadata to exact committed branch `feature/s04-e04-e05-project-workspace-and-production-deliverable-lifecycle`.
+  - **Sprint Plan DoD Section (§2):** Corrected the Definition-of-Done section reference to Section 7 (`Sprint Plan DoD Criterion (§7)`).
+  - **Changed-Files Inventory Reorganization (§3):** Regrouped the full Sprint 04 file inventory into the authoritative 8-work-item sprint sequence: S04-01 (Visual Foundation & Persisted Theming), S04-02 (Workspace Command Boundary & Mutation Adapters), S04-03 (Project Directory & Membership Governance), S04-04 (Project Workspace, Task Planning & Constrained Kanban), S04-05 (Project Completion, Reopening & Audit Context), S04-06 (Deliverable Planning, Submission & Immutable History), S04-07 (Internal Review, Resubmission, Release & Final Delivery), and S04-08 (Navigation, Localization, Focused Evidence & Closeout).
+  - **Sprint 05 Hand-Off Contract Hygiene (§10):** Replaced invented `completeProjectAction` with existing authoritative `transitionProjectStatusAction` alongside `reopenProjectAction` and `getCompletionReadinessAction`.
+
+## [2026-08-21 @ 12:55]
+
+**🚀 Deliverables English Localization Completeness & Factual Sprint 04 Closeout Record**
+
+- **🌐 Localization Completeness (Blocker 2 Resolved):**
+  - **Deliverable Component String Extraction (`deliverable-edit-dialog.tsx`, `deliverable-create-dialog.tsx`, `deliverable-history.tsx`, `deliverable-link-report-dialog.tsx`):** Extracted all remaining user-visible hardcoded strings into `projects.workspace.deliverables.*` keys across both `messages/es-MX.json` and `messages/en-US.json`. Added localized field labels (`statusLabel`, `versionLabel`, `titleLabel`, `assigneeLabel`, `assigneePlaceholder`, `userFallback`, `specificationsLabel`, `submissionDeadlineLabel`, `internalReviewDeadlineLabel`, `clientDeliveryDeadlineLabel`), submitter fallback (`teamMemberFallback`), and external link disclaimer notice (`truthfulnessNotice`).
+  - **100% Translation Parity & Key Hygiene:** Maintained strict dot-delimited lower camelCase key hierarchy verified by `__tests__/i18n/message-catalogs.test.ts` and `__tests__/i18n/key-naming.test.ts`.
+- **📝 Factual Sprint 04 Closeout Verification Record (Blocker 1 Resolved):**
+  - **DoD & Feature Grounding (`dev-docs/specs/s04/s04-sprint-04-closeout-verification.md`):** Updated the Definition-of-Done and hand-off records to strictly mirror codebase realities: documented PM Watcher advisory commenting capabilities and explicit deferral of E06 Operator / E07 Client workspaces; documented the 5-state task lifecycle (`pending`, `in_progress`, `in_review`, `completed`, `blocked`); clarified that deliverable lifecycle progresses to `awaiting_client_review` with Client decision UI deferred to E07; corrected accessibility declarations (Escape restoration, semantic landmarks, loading live regions); clarified Sentry error boundary vs localized 404 boundary handling; updated handoff contract exports to verbatim symbols (`listProjectsForAdmin`, `listProjectsForPm`, `getProjectDetail`, `createTaskAction`, `transitionTaskStatusAction`, `reportDeliverableLinkAction`, `reviewDeliverableAction`, `markDeliverableDeliveredAction`).
+- **🧪 Automated Verification Pipeline:**
+  - `npm run verify`: Exited with code 0 across all 7 verification steps.
+  - `npm run format:check`: 100% Prettier compliant.
+  - `npm run lint`: 0 errors, 0 warnings.
+  - `npm run typecheck`: 0 TypeScript errors.
+  - `npm run build`: Production Next.js 16.3.1 Turbopack build compiled all 23 routes.
+  - `npm run test`: 45 test files passed (344 passed, 0 failed, 9 skipped).
+  - `npm run test:coverage`: Full v8 coverage generated across all application modules.
+  - `npm run audit:prod`: 0 vulnerabilities.
+
+## [2026-08-21 @ 12:10]
+
+**🚀 Navigation Localization, Route Recovery, Loading Boundaries, and Sprint 04 Closeout (S04-08)**
+
+- **🚀 Features & Integration:**
+  - **Locale-Preserving Global Navigation (`src/components/shared/app-nav/app-nav.tsx`, `mobile-nav-toggle.tsx`):** Integrated Next-Intl routing `Link` into `AppNav` and `MobileNavToggle` to preserve canonical `/en` and `/es` locale prefixes. Activated live links for Admin (`/admin/proyectos`) and PM (`/pm/proyectos`), while keeping Operator and Client future-work items visibly unavailable and `aria-disabled="true"`.
+  - **Shared Project Recovery State Component (`src/components/shared/projects/project-workspace/project-recovery-state.tsx`):** Created a safe presentational recovery component capturing exceptions to Sentry with `{ boundary: "localized-route" }`, rendering localized title/description, retry button (`reset`), and optional locale-aware return link without leaking raw database exceptions, digests, or stack traces.
+  - **Route Error & Not-Found Boundaries:** Updated Admin and PM directory and workspace route error boundaries (`admin/proyectos/error.tsx`, `admin/proyectos/[id]/error.tsx`, `pm/proyectos/error.tsx`, `pm/proyectos/[id]/error.tsx`) to consume `ProjectRecoveryState`. Added safe localized `not-found.tsx` boundaries for unauthorized/missing project handling.
+  - **Accessible Internationalized Loading Boundaries:** Updated Admin and PM directory and workspace `loading.tsx` boundaries to Server Components with `role="status"`, `aria-busy="true"`, `aria-live="polite"`, and screen-reader localized loading text from `projects.workspace.recovery.loading`.
+  - **100% Translation Parity (`messages/es-MX.json`, `messages/en-US.json`):** Added `projects.workspace.recovery` namespace with full Spanish and English parity covering directory, workspace, retry, and return actions.
+- **🛠 Architecture & Code Hygiene:**
+  - **ESLint & React Compiler Compliance:** Refactored `deliverable-comments-section.tsx` and `deliverable-review-dialog.tsx` to eliminate synchronous `setState` in `useEffect`. Replaced `watch()` with `useWatch()` in deliverable dialogs for React Compiler compatibility.
+  - **Strict TypeScript & Test Suite Hardening:** Eliminated explicit `any` usage in test suites (`deliverable-actions.test.ts`), added `// @vitest-environment jsdom` and `@testing-library/jest-dom/vitest` matchers to DOM tests, and added `@/i18n/routing` mocks to integration tests.
+- **🧪 Sprint 04 Closeout & Full Verification:**
+  - `npm run verify`: Exited with code 0 across all 7 verification gates.
+  - `npm run format:check`: 100% Prettier compliant.
+  - `npm run lint`: 0 errors, 0 warnings.
+  - `npm run typecheck`: 0 TypeScript errors (`tsc --noEmit`).
+  - `npm run build`: Production Next.js 16.3.1 Turbopack build succeeded (all 23 static/dynamic routes compiled).
+  - `npm run test`: 45 test files passed (344 passed, 0 failed, 9 skipped).
+  - `npm run test:coverage`: Full v8 coverage generated across all application modules.
+  - `npm run audit:prod`: 0 vulnerabilities.
+  - Closeout verification record written to `dev-docs/specs/s04/s04-sprint-04-closeout-verification.md`.
+
+## [2026-08-21 @ 10:43]
+
+**🚀 Authoritative Internal Review, Resubmission, Release, and Final Delivery (S04-07)**
+
+- **🚀 Features:**
+  - **Authoritative PM Review & Final Delivery Actions (`src/lib/deliverables/review-actions.ts`):** Implemented direct async Server Actions (`reviewDeliverableAction`, `markDeliverableDeliveredAction`) with server-side PM Lead / Admin preauthorization, deliverable project verification, strict state transition validation, and RPC invocations (`review_deliverable` with stage pinned to `internal`, and `mark_deliverable_delivered`).
+  - **Active-PM-Lead Preauthorization Alignment (`src/lib/deliverables/auth-checks.ts`):** Aligned `verifyPmLeadCapacity` and `verifyProjectMemberAccess` with PostgreSQL authoritative function `private.is_project_lead` by verifying `profiles.is_active = true` and `profiles.deleted_at is null`.
+  - **Safe Error Mapping (`src/lib/projects/errors.ts`):** Extended `mapSupabaseError` to recognize RPC authorization phrases (`"Only active PM Lead"`) and safely classify them as `UNAUTHORIZED`.
+  - **Review & Delivery Schemas (`src/lib/deliverables/schemas.ts`):** Added `ReviewDeliverableActionSchema` (enforcing mandatory feedback comments on `changes_requested`) and `MarkDeliverableDeliveredActionSchema`.
+  - **Review Decision Status Mapping (`src/lib/status-maps.ts`):** Defined `ReviewDecision` and `REVIEW_DECISION_MAP` exporting `approved` (ShieldCheck, green token) and `changes_requested` (RotateCcw, orange token).
+  - **Controlled Review & Delivery Dialogs (`deliverable-review-dialog.tsx`, `deliverable-delivery-dialog.tsx`):** Added review modal with immutable notice, decision toggle, and character counter, alongside delivery modal featuring explicit workflow truthfulness disclaimers.
+  - **Status-Aware Workspace Gating & Extraction (`deliverables-tab.tsx`, `deliverables-filter-bar.tsx`, `deliverable-detail-sheet.tsx`, `deliverable-list.tsx`, `deliverable-card.tsx`):** Extracted `DeliverablesFilterBar` to keep all components under 300 lines (well under the 400-line repository ceiling). Implemented status-aware action gating suppressing archive/mutation actions on `delivered` status, displaying review CTA for `awaiting_internal_review`, and displaying client review waiting notice for `awaiting_client_review`. Wired `router.refresh()` and detail view re-fetch on mutations.
+  - **Full Dual-Locale Localization Parity (`messages/es-MX.json`, `messages/en-US.json`):** Localized all review/delivery dialogs, action labels, error keys, detail sheet banners, and fallback text strings.
+- **🧪 Verification & Quality:**
+  - `npx vitest run __tests__/deliverables/deliverable-actions.test.ts`: 20/20 passed.
+  - `npx vitest run __tests__/deliverables/schemas.test.ts`: 18/18 passed.
+  - `npx vitest run __tests__/projects/deliverables-workspace.test.tsx`: 13/13 passed.
+  - `npm run typecheck`: 0 errors.
+  - `npm run build`: Production Next.js Turbopack build succeeded with code 0.
+
+## [2026-08-21 @ 09:27]
+
+**🚀 Production Deliverable Planning, Submission, and Immutable History (S04-06)**
+
+- **🚀 Features:**
+  - **Hardened Google Drive Submission URLs (`validators.ts`, `schemas.ts`):** Enforced strict lexical URL checks rejecting non-HTTPS, raw whitespace, tabs, newlines, control characters, backslashes, userinfo credentials, non-Google hosts, and explicit port specifications (including `:443`). Preserved raw URL string without trimming to maintain boundary fidelity.
+  - **PM Capacity & Eligibility Gates (`auth-checks.ts`, `actions.ts`):** Server-side enforcement restricting planning mutations (`createDeliverableAction`, `updateDeliverableAction`, `archiveDeliverableAction`) exclusively to project `pm_lead` or `admin`. Explicitly rejects `pm_watcher` from planning mutations while permitting link reporting, commenting, and read operations. Enforced comprehensive eligibility check (client project type, linked client organization, at least one active non-deleted client member, valid deliverable-enabled task, and active compatible assignee).
+  - **Full Workspace Deliverables Module (`src/components/shared/projects/project-deliverables/*`):** Created responsive tab supporting list table and card view layouts, real-time status and assignee filtering, planning modals (`DeliverableCreateDialog`, `DeliverableEditDialog`, `DeliverableArchiveDialog`), version submission modal (`DeliverableSubmitDialog`), full detail sheet (`DeliverableDetailSheet`), immutable version timeline (`DeliverableHistory`), formal review audit history (`FormalFeedbackHistory`), informal collaboration comments (`DeliverableCommentsSection`), and link report alert dialog (`DeliverableLinkReportDialog`).
+  - **Project Activity Tab (`project-activity-tab.tsx`):** Integrated dedicated activity view presenting completion cycles history projected from `project_completion_cycles_view`.
+  - **Full Dual-Locale Localization (`messages/es-MX.json`, `messages/en-US.json`):** Delivered 100% synchronized, semantic translation keys for `projects.workspace.deliverables.*` and `projects.workspace.activity.*` adhering strictly to `VC-I18N-008` naming rules.
+- **🛠 Architecture & Database:**
+  - **Supabase Migrations Applied:** Applied `20260820153000_s04_06_harden_production_google_drive_submission_urls.sql` and `20260821100000_s04_06_allow_incomplete_client_project_planning.sql` on remote development database; regenerated `src/lib/database.types.ts`.
+  - **Explicit Safe View Projections (`queries.ts`):** Defined strongly-typed projection interfaces (`DeliverableListItem`, `DeliverableDetailView`, `DeliverableVersionView`, `DeliverableFeedbackView`) avoiding wildcard selects or unbounded data models.
+  - **Server Action Module Isolation (`comment-actions.ts`):** Modularized deliverable comment actions into dedicated `comment-actions.ts` and eliminated re-export statements from `"use server"` files to ensure strict Turbopack production compilation compliance.
+  - **Strict Line Limit Compliance:** All 23 new and modified implementation files strictly satisfy the <= 400 lines repository rule.
+- **🧪 Verification & Quality:**
+  - `npm run build`: Production Turbopack build succeeded with code 0 (all static and dynamic routes compiled).
+  - `npx tsc --noEmit`: 0 TypeScript errors.
+  - `npm test`: 44 test suites passing (312 passed tests, 0 failures), including comprehensive unit tests for URL validators, schemas, server actions, and React Testing Library workspace components.
+
+
+## [2026-08-20 @ 02:04]
+
+**🐛 Next.js Server Action Module Compilation & I18N Key Compliance Hotfixes**
+
+- **🐛 Hotfixes:**
+  - **Server Action File Isolation (`src/lib/projects/actions.ts`, `src/lib/projects/lifecycle-actions.ts`):** Resolved Next.js Turbopack compiler failure (`Error: Export updateProjectAction doesn't exist in target module / The module has no exports at all`) by removing `export const` schemas and re-export statements from `"use server"` files. Relocated `ReopenProjectSchema`, `type ReopenProjectInput`, and `interface CreateProjectWithTeamInput` to `src/lib/projects/schemas.ts`. Updated client components and test suites to import actions directly from `@/lib/projects/lifecycle-actions`.
+  - **Semantic Translation Key Compliance (`messages/es-MX.json`, `messages/en-US.json`):** Consolidated `projects.workspace.header.*` keys under `projects.workspace.summary.*` and updated `*Button` translation keys (`confirmButton`, `cancelButton`, `reopenButton`) to semantic `*Action` keys (`confirmAction`, `cancelAction`, `reopenAction`) to strictly satisfy `VC-I18N-008` rules forbidding visual/position/element keywords in translation namespaces.
+  - **Codebase Formatting & Lint Hygiene:** Executed Prettier code formatting and eliminated unused `@typescript-eslint/no-unused-vars` warning in `actions.ts`.
+- **🧪 Verification & Build:**
+  - `npm run build`: Production Turbopack build succeeded with code 0 (all static and dynamic routes compiled).
+  - `npm run typecheck`: 0 TypeScript errors.
+  - `npm run lint`: 0 ESLint errors.
+  - `npm run test`: All 42 test suites passing (291 passed tests, 0 failures).
+
+## [2026-08-19 @ 17:48]
+
+**🎯 Project Completion, Reopening, and Visible Audit Context (S04-05)**
+
+- **🚀 Features:**
+  - **Completion Preflight & Confirmation Modal (`project-complete-dialog.tsx`):** Built interactive completion flow utilizing `getCompletionReadinessAction` (`get_project_completion_readiness` RPC) to inspect unfinished work. Displays clear green indicator on full completion or amber warning detailing unfinished task and deliverable counts (with compact listing of up to 5 tasks), allowing PM Leads & Admins to execute an explicit confirmed override (`confirm_unfinished: true`).
+  - **Reasoned Project Reopening Modal (`project-reopen-dialog.tsx`):** Implemented modal capturing mandatory reopening reason (1–500 characters) with real-time character counter and validation, calling `reopenProjectAction` (`transition_project_status` RPC with `next_status: "in_progress"`).
+  - **Completed State Presentation (`completed-project-banner.tsx`):** Created read-only status banner for completed projects with formatted completion timestamp and conditional "Reabrir Proyecto" CTA for non-watcher actors.
+  - **Workspace & Task Gating (`project-header.tsx`, `tasks-tab.tsx`):** Added context-aware header dropdown items ("Completar Proyecto" on active projects, "Reabrir Proyecto" on completed projects), suppressed invalid transitions (cancelling on completed state), preserved metadata editing capabilities, and gated "Nueva Tarea" creation controls when `project.status === "completed"`.
+  - **Structured Completion Cycles History (`completion-cycles-card.tsx`):** Upgraded Overview tab cycle card to display all `project_completion_cycles_view` fields including cycle number, completion date, cycle duration in days, unfinished work override badges, reopened timestamps, active cycle badges, and recorded reopen reasons.
+- **🛠 Architecture & Boundaries:**
+  - **Lifecycle Server Actions (`src/lib/projects/lifecycle-actions.ts`):** Created dedicated server actions module housing `getCompletionReadinessAction` and `reopenProjectAction` with session role authorization (`admin` | `pm`), strict Zod validation (`ReopenProjectSchema`), and multi-route cache revalidations.
+  - **Strict Line Limits:** Kept all 9 project components and server action files strictly under 400 lines (max 389 lines). Extracted `CompletionCyclesCard` to preserve file modularity.
+  - **Full Localization Parity (`messages/es-MX.json` & `messages/en-US.json`):** Added 100% matching translation keys across `projects.workspace.completion.*`, `projects.workspace.reopen.*`, `projects.workspace.completedBanner.*`, `projects.workspace.header.*`, and `projects.workspace.overview.*`.
+- **🧪 Verification & Build:**
+  - `npm run test -- __tests__/projects/`: All 76 project tests passing across 9 test suites (including 15 dedicated lifecycle tests in `__tests__/projects/project-lifecycle.test.tsx`).
+  - `npm run typecheck`: 0 TypeScript errors.
+  - `npm run lint`: 0 ESLint errors.
+
+## [2026-08-19 @ 16:48]
+
+**📋 Project Workspace, Task Planning, and Constrained Kanban (S04-04)**
+
+- **🚀 Features:**
+  - **Constrained Kanban Board (`task-kanban-board.tsx`, `task-kanban-column.tsx`, `task-kanban-card.tsx`):** Built interactive drag-and-drop Kanban board powered by `@hello-pangea/dnd` across 5 status columns (`pending`, `in_progress`, `in_review`, `completed`, `blocked`) with optimistic updates, rollback on error, blocking priority indicator (`border-l-4 border-l-rose-400`), and watcher-mode view gating.
+  - **Sortable Task List (`task-list-view.tsx`, `task-list-row.tsx`):** Implemented table view with multi-column sorting (title, priority, status, deadline) and row action menus.
+  - **Multi-Dimensional Filters (`task-filters.tsx`):** Added filter controls for status, priority, task type (`internal_work` vs `client_request`), and assignee with active filter reset.
+  - **Slide-Over Task Details (`task-detail-sheet.tsx`):** Built slide-over sheet displaying metadata, linked deliverable indicators, description, status machine transitions, and real-time collaboration comment feed.
+  - **Creation, Edit & Archive Modals (`task-create-dialog.tsx`, `task-edit-dialog.tsx`, `task-archive-dialog.tsx`):** Type-safe forms powered by React Hook Form + Zod (`CreateTaskSchema`, `UpdateTaskSchema`), with `useWatch` optimization for React Compiler, client request gating on internal projects, and soft-delete with optional audit reason.
+  - **Real-Time Collaboration Comments (`task-comments-section.tsx`):** Collaboration feed and compose form capturing `author_capacity_snapshot` and localized time-ago timestamps.
+- **🛠 Architecture & Boundaries:**
+  - **Server Actions Layer (`src/lib/projects/task-actions.ts`):** Implemented `createTaskAction`, `updateTaskAction`, `transitionTaskStatusAction`, `archiveTaskAction`, `createTaskCommentAction`, and `listTaskCommentsAction` with role checks, transactional RPC execution, and targeted path revalidation.
+  - **Workspace Shell Integration (`project-workspace-shell.tsx`):** Replaced `TasksTabPlaceholder` with `<TasksTab>` in `ProjectWorkspaceShell`.
+  - **Server Pre-Fetching:** Updated `/admin/proyectos/[id]` and `/pm/proyectos/[id]` page loaders to pre-fetch tasks via `listProjectTasks(supabase, id)` in parallel with project details.
+  - **Strict Line Limits:** Kept all 16 component and server action modules strictly under 400 lines (max 394 lines in `actions.ts`).
+  - **Localization Parity (`messages/es-MX.json` & `messages/en-US.json`):** 100% key parity under `projects.tasks.*` adhering strictly to `VC-I18N-008` (pure camelCase segments without forbidden keywords).
+- **🐛 Hotfixes:**
+  - **Server Action AST Module Transform:** Segregated task actions into dedicated `src/lib/projects/task-actions.ts` to eliminate Next.js server actions re-export bundler conflict and guarantee smooth production Turbopack builds.
+- **🧪 Verification & Build:**
+  - `npm run test`: All 276 tests across 41 test suites passing (including 61 project tests in `__tests__/projects/`).
+  - `npm run typecheck`: 0 TypeScript errors.
+  - `npm run lint`: 0 ESLint errors.
+  - `npm run build`: Production Turbopack build succeeded with all static & dynamic routes compiled.
+
+## [2026-08-19 @ 14:46]
+
+**🚀 Project Directory, Project Creation, and Membership Governance (S04-03)**
+
+- **Flexible Client Project Creation in Planning Stage:**
+  - Added migration `20260819140000_s04_03_flexible_client_project_planning.sql` updating `private.validate_project_memberships()` to permit `0` client members and `null` `client_id` for client projects in `planning` status, while strictly enforcing $\ge 1$ client member and valid `client_id` upon advancing to active non-planning states.
+  - Updated `CreateProjectSchema` and `UpdateProjectSchema` to make `client_id` optional and attachable later.
+- **Server Actions Layer (`src/lib/projects/actions.ts`):**
+  - Implemented `createProjectAction`, `updateProjectAction`, `addProjectMemberAction`, `updateProjectMemberAction`, `removeProjectMemberAction`, `setPrimaryPmLeadAction`, `transitionProjectStatusAction`, `archiveProjectAction`, and `restoreProjectAction` with strict role authorization, atomic rollback on member init failures, and path revalidation.
+- **Navigation Integration:**
+  - Activated live navigation links for `/admin/proyectos` and `/pm/proyectos` in desktop `AppNav` and responsive `MobileNavToggle`.
+- **Project Directory Components (`src/components/shared/projects/project-directory/`):**
+  - Created `ProjectDirectoryView`, `ProjectFilters`, `ProjectTable`, `ProjectCardList`, and `ProjectEmptyState` with debounced search, status and type filters, and responsive views.
+- **Project Workspace & Governance (`src/components/shared/projects/project-workspace/` & `project-members/`):**
+  - Created `ProjectWorkspaceShell`, `ProjectHeader`, `ProjectOverviewTab` (with Setup Warning Banner and quick client linking CTA), `ProjectEditDialog`, and `ProjectStatusDialog`.
+  - Created `MemberRosterTab`, `MemberCapacityBadge` (with primary PM Lead star indicator), `AddMemberDialog`, `ChangeCapacityDialog`, `SetPrimaryLeadDialog`, and `RemoveMemberDialog`.
+- **App Router Pages (`/admin/proyectos` & `/pm/proyectos`):**
+  - Implemented full directory, creation forms (`AdminCreateForm`, `PmCreateForm`), and workspace detail pages with dedicated loading skeletons and error boundaries for both Admin and PM roles.
+- **Automated Test Suite:**
+  - Added unit and component tests in `__tests__/projects/` (`actions.test.ts`, `directory-view.test.tsx`, `membership-governance.test.tsx`, `schemas.test.ts`, `errors.test.ts`).
+- **Verification:** All 254 test cases across 38 test suites passing; `npm run typecheck` and `npm run lint` clean with zero errors.
+
+## [2026-08-19 @ 13:20]
+
+**⚙️ Feature Data Layer & Command Boundary Reconciliation (S04-02)**
+
+- **Authoritative Feature Data Layer (`src/lib/`):**
+  - **Projects & Tasks Domain (`src/lib/projects/`):**
+    - `schemas.ts`: Added strict Zod schemas with refinements (`CreateProjectSchema` enforcing client/internal organization constraints, `UpdateProjectSchema`, `TransitionProjectStatusSchema`, `RecoverProjectStatusSchema`, `AddProjectMemberSchema`, `UpdateProjectMemberSchema`, `CreateTaskSchema`, `UpdateTaskSchema`, and `TransitionTaskStatusSchema`).
+    - `queries.ts`: Implemented typed server reads (`listProjectsForAdmin`, `listProjectsForPm`, `getProjectDetail`, `getCompletionCycles`, `listEligiblePmUsers`, `listEligibleOperators`, `listEligibleClientMembers`, `getProjectMembers`, `listProjectTasks`, `getTaskDetail`, `listTaskResources`).
+    - `commands.ts`: Implemented type-safe server command adapters for RPCs (`transition_project_status`, `recover_project_status`, `get_project_completion_readiness`, `transition_task_status`, `soft_delete_entity`, `restore_entity`) and typed table operations (`createProject`, `updateProject`, `addProjectMember`, `updateProjectMember`, `setPrimaryPmLead`, `createTask`, `updateTask`).
+    - `errors.ts`: Centralized safe error mapper (`mapSupabaseError`) and `CommandResult<T>` discriminated union for non-leaking error responses.
+  - **Deliverables Domain (`src/lib/deliverables/`):**
+    - `validators.ts`: Pure lexical Google Drive URL validator (`isValidGoogleDriveUrl` & `GOOGLE_DRIVE_URL_REGEX`) matching server-side RPC constraint `^https://(drive\.google\.com|docs\.google\.com)/` without network dereferencing.
+    - `schemas.ts`: Added Zod schemas for deliverable creation (`CreateDeliverableSchema` production-only), planning updates (`UpdateDeliverableSchema`), submission (`SubmitDeliverableVersionSchema`), internal review (`ReviewDeliverableSchema` with mandatory comments on `changes_requested`), and link incident reporting (`ReportBrokenLinkSchema`).
+    - `queries.ts`: Implemented typed server reads for deliverables, immutable version history (`listDeliverableVersions`), and version feedback (`listVersionFeedback`).
+    - `commands.ts`: Implemented command adapters calling RPCs (`submit_deliverable_version`, `review_deliverable`, `mark_deliverable_delivered`, `report_broken_link`, `soft_delete_entity`) and typed table operations (`createDeliverable`, `updateDeliverable`).
+    - `errors.ts`: Re-exported domain error types and safe error mappings.
+  - **Collaboration Comments Domain (`src/lib/comments/`):**
+    - `schemas.ts`: Added `CreateCommentSchema` validating target types (`project`, `task`, `deliverable`) and non-empty comment body.
+    - `queries.ts`: Implemented `listComments` query fetching chronological comments with author profiles.
+    - `commands.ts`: Implemented `createComment` command adapter invoking RPC `create_collaboration_comment`.
+  - **Client Organizations Domain (`src/lib/clients/`):**
+    - `schemas.ts`: Added `CreateClientSchema` enforcing URL-safe lowercase slugs and organization fields.
+    - `queries.ts`: Implemented `listActiveClients`, `getClientById`, and `listClientContacts`.
+    - `commands.ts`: Implemented `createClient` command adapter for organization creation.
+- **Automated Test Coverage & Root Organization:**
+  - Consolidated 100% of test suites under the root `__tests__/` directory (`__tests__/projects/`, `__tests__/deliverables/`, `__tests__/comments/`, `__tests__/clients/`, `__tests__/lib/`, `__tests__/theme/`).
+- **Verification:** All 237 test cases across 35 test suites passing; `npm run typecheck`, `npm run lint`, and `npm run format:check` clean with 0 errors.
+
+## [2026-08-19 @ 12:25]
+
+**🎨 UI & Branding Enhancement: Iniciar Sesión Route**
+
+- **Joya Purple Logo Integration:** Integrated `/joyalogo-purple.svg` directly onto the `/iniciar-sesion` (sign-in) card panel with responsive dimensions, smooth hover scale, and clean layout without an enclosing container box.
+- **Ambient Lighting & Aesthetics:** Added subtle radial gradient backdrop glows matching the brand purple / accent palette in both light and dark modes.
+- **Form Controls & Micro-Interactions:**
+  - Upgraded input fields with Lucide icons (`Mail` and `Lock`), smooth focus rings, and accessible labels.
+  - Implemented password visibility toggle button (`Eye` / `EyeOff`) with accessible ARIA label.
+  - Added animated spinner (`Loader2`) for submit button loading states.
+  - Enhanced error banner styling with `AlertCircle` icon.
+- **Header Controls:** Added `ThemeToggle` alongside `LanguageSwitcher` in the sign-in page header.
+- **ThemeToggle Hydration Refinement:** Updated `ThemeToggle` to utilize `useSyncExternalStore` for client mount detection, eliminating cascading renders and satisfying React 19 / ESLint rules.
+- **Verification:** All 190 test cases across 29 test suites passing; TypeScript, ESLint, and Prettier passing with zero errors.
+
+## [2026-08-19 @ 12:05]
+
+**🎨 Visual Foundation & UI Architecture (S04-01)**
+
+- **shadcn/ui & Design System Initialization:** Initialized shadcn/ui with Base UI Mira style, Neutral base palette, Indigo accent (`238 75% 60%`), and Lucide icon library configured for Tailwind CSS v4 via `@theme inline` tokens in `src/app/globals.css` and `components.json`.
+- **UI Primitives Inventory:** Installed 20 required accessible UI primitives under `src/components/ui/` (`button`, `input`, `label`, `textarea`, `select`, `checkbox`, `badge`, `card`, `table`, `tabs`, `dialog`, `alert-dialog`, `sheet`, `dropdown-menu`, `popover`, `command`, `separator`, `skeleton`, `tooltip`, `sonner`, `input-group`).
+- **CSP-Compliant Font Configuration:** Configured Google Fonts `Inter` (`--font-sans`) and `Geist_Mono` (`--font-mono`) self-hosted via `next/font/google` in `src/app/layout.tsx`, fully compliant with strict CSP (`font-src 'self' data:`).
+- **Native Theme Switching & Persistence:**
+  - Implemented `ThemeProvider` (`src/components/shared/theme/theme-provider.tsx`) wrapping `next-themes` with `defaultTheme="light"`, `enableSystem={false}`, and local storage persistence (`jsf-pm-theme`), with dev-mode console filtering for React 19 SSR anti-FOUC script tags.
+  - Created `ThemeToggle` (`src/components/shared/theme/theme-toggle.tsx`) accessible dropdown menu with dynamic ARIA labels describing next actions, `aria-pressed`, `aria-current`, keyboard navigation, and a mounted lifecycle guard to eliminate SSR hydration mismatch with client-stored dark mode.
+  - Added global `Toaster` component with `richColors` and bottom-right positioning.
+- **Semantic Status Maps:** Created centralized semantic status and priority maps (`src/lib/status-maps.ts`) for `ProjectStatus`, `TaskStatus`, `TaskPriority` (with distinct `blocking` priority), `DeliverableStatus`, and `MemberCapacity`.
+- **Global Shell & Auth Sweeps:**
+  - Replaced hardcoded zinc/neutral styles and placeholder initials with semantic token classes, shadcn UI primitives, and `public/joya-icon.svg` brand mark across `AppNav`, `MobileNavToggle`, `NotificationBadge`, `SignOutButton`, and `LanguageSwitcher`.
+  - Updated protected layouts, loading skeletons (`Skeleton`), and error boundaries across Admin, PM, Operator, and Client dashboards.
+  - Upgraded authentication forms (`sign-in-form`, `reset-password-form`, `update-password-form`, `invitation-form`, `sesion-expirada`) to shadcn `Input`, `Label`, `Button`, and `Checkbox` primitives.
+- **Localization (i18n):** Added 6 `theme.*` translation keys and navigation ARIA labels in both `messages/es-MX.json` and `messages/en-US.json`.
+- **Automated Testing & Accessibility:**
+  - Added unit test suites for `ThemeProvider` (`src/components/shared/theme/__tests__/theme-provider.test.tsx`) and `ThemeToggle` (`src/components/shared/theme/__tests__/theme-toggle.test.tsx`), validating default light mode, local storage persistence, `enableSystem={false}`, next-action ARIA labels, and zero `jest-axe` accessibility violations.
+  - All 190 tests across 29 test suites passing; TypeScript, ESLint, Prettier, and Next.js production build (`npm run build`) passing with zero errors.
+
+## [2026-08-19 @ 10:50]
+
+**📋 Sprint 04 — Spec Updates (Project Owner decisions recorded)**
+
+- Updated `dev-docs/specs/s04/s04-specs/s04-01-visual-foundation-shadcn-theming-spec.md` with two resolved Project Owner decisions:
+  - **FLAG 3 resolved — Brand mark:** Use `public/joya-icon.svg` via `next/image` (`<Image src="/joya-icon.svg" alt="Joya" width={32} height={32} />`); fall back to plain `<img>` if SVG intrinsic-dimension issues arise; amber circle remains the last-resort exception
+  - **FLAG 4 resolved — Monospace font:** shadcn/ui ships with Geist Mono as its standard mono font; load `Geist_Mono` from `next/font/google` and assign to `--font-mono` CSS variable (self-hosted, CSP-compliant); both `fontSans.variable` and `fontMono.variable` applied to `<html className>` in root layout
+  - Updated Step 3b layout code, Step 7 brand mark instruction, acceptance criteria §7.2 checklist, and both FLAG sections to reflect the resolved state
+
+## [2026-08-19 @ 10:37]
+
+**📋 Sprint 04 — Documentation & Spec**
+
+- Created `dev-docs/specs/s04/s04-specs/s04-01-visual-foundation-shadcn-theming-spec.md` (1,089 lines): highly detailed implementation specification for work item S04-01 (Visual Foundation: shadcn/ui initialization and persisted native theming), covering:
+  - Pre-implementation baseline inventory (existing font conflicts, globals.css problems, CSP constraint)
+  - Authoritative record of all Project Owner visual decisions (Mira style, Neutral palette, Indigo accent, Lucide icons, preset `b2J0x9uLeE`)
+  - 12-step ordered implementation sequence with exact code snippets for root layout, ThemeProvider, ThemeToggle, globals.css rewrite, and CLI invocations
+  - CSP conflict flag: Google Fonts CDN blocked; font loading must use `next/font/google` only
+  - `prefers-color-scheme` conflict flag: existing media query must be removed to support `defaultTheme="light"` requirement
+  - Sprint 04 shadcn primitive inventory install command (`button`, `input`, `label`, `textarea`, `select`, `checkbox`, `badge`, `card`, `table`, `tabs`, `dialog`, `alert-dialog`, `sheet`, `dropdown-menu`, `popover`, `command`, `separator`, `skeleton`, `tooltip`, `sonner`, `form`)
+  - Full authenticated shell token sweep (AppNav, MobileNavToggle, protected layout, loading, error, auth forms) with old→new class replacement table
+  - Semantic status mapping utilities specification (`src/lib/status-maps.ts`) for project status, task status, task priority, deliverable state, and member capacity
+  - i18n key additions for `theme` namespace (6 keys) and `shell.nav` aria-label keys in both es-MX and en-US catalogs
+  - Focused automated test requirements (ThemeProvider + ThemeToggle, 7+4 cases)
+  - 8 acceptance criteria sections and full verification command suite
+  - Explicit confirmation that no Supabase MCP operations are required for S04-01
+
 ## [2026-08-19 @ 09:31]
 
 **⚙️ CI & Build Automation**

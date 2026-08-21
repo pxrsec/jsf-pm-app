@@ -1,10 +1,20 @@
 {
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "currentLight": "Current theme: Light",
+    "currentDark": "Current theme: Dark",
+    "switchToLight": "Switch to light theme",
+    "switchToDark": "Switch to dark theme"
+  },
   "shell": {
     "brand": {
       "name": "Joya Star Films"
     },
     "nav": {
       "ariaLabel": "Main navigation",
+      "openMenu": "Open navigation menu",
+      "closeMenu": "Close navigation menu",
       "signOut": "Sign out",
       "currentUser": {
         "role": {
@@ -116,6 +126,697 @@
       "messageInvalid": "The link used is invalid or has been modified.",
       "messageAlreadyUsed": "This invitation or link has already been used.",
       "signInLink": "Go to Sign In"
+    }
+  },
+  "projects": {
+    "directory": {
+      "title": "Projects",
+      "adminSubtitle": "System-wide project management overview",
+      "pmSubtitle": "Projects assigned to your management",
+      "searchPlaceholder": "Search by project name or scope...",
+      "filterStatus": "Status",
+      "filterType": "Project type",
+      "allStatuses": "All statuses",
+      "allTypes": "All types",
+      "newProjectAction": "New Project",
+      "emptyState": {
+        "title": "No projects available",
+        "description": "Get started by creating a new project to manage tasks and deliverables.",
+        "noFilterResults": "No projects match the selected filters.",
+        "clearFilters": "Clear filters",
+        "createCta": "Create Project"
+      },
+      "table": {
+        "columns": {
+          "name": "Project",
+          "type": "Type",
+          "status": "Status",
+          "deadline": "Deadline",
+          "actions": "Actions"
+        },
+        "actions": {
+          "open": "Open workspace",
+          "manageTeam": "Manage team",
+          "edit": "Edit information"
+        }
+      },
+      "cards": {
+        "deadline": "Deadline:",
+        "openAction": "Open Project"
+      }
+    },
+    "types": {
+      "client": "Client",
+      "internal": "Internal",
+      "unassigned": "Unassigned",
+      "clientDescription": "External client project with production deliverables.",
+      "internalDescription": "Internal operational project without production deliverables."
+    },
+    "create": {
+      "title": "Create New Project",
+      "subtitle": "Set up project parameters and initial team composition",
+      "fields": {
+        "typeLabel": "Project type",
+        "nameLabel": "Project name",
+        "namePlaceholder": "e.g. Holiday Campaign 2026",
+        "descriptionLabel": "Internal description",
+        "descriptionPlaceholder": "Operational details, goals, and team context...",
+        "deadlineLabel": "Target deadline",
+        "driveLabel": "Google Drive folder URL (optional)",
+        "drivePlaceholder": "https://drive.google.com/drive/folders/...",
+        "clientOrgLabel": "Client organization (optional in planning)",
+        "clientOrgPlaceholder": "Select a client...",
+        "clientScopeLabel": "Client-visible scope (optional)",
+        "clientScopePlaceholder": "Summary that will be visible to the client...",
+        "initialClientContactLabel": "Initial client contact (optional)",
+        "initialClientContactPlaceholder": "Select primary client contact...",
+        "primaryPmLeadLabel": "Assigned Primary PM Lead",
+        "primaryPmLeadPlaceholder": "Select a Project Manager Lead...",
+        "pmAutoAssignedNote": "You will be automatically assigned as the primary PM Lead for this project.",
+        "submitAction": "Create Project",
+        "cancelAction": "Cancel",
+        "creating": "Creating project..."
+      },
+      "successToast": "Project created successfully.",
+      "errorToast": "Failed to create project. Please verify the input fields."
+    },
+    "workspace": {
+      "recovery": {
+        "directory": {
+          "title": "Error loading projects",
+          "description": "An unexpected error occurred while loading the project directory. Please try again."
+        },
+        "workspace": {
+          "title": "Error loading workspace",
+          "description": "Unable to load project information or you do not have permission to access it."
+        },
+        "pmWorkspace": {
+          "description": "Unable to load project information or you are not assigned to this project."
+        },
+        "retryAction": "Try again",
+        "returnToProjectsAction": "Return to Projects",
+        "returnToAssignedProjectsAction": "Return to My Projects",
+        "loading": "Loading content..."
+      },
+      "breadcrumbs": {
+        "root": "Projects",
+        "current": "Workspace"
+      },
+      "summary": {
+        "primaryLeadLabel": "Primary Lead",
+        "deadlineLabel": "Deadline",
+        "editAction": "Edit Information",
+        "statusActions": "Status",
+        "completeProject": "Complete Project",
+        "reopenProject": "Reopen Project"
+      },
+      "completion": {
+        "dialogTitle": "Complete Project",
+        "dialogDescription": "Review work status before completing the project.",
+        "loadingReadiness": "Checking project status...",
+        "readyTitle": "The project is ready to be completed.",
+        "readyDescription": "No unfinished work remains.",
+        "unfinishedTitle": "There is unfinished work",
+        "unfinishedDescription": "There are {taskCount} unfinished task(s) and {deliverableCount} pending deliverable(s). You can still complete the project, but the unfinished work will remain in the record.",
+        "unfinishedTasksLabel": "Unfinished tasks:",
+        "unfinishedTasksMore": "...and {count} more",
+        "confirmAction": "Complete Project",
+        "cancelAction": "Cancel",
+        "submitting": "Completing...",
+        "successToast": "Project completed successfully.",
+        "errors": {
+          "unauthorized": "You are not authorized to complete this project.",
+          "invalidTransition": "This status transition is not allowed from the project's current state.",
+          "notFound": "Project not found. Please refresh the page.",
+          "generic": "Error completing the project. Please try again."
+        }
+      },
+      "reopen": {
+        "dialogTitle": "Reopen Project",
+        "dialogDescription": "To reopen the project, provide a reason. This will be recorded in the completion cycle history.",
+        "reasonLabel": "Reopen reason",
+        "reasonRequired": "A reopen reason is required.",
+        "reasonTooLong": "The reason cannot exceed 500 characters.",
+        "reasonPlaceholder": "e.g. Client requested additional scope revisions...",
+        "confirmAction": "Reopen Project",
+        "cancelAction": "Cancel",
+        "submitting": "Reopening...",
+        "successToast": "Project reopened successfully.",
+        "errors": {
+          "unauthorized": "You are not authorized to reopen this project.",
+          "invalidTransition": "This project cannot be reopened from its current state.",
+          "reasonRequired": "You must provide a reason to reopen the project.",
+          "notFound": "Project not found. Please refresh the page.",
+          "generic": "Error reopening the project. Please try again."
+        }
+      },
+      "completedBanner": {
+        "title": "Project Completed",
+        "completedOn": "This project was completed on {date}.",
+        "reopenAction": "Reopen Project"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "tasks": "Tasks",
+        "deliverables": "Deliverables",
+        "members": "Team",
+        "activity": "Activity"
+      },
+      "clientSetupBanner": {
+        "title": "Client setup pending",
+        "description": "This client project does not have an organization or client members linked yet. You can plan and assign work internally, but linking a client will be required before advancing to 'In progress' status or requesting client reviews.",
+        "linkCta": "Link Client"
+      },
+      "overview": {
+        "descriptionCardTitle": "Internal Description",
+        "clientScopeCardTitle": "Client Scope",
+        "noClientScope": "No client scope specified.",
+        "linksCardTitle": "Storage & Links",
+        "openDriveFolder": "Open Google Drive folder",
+        "noDriveLink": "No Google Drive folder configured.",
+        "metaCardTitle": "Project Details",
+        "projectId": "Project ID",
+        "createdDate": "Created Date",
+        "associatedClient": "Client",
+        "unassignedClient": "Unassigned",
+        "quickStatsTitle": "Work Summary",
+        "tasksCount": "Active tasks",
+        "deliverablesCount": "Deliverables",
+        "teamSummaryTitle": "Project Team",
+        "viewAllMembers": "View all ({count})",
+        "completionCyclesTitle": "Completion Cycle History",
+        "noCycles": "No previous completion cycles recorded.",
+        "cycleNumber": "Cycle #{number}",
+        "cycleActiveBadge": "Active cycle",
+        "completedOn": "Completed on {date}",
+        "cycleDuration": "Duration: {days} days",
+        "reopenedOn": "Reopened on {date}",
+        "unfinishedOverrideBadge": "Completed with unfinished work",
+        "completedBy": "Completed by {name}",
+        "reopenedBy": "Reopened by {name}",
+        "reopenReason": "Reason: {reason}"
+      },
+      "placeholders": {
+        "tasksTitle": "Task Planning & Kanban",
+        "tasksDescription": "Task assignment, scheduling, and Kanban management will be available in sprint S04-04.",
+        "deliverablesTitle": "Production Deliverables",
+        "deliverablesDescription": "Deliverables management with Google Drive links and review workflows will be available in S04-06.",
+        "internalDeliverablesDisabled": "Internal projects do not support production deliverables.",
+        "clientReviewBlockedNotice": "Linking a client organization and contact is required before releasing deliverables for client review."
+      },
+      "editDialog": {
+        "title": "Edit Project Information",
+        "description": "Update operational project details. The project type cannot be modified.",
+        "clientOrgLabel": "Client organization",
+        "clientOrgPlaceholder": "Select client...",
+        "saveAction": "Save Changes",
+        "cancelAction": "Cancel",
+        "saving": "Saving...",
+        "successToast": "Project updated successfully."
+      },
+      "statusDialog": {
+        "pauseTitle": "Pause this project?",
+        "pauseDescription": "The project will enter paused status. Team members cannot advance tasks until it is resumed.",
+        "resumeTitle": "Resume this project?",
+        "resumeDescription": "The project will return to active in-progress status.",
+        "cancelTitle": "Cancel this project?",
+        "cancelDescription": "This will mark the project as cancelled. Only an Administrator can recover it.",
+        "archiveTitle": "Archive this project?",
+        "archiveDescription": "The project will be hidden from the main directory.",
+        "restoreTitle": "Restore this project?",
+        "restoreDescription": "The project will be restored to the main directory.",
+        "confirmAction": "Confirm",
+        "cancelAction": "Go Back"
+      },
+      "deliverables": {
+        "tabTitle": "Production Deliverables",
+        "tabCount": "{count} deliverables in total",
+        "viewTable": "Table",
+        "viewCards": "Cards",
+        "newDeliverableAction": "New Deliverable",
+        "filterStatus": "Filter by status...",
+        "filterAssignee": "Filter by assignee...",
+        "allStatuses": "All statuses",
+        "allAssignees": "All members",
+        "clearFilters": "Clear filters",
+        "internalIneligibleTitle": "Deliverables unavailable",
+        "internalIneligibleDescription": "Internal projects do not admit production deliverables.",
+        "incompleteClientSetupTitle": "Client setup pending",
+        "incompleteClientSetupDescription": "A client organization and at least one active client member must be linked before planning or submitting production deliverables.",
+        "emptyStateTitle": "No deliverables planned",
+        "emptyStateDescription": "Plan the first production deliverable linked to a project task.",
+        "emptyStateAction": "Plan first deliverable",
+        "emptyFilterTitle": "No results",
+        "emptyFilterDescription": "No deliverables match the selected filters.",
+        "stalledBadge": "Stalled",
+        "versionLabel": "v{version}",
+        "versionZero": "v0 (No submissions)",
+        "unassigned": "Unassigned",
+        "userFallback": "User",
+        "pmLeadFallback": "PM Lead",
+        "teamMemberFallback": "Team Member",
+        "actionsMenuAriaLabel": "Actions menu",
+        "columns": {
+          "title": "Title",
+          "status": "Status",
+          "version": "Version",
+          "assignee": "Assigned to",
+          "deadlines": "Deadlines",
+          "actions": "Actions"
+        },
+        "actions": {
+          "openDetails": "View details",
+          "submitVersion": "Submit Drive link",
+          "reviewVersion": "Review version",
+          "markDelivered": "Mark as delivered",
+          "edit": "Edit",
+          "archive": "Archive"
+        },
+        "status": {
+          "pending": "Pending",
+          "awaitingInternalReview": "Awaiting Internal Review",
+          "awaitingClientReview": "Awaiting Client Review",
+          "approved": "Approved",
+          "changesRequested": "Changes Requested",
+          "delivered": "Delivered"
+        },
+        "deadlines": {
+          "submission": "Submission: {date}",
+          "internalReview": "Internal review: {date}",
+          "clientDelivery": "Client delivery: {date}",
+          "noDeadlines": "No deadlines"
+        },
+        "createDialog": {
+          "title": "New Production Deliverable",
+          "description": "Create a production deliverable linked to an eligible task in this project.",
+          "titleLabel": "Deliverable title",
+          "titlePlaceholder": "e.g. Promotional video 4K final cut",
+          "taskLabel": "Associated task",
+          "taskPlaceholder": "Select a task...",
+          "assigneeLabel": "Production assignee",
+          "assigneePlaceholder": "Select a team member...",
+          "specificationsLabel": "Technical specifications and requirements",
+          "specificationsPlaceholder": "Required formats, codecs, resolution, production notes...",
+          "submissionDeadlineLabel": "Submission deadline",
+          "internalReviewDeadlineLabel": "Internal review deadline",
+          "clientDeliveryDeadlineLabel": "Client delivery deadline",
+          "userFallback": "User",
+          "submitAction": "Plan Deliverable",
+          "cancelAction": "Cancel",
+          "submitting": "Planning...",
+          "successToast": "Deliverable planned successfully.",
+          "errorToast": "Could not plan deliverable. Please check entered data."
+        },
+        "editDialog": {
+          "title": "Edit Deliverable",
+          "description": "Modify deliverable planning parameters.",
+          "statusReadOnly": "Status: {status}",
+          "versionReadOnly": "Version: v{version}",
+          "statusLabel": "Status:",
+          "versionLabel": "Version:",
+          "titleLabel": "Title",
+          "assigneeLabel": "Production assignee",
+          "assigneePlaceholder": "Select an assignee...",
+          "userFallback": "User",
+          "specificationsLabel": "Technical specifications",
+          "submissionDeadlineLabel": "Submission deadline",
+          "internalReviewDeadlineLabel": "PM review deadline",
+          "clientDeliveryDeadlineLabel": "Client delivery deadline",
+          "submitAction": "Save Changes",
+          "cancelAction": "Cancel",
+          "submitting": "Saving...",
+          "successToast": "Deliverable updated successfully.",
+          "errorToast": "Could not update deliverable."
+        },
+        "archiveDialog": {
+          "title": "Archive this deliverable?",
+          "description": "The deliverable will be hidden from the active list. Its history of versions and previous reviews will be preserved immutably.",
+          "reasonLabel": "Reason (optional)",
+          "reasonPlaceholder": "Enter reason for archiving...",
+          "confirmAction": "Archive",
+          "cancelAction": "Cancel",
+          "submitting": "Archiving...",
+          "successToast": "Deliverable archived.",
+          "errorToast": "Could not archive deliverable."
+        },
+        "submitDialog": {
+          "title": "Submit Version for Review",
+          "description": "Enter the Google Drive share link. The application will record a new immutable version for internal review without downloading or inspecting remote content.",
+          "driveLinkLabel": "Google Drive share link (HTTPS)",
+          "driveLinkPlaceholder": "https://drive.google.com/file/d/... or https://docs.google.com/...",
+          "driveLinkHelp": "Only HTTPS links from drive.google.com or docs.google.com are accepted.",
+          "noteLabel": "Submission note (optional)",
+          "notePlaceholder": "Describe changes, render notes, or areas to review...",
+          "submitAction": "Record Version",
+          "cancelAction": "Cancel",
+          "submitting": "Recording version...",
+          "successToast": "Version v{version} recorded for internal review.",
+          "errorToast": "Could not record version. Please verify the entered link."
+        },
+        "reviewDialog": {
+          "title": "Internal Deliverable Review",
+          "description": "Issue a formal internal review decision for version v{version}. The decision will be recorded immutably.",
+          "decisionLabel": "Review decision",
+          "approveOption": "Approve for client review",
+          "approveHelp": "The deliverable will advance to awaiting client review.",
+          "requestChangesOption": "Request changes",
+          "requestChangesHelp": "The deliverable will return to pending for the assignee to submit a corrected version.",
+          "commentsLabel": "Review comments",
+          "commentsOptionalPlaceholder": "Optional comments or feedback for the team...",
+          "commentsRequiredPlaceholder": "Detail the required changes and necessary corrections...",
+          "commentsRequiredError": "Comments are mandatory when requesting changes.",
+          "immutableWarning": "This decision will be recorded in immutable history and cannot be edited or deleted.",
+          "submitAction": "Record Decision",
+          "cancelAction": "Cancel",
+          "submitting": "Recording...",
+          "approvedToast": "Deliverable approved internally. Now awaiting client review.",
+          "changesRequestedToast": "Changes requested. The deliverable requires a new version.",
+          "staleErrorToast": "Review was rejected because the deliverable state changed concurrently. The view has been refreshed."
+        },
+        "deliveryDialog": {
+          "title": "Confirm Final Delivery",
+          "description": "Confirm that the deliverable has been completed and delivered? This action will record the 'Delivered' state in the workflow.",
+          "truthfulnessNotice": "The application records the final status in the internal workflow. It does not perform file transfers, email dispatches, external messages, or external receipt verification.",
+          "confirmAction": "Mark as Delivered",
+          "cancelAction": "Cancel",
+          "delivering": "Recording delivery...",
+          "successToast": "Deliverable marked as delivered successfully.",
+          "errorToast": "Could not record final delivery."
+        },
+        "linkReportDialog": {
+          "title": "Report Link Issue",
+          "description": "Submit an internal report regarding the link for version v{version}. The application does not remotely test the link and the deliverable status will not change.",
+          "truthfulnessNotice": "This report records an internal alert for the team. The system does not validate or download the link remotely and the deliverable status will not be modified.",
+          "reasonLabel": "Report reason",
+          "reasonPlaceholder": "e.g. The link requests restricted access permissions...",
+          "submitAction": "Submit Report",
+          "cancelAction": "Cancel",
+          "submitting": "Submitting report...",
+          "successToast": "Link report recorded internally.",
+          "errorToast": "Could not record report."
+        },
+        "detailSheet": {
+          "title": "Deliverable Details",
+          "specificationsTitle": "Technical Specifications",
+          "deadlinesTitle": "Deadlines",
+          "nextActionTitle": "Next Action",
+          "productionAssigneeRole": "Production Assignee",
+          "submissionDeadlineShort": "Submission",
+          "internalReviewDeadlineShort": "PM Review",
+          "clientDeliveryDeadlineShort": "Client Delivery",
+          "submitCta": "Submit Version v{version}",
+          "submitCtaInitial": "Submit First Version (v1)",
+          "reviewCta": "Review version v{version}",
+          "deliverCta": "Mark as delivered",
+          "awaitingClientReviewTitle": "Awaiting Client Review",
+          "awaitingClientReviewNotice": "Deliverable released for client review. Client review is not available in this workspace.",
+          "deliveredNotice": "This deliverable has been completed and delivered. History is read-only.",
+          "internalStage": "Internal Review",
+          "historyTitle": "Immutable Version History",
+          "noHistory": "No versions have been submitted for this deliverable yet.",
+          "reviewHistoryRecord": "Formal review record",
+          "reviewedBy": "Reviewed by {name} on {date}",
+          "submittedBy": "Submitted by {name} on {date}",
+          "openExternalLink": "Open in Google Drive",
+          "externalLinkNotice": "The link will open in a new tab outside the application.",
+          "reportLinkAction": "Report link issue",
+          "closeAction": "Close"
+        },
+        "comments": {
+          "title": "Internal Discussion",
+          "advisoryNotice": "Comments are internal collaborative discussion and do not constitute formal review decisions.",
+          "emptyState": "No comments on this deliverable yet.",
+          "composePlaceholder": "Write an internal comment...",
+          "submitAction": "Comment",
+          "submitting": "Posting...",
+          "successToast": "Comment posted.",
+          "errorToast": "Could not post comment."
+        },
+        "errors": {
+          "unauthorized": "You are not authorized to perform this action.",
+          "notFound": "Deliverable not found. Please refresh the page.",
+          "invalidTransition": "This action is not allowed in the current deliverable state.",
+          "invariantViolation": "Deliverable eligibility requirements are not met.",
+          "conflict": "There was a conflict with another concurrent operation. Please refresh the page.",
+          "generic": "An unexpected error occurred. Please try again.",
+          "staleReview": "The deliverable is no longer awaiting internal review. Information has been refreshed.",
+          "staleDelivery": "The deliverable must be approved before marking as delivered. Information has been refreshed."
+        },
+        "watcherMode": {
+          "readOnlyNotice": "Read-only — Watcher capacity",
+          "cannotMutate": "PM Watchers can view history and comment, but cannot plan, edit, archive, or submit versions."
+        }
+      },
+      "activity": {
+        "tabTitle": "Lifecycle Activity",
+        "description": "Record of completion and reopening cycles registered for this project.",
+        "emptyTitle": "No lifecycle activity",
+        "emptyDescription": "No project lifecycle activity yet.",
+        "cycleTitle": "Cycle #{number}",
+        "completedOn": "Completed on {date}",
+        "reopenedOn": "Reopened on {date}",
+        "duration": "Duration: {days} days",
+        "unfinishedOverride": "Completed with unfinished tasks",
+        "reopenReason": "Reopen reason: {reason}",
+        "activeCycleBadge": "Active cycle"
+      }
+    },
+    "members": {
+      "title": "Project Team",
+      "subtitle": "Manage assigned members and operational capacities",
+      "addMemberAction": "Add Member",
+      "stats": {
+        "total": "Total members: {count}",
+        "pmLeads": "PM Leads: {count}",
+        "operators": "Operators: {count}",
+        "clients": "Clients: {count}"
+      },
+      "table": {
+        "columns": {
+          "member": "Member",
+          "systemRole": "System Role",
+          "capacity": "Project Capacity",
+          "notifications": "Notifications",
+          "joinedAt": "Assigned Date",
+          "actions": "Actions"
+        },
+        "actions": {
+          "setPrimaryLead": "Make Primary PM Lead",
+          "changeCapacity": "Change Capacity",
+          "remove": "Remove from Project"
+        }
+      },
+      "capacities": {
+        "pmLead": "PM Lead",
+        "pmLeadPrimary": "PM Lead (Primary)",
+        "pmWatcher": "PM Watcher",
+        "operator": "Operator",
+        "client": "Client"
+      },
+      "addDialog": {
+        "title": "Add Project Member",
+        "description": "Select a user and specify their operational capacity on this project.",
+        "capacityLabel": "Operational capacity",
+        "userLabel": "Select user",
+        "userPlaceholder": "Search for a user...",
+        "isPrimaryLeadLabel": "Designate as Primary PM Lead",
+        "notificationsLabel": "Receive project notifications",
+        "submitAction": "Add Member",
+        "cancelAction": "Cancel",
+        "successToast": "Member added successfully."
+      },
+      "changeDialog": {
+        "title": "Change Member Capacity",
+        "description": "Update operational capacity or notification settings for {name}.",
+        "capacityLabel": "New capacity",
+        "notificationsLabel": "Receive project notifications",
+        "submitAction": "Save Changes",
+        "cancelAction": "Cancel",
+        "successToast": "Capacity updated successfully."
+      },
+      "setPrimaryDialog": {
+        "title": "Change Primary PM Lead?",
+        "description": "{name} will be designated as the primary PM Lead. The current lead will remain as an active secondary PM Lead.",
+        "confirmAction": "Confirm Assignment",
+        "cancelAction": "Cancel",
+        "successToast": "Primary lead updated."
+      },
+      "removeDialog": {
+        "title": "Remove project member?",
+        "description": "Are you sure you want to remove {name}? They will lose access to the project workspace.",
+        "confirmAction": "Remove",
+        "cancelAction": "Cancel",
+        "successToast": "Member removed successfully.",
+        "errorSoleLead": "Cannot remove the only PM Lead. Assign another Primary Lead first.",
+        "errorSoleClient": "An active client project in progress must have at least one active client member."
+      }
+    },
+    "tasks": {
+      "tabTitle": "Tasks",
+      "newTaskAction": "New Task",
+      "viewKanban": "Kanban Board",
+      "viewList": "List View",
+      "overdue": "Overdue",
+      "daysRemaining": "{count} days remaining",
+      "dueToday": "Due today",
+      "hasDeliverablesBadge": "With deliverables",
+      "filters": {
+        "statusLabel": "Status",
+        "priorityLabel": "Priority",
+        "typeLabel": "Type",
+        "assigneeLabel": "Assigned to",
+        "allStatuses": "All statuses",
+        "allPriorities": "All priorities",
+        "allTypes": "All types",
+        "allAssignees": "All assignees",
+        "clearFilters": "Clear filters"
+      },
+      "taskType": {
+        "internalWork": "Internal work",
+        "clientRequest": "Client request",
+        "internalDescription": "Internal team work without client involvement.",
+        "clientRequestDescription": "Request linked to an external client.",
+        "clientRequestOnlyForClientProjects": "Client requests are only available in client projects."
+      },
+      "taskStatus": {
+        "pending": "Pending",
+        "inProgress": "In progress",
+        "inReview": "In review",
+        "completed": "Completed",
+        "blocked": "Blocked"
+      },
+      "priority": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "blocking": "Blocking"
+      },
+      "kanban": {
+        "columnEmpty": "No tasks in this status",
+        "dragHandleLabel": "Drag task: {title}",
+        "columnAriaLabel": "Column: {status} — {count} tasks",
+        "clientRequestNoReview": "Client requests cannot enter internal review.",
+        "moveNotAllowed": "This status transition is not allowed for this task.",
+        "unauthorizedMove": "You are not authorized to move this task.",
+        "movedSuccess": "Task moved to {status}.",
+        "movedError": "Error moving the task. Please try again.",
+        "notFound": "Task not found. Please refresh."
+      },
+      "list": {
+        "columns": {
+          "title": "Title",
+          "type": "Type",
+          "status": "Status",
+          "priority": "Priority",
+          "assignee": "Assigned to",
+          "deadline": "Deadline",
+          "actions": "Actions"
+        },
+        "actions": {
+          "viewDetails": "View details",
+          "edit": "Edit",
+          "changeStatus": "Change status",
+          "archive": "Archive"
+        }
+      },
+      "detail": {
+        "assignedTo": "Assigned to",
+        "deadline": "Deadline",
+        "type": "Type",
+        "statusLabel": "Change status",
+        "description": "Description",
+        "resources": "Linked resources",
+        "noResources": "No linked resources.",
+        "hasDeliverables": "This task has linked production deliverables.",
+        "editAction": "Edit",
+        "closeAction": "Close",
+        "ariaLabel": "Task details: {title}"
+      },
+      "create": {
+        "title": "New Task",
+        "description": "Create a new task for this project.",
+        "typeLabel": "Task type",
+        "titleLabel": "Title",
+        "titlePlaceholder": "e.g. Q4 campaign cover design",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "Detail objectives, expected deliverables, and context...",
+        "priorityLabel": "Priority",
+        "assigneeLabel": "Assigned to",
+        "assigneePlaceholder": "Select a team member...",
+        "deadlineLabel": "Deadline date and time",
+        "submitAction": "Create Task",
+        "cancelAction": "Cancel",
+        "submitting": "Creating...",
+        "successToast": "Task created successfully.",
+        "errorToast": "Could not create the task. Please check the entered data."
+      },
+      "edit": {
+        "title": "Edit Task",
+        "description": "Modify task fields. Task type cannot be changed.",
+        "typeReadOnly": "Task type (read-only)",
+        "titleLabel": "Title",
+        "descriptionLabel": "Description",
+        "priorityLabel": "Priority",
+        "assigneeLabel": "Assigned to",
+        "deadlineLabel": "Deadline date and time",
+        "submitAction": "Save changes",
+        "cancelAction": "Cancel",
+        "submitting": "Saving...",
+        "successToast": "Task updated successfully.",
+        "errorToast": "Could not update the task."
+      },
+      "archive": {
+        "title": "Archive this task?",
+        "description": "The task will be hidden from the workspace. This action can only be undone by an administrator.",
+        "reasonLabel": "Reason (optional)",
+        "reasonPlaceholder": "Enter reason for archiving...",
+        "confirmAction": "Archive",
+        "cancelAction": "Cancel",
+        "successToast": "Task archived.",
+        "errorToast": "Could not archive the task."
+      },
+      "statusChange": {
+        "successToast": "Status updated: {status}.",
+        "errorToast": "Could not change task status.",
+        "notAllowed": "This status transition is not allowed.",
+        "clientRequestNoReview": "Client requests cannot enter internal review."
+      },
+      "comments": {
+        "sectionTitle": "Comments",
+        "emptyState": "No comments on this task yet.",
+        "composePlaceholder": "Write a collaborative comment...",
+        "submitAction": "Comment",
+        "submitting": "Submitting...",
+        "successToast": "Comment posted.",
+        "errorToast": "Could not post the comment.",
+        "advisoryNote": "Comments are internal collaborative discussion and do not constitute formal review decisions.",
+        "loading": "Loading comments...",
+        "authorCapacity": {
+          "admin": "Administrator",
+          "pmLead": "PM Lead",
+          "pmWatcher": "PM Watcher",
+          "operator": "Operator",
+          "client": "Client"
+        }
+      },
+      "emptyState": {
+        "noTasks": "This project has no tasks yet.",
+        "noTasksDescription": "Create the first task to start managing team work.",
+        "createFirstTask": "Create first task",
+        "noFilterResults": "No tasks match the selected filters.",
+        "clearFilters": "Clear filters"
+      },
+      "errors": {
+        "unauthorized": "You are not authorized to perform this action.",
+        "invalidTransition": "This status transition is not allowed for this task.",
+        "taskTypeConstraint": "Client requests cannot enter internal review.",
+        "notFound": "Task not found. Please refresh the page.",
+        "generic": "Unexpected error. Please try again."
+      },
+      "watcherMode": {
+        "readOnlyLabel": "Read-only — Watcher capacity",
+        "cannotMutate": "PM Watchers can only read tasks and add collaborative comments."
+      }
     }
   }
 }

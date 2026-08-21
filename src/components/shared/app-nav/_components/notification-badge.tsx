@@ -32,7 +32,7 @@ export function NotificationBadge({
       aria-label={accessibleLabel}
       className={
         className ??
-        "inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-amber-600 rounded-full shadow-sm"
+        "inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-destructive-foreground bg-destructive rounded-full shadow-sm"
       }
     >
       {displayCount}
