@@ -170,14 +170,18 @@ describe("TC-NOTIF-OPS-ACT: Suppressed Notification Operations Server Actions", 
       nextCursor: null,
       hasMore: false,
     };
-    mockListSuppressedNotificationOperationsPage.mockResolvedValueOnce(mockPage);
+    mockListSuppressedNotificationOperationsPage.mockResolvedValueOnce(
+      mockPage,
+    );
 
     const result =
       await loadSuppressedNotificationOperationsPageAction(validCursor);
 
     expect(mockFrom).toHaveBeenCalledWith("project_members");
     expect(membershipChain.limit).toHaveBeenCalledWith(1);
-    expect(mockListSuppressedNotificationOperationsPage).toHaveBeenCalledTimes(1);
+    expect(mockListSuppressedNotificationOperationsPage).toHaveBeenCalledTimes(
+      1,
+    );
     expect(result).toEqual({
       ok: true,
       data: mockPage,
@@ -239,14 +243,18 @@ describe("TC-NOTIF-OPS-ACT: Suppressed Notification Operations Server Actions", 
       nextCursor: null,
       hasMore: false,
     };
-    mockListSuppressedNotificationOperationsPage.mockResolvedValueOnce(mockPage);
+    mockListSuppressedNotificationOperationsPage.mockResolvedValueOnce(
+      mockPage,
+    );
 
     const result =
       await loadSuppressedNotificationOperationsPageAction(validCursor);
 
     // No project_members query for Admin
     expect(mockFrom).not.toHaveBeenCalled();
-    expect(mockListSuppressedNotificationOperationsPage).toHaveBeenCalledTimes(1);
+    expect(mockListSuppressedNotificationOperationsPage).toHaveBeenCalledTimes(
+      1,
+    );
     expect(result).toEqual({
       ok: true,
       data: mockPage,
