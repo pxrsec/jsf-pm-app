@@ -1730,7 +1730,12 @@ export type Database = {
         }[]
       }
       list_suppressed_notification_operations: {
-        Args: { p_before?: string; p_limit?: number }
+        Args: {
+          p_before_channel?: Database["public"]["Enums"]["notification_channel"]
+          p_before_event_id?: string
+          p_before_suppressed_at?: string
+          p_limit?: number
+        }
         Returns: {
           channel: Database["public"]["Enums"]["notification_channel"]
           delivery_status: Database["public"]["Enums"]["notification_delivery_status"]

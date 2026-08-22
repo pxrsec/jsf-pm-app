@@ -1,5 +1,13 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 16:46]
+
+**🛠 S06-E08: Notification Operations Queue Keyset Pagination Migration & Types Regeneration**
+
+- **🛠 Architecture & Database:**
+  - **Applied Migration (`supabase/migrations/20260822170000_s06_e08_notification_operations_queue_keyset_pagination.sql`):** Applied the keyset pagination migration for the safe aggregated suppressed-delivery queue to `jsf-pm-dev` via Supabase MCP `apply_migration`. Dropped the superseded timestamp-only overload `public.list_suppressed_notification_operations(integer, timestamptz)` and introduced complete composite cursor keyset pagination via `public.list_suppressed_notification_operations(p_limit, p_before_suppressed_at, p_before_event_id, p_before_channel)` with deterministic ordering (`last_suppressed_at DESC, event_id DESC, channel DESC`), strict input completeness validation, valid channel checks, and authenticated execute grant.
+  - **Database Types Synchronization (`src/lib/database.types.ts`):** Regenerated TypeScript types from `jsf-pm-dev` via Supabase MCP `generate_typescript_types` and updated `src/lib/database.types.ts` with the new keyset cursor parameter signature (`p_before_channel`, `p_before_event_id`, `p_before_suppressed_at`, `p_limit`).
+
 ## [2026-08-22 @ 16:26]
 
 **🚀 S06-03: Notification Recipient Inbox, History, and Read State Implementation**
