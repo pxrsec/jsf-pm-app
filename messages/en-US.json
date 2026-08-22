@@ -1381,5 +1381,40 @@
         "description": "System announcement."
       }
     }
+  },
+  "notificationOperations": {
+    "title": "Notification Operations",
+    "description": "Internal operational history of suppressed external deliveries.",
+    "listLabel": "Suppressed notification operations list",
+    "empty": {
+      "title": "No suppressed operations",
+      "description": "No authorized suppressed external delivery records found."
+    },
+    "loadMore": "Load more",
+    "loadMoreAria": "Load more suppressed operations",
+    "loadingMore": "Loading additional operations...",
+    "loadMoreSuccess": "Additional operations loaded successfully.",
+    "retry": "Retry",
+    "errors": {
+      "validation": "Invalid request.",
+      "unauthorized": "You are not authorized to view notification operations.",
+      "unavailable": "The operations service is currently unavailable."
+    },
+    "status": {
+      "suppressed": "Suppressed"
+    },
+    "channels": {
+      "email": "Email",
+      "whatsapp": "WhatsApp"
+    },
+    "reasons": {
+      "providerDisabled": "External provider disabled"
+    },
+    "terminalExplanation": "Was not sent in this environment and will not auto-send later.",
+    "recipientCount": "{count, plural, =1 {1 recipient} other {# recipients}}",
+    "projectContext": "Project: {project}",
+    "noProjectContext": "No project context",
+    "firstCreatedAt": "First created:",
+    "lastSuppressedAt": "Last suppressed:"
   }
 }

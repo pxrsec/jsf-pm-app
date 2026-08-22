@@ -1381,5 +1381,40 @@
         "description": "Aviso del sistema."
       }
     }
+  },
+  "notificationOperations": {
+    "title": "Operaciones de Notificación",
+    "description": "Historial operativo interno de entregas externas suprimidas.",
+    "listLabel": "Lista de operaciones de notificación suprimidas",
+    "empty": {
+      "title": "No hay operaciones suprimidas",
+      "description": "No se encontraron registros de entregas externas suprimidas autorizadas."
+    },
+    "loadMore": "Cargar más",
+    "loadMoreAria": "Cargar más operaciones suprimidas",
+    "loadingMore": "Cargando operaciones adicionales...",
+    "loadMoreSuccess": "Operaciones adicionales cargadas correctamente.",
+    "retry": "Reintentar",
+    "errors": {
+      "validation": "Solicitud no válida.",
+      "unauthorized": "No tienes autorización para consultar las operaciones de notificación.",
+      "unavailable": "El servicio de operaciones no está disponible en este momento."
+    },
+    "status": {
+      "suppressed": "Suprimida"
+    },
+    "channels": {
+      "email": "Correo electrónico",
+      "whatsapp": "WhatsApp"
+    },
+    "reasons": {
+      "providerDisabled": "Proveedor externo desactivado"
+    },
+    "terminalExplanation": "No se envió en este entorno y no se enviará automáticamente más adelante.",
+    "recipientCount": "{count, plural, =1 {1 destinatario} other {# destinatarios}}",
+    "projectContext": "Proyecto: {project}",
+    "noProjectContext": "Sin contexto de proyecto",
+    "firstCreatedAt": "Primera creación:",
+    "lastSuppressedAt": "Última supresión:"
   }
 }

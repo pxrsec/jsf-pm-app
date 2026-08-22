@@ -1,6 +1,6 @@
 ---
 title: S06-04 Authorized Internal Notification Queue and Suppressed-Delivery Diagnostics Specification
-status: implementation-ready-after-migration
+status: implementation-ready
 sprint_id: S06
 epic_id: E08
 work_item_id: S06-04
@@ -36,9 +36,9 @@ The queue proves only this S06 fact: an otherwise eligible external channel was 
 
 This work item adds no notification producer, no external dispatch, no provider client/SDK/network request, no evaluator invocation, no schedule, no webhook, no RLS policy, no base-table read, no queue mutation, and no retry/requeue control.
 
-## 2. Required migration and implementation start gate
+## 2. Applied migration and implementation baseline
 
-### 2.1 Why a migration is required
+### 2.1 Why the completed migration was necessary
 
 The applied pre-S06-04 `public.list_suppressed_notification_operations(integer, timestamptz)` function orders grouped operations by `max(suppressed_at) DESC, event_id DESC` but accepts only a timestamp continuation. A page boundary shared by multiple aggregated event/channel records can omit records. Client-side deduplication cannot correct an omitted row and is forbidden.
 
@@ -50,11 +50,9 @@ supabase/migrations/20260822170000_s06_e08_notification_operations_queue_keyset_
 
 It replaces only the queue read-function overload with a lossless composite cursor. It does not change notification rows, suppression invariants, fan-out eligibility, RLS policies, grants other than the replacement function signature, provider posture, alert evaluator, Realtime publication, or ordinary recipient inbox behavior.
 
-### 2.2 Application work may begin only after all three facts are true
+### 2.2 Confirmed implementation baseline
 
-1. The exact migration source above is applied once to `jsf-pm-dev` through Supabase MCP.
-2. `src/lib/database.types.ts` is regenerated from that applied database through Supabase MCP and written unchanged.
-3. The generated public function argument shape is verified as:
+The Project Owner has confirmed the migration was applied to `jsf-pm-dev` and types were regenerated. The tracked generated type source confirms the resulting public function argument shape:
 
 ```ts
 type ListSuppressedNotificationOperationsArgs = {
@@ -65,7 +63,7 @@ type ListSuppressedNotificationOperationsArgs = {
 };
 ```
 
-Do not start S06-04 against the superseded two-argument function. Do not hand-edit generated types, alter prior migration history, use dashboard SQL, or compensate in the browser.
+S06-04 must consume this four-argument function. Do not reapply the migration, hand-edit generated types, alter prior migration history, use dashboard SQL, or compensate in the browser.
 
 ## 3. Governing boundaries and explicit reconciliation
 
@@ -456,6 +454,7 @@ notificationOperations.empty.description
 notificationOperations.loadMore
 notificationOperations.loadMoreAria
 notificationOperations.loadingMore
+notificationOperations.loadMoreSuccess
 notificationOperations.retry
 notificationOperations.errors.validation
 notificationOperations.errors.unauthorized

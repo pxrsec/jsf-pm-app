@@ -1,5 +1,32 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 17:25]
+
+**🚀 S06-04: Authorized Internal Notification Queue and Suppressed-Delivery Diagnostics Implementation**
+
+- **🚀 Features & User Interface:**
+  - **Authorized Role-Scoped Routes (`src/app/[locale]/(protected)/pm/notificaciones/page.tsx`, `src/app/[locale]/(protected)/admin/notificaciones/page.tsx`):** Delivered the internal operations queue for `admin` (global) and `pm` with active `pm_lead` project capacity. Enforced session checks, server capacity checks (`hasActivePmLeadMembership`), locale preservation via `getLocale()`, and fail-closed redirects without exposing queue existence.
+  - **Shared Presentation Screen (`src/app/[locale]/(protected)/pm/notificaciones/_components/notification-operations-screen.tsx`):** Created a shared server-only presentation screen helper rendering the localized heading, safe description, and role-neutral operations queue.
+  - **Operations Queue Component (`src/app/[locale]/(protected)/pm/notificaciones/_components/notification-operations-queue.tsx`):** Client interaction component rendering ordered list (`<ol aria-label="...">`) with composite React keys (`${operation.eventId}:${operation.channel}`), authoritative prop reconciliation on `initialPage` changes, visible polite status announcements (`role="status"`), visible alert region (`role="alert"`), retry handling, and focus transfer to status region on pagination exhaustion.
+  - **Suppressed Delivery Item (`src/app/[locale]/(protected)/pm/notificaciones/_components/suppressed-delivery-status.tsx`):** Rendered terminal status badge (`Suprimida`), channel badge (`Correo electrónico` / `WhatsApp`), safe event category derived from 21-trigger mapping, controlled reason (`Proveedor externo desactivado`), dedicated terminal explanation sentence, aggregate recipient count, safe project context, and localized ISO timestamps without disclosing sensitive recipient contacts, event IDs, or raw payloads.
+  - **Empty State Component (`src/app/[locale]/(protected)/pm/notificaciones/_components/notification-operations-empty-state.tsx`):** Localized empty state for authorized callers with no suppression records.
+
+- **🛠 Architecture & Security:**
+  - **Pure Contracts & Zod Schemas (`src/lib/notifications/operations-contracts.ts`, `src/lib/notifications/operations-schemas.ts`):** Defined isolated DTOs (`SuppressedNotificationOperation`, `SuppressedNotificationOperationsCursor`, `SuppressedNotificationOperationsPage`), constant `NOTIFICATION_OPERATIONS_PAGE_SIZE = 25`, and strict composite cursor validation schema (`LoadSuppressedNotificationOperationsPageSchema`).
+  - **Server-Only Authorization (`src/lib/notifications/operations-authorization.ts`):** Implemented `hasActivePmLeadMembership` with a multi-membership-safe `.limit(1)` existence query and `assertNotificationOperationsAccess` with distinct `NotificationOperationsAuthorizationError`.
+  - **Server-Only Keyset Queries (`src/lib/notifications/operations-queries.ts`):** Created `listSuppressedNotificationOperationsPage` calling `list_suppressed_notification_operations` with complete raw row validation, 26-row fetch / 25-row retention, 25th-row keyset derivation, and non-leaking generic error handling.
+  - **Server Action (`src/lib/notifications/operations-actions.ts`):** Implemented read-only continuation action `loadSuppressedNotificationOperationsPageAction` with step-by-step exception mapping (`VALIDATION_FAILED`, `UNAUTHORIZED`, `UNAVAILABLE`) and zero `revalidatePath` side effects.
+  - **Message Catalogs Parity (`messages/es-MX.json`, `messages/en-US.json`):** Added complete 23-leaf-key `notificationOperations` namespace across Spanish and English with exact semantic key parity.
+
+- **🧪 Testing & Verification:**
+  - **Server Queries Test Suite (`src/lib/notifications/__tests__/operations-queries.test.ts`):** 8 tests verifying default RPC parameters, composite cursor handling, malformed cursor rejection, sensitive field exclusion, raw row validation fail-closed behavior, keyset pagination boundary, and RPC error logging.
+  - **Server Actions Test Suite (`src/lib/notifications/__tests__/operations-actions.test.ts`):** 9 tests verifying validation failure, AuthError mapping, PM Watcher denial without query invocation, PM Lead authorization, fail-closed membership query errors, Admin authorization, and query error handling.
+  - **Queue Component Test Suite (`notification-operations-queue.test.tsx`):** 7 tests verifying terminal state rendering, dual-channel composite key rendering for shared event IDs, privacy non-leakage, empty states, load-more continuation, error/retry states, semantic landmarks, and ARIA attributes.
+  - **Route Server Entry Test Suite (`notification-operations-routes.test.tsx`):** 6 tests verifying PM Lead access, PM Watcher localized redirects, English locale redirects, unauthorized role redirects, and Admin access.
+  - **Route Guard Regression Suite (`__tests__/app-shell/route-guard.test.ts`):** Verified Admin and PM access to `/admin/notificaciones` and `/pm/notificaciones`, and cross-role redirects (`/pm/notificaciones` -> `/admin`, `/admin/notificaciones` -> `/pm`).
+  - **Message Catalog Verification (`__tests__/i18n/message-catalogs.test.ts`):** Verified all 23 leaf keys in `notificationOperations` and identical tree structure.
+  - **Full Automated Verification:** 100% pass across Vitest (64/64 tests passing), TypeScript typecheck (`tsc --noEmit`), ESLint (0 errors, 0 warnings), Prettier formatting check, and Next.js App Router production build (`next build`).
+
 ## [2026-08-22 @ 16:46]
 
 **🛠 S06-E08: Notification Operations Queue Keyset Pagination Migration & Types Regeneration**

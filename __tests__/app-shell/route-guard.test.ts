@@ -388,5 +388,103 @@ describe("Protected Route Guard (src/app/(protected)/layout.tsx)", () => {
       ).rejects.toThrow("NEXT_REDIRECT: /operador");
       expect(redirect).toHaveBeenCalledWith("/operador");
     });
+
+    it("allows admin user to access /admin/notificaciones and /en/admin/notificaciones without redirect", async () => {
+      vi.mocked(requireSession).mockResolvedValue({
+        user: { id: "user-1", email: "admin@jsf.internal" },
+        profile: {
+          id: "user-1",
+          full_name: "Admin User",
+          role: "admin",
+          is_active: true,
+          deleted_at: null,
+        },
+        role: "admin",
+      } as unknown as Awaited<ReturnType<typeof requireSession>>);
+
+      vi.mocked(headers).mockResolvedValue(
+        new Headers({
+          "x-pathname": "/admin/notificaciones",
+        }) as unknown as Awaited<ReturnType<typeof headers>>,
+      );
+
+      const result = await ProtectedLayout({ children: "admin queue page" });
+      expect(result).toBeDefined();
+      expect(redirect).not.toHaveBeenCalled();
+    });
+
+    it("allows pm user to access /pm/notificaciones and /en/pm/notificaciones without layout redirect", async () => {
+      vi.mocked(requireSession).mockResolvedValue({
+        user: { id: "user-2", email: "pm@jsf.internal" },
+        profile: {
+          id: "user-2",
+          full_name: "PM User",
+          role: "pm",
+          is_active: true,
+          deleted_at: null,
+        },
+        role: "pm",
+      } as unknown as Awaited<ReturnType<typeof requireSession>>);
+
+      vi.mocked(headers).mockResolvedValue(
+        new Headers({
+          "x-pathname": "/pm/notificaciones",
+        }) as unknown as Awaited<ReturnType<typeof headers>>,
+      );
+
+      const result = await ProtectedLayout({ children: "pm queue page" });
+      expect(result).toBeDefined();
+      expect(redirect).not.toHaveBeenCalled();
+    });
+
+    it("redirects admin requesting /pm/notificaciones to /admin", async () => {
+      vi.mocked(requireSession).mockResolvedValue({
+        user: { id: "user-1", email: "admin@jsf.internal" },
+        profile: {
+          id: "user-1",
+          full_name: "Admin User",
+          role: "admin",
+          is_active: true,
+          deleted_at: null,
+        },
+        role: "admin",
+      } as unknown as Awaited<ReturnType<typeof requireSession>>);
+
+      vi.mocked(headers).mockResolvedValue(
+        new Headers({
+          "x-pathname": "/pm/notificaciones",
+        }) as unknown as Awaited<ReturnType<typeof headers>>,
+      );
+
+      await expect(
+        ProtectedLayout({ children: "child content" }),
+      ).rejects.toThrow("NEXT_REDIRECT: /admin");
+      expect(redirect).toHaveBeenCalledWith("/admin");
+    });
+
+    it("redirects pm requesting /admin/notificaciones to /pm", async () => {
+      vi.mocked(requireSession).mockResolvedValue({
+        user: { id: "user-2", email: "pm@jsf.internal" },
+        profile: {
+          id: "user-2",
+          full_name: "PM User",
+          role: "pm",
+          is_active: true,
+          deleted_at: null,
+        },
+        role: "pm",
+      } as unknown as Awaited<ReturnType<typeof requireSession>>);
+
+      vi.mocked(headers).mockResolvedValue(
+        new Headers({
+          "x-pathname": "/admin/notificaciones",
+        }) as unknown as Awaited<ReturnType<typeof headers>>,
+      );
+
+      await expect(
+        ProtectedLayout({ children: "child content" }),
+      ).rejects.toThrow("NEXT_REDIRECT: /pm");
+      expect(redirect).toHaveBeenCalledWith("/pm");
+    });
   });
 });

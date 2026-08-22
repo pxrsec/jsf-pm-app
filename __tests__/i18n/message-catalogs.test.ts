@@ -35,13 +35,15 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
     expect(esKeys).toEqual(enKeys);
   });
 
-  it("both catalogs contain required namespaces: shell, privacy, and notifications", () => {
+  it("both catalogs contain required namespaces: shell, privacy, notifications, and notificationOperations", () => {
     expect(esCatalog).toHaveProperty("shell");
     expect(esCatalog).toHaveProperty("privacy");
     expect(esCatalog).toHaveProperty("notifications");
+    expect(esCatalog).toHaveProperty("notificationOperations");
     expect(enCatalog).toHaveProperty("shell");
     expect(enCatalog).toHaveProperty("privacy");
     expect(enCatalog).toHaveProperty("notifications");
+    expect(enCatalog).toHaveProperty("notificationOperations");
   });
 
   it("both catalogs contain future-only shell.nav.links.notifications", () => {
@@ -133,6 +135,69 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
 
     expect(esNotificationKeys).toEqual(enNotificationKeys);
     expect(esNotificationKeys).toHaveLength(54);
+  });
+
+  it("all 23 required leaf keys exist under notificationOperations in both catalogs with identical structure", () => {
+    const requiredKeys = [
+      "title",
+      "description",
+      "listLabel",
+      "empty.title",
+      "empty.description",
+      "loadMore",
+      "loadMoreAria",
+      "loadingMore",
+      "loadMoreSuccess",
+      "retry",
+      "errors.validation",
+      "errors.unauthorized",
+      "errors.unavailable",
+      "status.suppressed",
+      "channels.email",
+      "channels.whatsapp",
+      "reasons.providerDisabled",
+      "terminalExplanation",
+      "recipientCount",
+      "projectContext",
+      "noProjectContext",
+      "firstCreatedAt",
+      "lastSuppressedAt",
+    ];
+
+    function getNestedValue(
+      obj: Record<string, unknown>,
+      path: string,
+    ): unknown {
+      return path.split(".").reduce<unknown>((acc, part) => {
+        if (acc && typeof acc === "object") {
+          return (acc as Record<string, unknown>)[part];
+        }
+        return undefined;
+      }, obj);
+    }
+
+    const esOps = esCatalog.notificationOperations as Record<string, unknown>;
+    const enOps = enCatalog.notificationOperations as Record<string, unknown>;
+
+    for (const key of requiredKeys) {
+      expect(getNestedValue(esOps, key), `es-MX missing ${key}`).toBeDefined();
+      expect(getNestedValue(enOps, key), `en-US missing ${key}`).toBeDefined();
+    }
+
+    function collectKeys(obj: Record<string, unknown>, prefix = ""): string[] {
+      return Object.entries(obj).flatMap(([k, v]) => {
+        const fullKey = prefix ? `${prefix}.${k}` : k;
+        if (typeof v === "object" && v !== null && !Array.isArray(v)) {
+          return collectKeys(v as Record<string, unknown>, fullKey);
+        }
+        return [fullKey];
+      });
+    }
+
+    const esOpsKeys = collectKeys(esOps).sort();
+    const enOpsKeys = collectKeys(enOps).sort();
+    expect(esOpsKeys).toEqual(enOpsKeys);
+    expect(esOpsKeys).toHaveLength(23);
   });
 
   it("no missing keys in either catalog (complete key sets)", () => {
