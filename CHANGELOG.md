@@ -1,5 +1,13 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 15:42]
+
+**🛠 S06-E08 / S06-03: Notification Inbox Keyset Pagination Migration & Types Regeneration**
+
+- **🛠 Architecture & Database:**
+  - **Applied Migration (`supabase/migrations/20260822160000_s06_e08_notification_inbox_keyset_pagination.sql`):** Applied the S06-03 recipient inbox history migration to `jsf-pm-dev` via Supabase MCP `apply_migration`. Dropped the superseded two-argument function `public.list_my_in_app_notifications(integer, timestamptz)` and introduced complete keyset cursor pagination via `public.list_my_in_app_notifications(p_limit, p_before_created_at, p_before_recipient_id)` with deterministic ordering (`created_at DESC, id DESC`), strict input pair validation, and authenticated-only execute grants.
+  - **Database Types Synchronization (`src/lib/database.types.ts`):** Regenerated TypeScript types from `jsf-pm-dev` via Supabase MCP `generate_typescript_types` and updated `src/lib/database.types.ts` with the new keyset cursor argument signature (`p_before_created_at`, `p_before_recipient_id`, `p_limit`).
+
 ## [2026-08-22 @ 15:02]
 
 **🚀 S06-02: Server-Only Configuration and Provider-Ready Disabled Adapters**

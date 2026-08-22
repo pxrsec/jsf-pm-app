@@ -1711,7 +1711,11 @@ export type Database = {
         Returns: Json
       }
       list_my_in_app_notifications: {
-        Args: { p_before?: string; p_limit?: number }
+        Args: {
+          p_before_created_at?: string
+          p_before_recipient_id?: string
+          p_limit?: number
+        }
         Returns: {
           created_at: string
           delivery_status: Database["public"]["Enums"]["notification_delivery_status"]

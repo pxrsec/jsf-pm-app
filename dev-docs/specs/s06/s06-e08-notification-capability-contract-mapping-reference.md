@@ -209,11 +209,11 @@ The direct table select policy now permits ordinary users only their own `in_app
 - Add catalog parity checks and include changed route/action/navigation tests.
 - Closeout must state that external provider activation, actual sends, schedule operation, webhooks, receipts, DNS, deployment, and production verification remain deferred.
 
-## 9. Final required S06 alert-evaluation migration
+## 9. Applied S06 alert-evaluation baseline and required S06-03 keyset migration
 
 ### 9.1 Authored forward migration
 
-`supabase/migrations/20260822150000_s06_e08_alert_evaluation.sql` is the final required S06 migration source. It closes the applied-baseline evaluator gap without introducing provider activation, new external HTTP behavior, schedules, webhooks, or another schema migration requirement.
+`supabase/migrations/20260822150000_s06_e08_alert_evaluation.sql` completed the S06-01 alert-evaluator baseline. A later, narrow S06-03 correctness migration is now required before recipient-inbox application work: `supabase/migrations/20260822160000_s06_e08_notification_inbox_keyset_pagination.sql`. It changes only the recipient-feed continuation contract from an incomplete timestamp cursor to a composite keyset cursor; it does not add provider, HTTP, scheduler, or data-model scope.
 
 It defines:
 
@@ -231,16 +231,13 @@ The Project Owner applied the exact forward migration to `jsf-pm-dev` and regene
 
 No S06 application module may call a private function directly, reimplement reminder evaluation, select recipients, or treat the generated `Json` result as untrusted display content. S06-05 maps it to the bounded server-side aggregate result contract.
 
-### 9.3 No further S06 migration is currently required
+### 9.3 Required S06-03 keyset-pagination migration
 
-With the original applied suppression migration and this final alert-evaluation migration, the complete S06 plan has a database boundary for:
+Before S06-03 application implementation, apply `supabase/migrations/20260822160000_s06_e08_notification_inbox_keyset_pagination.sql` to `jsf-pm-dev` through Supabase MCP and regenerate `src/lib/database.types.ts` unchanged.
 
-- terminal disabled-provider fan-out and safe recipient/internal read surfaces;
-- in-app read state and unread count;
-- alert evaluation, deduplication, review-inactivity caps, stalled state, and authorized manual invocation; and
-- future service-role scheduler consumption of the same internal evaluator.
+The existing function orders in-app rows by `created_at desc, id desc` but formerly accepted only a timestamp continuation. That contract could omit rows sharing the final timestamp. The new function accepts a complete `(p_before_created_at, p_before_recipient_id)` pair, rejects a partial pair, and applies an order-aligned composite keyset predicate. Its response columns, self-only authorization, 1–100 bound, grant to `authenticated`, and all other notification behavior remain unchanged.
 
-A later migration is not authorized merely for implementation convenience. Any further database request must be a newly discovered contradiction or a new accepted product/architecture decision, not a substitute for application implementation.
+S06-03 must consume the regenerated three-argument function only after that application/type-generation sequence. No further migration is authorized merely for application convenience.
 
 ## 10. S06-01 completion record
 
@@ -251,4 +248,4 @@ S06-01 is complete with the repository-grounded mapping above.
 - Recipient feed and internal operations surfaces are distinct and role-safe.
 - Existing badge/navigation behavior and exact S06 ownership are recorded.
 - `suppressed/provider_disabled` terminality and no-auto-replay rules are explicit.
-- The final required evaluator migration is specified as a hard pre-implementation prerequisite; no further S06 migration is currently required.
+- The S06-01 evaluator migration is applied; the narrow S06-03 keyset-pagination migration is authored and must be applied with regenerated types before S06-03 application work begins.
