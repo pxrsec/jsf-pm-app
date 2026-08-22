@@ -1,5 +1,13 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 10:18]
+
+**🛠 S05-05: Harden Client Submission URLs, Safe Correction History & Database Types Generation**
+
+- **🛠 Architecture & Database:**
+  - **Applied Migration (`supabase/migrations/20260822095500_s05_05_harden_client_submission_urls_and_correction_history.sql`):** Applied the S05-05 schema migration to `jsf-pm-dev` via Supabase MCP `apply_migration`. Implemented lexical public-HTTPS URL validation (`private.is_valid_client_submission_url`), authoritative lexical provider classification (`private.classify_client_submission_provider`), least-privilege direct-assignee correction history projection helper (`private.get_client_submission_correction_history`), hardened deliverable submission RPC (`public.submit_client_deliverable`), and updated `public.client_submission_view` with `correction_history`.
+  - **Database Types Synchronization (`src/lib/database.types.ts`):** Regenerated TypeScript types from `jsf-pm-dev` via Supabase MCP `generate_typescript_types` and updated `src/lib/database.types.ts`.
+
 ## [2026-08-22 @ 09:37]
 
 **🚀 S05-04: Client Portal Safe Project Dashboard & Direct-Request Queue**

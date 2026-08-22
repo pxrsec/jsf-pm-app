@@ -1436,6 +1436,7 @@ export type Database = {
       client_submission_view: {
         Row: {
           assignee_id: string | null
+          correction_history: Json | null
           created_at: string | null
           current_submission_note: string | null
           current_submission_provider:
