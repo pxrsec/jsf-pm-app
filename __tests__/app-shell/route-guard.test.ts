@@ -297,4 +297,96 @@ describe("Protected Route Guard (src/app/(protected)/layout.tsx)", () => {
     expect(result).toBeDefined();
     expect(redirect).not.toHaveBeenCalled();
   });
+
+  describe("Shared Authenticated Routes (/notificaciones)", () => {
+    const roles: Array<{
+      role: "admin" | "pm" | "operator" | "client";
+      id: string;
+      defaultPath: string;
+    }> = [
+      { role: "admin", id: "user-1", defaultPath: "/admin" },
+      { role: "pm", id: "user-2", defaultPath: "/pm" },
+      { role: "operator", id: "user-3", defaultPath: "/operador" },
+      { role: "client", id: "user-4", defaultPath: "/cliente" },
+    ];
+
+    roles.forEach(({ role, id }) => {
+      it(`allows ${role} user to access /notificaciones without redirect`, async () => {
+        vi.mocked(requireSession).mockResolvedValue({
+          user: { id, email: `${role}@jsf.internal` },
+          profile: {
+            id,
+            full_name: `${role} User`,
+            role,
+            is_active: true,
+            deleted_at: null,
+          },
+          role,
+        } as unknown as Awaited<ReturnType<typeof requireSession>>);
+
+        vi.mocked(headers).mockResolvedValue(
+          new Headers({
+            "x-pathname": "/notificaciones",
+          }) as unknown as Awaited<ReturnType<typeof headers>>,
+        );
+
+        const result = await ProtectedLayout({
+          children: "notifications page",
+        });
+        expect(result).toBeDefined();
+        expect(redirect).not.toHaveBeenCalled();
+      });
+
+      it(`allows ${role} user to access /en/notificaciones without redirect`, async () => {
+        vi.mocked(requireSession).mockResolvedValue({
+          user: { id, email: `${role}@jsf.internal` },
+          profile: {
+            id,
+            full_name: `${role} User`,
+            role,
+            is_active: true,
+            deleted_at: null,
+          },
+          role,
+        } as unknown as Awaited<ReturnType<typeof requireSession>>);
+
+        vi.mocked(headers).mockResolvedValue(
+          new Headers({
+            "x-pathname": "/en/notificaciones",
+          }) as unknown as Awaited<ReturnType<typeof headers>>,
+        );
+
+        const result = await ProtectedLayout({
+          children: "notifications page",
+        });
+        expect(result).toBeDefined();
+        expect(redirect).not.toHaveBeenCalled();
+      });
+    });
+
+    it("denies unlisted shared-looking route /notificaciones-interna and redirects to role home", async () => {
+      vi.mocked(requireSession).mockResolvedValue({
+        user: { id: "user-3", email: "op@jsf.internal" },
+        profile: {
+          id: "user-3",
+          full_name: "Operator User",
+          role: "operator",
+          is_active: true,
+          deleted_at: null,
+        },
+        role: "operator",
+      } as unknown as Awaited<ReturnType<typeof requireSession>>);
+
+      vi.mocked(headers).mockResolvedValue(
+        new Headers({
+          "x-pathname": "/notificaciones-interna",
+        }) as unknown as Awaited<ReturnType<typeof headers>>,
+      );
+
+      await expect(
+        ProtectedLayout({ children: "child content" }),
+      ).rejects.toThrow("NEXT_REDIRECT: /operador");
+      expect(redirect).toHaveBeenCalledWith("/operador");
+    });
+  });
 });

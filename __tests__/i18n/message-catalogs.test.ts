@@ -35,11 +35,62 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
     expect(esKeys).toEqual(enKeys);
   });
 
-  it("both catalogs contain required namespaces: shell and privacy", () => {
+  it("both catalogs contain required namespaces: shell, privacy, and notifications", () => {
     expect(esCatalog).toHaveProperty("shell");
     expect(esCatalog).toHaveProperty("privacy");
+    expect(esCatalog).toHaveProperty("notifications");
     expect(enCatalog).toHaveProperty("shell");
     expect(enCatalog).toHaveProperty("privacy");
+    expect(enCatalog).toHaveProperty("notifications");
+  });
+
+  it("both catalogs contain future-only shell.nav.links.notifications", () => {
+    const esShell = esCatalog.shell as {
+      nav?: { links?: { notifications?: string } };
+    };
+    const enShell = enCatalog.shell as {
+      nav?: { links?: { notifications?: string } };
+    };
+    expect(esShell?.nav?.links?.notifications).toBeDefined();
+    expect(enShell?.nav?.links?.notifications).toBeDefined();
+  });
+
+  it("all 15 category title/description pairs exist under notifications.categories in both catalogs", () => {
+    const requiredCategories = [
+      "invitation",
+      "projectAssignment",
+      "taskAssignment",
+      "taskStatusChanged",
+      "clientTaskBlocking",
+      "clientSubmission",
+      "deliverableSubmitted",
+      "changesRequested",
+      "reviewApproved",
+      "deliverableDelivered",
+      "deadlineReminder",
+      "deadlineOverdue",
+      "reviewInactivityReminder",
+      "linkReportedBroken",
+      "system",
+    ];
+
+    const esCategories = (
+      esCatalog.notifications as {
+        categories: Record<string, { title?: string; description?: string }>;
+      }
+    ).categories;
+    const enCategories = (
+      enCatalog.notifications as {
+        categories: Record<string, { title?: string; description?: string }>;
+      }
+    ).categories;
+
+    for (const cat of requiredCategories) {
+      expect(esCategories[cat]?.title).toBeDefined();
+      expect(esCategories[cat]?.description).toBeDefined();
+      expect(enCategories[cat]?.title).toBeDefined();
+      expect(enCategories[cat]?.description).toBeDefined();
+    }
   });
 
   it("all keys under shell namespace are identical between catalogs", () => {
@@ -60,6 +111,28 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
       enCatalog.privacy as Record<string, unknown>,
     ).sort();
     expect(esPrivacyKeys).toEqual(enPrivacyKeys);
+  });
+
+  it("all keys under notifications namespace are identical between catalogs", () => {
+    function collectKeys(obj: Record<string, unknown>, prefix = ""): string[] {
+      return Object.entries(obj).flatMap(([k, v]) => {
+        const fullKey = prefix ? `${prefix}.${k}` : k;
+        if (typeof v === "object" && v !== null && !Array.isArray(v)) {
+          return collectKeys(v as Record<string, unknown>, fullKey);
+        }
+        return [fullKey];
+      });
+    }
+
+    const esNotificationKeys = collectKeys(
+      esCatalog.notifications as Record<string, unknown>,
+    ).sort();
+    const enNotificationKeys = collectKeys(
+      enCatalog.notifications as Record<string, unknown>,
+    ).sort();
+
+    expect(esNotificationKeys).toEqual(enNotificationKeys);
+    expect(esNotificationKeys).toHaveLength(54);
   });
 
   it("no missing keys in either catalog (complete key sets)", () => {

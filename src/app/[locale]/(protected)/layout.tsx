@@ -2,7 +2,10 @@ import "server-only";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireSession, AuthError } from "@/lib/auth/session";
-import { ROLE_DEFAULT_PATHS } from "@/lib/auth/routes";
+import {
+  ROLE_DEFAULT_PATHS,
+  SHARED_AUTHENTICATED_PATH_PREFIXES,
+} from "@/lib/auth/routes";
 import { createClient } from "@/lib/supabase/server";
 import { getUnreadNotificationCount } from "@/lib/shell-data/shell-queries";
 import { AppNav } from "@/components/shared/app-nav/app-nav";
@@ -45,7 +48,12 @@ export default async function ProtectedLayout({
   const prefix = isEnglish ? "/en" : "";
   const pathname = rawPathname.replace(/^\/en/, "");
 
-  if (pathname && !pathname.startsWith(rolePath)) {
+  const isSharedAuthenticated = SHARED_AUTHENTICATED_PATH_PREFIXES.some(
+    (sharedPrefix) =>
+      pathname === sharedPrefix || pathname.startsWith(`${sharedPrefix}/`),
+  );
+
+  if (pathname && !isSharedAuthenticated && !pathname.startsWith(rolePath)) {
     redirect(`${prefix}${rolePath}`);
   }
 

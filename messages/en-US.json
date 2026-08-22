@@ -27,7 +27,8 @@
       "links": {
         "home": "Home",
         "projects": "Projects",
-        "agenda": "My Agenda"
+        "agenda": "My Agenda",
+        "notifications": "Notifications"
       },
       "notifications": {
         "badgeLabel": "Unread notifications",
@@ -1284,6 +1285,100 @@
           "invariantViolation": "Could not record review due to a system constraint.",
           "generic": "An error occurred while processing the review. Please try again."
         }
+      }
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "In-app notification history.",
+    "listLabel": "Notification list",
+    "unreadState": "Unread",
+    "readState": "Read",
+    "markRead": "Mark as read",
+    "markReadAria": "Mark {category} as read",
+    "markAllRead": "Mark all as read",
+    "markAllReadAria": "Mark all notifications as read",
+    "markAllUnavailable": "All notifications are up to date",
+    "readSuccess": "Notification marked as read",
+    "allReadSuccess": "All notifications marked as read",
+    "alreadyUpToDate": "All notifications are up to date",
+    "loadMore": "Load more",
+    "loadMoreAria": "Load more notifications",
+    "loading": "Loading notifications...",
+    "empty": {
+      "title": "Inbox is empty",
+      "description": "You have no in-app notifications."
+    },
+    "error": {
+      "title": "Error loading notifications",
+      "description": "Could not load notifications. Please try again.",
+      "retry": "Retry"
+    },
+    "errors": {
+      "validation": "Invalid request.",
+      "unauthenticated": "Invalid or expired session.",
+      "unavailable": "The service is currently unavailable."
+    },
+    "categories": {
+      "invitation": {
+        "title": "Invitation",
+        "description": "Notification related to user invitations."
+      },
+      "projectAssignment": {
+        "title": "Project Assignment",
+        "description": "You have been assigned to a project."
+      },
+      "taskAssignment": {
+        "title": "Task Assignment",
+        "description": "You have been assigned a new task."
+      },
+      "taskStatusChanged": {
+        "title": "Task Status",
+        "description": "A task status has been updated."
+      },
+      "clientTaskBlocking": {
+        "title": "Blocking Task",
+        "description": "A task requires urgent client attention."
+      },
+      "clientSubmission": {
+        "title": "Client Submission",
+        "description": "A client submission was received or reopened."
+      },
+      "deliverableSubmitted": {
+        "title": "Deliverable Submitted",
+        "description": "A new deliverable version was submitted for review."
+      },
+      "changesRequested": {
+        "title": "Changes Requested",
+        "description": "Changes were requested on a deliverable."
+      },
+      "reviewApproved": {
+        "title": "Review Approved",
+        "description": "A deliverable was approved in review."
+      },
+      "deliverableDelivered": {
+        "title": "Deliverable Delivered",
+        "description": "A deliverable was marked as delivered."
+      },
+      "deadlineReminder": {
+        "title": "Deadline Reminder",
+        "description": "An upcoming task or project deadline approaches."
+      },
+      "deadlineOverdue": {
+        "title": "Deadline Overdue",
+        "description": "A task deadline is overdue."
+      },
+      "reviewInactivityReminder": {
+        "title": "Review Reminder",
+        "description": "Pending reviews require attention."
+      },
+      "linkReportedBroken": {
+        "title": "Broken Link Reported",
+        "description": "A broken link was reported on a deliverable."
+      },
+      "system": {
+        "title": "System",
+        "description": "System announcement."
       }
     }
   }

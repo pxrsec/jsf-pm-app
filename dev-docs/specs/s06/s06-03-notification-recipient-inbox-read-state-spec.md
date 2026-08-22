@@ -1,6 +1,6 @@
 ---
 title: S06-03 Notification Recipient Inbox, History, and Read State Specification
-status: implementation-ready-pending-migration-application-and-type-regeneration
+status: implementation-ready
 sprint_id: S06
 epic_id: E08
 work_item_id: S06-03
@@ -16,8 +16,7 @@ authority:
 prerequisites:
   - S06-01 complete; both required S06 database migrations applied and generated types regenerated
   - S06-02 committed; server-only configuration and disabled adapters remain unchanged
-  - supabase/migrations/20260822160000_s06_e08_notification_inbox_keyset_pagination.sql applied to jsf-pm-dev through Supabase MCP
-  - src/lib/database.types.ts regenerated unchanged from the post-migration schema and committed before S06-03 implementation starts
+  - supabase/migrations/20260822160000_s06_e08_notification_inbox_keyset_pagination.sql applied to jsf-pm-dev through Supabase MCP; post-migration src/lib/database.types.ts regenerated unchanged and committed
 scope: recipient-owned in-app notification history and read state only
 ---
 
@@ -25,7 +24,7 @@ scope: recipient-owned in-app notification history and read state only
 
 ## 1. Readiness and required schema prerequisite
 
-This specification is implementation-ready once the new keyset-pagination migration is applied to `jsf-pm-dev` through Supabase MCP and the generated database types are written unchanged to `src/lib/database.types.ts` and committed. Those steps occur **before** S06-03 application implementation begins.
+The keyset-pagination migration has been applied to `jsf-pm-dev` through Supabase MCP, and the post-migration generated database types were written unchanged to `src/lib/database.types.ts` and committed. S06-03 is therefore implementation-ready.
 
 Migration source:
 
@@ -241,7 +240,8 @@ This correction is not S06-07 navigation work. It makes the specified protected 
 
 | File | Responsibility | Hard boundary |
 | --- | --- | --- |
-| `src/lib/notifications/queries.ts` | Server-only typed inbox RPC call and server-safe row narrowing. | Imports `server-only`; calls only `list_my_in_app_notifications`; exports no raw Supabase rows. |
+| `src/lib/notifications/inbox-contracts.ts` | Pure browser-safe DTO and cursor contracts shared by server query/action code and the route-local client components. | Type-only `Database` import only; no `server-only`, Supabase client, action, environment, provider, or database-query import. |
+| `src/lib/notifications/queries.ts` | Server-only typed inbox RPC call and server-safe row narrowing. | Imports `server-only`; calls only `list_my_in_app_notifications`; imports/re-exports safe contracts but exports no raw Supabase rows. |
 | `src/lib/notifications/schemas.ts` | Closed Zod schemas/input types for mark-one and mark-all actions. | No database access; no user-facing copy. |
 | `src/lib/notifications/actions.ts` | Server Actions: session, input validation, RPC invocation, safe result mapping, path revalidation. | Uses cookie-authenticated server client only; never accepts identity/status/timestamp/channel. |
 | `src/app/[locale]/(protected)/notificaciones/page.tsx` | Server route: require active session, retrieve first bounded inbox page, pass safe model to presentation. | No role check; no direct table query; no raw payload/ID display. |
@@ -253,6 +253,7 @@ This correction is not S06-07 navigation work. It makes the specified protected 
 | `src/lib/notifications/__tests__/queries.test.ts` | Query narrowing, RPC argument, ordering/cursor contract, safe-data boundary tests. | Node tests, mock server client; no live database claim. |
 | `src/lib/notifications/__tests__/actions.test.ts` | Action schema/session/RPC/revalidation/safe result tests. | Node tests, mock `next/headers`, RPC and cache boundary. |
 | `src/app/[locale]/(protected)/notificaciones/_components/notification-inbox.test.tsx` | Component behavior, keyboard/action status, safe rendering, and locale tests. | Establish jsdom test configuration locally only if required by the existing test setup; do not add Playwright. |
+| `src/app/[locale]/(protected)/notificaciones/error.test.tsx` | Route error boundary safe rendering, Sentry invocation, and retry behavior. | Does not assert/display raw error message or digest. |
 
 ### 6.2 Modify
 
@@ -278,19 +279,17 @@ The catalog-only addition to `shell.nav.links` permits S06-07 to attach navigati
 
 ## 7. Server module design
 
-### 7.1 `src/lib/notifications/queries.ts`
+### 7.0 `src/lib/notifications/inbox-contracts.ts`
 
-Begin the module exactly with:
+This module is a pure browser-safe contract boundary. It begins only with type imports, including:
 
 ```ts
-import "server-only";
+import type { Database } from "@/lib/database.types";
 ```
 
-Use a typed `SupabaseClient<Database>` parameter to keep the query independently testable. Export:
+It defines and exports the following safe browser DTOs:
 
 ```ts
-export const NOTIFICATION_INBOX_PAGE_SIZE = 25;
-
 export type NotificationTrigger =
   Database["public"]["Enums"]["notification_trigger"];
 
@@ -312,6 +311,31 @@ export type RecipientInboxPage = Readonly<{
   nextCursor: RecipientInboxCursor | null;
   hasMore: boolean;
 }>;
+```
+
+It must have no runtime imports and no `server-only` marker.
+
+`queries.ts` imports these contracts for its return shape and re-exports them as types for server callers. Route-local client components and `_components/types.ts` import types only from `@/lib/notifications/inbox-contracts`; they must not import `queries.ts`, `actions.ts`, `schemas.ts`, `src/lib/notifications/types.ts`, `config.ts`, adapters, or generated database types.
+
+### 7.1 `src/lib/notifications/queries.ts`
+
+Begin the module exactly with:
+
+```ts
+import "server-only";
+```
+
+Use a typed `SupabaseClient<Database>` parameter to keep the query independently testable. Import `NotificationTrigger`, `RecipientInboxNotification`, `RecipientInboxCursor`, and `RecipientInboxPage` from `./inbox-contracts`, and re-export them as types. Export:
+
+```ts
+export const NOTIFICATION_INBOX_PAGE_SIZE = 25;
+
+export type {
+  NotificationTrigger,
+  RecipientInboxNotification,
+  RecipientInboxCursor,
+  RecipientInboxPage,
+} from "./inbox-contracts";
 ```
 
 `NOTIFICATION_INBOX_PAGE_SIZE` is exactly `25`; the server requests exactly `26` rows to determine a truthful continuation. The browser cannot select a page size.
@@ -434,33 +458,34 @@ This is the sole permitted action-side read. It validates `LoadRecipientInboxPag
 
 The load-more action above is the sole action-side read. Mark-read actions do not re-fetch the inbox, query base tables, calculate badge counts, infer entity authorization, or derive notification text. A successful mark action returns only the safe outcome above; `router.refresh()` obtains authoritative page and shell state.
 
-## 8. Required pre-implementation keyset migration
+## 8. Applied keyset-pagination migration
 
-### 8.1 Migration purpose and scope
+### 8.1 Migration purpose and completed scope
 
-The original timestamp-only continuation could skip rows that share a page-boundary timestamp. The Project Owner has selected the direct correction: apply the checked-in forward migration before application implementation.
+The original timestamp-only continuation could skip rows that share a page-boundary timestamp. The Project Owner selected and completed the direct correction: the checked-in forward migration has been applied before application implementation.
 
 ```text
 supabase/migrations/20260822160000_s06_e08_notification_inbox_keyset_pagination.sql
 ```
 
-The migration performs exactly these operations in one transaction:
+The applied migration performed exactly these operations in one transaction:
 
-1. drops only the superseded `public.list_my_in_app_notifications(integer, timestamptz)` overload;
-2. creates `public.list_my_in_app_notifications(integer, timestamptz, uuid)` with the same self-only response projection, authentication requirement, 1–100 limit clamp, order, `security definer`, and search path;
-3. requires the two cursor values to be either both null or both non-null;
-4. applies a lossless composite keyset predicate matching `created_at DESC, id DESC`; and
-5. restores authenticated-only execution on the new function signature.
+1. dropped only the superseded `public.list_my_in_app_notifications(integer, timestamptz)` overload;
+2. created `public.list_my_in_app_notifications(integer, timestamptz, uuid)` with the same self-only response projection, authentication requirement, 1–100 limit clamp, order, `security definer`, and search path;
+3. required the two cursor values to be either both null or both non-null;
+4. applied a lossless composite keyset predicate matching `created_at DESC, id DESC`; and
+5. restored authenticated-only execution on the new function signature.
 
-It must not change notification data, trigger/event creation, recipient fan-out, direct table policies, read-state RPCs, external suppression, provider configuration, queues, alerts, scheduler behavior, or public HTTP routes.
+It did not change notification data, trigger/event creation, recipient fan-out, direct table policies, read-state RPCs, external suppression, provider configuration, queues, alerts, scheduler behavior, or public HTTP routes.
 
-### 8.2 Required sequence before S06-03 application work
+### 8.2 Completed schema readiness record
 
-1. Commit the migration source as normal repository schema source.
-2. Apply the exact migration to `jsf-pm-dev` through Supabase MCP `apply_migration`; do not use dashboard DDL, generic SQL, reset, or a different SQL copy.
-3. Regenerate TypeScript types from the post-migration database through Supabase MCP and write `src/lib/database.types.ts` unchanged.
-4. Commit the generated type artifact.
-5. Confirm the generated `Functions.list_my_in_app_notifications.Args` shape is:
+Before S06-03 application work:
+
+1. the migration source was committed as normal repository schema source;
+2. the exact migration was applied to `jsf-pm-dev` through Supabase MCP;
+3. TypeScript types were regenerated from the post-migration database, written unchanged to `src/lib/database.types.ts`, and committed; and
+4. the generated `Functions.list_my_in_app_notifications.Args` shape was confirmed as:
 
    ```ts
    {
@@ -470,10 +495,7 @@ It must not change notification data, trigger/event creation, recipient fan-out,
    }
    ```
 
-6. Record the migration path, target (`jsf-pm-dev`), MCP application result, generated-types path, and resulting source commits in S06-03 handoff evidence.
-7. Only then begin S06-03 application implementation.
-
-A failed or partial migration is a stop condition. Preserve the factual result and repair only with a new reviewed forward migration; never alter existing migration history or hand-edit the generated type output.
+Implementation must consume this generated three-argument function. A future schema discrepancy must be handled through a new reviewed forward migration; never alter existing migration history or hand-edit generated type output.
 
 ### 8.3 Application cursor contract
 
@@ -519,7 +541,7 @@ This is the only S06-03 client interaction owner. It receives:
 }
 ```
 
-It imports `useRouter` from `next/navigation`, `useTranslations`, the two action functions, route-local child components, and standard UI primitives. It does not import Supabase, config, adapters, server-only modules, database types, or `NotificationBadge`.
+It imports `useRouter` from `next/navigation`, `useTranslations`, the three action functions, the pure inbox-contract types, route-local child components, and standard UI primitives. It does not import Supabase, config, adapters, server-only modules, database types, or `NotificationBadge`.
 
 State rules:
 
@@ -644,6 +666,7 @@ Do not run verification in preparation of this specification; the Project Owner 
 | `queries.test.ts` | Calls only the inbox RPC with bounded arguments; correctly narrows safe fields; throws safe server error on RPC error; preserves returned order; rejects malformed cursor before RPC; asserts result contains none of `eventId`, `entityId`, `projectId`, `deliveryStatus`, provider/suppression fields. |
 | `actions.test.ts` | Invalid UUID rejects before session/client/RPC; unauthenticated returns only closed error; mark-one uses only recipient UUID; mark-all sends no arguments; RPC error maps to `UNAVAILABLE`; `false` and zero are successful idempotent results; only required paths are revalidated; no action returns raw error/ID. |
 | `notification-inbox.test.tsx` | Generic localized categories for every trigger mapping; no raw trigger/IDs/provider/suppression/payload text; unread/read text indicator; mark-one pending and outcome; mark-all semantics; keyboard button use; empty state; composite-keyset load-more and retry behavior; error/retry state; narrow semantic DOM assertions. |
+| `error.test.tsx` | Captures the error only through the existing safe Sentry helper; renders only localized generic title/description/retry copy; never renders error message/digest; retry invokes `reset`. |
 | catalog parity test | Exact `notifications` key-tree parity, required category coverage, and `shell.nav.links.notifications` in both catalogs. |
 | protected-route guard test | Each active role can reach normalized `/notificaciones`; role-scoped cross-role paths still redirect; an arbitrary shared-looking path remains denied. |
 
@@ -660,14 +683,14 @@ After focused automation is green, use real authenticated mutable-sandbox accoun
 5. Sign in as User B. Attempt a forged User A recipient UUID through the Server Action boundary. Verify User B's UI cannot make User A's row read and receives no raw authorization/database detail.
 6. Verify an ordinary inbox does not render an external channel, `suppressed`, `provider_disabled`, provider name, configuration status, recipient contact data, event payload, project/entity ID, queue data, retry, resend, or external-delivery claim.
 7. Repeat the primary journey in `/en/notificaciones`, dark/light themes, 375px viewport, keyboard-only navigation, and a screen-reader inspection of labels/status.
-8. Before application implementation begins, apply the keyset migration and regenerate types. Then create/seed a deterministic valid scenario with records at the same `created_at` boundary and prove no skipped/duplicated row across continuation. This must be database/function evidence, not a client deduplication test.
+8. Using the already applied keyset contract and regenerated types, create or identify a deterministic valid scenario with records at the same `created_at` boundary and prove no skipped/duplicated row across continuation. This must be database/function evidence, not a client deduplication test.
 
 ### 11.3 Required implementation commands
 
 Run only after code exists:
 
 ```bash
-npm run test -- src/lib/notifications/__tests__/queries.test.ts src/lib/notifications/__tests__/actions.test.ts src/app/[locale]/(protected)/notificaciones/_components/notification-inbox.test.tsx
+npm run test -- src/lib/notifications/__tests__/queries.test.ts src/lib/notifications/__tests__/actions.test.ts src/app/[locale]/(protected)/notificaciones/_components/notification-inbox.test.tsx src/app/[locale]/(protected)/notificaciones/error.test.tsx
 npm run typecheck
 npm run lint
 npx prettier --check src/lib/notifications src/app/[locale]/(protected)/notificaciones src/lib/auth/routes.ts src/app/[locale]/(protected)/layout.tsx messages/es-MX.json messages/en-US.json

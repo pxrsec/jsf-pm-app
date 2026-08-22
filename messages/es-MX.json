@@ -27,7 +27,8 @@
       "links": {
         "home": "Inicio",
         "projects": "Proyectos",
-        "agenda": "Mi Agenda"
+        "agenda": "Mi Agenda",
+        "notifications": "Notificaciones"
       },
       "notifications": {
         "badgeLabel": "Notificaciones no leídas",
@@ -1284,6 +1285,100 @@
           "invariantViolation": "No se pudo registrar la revisión debido a una restricción del sistema.",
           "generic": "Ocurrió un error al procesar la revisión. Intenta de nuevo."
         }
+      }
+    }
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "description": "Historial de notificaciones en la aplicación.",
+    "listLabel": "Lista de notificaciones",
+    "unreadState": "No leída",
+    "readState": "Leída",
+    "markRead": "Marcar como leída",
+    "markReadAria": "Marcar {category} como leída",
+    "markAllRead": "Marcar todas como leídas",
+    "markAllReadAria": "Marcar todas las notificaciones como leídas",
+    "markAllUnavailable": "Todas las notificaciones están al día",
+    "readSuccess": "Notificación marcada como leída",
+    "allReadSuccess": "Todas las notificaciones han sido marcadas como leídas",
+    "alreadyUpToDate": "Todas las notificaciones están al día",
+    "loadMore": "Cargar más",
+    "loadMoreAria": "Cargar más notificaciones",
+    "loading": "Cargando notificaciones...",
+    "empty": {
+      "title": "Bandeja vacía",
+      "description": "No tienes notificaciones en la aplicación."
+    },
+    "error": {
+      "title": "Error al cargar notificaciones",
+      "description": "No se pudieron cargar las notificaciones. Inténtalo de nuevo.",
+      "retry": "Reintentar"
+    },
+    "errors": {
+      "validation": "Solicitud no válida.",
+      "unauthenticated": "Sesión no válida o expirada.",
+      "unavailable": "El servicio no está disponible en este momento."
+    },
+    "categories": {
+      "invitation": {
+        "title": "Invitación",
+        "description": "Notificación relacionada con invitaciones de usuario."
+      },
+      "projectAssignment": {
+        "title": "Asignación de proyecto",
+        "description": "Se te ha asignado a un proyecto."
+      },
+      "taskAssignment": {
+        "title": "Asignación de tarea",
+        "description": "Se te ha asignado una nueva tarea."
+      },
+      "taskStatusChanged": {
+        "title": "Estado de tarea",
+        "description": "El estado de una tarea ha sido actualizado."
+      },
+      "clientTaskBlocking": {
+        "title": "Tarea bloqueante",
+        "description": "Una tarea requiere atención urgente del cliente."
+      },
+      "clientSubmission": {
+        "title": "Entrega de cliente",
+        "description": "Se ha recibido o reabierto una entrega de cliente."
+      },
+      "deliverableSubmitted": {
+        "title": "Entregable enviado",
+        "description": "Se ha enviado una nueva versión de entregable para revisión."
+      },
+      "changesRequested": {
+        "title": "Cambios solicitados",
+        "description": "Se han solicitado cambios en un entregable."
+      },
+      "reviewApproved": {
+        "title": "Revisión aprobada",
+        "description": "Un entregable ha sido aprobado en revisión."
+      },
+      "deliverableDelivered": {
+        "title": "Entregable finalizado",
+        "description": "Un entregable ha sido marcado como entregado."
+      },
+      "deadlineReminder": {
+        "title": "Recordatorio de fecha límite",
+        "description": "Se aproxima una fecha límite de tarea o proyecto."
+      },
+      "deadlineOverdue": {
+        "title": "Fecha límite vencida",
+        "description": "Una fecha límite de tarea ha vencido."
+      },
+      "reviewInactivityReminder": {
+        "title": "Recordatorio de revisión",
+        "description": "Hay revisiones pendientes de atención."
+      },
+      "linkReportedBroken": {
+        "title": "Enlace reportado",
+        "description": "Se ha reportado un enlace roto en un entregable."
+      },
+      "system": {
+        "title": "Sistema",
+        "description": "Aviso del sistema."
       }
     }
   }

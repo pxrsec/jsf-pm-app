@@ -209,11 +209,11 @@ The direct table select policy now permits ordinary users only their own `in_app
 - Add catalog parity checks and include changed route/action/navigation tests.
 - Closeout must state that external provider activation, actual sends, schedule operation, webhooks, receipts, DNS, deployment, and production verification remain deferred.
 
-## 9. Applied S06 alert-evaluation baseline and required S06-03 keyset migration
+## 9. Applied S06 alert-evaluation baseline and S06-03 keyset migration
 
 ### 9.1 Authored forward migration
 
-`supabase/migrations/20260822150000_s06_e08_alert_evaluation.sql` completed the S06-01 alert-evaluator baseline. A later, narrow S06-03 correctness migration is now required before recipient-inbox application work: `supabase/migrations/20260822160000_s06_e08_notification_inbox_keyset_pagination.sql`. It changes only the recipient-feed continuation contract from an incomplete timestamp cursor to a composite keyset cursor; it does not add provider, HTTP, scheduler, or data-model scope.
+`supabase/migrations/20260822150000_s06_e08_alert_evaluation.sql` completed the S06-01 alert-evaluator baseline. The narrow S06-03 correctness migration, `supabase/migrations/20260822160000_s06_e08_notification_inbox_keyset_pagination.sql`, has also been applied to `jsf-pm-dev`; its post-migration generated types were committed. It changes only the recipient-feed continuation contract from an incomplete timestamp cursor to a composite keyset cursor; it does not add provider, HTTP, scheduler, or data-model scope.
 
 It defines:
 
@@ -231,13 +231,13 @@ The Project Owner applied the exact forward migration to `jsf-pm-dev` and regene
 
 No S06 application module may call a private function directly, reimplement reminder evaluation, select recipients, or treat the generated `Json` result as untrusted display content. S06-05 maps it to the bounded server-side aggregate result contract.
 
-### 9.3 Required S06-03 keyset-pagination migration
+### 9.3 Applied S06-03 keyset-pagination migration
 
-Before S06-03 application implementation, apply `supabase/migrations/20260822160000_s06_e08_notification_inbox_keyset_pagination.sql` to `jsf-pm-dev` through Supabase MCP and regenerate `src/lib/database.types.ts` unchanged.
+`supabase/migrations/20260822160000_s06_e08_notification_inbox_keyset_pagination.sql` has been applied to `jsf-pm-dev` through Supabase MCP. Its post-migration `src/lib/database.types.ts` output was regenerated unchanged and committed.
 
-The existing function orders in-app rows by `created_at desc, id desc` but formerly accepted only a timestamp continuation. That contract could omit rows sharing the final timestamp. The new function accepts a complete `(p_before_created_at, p_before_recipient_id)` pair, rejects a partial pair, and applies an order-aligned composite keyset predicate. Its response columns, self-only authorization, 1–100 bound, grant to `authenticated`, and all other notification behavior remain unchanged.
+The function orders in-app rows by `created_at desc, id desc` but formerly accepted only a timestamp continuation. That contract could omit rows sharing the final timestamp. The applied function accepts a complete `(p_before_created_at, p_before_recipient_id)` pair, rejects a partial pair, and applies an order-aligned composite keyset predicate. Its response columns, self-only authorization, 1–100 bound, grant to `authenticated`, and all other notification behavior remain unchanged.
 
-S06-03 must consume the regenerated three-argument function only after that application/type-generation sequence. No further migration is authorized merely for application convenience.
+S06-03 must consume the committed generated three-argument function. No further migration is authorized merely for application convenience.
 
 ## 10. S06-01 completion record
 
@@ -248,4 +248,4 @@ S06-01 is complete with the repository-grounded mapping above.
 - Recipient feed and internal operations surfaces are distinct and role-safe.
 - Existing badge/navigation behavior and exact S06 ownership are recorded.
 - `suppressed/provider_disabled` terminality and no-auto-replay rules are explicit.
-- The S06-01 evaluator migration is applied; the narrow S06-03 keyset-pagination migration is authored and must be applied with regenerated types before S06-03 application work begins.
+- The S06-01 evaluator migration and narrow S06-03 keyset-pagination migration are applied; their generated type outputs are committed, and S06-03 application work may consume the three-argument inbox RPC.

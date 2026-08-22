@@ -1,5 +1,32 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 16:26]
+
+**🚀 S06-03: Notification Recipient Inbox, History, and Read State Implementation**
+
+- **🚀 Features & User Interface:**
+  - **Shared Authenticated Inbox Route (`src/app/[locale]/(protected)/notificaciones/page.tsx`):** Implemented the recipient notifications inbox page accessible to all authenticated roles (`admin`, `pm`, `operator`, `client`) with server-side session enforcement (`requireSession`), initial keyset page loading (`listRecipientInboxPage`), and localized metadata.
+  - **Accessible Loading Skeleton (`src/app/[locale]/(protected)/notificaciones/loading.tsx`):** Created localized loading skeleton with `role="status"`, `aria-busy="true"`, and `aria-live="polite"`, displaying placeholder header, action bar, and card items with zero hard-coded text.
+  - **Route Error Boundary (`src/app/[locale]/(protected)/notificaciones/error.tsx`):** Implemented client error boundary capturing exceptions to Sentry (`{ boundary: "localized-route" }`), rendering generic localized copy without leaking internal stacks or digests, with native retry (`reset()`) and minimum touch targets (`min-h-[44px] min-w-[44px]`).
+  - **Interactive Notification Inbox (`src/app/[locale]/(protected)/notificaciones/_components/notification-inbox.tsx`):** Client interaction component managing single and mark-all read mutations with shared pending states, focus management on removal, keyboard accessibility, screen-reader status announcements, ordered list semantic structure (`<ol aria-label="...">`), and keyset pagination ("Load More").
+  - **Inbox List Item & Empty State (`src/app/[locale]/(protected)/notificaciones/_components/*`):** Created `NotificationInboxItem` featuring category badge, explicit textual read/unread indicator, formatted timestamp, category-generic copy, and unread action button; and `NotificationEmptyState` with `BellOff` iconography and localized empty messaging.
+  - **Trigger-to-Category Resolver (`src/app/[locale]/(protected)/notificaciones/_components/types.ts`):** Mapped all 21 `notification_trigger` enum variants deterministically to 15 user-facing category keys without exposing raw trigger identifiers or payload fields.
+
+- **🛠 Architecture & Security:**
+  - **Shared Route Exception Boundary (`src/lib/auth/routes.ts`, `src/app/[locale]/(protected)/layout.tsx`):** Added `/notificaciones` to protected path prefixes and exported `SHARED_AUTHENTICATED_PATH_PREFIXES` to permit all authenticated roles through the shared inbox while maintaining strict role-home enforcement for role-specific routes.
+  - **Pure Browser-Safe Contracts (`src/lib/notifications/inbox-contracts.ts`):** Defined isolated DTOs (`RecipientInboxNotification`, `RecipientInboxCursor`, `RecipientInboxPage`) with type-only database imports, safe for client components and free of server-only runtime dependencies.
+  - **Server-Only RPC Query Layer (`src/lib/notifications/queries.ts`):** Created typed `listRecipientInboxPage` caller with strict cursor validation, 26-row sentinel fetch, 25-row result clamping, `readAt: row.read_at ?? null` normalization, 25th-row keyset continuation derivation, and bounded diagnostic logging via `@/lib/logger`.
+  - **Server Actions Layer (`src/lib/notifications/actions.ts`):** Implemented `"use server"` mutations `markNotificationReadAction`, `markAllNotificationsReadAction`, and `loadRecipientInboxPageAction` with strict Zod validation, session verification, narrow error mapping (`VALIDATION_FAILED`, `UNAUTHENTICATED`, `UNAVAILABLE`), and multi-path cache invalidation (`/notificaciones`, `/en/notificaciones`, `/[locale]/(protected)` layout).
+  - **Message Catalogs Parity (`messages/es-MX.json`, `messages/en-US.json`):** Added complete 54-leaf-key `notifications` namespace across Spanish and English (including 30 category titles/descriptions) plus `shell.nav.links.notifications`.
+
+- **🧪 Testing & Verification:**
+  - **Route Guard Test Suite (`__tests__/app-shell/route-guard.test.ts`):** Verified all 4 active roles (`admin`, `pm`, `operator`, `client`) access `/notificaciones` and `/en/notificaciones` without redirects, cross-role protections remain enforced, and unlisted shared routes (`/notificaciones-interna`) redirect to role defaults.
+  - **Server Queries Test Suite (`src/lib/notifications/__tests__/queries.test.ts`):** 8 tests validating default calls, valid/malformed cursors, sensitive field exclusion, null normalization, keyset pagination boundary (25 vs 26 rows), and RPC failure error isolation.
+  - **Server Actions Test Suite (`src/lib/notifications/__tests__/actions.test.ts`):** 15 tests validating UUID/timestamp validation, unauthenticated mapping, error propagation, RPC execution, cache revalidation, and failure error codes.
+  - **Component & Error Test Suites (`notification-inbox.test.tsx`, `error.test.tsx`):** 13 tests validating trigger-to-category mapping, raw payload non-exposure, read/unread indicators, button disablement, action execution, empty states, pagination retry, ARIA landmarks, touch targets, and Sentry boundary integration.
+  - **Message Catalog Parity (`__tests__/i18n/message-catalogs.test.ts`):** 9 tests validating identical JSON structure, required namespaces, 54 notification keys, and complete category coverage.
+  - **Full Automated Verification:** 100% pass across Vitest (65/65 tests passing), TypeScript compiler checks (`tsc --noEmit`), ESLint (0 errors, 0 warnings), Prettier formatting check, and Next.js App Router production build (`next build`).
+
 ## [2026-08-22 @ 15:42]
 
 **🛠 S06-E08 / S06-03: Notification Inbox Keyset Pagination Migration & Types Regeneration**
