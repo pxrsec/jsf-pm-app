@@ -51,6 +51,78 @@ const eslintConfig = defineConfig([
                 "Privileged admin Supabase client (src/lib/supabase/admin) must not be imported in client components, shared modules, or middleware.",
             },
             {
+              name: "@/lib/notifications/config",
+              message:
+                "Notification provider configuration and adapters are server-only and cannot be imported in client components, shared modules, or middleware.",
+            },
+            {
+              name: "@/lib/notifications/types",
+              message:
+                "Notification provider configuration and adapters are server-only and cannot be imported in client components, shared modules, or middleware.",
+            },
+            {
+              name: "@/lib/notifications/channel-adapters",
+              message:
+                "Notification provider configuration and adapters are server-only and cannot be imported in client components, shared modules, or middleware.",
+            },
+            {
+              name: "@/lib/notifications/errors",
+              message:
+                "Notification provider configuration and adapters are server-only and cannot be imported in client components, shared modules, or middleware.",
+            },
+            {
+              name: "src/lib/notifications/config",
+              message:
+                "Notification provider configuration and adapters are server-only and cannot be imported in client components, shared modules, or middleware.",
+            },
+            {
+              name: "src/lib/notifications/types",
+              message:
+                "Notification provider configuration and adapters are server-only and cannot be imported in client components, shared modules, or middleware.",
+            },
+            {
+              name: "src/lib/notifications/channel-adapters",
+              message:
+                "Notification provider configuration and adapters are server-only and cannot be imported in client components, shared modules, or middleware.",
+            },
+            {
+              name: "src/lib/notifications/errors",
+              message:
+                "Notification provider configuration and adapters are server-only and cannot be imported in client components, shared modules, or middleware.",
+            },
+            {
+              name: "@prisma/client",
+              message:
+                "Prisma is forbidden. Use Supabase client boundaries and migrations instead.",
+            },
+            {
+              name: "prisma",
+              message:
+                "Prisma is forbidden. Use Supabase client boundaries and migrations instead.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/lib/notifications/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@/lib/supabase/admin",
+              message:
+                "Privileged admin Supabase client (src/lib/supabase/admin) must not be imported in client components, shared modules, or middleware.",
+            },
+            {
+              name: "src/lib/supabase/admin",
+              message:
+                "Privileged admin Supabase client (src/lib/supabase/admin) must not be imported in client components, shared modules, or middleware.",
+            },
+            {
               name: "@prisma/client",
               message:
                 "Prisma is forbidden. Use Supabase client boundaries and migrations instead.",

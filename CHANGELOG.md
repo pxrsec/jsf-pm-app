@@ -1,5 +1,23 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 15:02]
+
+**🚀 S06-02: Server-Only Configuration and Provider-Ready Disabled Adapters**
+
+- **🛠 Architecture & Security:**
+  - **Server-Only Configuration Boundary (`src/lib/notifications/config.ts`):** Implemented server-only environment parser reading strictly the 9 designated notification variables (`EXTERNAL_DELIVERY_MODE`, `NOTIFICATION_DEMO_ALERT_EVALUATION_ENABLED`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `WHATSAPP_API_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_BUSINESS_ACCOUNT_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_API_VERSION`). Implemented conservative placeholder detection engine (`replace_me`, `replace-me`, `example`, `placeholder`, `changeme`, `your_`, `your-`, `<`, `>`, etc.) and fail-closed evaluation. Discards raw strings function-locally without exporting secrets or raw env values.
+  - **Pure Server-Only Types & Discriminated Capabilities (`src/lib/notifications/types.ts`):** Defined closed channel set (`email`, `whatsapp`), delivery modes (`disabled`, `active`), safe internal diagnostic/configuration codes (`ExternalDeliveryConfigurationCode`, `ProviderConfigurationCode`), capability snapshot (`ExternalDeliveryCapability` with `disabled`, `invalid`, and `active-ready` variants), and adapter contracts (`DisabledAdapterRequest`, `DisabledAdapterResult`, `NotificationChannelAdapter`).
+  - **Disabled Channel Adapters & Seam Factory (`src/lib/notifications/channel-adapters.ts`):** Implemented `DisabledEmailAdapter` and `DisabledWhatsAppAdapter` returning deterministic `not_dispatched` / `provider_disabled` results with zero side effects, no provider client creation, no network calls, and no provider SDK imports (`resend`, `@upstash/qstash`, `@upstash/workflow`). Selection factory returns disabled adapters across all modes (including `active-ready`).
+  - **Safe Diagnostic & Localization Key Mapping (`src/lib/notifications/errors.ts`):** Created bounded diagnostic helper mapping internal codes to semantic localization keys (`provider_disabled` -> `providerDisabled`, `external_delivery_unavailable` -> `externalDeliveryUnavailable`) with exhaustive type safety via `as const satisfies Record<SafeNotificationDiagnosticCode, NotificationLocalizationKey>`.
+  - **ESLint Flat-Config Import Boundary (`eslint.config.mjs`):** Enforced structural restricted imports for all 8 notification module paths (`@/lib/notifications/*` and `src/lib/notifications/*`) preventing imports into client components, shared modules, hooks, and middleware/proxies, with a targeted flat-config override for `src/lib/notifications/**` to permit intra-folder server-only imports while preserving Prisma and admin Supabase client restrictions.
+  - **Safe Environment Template (`.env.example`):** Added explicit default `EXTERNAL_DELIVERY_MODE=disabled` and `NOTIFICATION_DEMO_ALERT_EVALUATION_ENABLED=false` with safe placeholder comments stating external delivery and webhooks remain deferred in S06.
+
+- **🧪 Testing & Verification:**
+  - **Configuration Parser Test Suite (`src/lib/notifications/__tests__/config.test.ts`):** 14 tests verifying missing/blank/placeholder/invalid/explicit-disabled modes, active multi-provider prerequisites, placeholder detection across all patterns, malformed email/WhatsApp validation, active-ready state generation, zero raw export leakage, static `server-only` import checks, demo flag parsing, and no unrelated env reads.
+  - **Channel Adapters & Import Boundary Test Suite (`src/lib/notifications/__tests__/channel-adapters.test.ts`):** 11 tests verifying channel matching, dispatch result invariants (no message IDs/receipts/error causes), zero fetch/network calls under both disabled and active-ready configs, static `server-only` import checks, zero provider SDK imports, closed channel unions, non-throwing behavior, structural ESLint rule verification, and errors diagnostic mappings.
+  - **Deterministic Test Harness:** Enforced `server-only` mocking, `vi.resetModules()` per dynamic import, `process.env` snapshot/restoration, synthetic data only, and global `fetch` stub lifecycle restoration across all suites.
+  - **Automated Verification:** Verified 100% pass across Vitest (25/25 tests passing), TypeScript compiler checks (`tsc --noEmit`), ESLint (0 errors, 0 warnings), Prettier formatting (`prettier --check`), and Next.js App Router production build (`next build`).
+
 ## [2026-08-22 @ 14:17]
 
 **🛠 S06-E08: Notification Capability Suppression & Alert Evaluation Migrations**
