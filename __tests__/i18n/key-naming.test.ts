@@ -87,7 +87,7 @@ describe("VC-I18N-008: Translation keys follow semantic naming convention", () =
         for (const seg of segments) {
           if (
             pattern.test(seg) &&
-            !/^(brandName|brand|name|title|label|description|notice|placeholder|action|submit|confirm|cancel|close|open|save|edit|delete|view|list|create|update|remove|nav|links|home|projects|agenda|notifications|badgeLabel|badgeOverflow|landing|admin|pm|operator|client|welcome|recentProjects|emptyProjects|myProjects|emptyAgenda|status|priority|loading|error|message|signInAgain|signIn|forgotPasswordLink|ariaLabel|signOut|currentUser|role|planning|inProgress|paused|completed|cancelled|low|medium|high|blocking|returnToProjectsAction|returnToAssignedProjectsAction)$/i.test(
+            !/^(brandName|brand|name|title|label|description|notice|placeholder|action|submit|confirm|cancel|close|open|save|edit|delete|view|list|create|update|remove|nav|links|home|projects|agenda|notifications|badgeLabel|badgeOverflow|landing|admin|pm|operator|client|welcome|recentProjects|emptyProjects|myProjects|emptyAgenda|status|priority|loading|error|message|signInAgain|signIn|forgotPasswordLink|ariaLabel|signOut|currentUser|role|planning|inProgress|paused|completed|cancelled|low|medium|high|blocking|returnToProjectsAction|returnToAssignedProjectsAction|backToProjects|backToProject|backToQueue|backToReviews|urlLabel|urlPlaceholder|urlHelp|urlError|driveLinkLabel|driveLinkNotice|openDriveLink|driveLinkAria|noDriveLink|versionUnavailable|unavailable|malformedNotice|malformed)$/i.test(
               seg,
             )
           ) {

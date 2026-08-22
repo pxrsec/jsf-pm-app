@@ -419,6 +419,7 @@ describe("S04-05 Project Completion, Reopening, and Visible Audit Context", () =
         deadline_at: "2026-11-15T12:00:00Z",
         has_deliverables: false,
         assignee_id: "user-1",
+        assigned_at: "2026-08-01T00:00:00Z",
         started_at: null,
         completed_at: null,
         deleted_at: null,

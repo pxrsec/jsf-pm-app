@@ -72,7 +72,7 @@ export function MobileNavToggle({
         aria-expanded={isOpen}
         aria-controls="mobile-nav-drawer"
         aria-label={isOpen ? t("closeMenu") : t("openMenu")}
-        className="h-9 w-9"
+        className="h-11 w-11 min-h-[44px] min-w-[44px]"
       >
         {isOpen ? (
           <X className="h-5 w-5" aria-hidden="true" />
@@ -112,24 +112,13 @@ export function MobileNavToggle({
               {t("links.home")}
             </Link>
 
-            {role === "admin" || role === "pm" ? (
-              <Link
-                href={secondaryNavigationItem.href}
-                onClick={() => setIsOpen(false)}
-                className="px-3 py-2 rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
-                {secondaryNavigationItem.label}
-              </Link>
-            ) : (
-              <a
-                href={secondaryNavigationItem.href}
-                aria-disabled="true"
-                tabIndex={-1}
-                className="px-3 py-2 rounded-md font-medium text-muted-foreground cursor-not-allowed opacity-60"
-              >
-                {secondaryNavigationItem.label}
-              </a>
-            )}
+            <Link
+              href={secondaryNavigationItem.href}
+              onClick={() => setIsOpen(false)}
+              className="px-3 py-2 rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              {secondaryNavigationItem.label}
+            </Link>
           </div>
 
           <div className="pt-2 border-t border-border">

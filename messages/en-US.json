@@ -48,12 +48,14 @@
       "operator": {
         "welcome": "Welcome, {name}",
         "myAgenda": "My task agenda",
-        "emptyAgenda": "You have no pending tasks in your agenda."
+        "emptyAgenda": "You have no pending tasks in your agenda.",
+        "untitledTask": "Untitled task"
       },
       "client": {
         "welcome": "Welcome, {name}",
         "myProjects": "My projects",
-        "emptyProjects": "You have no active projects associated."
+        "emptyProjects": "You have no active projects associated.",
+        "unnamedProject": "Unnamed project"
       }
     },
     "status": {
@@ -816,6 +818,472 @@
       "watcherMode": {
         "readOnlyLabel": "Read-only — Watcher capacity",
         "cannotMutate": "PM Watchers can only read tasks and add collaborative comments."
+      }
+    },
+    "operatorAgenda": {
+      "title": "My Agenda",
+      "subtitle": "Tasks and deliverables assigned under your responsibility",
+      "browseProjectsLink": "View assigned projects",
+      "untitledTask": "Untitled task",
+      "recovery": {
+        "title": "Error loading agenda",
+        "description": "An unexpected error occurred while loading your task agenda. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to Home"
+      },
+      "empty": {
+        "title": "No pending tasks",
+        "description": "You currently have no tasks assigned in your agenda.",
+        "browseProjectsAction": "View projects with assigned work"
+      },
+      "urgency": {
+        "new": "New assignment",
+        "newAria": "New assignment: assigned less than 24 hours ago",
+        "normal": "Normal",
+        "normalAria": "Normal active work",
+        "upcoming": "Due soon",
+        "upcomingAria": "Due soon: deadline between 24 and 72 hours",
+        "urgent": "Urgent",
+        "urgentAria": "Urgent: deadline in less than 24 hours",
+        "overdue": "Overdue",
+        "overdueAria": "Overdue: deadline has passed",
+        "completed": "Completed today",
+        "completedAria": "Completed today"
+      },
+      "card": {
+        "deliverablesCount": "{count} deliverables",
+        "version": "v{version}",
+        "assignedAt": "Assigned: {date}",
+        "deadlineAt": "Deadline: {date}",
+        "completedAt": "Completed: {date}",
+        "viewProjectAria": "View tasks for project {projectName}",
+        "openTaskAria": "View details for task {taskTitle}"
+      },
+      "completedSection": {
+        "title": "Completed today",
+        "description": "Work finished during today"
+      }
+    },
+    "operatorProjects": {
+      "title": "My Assigned Projects",
+      "subtitle": "Projects with tasks assigned under your responsibility",
+      "backToAgenda": "Back to My Agenda",
+      "backToProjects": "Back to My Projects",
+      "unnamedProject": "Unnamed project",
+      "recovery": {
+        "title": "Error loading projects",
+        "description": "An unexpected error occurred while loading your assigned projects. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to My Agenda"
+      },
+      "empty": {
+        "title": "No assigned projects",
+        "description": "You currently have no projects with assigned tasks.",
+        "returnToAgenda": "Go to My Agenda"
+      },
+      "card": {
+        "ownTaskCount": "{count} assigned tasks",
+        "nearestDeadline": "Nearest deadline: {date}",
+        "openProjectAria": "View assigned tasks in {projectName}"
+      },
+      "projectDetail": {
+        "ownTasksSummary": "{count} assigned tasks in this project"
+      },
+      "absence": {
+        "title": "Project not available",
+        "description": "The requested project was not found or you do not have assigned tasks in it.",
+        "returnAction": "Back to My Projects"
+      }
+    },
+    "operatorTask": {
+      "backToProject": "Back to project",
+      "backToAgenda": "Back to My Agenda",
+      "taskContext": "Task context",
+      "projectLabel": "Project",
+      "viewProjectAria": "View tasks for project {projectName}",
+      "descriptionTitle": "Work description",
+      "noDescription": "No description provided.",
+      "timeContext": "Timeline and deadlines",
+      "assignedAt": "Assigned: {date}",
+      "deadlineAt": "Deadline: {date}",
+      "startedAt": "Started: {date}",
+      "resourcesTitle": "Task resources",
+      "noResources": "No resources attached to this task.",
+      "externalResourceAria": "Open external resource: {name} (opens in a new tab)",
+      "deliverablesTitle": "Assigned deliverables",
+      "noDeliverables": "No deliverables assigned to this task.",
+      "specificationsTitle": "Specifications",
+      "noSpecifications": "No additional specifications.",
+      "submissionDeadline": "Submission deadline: {date}",
+      "internalReviewDeadline": "Internal review: {date}",
+      "clientDeliveryDeadline": "Client delivery: {date}",
+      "awaitingInternalReviewNotice": "Under internal review by PM team",
+      "awaitingClientReviewNotice": "Released for client review",
+      "approvedNotice": "Deliverable approved",
+      "deliveredNotice": "Deliverable finalized and delivered",
+      "changesRequestedNotice": "Revisions requested for this deliverable. Submitting a new version records an immutable entry and returns to internal review.",
+      "submitCta": "Submit production version",
+      "resubmitCta": "Submit revised version",
+      "deliverableStatus": {
+        "pending": "Pending",
+        "awaitingInternalReview": "Under internal review",
+        "awaitingClientReview": "Under client review",
+        "approved": "Approved",
+        "changesRequested": "Changes requested",
+        "delivered": "Delivered"
+      },
+      "absence": {
+        "title": "Task unavailable",
+        "description": "The requested task was not found or you do not have permission to access it.",
+        "returnAction": "Back to My Agenda"
+      },
+      "recovery": {
+        "title": "Error loading task",
+        "description": "An unexpected error occurred while loading task information. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to My Agenda"
+      }
+    },
+    "operatorSubmission": {
+      "dialogTitle": "Submit production version",
+      "dialogTitleRevision": "Submit revised version",
+      "dialogDescription": "Provide the Google Drive link with the deliverable ready for internal review.",
+      "truthfulnessNotice": "The application records the link exactly as provided, without downloading, previewing, or inspecting remote content.",
+      "revisionNotice": "This submission will record version v{nextVersion} and return to PM team internal review.",
+      "urlLabel": "Google Drive link",
+      "urlPlaceholder": "https://drive.google.com/... or https://docs.google.com/...",
+      "urlHelp": "Must be a valid HTTPS Google Drive or Google Docs link.",
+      "urlError": "The link must be a valid Google Drive HTTPS URL (drive.google.com or docs.google.com).",
+      "noteLabel": "Submission notes (optional)",
+      "notePlaceholder": "Details on changes, instructions, or context for this version...",
+      "noteHelp": "Maximum 1,000 characters.",
+      "charCount": "{count}/1000",
+      "cancelAction": "Cancel",
+      "submitAction": "Submit deliverable",
+      "submitting": "Submitting deliverable...",
+      "successToast": "Version v{version} successfully recorded for internal review.",
+      "errors": {
+        "validationFailed": "Please verify that the Google Drive link is valid.",
+        "unauthorized": "You are not authorized to submit this deliverable.",
+        "notFound": "Deliverable not found or no longer available.",
+        "invalidTransition": "The deliverable is no longer in a state eligible for submission.",
+        "conflict": "The deliverable status has changed. Refreshing data.",
+        "invariantViolation": "Could not process submission due to a system constraint.",
+        "generic": "An error occurred while submitting the deliverable. Please try again."
+      }
+    },
+    "clientPortal": {
+      "welcomeSubtitle": "Secure workspace to view your projects, requests, and reviews.",
+      "viewAllProjects": "View all projects",
+      "recovery": {
+        "title": "Error loading client portal",
+        "description": "An unexpected error occurred while loading your workspace. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to Home"
+      },
+      "quickLinks": {
+        "projectsTitle": "My Projects",
+        "projectsSubtitle": "Active project directory",
+        "requestsTitle": "My Requests",
+        "requestsSubtitle": "Assigned requests queue",
+        "reviewsTitle": "Production Reviews",
+        "reviewsSubtitle": "Deliverables awaiting review",
+        "viewAll": "Go to section"
+      }
+    },
+    "clientProjects": {
+      "title": "My Projects",
+      "subtitle": "Projects in which you participate as a client",
+      "listHeading": "Project list",
+      "deadline": "Deadline",
+      "noDeadline": "No deadline",
+      "openProject": "View details",
+      "openProjectAria": "View details for project {projectName}",
+      "unnamedProject": "Unnamed project",
+      "recovery": {
+        "title": "Error loading projects",
+        "description": "An unexpected error occurred while loading your associated projects. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to Home"
+      },
+      "requestsBanner": {
+        "title": "Your direct requests",
+        "description": "View requests and requirements directly assigned to you",
+        "cta": "View requests queue"
+      },
+      "empty": {
+        "title": "No active projects",
+        "description": "You currently have no active associated projects."
+      },
+      "absence": {
+        "title": "Project unavailable",
+        "description": "The requested project was not found or you do not have access to it.",
+        "returnAction": "Back to My Projects"
+      },
+      "detail": {
+        "backToProjects": "Back to My Projects",
+        "sectionContext": "Project information and requirements",
+        "scopeLabel": "Project Scope",
+        "deadline": "Project deadline",
+        "lastActivity": "Last activity",
+        "requestsSection": {
+          "title": "Your Requests",
+          "viewAllQueue": "View requests queue",
+          "empty": "You have no assigned requests in this project.",
+          "childCount": "{count} associated delivery requirements",
+          "deadline": "Deadline",
+          "noDeadline": "No deadline",
+          "openRequest": "View request",
+          "openRequestAria": "View request {title}"
+        },
+        "submissionsSection": {
+          "title": "Your Requested Submissions",
+          "empty": "You have no requested submissions in this project."
+        },
+        "reviewsSection": {
+          "title": "Production Reviews",
+          "viewAllReviews": "View all reviews",
+          "empty": "There are no released production deliverables for review in this project."
+        }
+      }
+    },
+    "clientRequests": {
+      "title": "My Requests",
+      "subtitle": "Queue of requests and tasks assigned directly to you",
+      "childCount": "{count} required submissions",
+      "deadline": "Deadline",
+      "noDeadline": "No deadline",
+      "openRequest": "View request",
+      "openRequestAria": "View request {title}",
+      "unnamedProject": "Unnamed project",
+      "untitledRequest": "Untitled request",
+      "recovery": {
+        "title": "Error loading requests",
+        "description": "An unexpected error occurred while loading your assigned requests. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to Home"
+      },
+      "empty": {
+        "title": "No pending requests",
+        "description": "You have no requests or tasks directly assigned at this time."
+      },
+      "status": {
+        "pending": "Pending",
+        "inProgress": "In progress",
+        "inReview": "In review",
+        "completed": "Completed",
+        "blocked": "Blocked"
+      },
+      "priority": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "blocking": "Blocking"
+      },
+      "absence": {
+        "title": "Request unavailable",
+        "description": "The request was not found or you do not have permission to access it.",
+        "returnAction": "Back to My Requests"
+      },
+      "detail": {
+        "backToQueue": "Back to My Requests",
+        "backToProject": "Back to {projectName}",
+        "descriptionTitle": "Request Description",
+        "deadline": "Deadline",
+        "startedAt": "Started on",
+        "completedAt": "Completed on",
+        "resourcesTitle": "Attached Resources"
+      },
+      "actions": {
+        "startRequest": "Start request",
+        "startRequestAria": "Start work on this request",
+        "starting": "Starting...",
+        "startSuccess": "Request started successfully.",
+        "completeRequest": "Complete request",
+        "completeRequestAria": "Mark request as completed",
+        "completing": "Completing...",
+        "completeSuccess": "Request completed successfully.",
+        "completedNotice": "This request has been completed.",
+        "nonActionableNotice": "This request is in a state that does not accept direct actions.",
+        "prerequisiteTitle": "Pending requirements",
+        "prerequisiteMessage": "There {count, plural, =1 {is 1 pending submission} other {are # pending submissions}} that must be submitted before completing this request.",
+        "errors": {
+          "validationFailed": "The request data is invalid.",
+          "unauthorized": "You are not authorized to perform this action.",
+          "notFound": "The request was not found or is no longer available.",
+          "invalidTransition": "The request is no longer in a valid state for this action.",
+          "conflict": "The request state has changed. Refreshing data.",
+          "invariantViolation": "Cannot complete request because there are pending required submissions.",
+          "generic": "An error occurred while updating the request. Please try again."
+        }
+      }
+    },
+    "clientSubmissions": {
+      "requirementsTitle": "Submission Requirements",
+      "requirementsCount": "({count} requirements)",
+      "noRequirements": "No submissions are required for this request.",
+      "status": {
+        "submitted": "Submitted",
+        "pending": "Pending"
+      },
+      "versionLabel": "Current version",
+      "deadline": "Deadline",
+      "noDeadline": "No deadline",
+      "readOnlyNotice": "Read only",
+      "actions": {
+        "submitCta": "Submit link",
+        "submitCtaReplacement": "Submit replacement link",
+        "dialogTitle": "Submit Deliverable Link",
+        "dialogTitleReplacement": "Submit Deliverable Replacement",
+        "dialogDescription": "Enter the public HTTPS link where the requested asset is located.",
+        "urlLabel": "Public HTTPS Link",
+        "urlPlaceholder": "https://drive.google.com/...",
+        "urlHelp": "The application only records the provided URL. Files are not downloaded, inspected, or hosted.",
+        "noteLabel": "Additional note (optional)",
+        "notePlaceholder": "Add any relevant details about this asset...",
+        "noteHelp": "Maximum 1,000 characters (leading/trailing whitespace ignored)",
+        "providerPreviewLabel": "Detected provider (lexical classification)",
+        "deliverableLabel": "Deliverable",
+        "confirmDialogTitle": "Confirm Deliverable Submission",
+        "confirmDialogDescription": "Review the details before submitting. This action will record an immutable version.",
+        "confirmNotice": "Confirming records the link. The application does not verify the availability, permissions, or content of the external link.",
+        "confirmSubmit": "Confirm and submit link",
+        "submitting": "Submitting...",
+        "cancel": "Cancel",
+        "successMessage": "Deliverable link recorded successfully.",
+        "errors": {
+          "invalidLink": "The entered link is not a valid public HTTPS URL.",
+          "linkTooLong": "The URL exceeds the maximum limit of 2,048 bytes.",
+          "noteTooLong": "The note exceeds the 1,000 allowed characters.",
+          "unauthorized": "You do not have permission to submit this deliverable.",
+          "notFound": "The submission requirement was not found or is unavailable.",
+          "invalidTransition": "The requirement is no longer pending submission.",
+          "conflict": "The requirement state has changed. The page will be refreshed.",
+          "generic": "An error occurred while recording the submission. Please try again."
+        }
+      },
+      "correction": {
+        "reopenedNoticeTitle": "Replacement requested",
+        "reopenedNoticeDesc": "The management team has requested a new link for this requirement.",
+        "reopenReasonHeading": "Reason for replacement request",
+        "replacementExplanation": "Submitting a replacement creates a new immutable version. The previous link is preserved in history."
+      },
+      "history": {
+        "title": "Version & Request History",
+        "versionEntry": "Version {versionNumber}",
+        "reopenedEntry": "Reopened for correction",
+        "submittedAt": "Submitted on {date}",
+        "reopenedAt": "Reopened on {date}",
+        "reasonLabel": "Reason",
+        "noteLabel": "Note",
+        "emptyHistory": "No previous versions recorded.",
+        "unavailable": "History is temporarily unavailable."
+      },
+      "externalLink": {
+        "openLink": "Open external link",
+        "openLinkAria": "Open external link for {title} (opens in a new tab)",
+        "registeredLinkLabel": "Recorded link"
+      },
+      "providers": {
+        "googleDrive": "Google Drive",
+        "dropbox": "Dropbox",
+        "oneDrive": "OneDrive",
+        "weTransfer": "WeTransfer",
+        "frameIo": "Frame.io",
+        "otherHttps": "HTTPS Link (Other)"
+      }
+    },
+    "clientReviews": {
+      "title": "Production Reviews",
+      "subtitle": "Video and design deliverables released for your review and approval",
+      "versionLabel": "Version",
+      "deadline": "Delivery deadline",
+      "noDeadline": "No deadline",
+      "openReview": "Review deliverable",
+      "openReviewAria": "Review deliverable {title}",
+      "unnamedProject": "Unnamed project",
+      "untitledDeliverable": "Untitled deliverable",
+      "recovery": {
+        "title": "Error loading reviews",
+        "description": "An unexpected error occurred while loading production deliverables. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to Home"
+      },
+      "awaitingSection": {
+        "title": "Awaiting your review",
+        "empty": "You have no deliverables awaiting review at this time."
+      },
+      "recentOutcomesSection": {
+        "title": "Recent review outcomes"
+      },
+      "empty": {
+        "title": "No deliverables for review",
+        "description": "There are no released production deliverables in your projects currently."
+      },
+      "absence": {
+        "title": "Deliverable unavailable",
+        "description": "The requested deliverable was not found or you do not have access to it.",
+        "returnAction": "Back to Reviews"
+      },
+      "detail": {
+        "backToReviews": "Back to Reviews",
+        "backToProject": "Back to {projectName}",
+        "versionUnavailable": "Version unavailable",
+        "specificationsTitle": "Specifications",
+        "submissionNoteTitle": "Submission Note",
+        "deliveryDeadline": "Client delivery deadline",
+        "submittedAt": "Submitted on",
+        "approvedAt": "Approved on",
+        "driveLinkLabel": "Deliverable Material",
+        "driveLinkNotice": "Opens the Google Drive link in a new tab to inspect material.",
+        "openDriveLink": "Open in Google Drive",
+        "driveLinkAria": "Open material for {title} in Google Drive (opens in a new tab)",
+        "noDriveLink": "No Google Drive link was provided for this version.",
+        "inconsistentReviewTitle": "Review unavailable",
+        "inconsistentReviewMessage": "The data for this deliverable is inconsistent. Actions cannot be performed at this time.",
+        "approvedNoticeTitle": "Deliverable approved",
+        "approvedNoticeDesc": "You have approved this deliverable. The internal team will proceed with final delivery.",
+        "changesRequestedNoticeTitle": "Changes requested",
+        "changesRequestedNoticeDesc": "You have requested changes. The team will revise the deliverable and pass internal review before submitting a new version to you.",
+        "deliveredNoticeTitle": "Deliverable finalized",
+        "deliveredNoticeDesc": "This deliverable has been formally marked as delivered.",
+        "readOnlyStateNotice": "This deliverable is in read-only mode."
+      },
+      "feedbackHistory": {
+        "title": "Client Review History",
+        "empty": "No previous review comments.",
+        "malformedNotice": "Could not load review history due to a data inconsistency.",
+        "decisionApproved": "Approved by client",
+        "decisionChangesRequested": "Changes requested by client"
+      },
+      "actions": {
+        "approveDeliverable": "Approve deliverable",
+        "approveAria": "Approve this deliverable",
+        "approveDialogTitle": "Confirm deliverable approval",
+        "approveDialogDescription": "By approving this deliverable, you confirm it meets your requirements and the team will proceed to final delivery.",
+        "confirmApprove": "Yes, approve deliverable",
+        "approving": "Approving...",
+        "requestChanges": "Request changes",
+        "requestChangesAria": "Request changes for this deliverable",
+        "changesDialogTitle": "Request changes on deliverable",
+        "changesDialogDescription": "Describe the required changes in detail. The team will make the necessary modifications.",
+        "commentLabel": "Comments on required changes",
+        "commentPlaceholder": "Clearly specify what adjustments are needed...",
+        "commentHelp": "Required comment (maximum 5,000 characters)",
+        "commentRequired": "You must enter a comment detailing the requested changes.",
+        "commentTooLong": "The comment cannot exceed 5,000 characters.",
+        "confirmRequestChanges": "Submit change request",
+        "submittingChanges": "Submitting request...",
+        "cancelAction": "Cancel",
+        "errors": {
+          "validationFailed": "The review data is invalid.",
+          "unauthorized": "You are not authorized to review this deliverable.",
+          "notFound": "The deliverable was not found or is no longer available.",
+          "invalidTransition": "The deliverable is no longer in a state eligible for review.",
+          "conflict": "The deliverable state has changed. Refreshing data.",
+          "invariantViolation": "Could not record review due to a system constraint.",
+          "generic": "An error occurred while processing the review. Please try again."
+        }
       }
     }
   }

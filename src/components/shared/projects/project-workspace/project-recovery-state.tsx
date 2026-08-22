@@ -40,13 +40,18 @@ export function ProjectRecoveryState({
         {description}
       </p>
       <div className="flex items-center gap-3 pt-2">
-        <Button onClick={reset} size="sm">
+        <Button onClick={reset} size="sm" className="min-h-[44px] min-w-[44px]">
           {retryLabel}
         </Button>
         {returnLink && (
           <Link
             href={returnLink.href}
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              className:
+                "min-h-[44px] min-w-[44px] inline-flex items-center justify-center",
+            })}
           >
             {returnLink.label}
           </Link>

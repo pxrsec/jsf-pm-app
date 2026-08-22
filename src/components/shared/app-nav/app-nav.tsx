@@ -65,23 +65,12 @@ export async function AppNav({ session, unreadCount }: AppNavProps) {
               {t("links.home")}
             </Link>
 
-            {role === "admin" || role === "pm" ? (
-              <Link
-                href={secondaryNavigationItem.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {secondaryNavigationItem.label}
-              </Link>
-            ) : (
-              <a
-                href={secondaryNavigationItem.href}
-                aria-disabled="true"
-                tabIndex={-1}
-                className="text-sm font-medium text-muted-foreground cursor-not-allowed opacity-60"
-              >
-                {secondaryNavigationItem.label}
-              </a>
-            )}
+            <Link
+              href={secondaryNavigationItem.href}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {secondaryNavigationItem.label}
+            </Link>
           </nav>
         </div>
 

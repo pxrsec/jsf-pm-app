@@ -1,5 +1,143 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 12:15]
+
+**🚀 S05-07: Navigation, Recovery, Localization, Accessibility, and Closeout Verification**
+
+- **🚀 Features & Polish:**
+  - **Reused Standard Recovery Primitive (`ProjectRecoveryState`):** Standardized unexpected route error recovery across Operator (`/operador/error.tsx`) and Client (`/cliente/error.tsx`) portals using the shared `ProjectRecoveryState` component with localized error titles, descriptions, retry handlers, Sentry boundary capture (`boundary: "localized-route"`), and role-safe return links (`/operador`, `/cliente`).
+  - **44px Primary Touch Target Compliance:** Updated `MobileNavToggle` button (`min-h-[44px] min-w-[44px]`) and `ProjectRecoveryState` interactive retry and return controls to meet the 44px touch target accessibility standard.
+  - **Drawer Keyboard Navigation & Focus Management:** Verified and tested mobile drawer closing upon internal route navigation and `Escape` key press, ensuring immediate focus restoration to the toggle button.
+  - **Screen Reader Semantics & Loading Status:** Added `role="status"` and visually-hidden status announcements (`<span className="sr-only">`) to Operator and Client loading skeletons.
+
+- **🛠 Architecture, Localization & Types Hygiene:**
+  - **100% Bilingual Message Catalog Parity:** Synchronized all dictionary entries across `messages/es-MX.json` and `messages/en-US.json` for `shell.landing`, `projects.operatorAgenda`, `projects.operatorProjects`, `projects.operatorTask`, `projects.clientPortal`, `projects.clientProjects`, `projects.clientRequests`, `projects.clientSubmissions`, and `projects.clientReviews` with zero namespace mismatches.
+  - **Eliminated Static Query-Level Fallbacks:** Removed hardcoded Spanish strings (`"Sin nombre"`, `"Sin título"`) from query layers (`src/lib/client/project-queries.ts`, `request-queries.ts`, `review-queries.ts`), returning raw `null` values and delegating presentation fallbacks to localized message catalogs.
+  - **Nullable Domain Model Audit:** Updated `ClientProjectListItem`, `ClientSubmissionRequirementSummary`, `ClientRequestQueueItem`, `ClientRequestDetail`, `ClientProductionReviewQueueItem`, and `ClientProductionReviewDetail` types to strictly support nullable `name`, `title`, and `project_name` (`string | null`).
+  - **Presentation Layer Fallback Remediation:** Localized all missing project names and untitled titles across Client and Operator presentation components, eliminating hardcoded `"Proyecto"`, `"Sin nombre"`, and `"Sin título"`.
+
+- **🧪 Testing & Closeout Verification:**
+  - **Targeted Test Expansion:** Added tests in `__tests__/app-shell/navigation.test.ts` (drawer closure on link click and Escape, focus restoration), `__tests__/projects/project-recovery-state.test.tsx`, `__tests__/client/client-portal.test.tsx` (English presentation rendering and negative fallback assertions), and verified `__tests__/operator/operator-agenda-routes.test.tsx`.
+  - **Unified Verification Gate (`npm run verify`):** Executed full integration pipeline — Prettier formatting check (`format:check`), ESLint (`lint`), TypeScript typecheck (`typecheck`), Next.js App Router build (`build`), Vitest unit/integration suite (`test`: 53 test files, 478 passed, 0 failures), coverage thresholds (`test:coverage`), and production security audit (`audit:prod`: 0 vulnerabilities).
+  - **Closeout Verification Artifact:** Generated `dev-docs/specs/s05/s05-sprint-05-closeout-verification.md` detailing J-01 through J-10 manual journey verification, DoD compliance matrix, and complete file inventory.
+
+## [2026-08-22 @ 10:56]
+
+**🚀 S05-05: Client Submission Planning Consumption, Pure Lexical URL Submission, and Correction Loop**
+
+- **🚀 Features:**
+  - **Client Submission Link Submission & Correction Flow (`ClientSubmissionActions`):** Implemented client submission modal with live lexical URL validation, provider preview classification, live note character counter (enforcing normalized post-trim length $\le 1000$ characters without raw HTML truncation), truthfulness disclaimer ("El sistema únicamente registra la URL proporcionada. No se realiza descarga, inspección ni almacenamiento del archivo"), confirmation step, double-submit protection, and live screen-reader announcements.
+  - **Correction Loop UI & Reopen History:** In direct request detail views, rendered distinct "Reemplazo solicitado" badges, displayed PM reopen reason and replacement explanation, while keeping previous versions intact in an immutable history list.
+  - **Separation of Presentation Contexts:** Preserved read-only summary display in project dashboards (`/cliente/proyectos/[project-id]`) while providing full interactive submission actions, registered link opening, and correction history strictly on canonical request detail views (`/cliente/tareas/[task-id]`).
+  - **Deliberate Outbound External Links:** Rendered submitted URLs with `target="_blank"` and `rel="noopener noreferrer"` without any server-side network dereferencing.
+  - **Malformed History Defense:** Automatically detects malformed correction history JSON, suppresses mutation actions, and renders a safe recovery warning without querying underlying database tables.
+
+- **🛠 Architecture & Security:**
+  - **Pure Lexical URL Validator & Classifier (`src/lib/client/submission-url.ts`):** Implemented zero-network pure regex and octet-length validation mirroring PostgreSQL `private.is_valid_client_submission_url` and provider classification (`google_drive`, `dropbox`, `onedrive`, `wetransfer`, `frame_io`, `other_https`) matching PostgreSQL `private.classify_client_submission_provider`.
+  - **Strict Server Action & Schema Validation (`src/lib/client/actions.ts` & `src/lib/client/schemas.ts`):** Implemented `submitClientSubmissionAction` and `SubmitClientDeliverableSchema` strictly rejecting non-string note inputs, pre-normalizing whitespace, enforcing $\le 1000$ chars, performing lexical pre-validation, and verifying direct client assignment and `pending` state before calling `submitClientDeliverable`.
+  - **Safe Error Code Mapping (`src/lib/projects/errors.ts`):** Extended `mapSupabaseError` with explicit classifications for direct-assignee failures (`UNAUTHORIZED`), invalid transitions/workflows (`INVALID_TRANSITION`), and authoritative URL/note constraints (`VALIDATION_FAILED`), preventing raw database string exposure.
+  - **Mechanical Types Extraction (`src/lib/client/sort-helpers.ts`):** Extracted sorting helpers into a dedicated helper module to strictly satisfy the $\le 400$ lines constraint while re-exporting all sorters from `src/lib/client/types.ts`.
+  - **Complete Bilingual Key Parity:** Added full Spanish (`messages/es-MX.json`) and English (`messages/en-US.json`) semantic translation trees under `projects.clientSubmissions` conforming to camelCase naming rules.
+
+- **🧪 Testing & Verification:**
+  - **Acceptance URL Corpus (`__tests__/client/client-submission-url.test.ts`):** 26 tests verifying all 7 standard valid provider URLs, 4 look-alike valid hosts mapped to `other_https`, 13 invalid URLs (scheme, credentials, ports, localhost, IP literals, whitespace, backslashes, $>2048$ bytes), and zero-network execution guarantee.
+  - **Server Actions Tests (`__tests__/client/client-actions.test.ts`):** 22 tests verifying auth, schema validation, non-string note rejection, whitespace normalization, preflight state checks, 4-route family bilingual revalidation, and error mapping.
+  - **Query Tests (`__tests__/client/client-queries.test.ts`):** 11 tests verifying correction history parsing, malformed JSON fallback, and direct submission target resolution.
+  - **UI Integration & Presentation Tests (`__tests__/client/client-portal.test.tsx`):** 29 component tests verifying summary vs detailed modes, correction banners, outbound link attributes, action suppression, and bilingual dictionary parity.
+  - **Full Automated Verification:** All 18 test suites (269 tests), TypeScript typecheck (`tsc --noEmit`), ESLint linting (0 errors, 0 warnings), Prettier formatting (`prettier --check .`), and Next.js production build (`next build`) passing 100%.
+
+## [2026-08-22 @ 10:18]
+
+**🛠 S05-05: Harden Client Submission URLs, Safe Correction History & Database Types Generation**
+
+- **🛠 Architecture & Database:**
+  - **Applied Migration (`supabase/migrations/20260822095500_s05_05_harden_client_submission_urls_and_correction_history.sql`):** Applied the S05-05 schema migration to `jsf-pm-dev` via Supabase MCP `apply_migration`. Implemented lexical public-HTTPS URL validation (`private.is_valid_client_submission_url`), authoritative lexical provider classification (`private.classify_client_submission_provider`), least-privilege direct-assignee correction history projection helper (`private.get_client_submission_correction_history`), hardened deliverable submission RPC (`public.submit_client_deliverable`), and updated `public.client_submission_view` with `correction_history`.
+  - **Database Types Synchronization (`src/lib/database.types.ts`):** Regenerated TypeScript types from `jsf-pm-dev` via Supabase MCP `generate_typescript_types` and updated `src/lib/database.types.ts`.
+
+## [2026-08-22 @ 09:37]
+
+**🚀 S05-04: Client Portal Safe Project Dashboard & Direct-Request Queue**
+
+- **🚀 Features:**
+  - **Live Client Navigation & Shell Integration:** Activated the live `/cliente/proyectos` link in `AppNav` and `MobileNavToggle` for client users, and updated `ClientShell` with localized quick links to `/cliente/proyectos`, `/cliente/tareas`, `/cliente/entregables`, and direct project cards.
+  - **Client Project Browser & Workspace (`/cliente/proyectos` & `/cliente/proyectos/[project-id]`):** Implemented client project list and project detail views featuring 4 separated sections: Project Context (with status badge and client scope), Your Requests (with child count and status), Your Requested Submissions (read-only requirements with pending/submitted indicators), and Released Production Reviews (with deliverable status and review link).
+  - **Client Direct-Request Queue & Detail (`/cliente/tareas` & `/cliente/tareas/[task-id]`):** Implemented direct-assignee client request queue and detail views featuring plain-text descriptions, timeline dates, display-only approved resources, read-only child submission summaries, and interactive lifecycle controls.
+  - **Client Request Lifecycle Actions (`ClientRequestActions`):** Implemented localized client action leaves for starting (`pending` → `in_progress`) and completing (`in_progress` → `completed`) client requests with double-click protection and inline error mapping.
+  - **Client Production Review Queue & Detail (`/cliente/entregables` & `/cliente/entregables/[deliverable-id]`):** Implemented client review list (split into Awaiting Your Review and Recent Outcomes) and canonical review detail view featuring deliberate outbound Google Drive review links (`target="_blank"`, `rel="noopener noreferrer"`) and parsed client feedback history without internal IDs.
+  - **Client Production Review Actions (`ClientReviewActions`):** Implemented approval and revision request controls with double-submit protection, character counters (1-2000 chars for revisions), and strict review action suppression if version or feedback data is invalid.
+  - **Strict Error Code Catalog Mapping:** Implemented explicit client error mapping (`CLIENT_ERROR_KEY_BY_CODE`) mapping domain error codes (`VALIDATION_FAILED`, `UNAUTHORIZED`, `NOT_FOUND`, `INVALID_TRANSITION`, `CONFLICT`, `INVARIANT_VIOLATION`, `UNKNOWN`) to semantic catalog keys, preventing raw backend message leakage.
+
+- **🛠 Architecture & Security:**
+  - **Deliverables Command Adapter (`src/lib/deliverables/commands.ts`):** Extended `ReviewDeliverableCommandInput` to support `stage: "internal" | "client"`, keeping PM internal reviews and Client production reviews strictly separated.
+  - **Server-Only Safe View Queries (`src/lib/client/`):** Created modular typed query boundaries (`project-queries.ts`, `request-queries.ts`, `review-queries.ts`, `queries.ts`) projecting strictly from `client_project_view`, `client_task_view`, `client_submission_view`, and `client_deliverable_view` under RLS.
+  - **Dedicated Client Server Actions (`src/lib/client/actions.ts`):** Implemented `startClientRequestAction`, `completeClientRequestAction`, `approveClientDeliverableAction`, and `requestClientDeliverableChangesAction` enforcing session authentication, client role authorization, safe preflight state verification, command execution, and localized path revalidation.
+  - **Preserved Locale on Non-Client Redirects:** All `/cliente/*` server routes check session role and redirect non-client users using locale-preserving prefixes.
+  - **Bilingual Translation Parity:** Added complete Spanish (`messages/es-MX.json`) and English (`messages/en-US.json`) dictionaries under `projects.clientPortal`, `projects.clientProjects`, `projects.clientRequests`, `projects.clientSubmissions`, and `projects.clientReviews`.
+  - **Line Limit Strict Adherence:** Kept all 24 production implementation files strictly $\le 300$ lines.
+
+- **🧪 Testing & Verification:**
+  - **Action Tests (`__tests__/client/client-actions.test.ts`):** 18 unit tests verifying input validation, session enforcement, non-client role rejection, preflight check guards, command execution, and path revalidations.
+  - **Query Tests (`__tests__/client/client-queries.test.ts`):** 11 unit tests verifying field projections, direct task scoping, child submission isolation, and feedback parsing.
+  - **Presentation & Review Tests (`__tests__/client/client-portal.test.tsx`):** 13 component tests verifying feedback parser, readiness computation, sort order, empty states, 4-section layout, outbound review links, action eligibility, and safe recovery states.
+  - **Shell & Navigation Tests (`__tests__/app-shell/navigation.test.ts`, `__tests__/app-shell/role-landing.test.ts`):** 20 tests verifying live client navigation links, drawer toggles, and shell landing components.
+  - **Semantic Key Parity (`__tests__/i18n/key-naming.test.ts`):** Verified translation key naming and full semantic dictionary parity.
+  - **Full Automated Suite:** 6 test files, 65 tests passing (0 failures). `typecheck`, Next.js production `build`, `lint` (0 errors, 0 warnings), and `format:check` passing 100%.
+
+## [2026-08-22 @ 07:11]
+
+**🚀 S05-03: Operator Task Detail & Production-Submission Flow**
+
+- **🚀 Features:**
+  - **Canonical Operator Task Detail Route (`/operador/tareas/[task-id]` & `/en/operador/tareas/[task-id]`):** Delivered the server-rendered task detail view presenting authoritative urgency badges, task status/priority, title, project link, work description, timeline context, safe task resources, and assigned deliverables.
+  - **Safe Outbound Task Resources (`operator-task-resources.tsx`):** Rendered outbound resource links with strict `target="_blank"` and `rel="noopener noreferrer"`, with accessible labels and no speculative server-side dereferencing.
+  - **Assigned Deliverable Presentation (`operator-deliverable-card.tsx`):** Rendered deliverable cards with specifications, deadlines (submission, internal review, client delivery), current version badge (`v{n}`), and state-specific banners (`awaiting_internal_review`, `awaiting_client_review`, `approved`, `delivered`, `changes_requested`).
+  - **Operator Version Submission Dialog (`operator-submission-dialog.tsx`):** Implemented client submission modal with immediate lexical Google Drive URL validation, optional submission note (max 1000 chars with live counter), explicit truthfulness disclaimer, revision banner for `changes_requested` states, and double-submit protection.
+  - **Agenda Integration:** Linked task titles in `OperatorAgendaTaskCard` directly to canonical `/operador/tareas/[task-id]` route.
+
+- **🛠 Architecture & Security:**
+  - **Type Isolation (`src/lib/operator/types.ts`):** Established dedicated types and status mapping constants keeping all implementation files strictly under 400 lines.
+  - **Safe Read Projection (`src/lib/operator/queries.ts`):** Implemented `getOperatorTaskDetail` and preflight `getOperatorDeliverableForSubmission` querying strictly from `operator_agenda_view` under RLS.
+  - **Dedicated Server Action (`src/lib/operator/actions.ts`):** Implemented `submitOperatorDeliverableVersionAction` enforcing session authentication, operator role authorization, safe preflight deliverable lookup, `production` workflow & `pending`/`changes_requested` status gating, command adapter invocation (`submitDeliverableVersion`), and concrete path revalidation across `/operador/agenda`, `/operador/proyectos`, `/operador/proyectos/[project-id]`, and `/operador/tareas/[task-id]`.
+  - **Bilingual Localization:** Added matching translation keys under `projects.operatorTask` and `projects.operatorSubmission` across `messages/es-MX.json` and `messages/en-US.json`.
+
+- **🧪 Testing & Verification:**
+  - **Query Tests (`__tests__/operator/operator-queries.test.ts`):** 16 unit tests covering field projection, deduplication, resource ordering, task detail mapping, and preflight submission lookup.
+  - **Action Tests (`__tests__/operator/operator-actions.test.ts`):** 11 unit tests covering validation, session `AuthError` throwing, non-operator role rejection, `NOT_FOUND` / `INVALID_TRANSITION` guards, and path revalidations.
+  - **Component Tests (`__tests__/operator/operator-task-detail.test.tsx`):** 8 component tests covering outbound resource links, deliverable state notices, revision notices, dialog validation, and action invocation.
+  - **Route & Agenda Tests (`__tests__/operator/operator-agenda-routes.test.tsx`):** 7 tests covering task route linking, card urgency rendering, empty states, and translation parity.
+  - **Full Suite Status:** 4 test files, 42 tests passing with 0 errors. TypeScript, ESLint, Next.js production build, and Prettier checks passing 100%.
+
+## [2026-08-22 @ 06:30]
+
+**🛠 S05-03: Operator Task Detail Safe Projection & Database Types Generation**
+
+- **🛠 Architecture & Database:**
+  - **Applied Migration (`supabase/migrations/20260821170000_s05_03_operator_task_detail_safe_projection.sql`):** Applied the S05-03 security-invoker projection migration to `jsf-pm-dev` via Supabase MCP `apply_migration`, extending `public.operator_agenda_view` with aggregated `task_resources` (JSONB), `deliverable_specifications`, and `submission_deadline_at`.
+  - **Database Types Synchronization (`src/lib/database.types.ts`):** Regenerated TypeScript types from `jsf-pm-dev` via Supabase MCP `generate_typescript_types` and updated `src/lib/database.types.ts`.
+
+## [2026-08-21 @ 16:19]
+
+**🚀 S05-02: Operator My Day Agenda & Own-Work Navigation**
+
+- **🚀 Features:**
+  - **Operator My Day Agenda (`/operador/agenda` & `/en/operador/agenda`):** Delivered the server-rendered cross-project Operator agenda displaying own assigned tasks, authoritative urgency badges (`new`, `normal`, `upcoming`, `urgent`, `overdue`, `completed`), task statuses, project context, linked deliverable counts, and formatted deadlines.
+  - **Completed-Today Section:** Implemented a distinct, read-only completed-today section for tasks completed within the Operator's stored local day retention window.
+  - **Projects with Own-Work Index (`/operador/proyectos`):** Implemented the own-work project browser showing distinct safe project cards with own assigned task counts, present urgency badges, nearest deadline, and accessible navigation.
+  - **Per-Project Own-Task List (`/operador/proyectos/[project-id]`):** Implemented project-scoped task list with generic safe absence/denial state preventing identifier probing.
+  - **Navigation Activation:** Activated live, keyboard-focusable locale-aware link to `/operador/agenda` in desktop `AppNav` and mobile `MobileNavToggle`.
+
+- **🛠 Architecture:**
+  - **Dedicated Server Read Boundary (`src/lib/operator/queries.ts`):** Created typed server-only query module reading strictly from `operator_agenda_view` using explicit field projection.
+  - **Task & Deliverable Deduplication:** Multi-deliverable rows for a single task are deduplicated into unified task records with deliverable summary arrays.
+  - **Urgency Validation & Ordering:** Enforced authoritative urgency validation and Section 5.3 fallback sort order (`overdue` → `urgent` → `upcoming` → `new` → `normal` → `completed`) with task ID tie-breaking.
+  - **Pure RSC Presentation:** All operator views and presentation components are built as pure React Server Components with no client-side badge dependencies.
+  - **Bilingual Localization:** Added matching semantic keys under `projects.operatorAgenda` and `projects.operatorProjects` in `messages/es-MX.json` and `messages/en-US.json`.
+
+- **🧪 Testing & Quality:**
+  - **Query Suite (`__tests__/operator/operator-queries.test.ts`):** Added 10 tests covering explicit field projection, deduplication, Section 5.3 sort order, project grouping, and safe handling of missing/invalid categories and IDs.
+  - **Route & Presentation Suite (`__tests__/operator/operator-agenda-routes.test.tsx`):** Added 7 tests validating card rendering across all 6 urgency categories, completed-today section, empty states, and an automated translation catalog parity assertion.
+  - **Navigation Suite (`__tests__/app-shell/navigation.test.ts`):** Updated operator assertions to verify active desktop and mobile drawer navigation.
+
 ## [2026-08-21 @ 13:18]
 
 **📝 Sprint 04 Closeout Record Structural Alignment & Contract Hygiene**

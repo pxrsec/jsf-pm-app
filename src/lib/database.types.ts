@@ -1179,6 +1179,7 @@ export type Database = {
       }
       tasks: {
         Row: {
+          assigned_at: string
           assignee_id: string
           completed_at: string | null
           created_at: string
@@ -1198,6 +1199,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          assigned_at?: string
           assignee_id: string
           completed_at?: string | null
           created_at?: string
@@ -1217,6 +1219,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          assigned_at?: string
           assignee_id?: string
           completed_at?: string | null
           created_at?: string
@@ -1433,6 +1436,7 @@ export type Database = {
       client_submission_view: {
         Row: {
           assignee_id: string | null
+          correction_history: Json | null
           created_at: string | null
           current_submission_note: string | null
           current_submission_provider:
@@ -1609,9 +1613,11 @@ export type Database = {
       }
       operator_agenda_view: {
         Row: {
+          assigned_at: string | null
           client_delivery_deadline_at: string | null
           current_version_number: number | null
           deliverable_id: string | null
+          deliverable_specifications: string | null
           deliverable_status:
             | Database["public"]["Enums"]["deliverable_status"]
             | null
@@ -1622,10 +1628,12 @@ export type Database = {
           internal_review_deadline_at: string | null
           project_id: string | null
           project_name: string | null
+          submission_deadline_at: string | null
           task_deadline_at: string | null
           task_description: string | null
           task_id: string | null
           task_priority: Database["public"]["Enums"]["task_priority"] | null
+          task_resources: Json | null
           task_started_at: string | null
           task_status: Database["public"]["Enums"]["task_status"] | null
           task_title: string | null

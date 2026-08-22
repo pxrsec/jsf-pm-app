@@ -3,10 +3,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function ClientLoading() {
   return (
     <div
+      role="status"
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8"
       aria-busy="true"
       aria-live="polite"
     >
+      <span className="sr-only">Cargando contenido...</span>
       <Skeleton className="h-8 w-64" />
       <div className="space-y-4">
         <Skeleton className="h-6 w-48" />

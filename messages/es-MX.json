@@ -48,12 +48,14 @@
       "operator": {
         "welcome": "Bienvenido, {name}",
         "myAgenda": "Mi agenda de tareas",
-        "emptyAgenda": "No tienes tareas pendientes en tu agenda."
+        "emptyAgenda": "No tienes tareas pendientes en tu agenda.",
+        "untitledTask": "Sin título"
       },
       "client": {
         "welcome": "Bienvenido, {name}",
         "myProjects": "Mis proyectos",
-        "emptyProjects": "No tienes proyectos activos asociados."
+        "emptyProjects": "No tienes proyectos activos asociados.",
+        "unnamedProject": "Sin nombre"
       }
     },
     "status": {
@@ -816,6 +818,472 @@
       "watcherMode": {
         "readOnlyLabel": "Solo lectura — capacidad observador",
         "cannotMutate": "Los observadores de PM solo pueden leer tareas y agregar comentarios colaborativos."
+      }
+    },
+    "operatorAgenda": {
+      "title": "Mi Agenda",
+      "subtitle": "Tareas y entregables asignados bajo tu responsabilidad",
+      "browseProjectsLink": "Ver proyectos asignados",
+      "untitledTask": "Sin título",
+      "recovery": {
+        "title": "Error al cargar la agenda",
+        "description": "Ocurrió un error inesperado al cargar tu agenda de tareas. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Inicio"
+      },
+      "empty": {
+        "title": "No hay tareas pendientes",
+        "description": "No tienes tareas asignadas actualmente en tu agenda.",
+        "browseProjectsAction": "Ver proyectos con trabajo asignado"
+      },
+      "urgency": {
+        "new": "Nueva asignación",
+        "newAria": "Nueva asignación: asignada hace menos de 24 horas",
+        "normal": "Normal",
+        "normalAria": "Trabajo activo normal",
+        "upcoming": "Próxima a vencer",
+        "upcomingAria": "Próxima a vencer: entrega entre 24 y 72 horas",
+        "urgent": "Urgente",
+        "urgentAria": "Urgente: entrega en menos de 24 horas",
+        "overdue": "Vencida",
+        "overdueAria": "Vencida: la fecha límite ha expirado",
+        "completed": "Completada hoy",
+        "completedAria": "Completada hoy"
+      },
+      "card": {
+        "deliverablesCount": "{count} entregables",
+        "version": "v{version}",
+        "assignedAt": "Asignada: {date}",
+        "deadlineAt": "Límite: {date}",
+        "completedAt": "Completada: {date}",
+        "viewProjectAria": "Ver tareas del proyecto {projectName}",
+        "openTaskAria": "Ver detalle de la tarea {taskTitle}"
+      },
+      "completedSection": {
+        "title": "Completadas hoy",
+        "description": "Trabajo finalizado durante el día de hoy"
+      }
+    },
+    "operatorProjects": {
+      "title": "Mis Proyectos Asignados",
+      "subtitle": "Proyectos con tareas asignadas bajo tu responsabilidad",
+      "backToAgenda": "Volver a Mi Agenda",
+      "backToProjects": "Volver a Mis Proyectos",
+      "unnamedProject": "Sin nombre",
+      "recovery": {
+        "title": "Error al cargar los proyectos",
+        "description": "Ocurrió un error inesperado al cargar tus proyectos asignados. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Mi Agenda"
+      },
+      "empty": {
+        "title": "Sin proyectos asignados",
+        "description": "No tienes proyectos con tareas asignadas actualmente.",
+        "returnToAgenda": "Ir a Mi Agenda"
+      },
+      "card": {
+        "ownTaskCount": "{count} tareas asignadas",
+        "nearestDeadline": "Próxima entrega: {date}",
+        "openProjectAria": "Ver tareas asignadas en {projectName}"
+      },
+      "projectDetail": {
+        "ownTasksSummary": "{count} tareas asignadas en este proyecto"
+      },
+      "absence": {
+        "title": "Proyecto no disponible",
+        "description": "No se encontró el proyecto solicitado o no tienes tareas asignadas en él.",
+        "returnAction": "Volver a Mis Proyectos"
+      }
+    },
+    "operatorTask": {
+      "backToProject": "Volver al proyecto",
+      "backToAgenda": "Volver a Mi Agenda",
+      "taskContext": "Contexto de la tarea",
+      "projectLabel": "Proyecto",
+      "viewProjectAria": "Ver tareas del proyecto {projectName}",
+      "descriptionTitle": "Descripción del trabajo",
+      "noDescription": "Sin descripción proporcionada.",
+      "timeContext": "Tiempos y fechas límite",
+      "assignedAt": "Asignada: {date}",
+      "deadlineAt": "Fecha límite: {date}",
+      "startedAt": "Iniciada: {date}",
+      "resourcesTitle": "Recursos de la tarea",
+      "noResources": "No hay recursos adjuntos a esta tarea.",
+      "externalResourceAria": "Abrir recurso externo: {name} (abre en una nueva pestaña)",
+      "deliverablesTitle": "Entregables asignados",
+      "noDeliverables": "No hay entregables asignados a esta tarea.",
+      "specificationsTitle": "Especificaciones",
+      "noSpecifications": "Sin especificaciones adicionales.",
+      "submissionDeadline": "Límite de entrega: {date}",
+      "internalReviewDeadline": "Revisión interna: {date}",
+      "clientDeliveryDeadline": "Entrega al cliente: {date}",
+      "awaitingInternalReviewNotice": "En revisión interna por el equipo de PM",
+      "awaitingClientReviewNotice": "Enviado a revisión del cliente",
+      "approvedNotice": "Entregable aprobado",
+      "deliveredNotice": "Entregable finalizado y entregado",
+      "changesRequestedNotice": "Se solicitaron revisiones para este entregable. Al enviar una nueva versión, se registrará de forma inmutable y regresará a revisión interna.",
+      "submitCta": "Entregar versión de producción",
+      "resubmitCta": "Entregar versión corregida",
+      "deliverableStatus": {
+        "pending": "Pendiente",
+        "awaitingInternalReview": "En revisión interna",
+        "awaitingClientReview": "En revisión del cliente",
+        "approved": "Aprobado",
+        "changesRequested": "Cambios solicitados",
+        "delivered": "Entregado"
+      },
+      "absence": {
+        "title": "Tarea no disponible",
+        "description": "No se encontró la tarea solicitada o no tienes permisos para acceder a ella.",
+        "returnAction": "Volver a Mi Agenda"
+      },
+      "recovery": {
+        "title": "Error al cargar la tarea",
+        "description": "Ocurrió un error inesperado al cargar la información de la tarea. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Mi Agenda"
+      }
+    },
+    "operatorSubmission": {
+      "dialogTitle": "Entregar versión de producción",
+      "dialogTitleRevision": "Entregar versión corregida",
+      "dialogDescription": "Proporciona el enlace de Google Drive con el entregable listo para revisión interna.",
+      "truthfulnessNotice": "La aplicación registra el enlace exactamente como se proporciona, sin descargar, previsualizar o inspeccionar el contenido remoto.",
+      "revisionNotice": "Esta entrega registrará la versión v{nextVersion} y regresará a revisión interna del equipo de PM.",
+      "urlLabel": "Enlace de Google Drive",
+      "urlPlaceholder": "https://drive.google.com/... o https://docs.google.com/...",
+      "urlHelp": "Debe ser un enlace HTTPS válido de Google Drive o Google Docs.",
+      "urlError": "El enlace debe ser una URL HTTPS válida de Google Drive (drive.google.com o docs.google.com).",
+      "noteLabel": "Notas de entrega (opcional)",
+      "notePlaceholder": "Detalles sobre los cambios, instrucciones o contexto de esta versión...",
+      "noteHelp": "Máximo 1,000 caracteres.",
+      "charCount": "{count}/1000",
+      "cancelAction": "Cancelar",
+      "submitAction": "Registrar entrega",
+      "submitting": "Registrando entrega...",
+      "successToast": "Versión v{version} registrada exitosamente para revisión interna.",
+      "errors": {
+        "validationFailed": "Verifica que el enlace de Google Drive sea válido.",
+        "unauthorized": "No tienes autorización para enviar este entregable.",
+        "notFound": "No se encontró el entregable o ya no está disponible.",
+        "invalidTransition": "El entregable ya no se encuentra en un estado disponible para entrega.",
+        "conflict": "El estado del entregable ha cambiado. Se actualizará la información.",
+        "invariantViolation": "No se pudo procesar la entrega debido a una restricción del sistema.",
+        "generic": "Ocurrió un error al enviar el entregable. Por favor intenta de nuevo."
+      }
+    },
+    "clientPortal": {
+      "welcomeSubtitle": "Espacio de trabajo seguro para consultar tus proyectos, solicitudes y revisiones.",
+      "viewAllProjects": "Ver todos los proyectos",
+      "recovery": {
+        "title": "Error al cargar el portal de cliente",
+        "description": "Ocurrió un error inesperado al cargar tu espacio de trabajo. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Inicio"
+      },
+      "quickLinks": {
+        "projectsTitle": "Mis Proyectos",
+        "projectsSubtitle": "Directorio de proyectos activos",
+        "requestsTitle": "Mis Solicitudes",
+        "requestsSubtitle": "Cola de solicitudes asignadas",
+        "reviewsTitle": "Revisiones de Producción",
+        "reviewsSubtitle": "Entregables pendientes de revisión",
+        "viewAll": "Ir a la sección"
+      }
+    },
+    "clientProjects": {
+      "title": "Mis Proyectos",
+      "subtitle": "Proyectos en los que participas como cliente",
+      "listHeading": "Lista de proyectos",
+      "deadline": "Fecha límite",
+      "noDeadline": "Sin fecha límite",
+      "openProject": "Ver detalles",
+      "openProjectAria": "Ver detalles del proyecto {projectName}",
+      "unnamedProject": "Sin nombre",
+      "recovery": {
+        "title": "Error al cargar los proyectos",
+        "description": "Ocurrió un error inesperado al cargar tus proyectos asociados. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Inicio"
+      },
+      "requestsBanner": {
+        "title": "Tus solicitudes directas",
+        "description": "Consulta las solicitudes y requerimientos asignados directamente a ti",
+        "cta": "Ver cola de solicitudes"
+      },
+      "empty": {
+        "title": "Sin proyectos activos",
+        "description": "No tienes proyectos activos asociados actualmente."
+      },
+      "absence": {
+        "title": "Proyecto no disponible",
+        "description": "No se encontró el proyecto solicitado o no tienes acceso a él.",
+        "returnAction": "Volver a Mis Proyectos"
+      },
+      "detail": {
+        "backToProjects": "Volver a Mis Proyectos",
+        "sectionContext": "Información del proyecto y requerimientos",
+        "scopeLabel": "Alcance del proyecto",
+        "deadline": "Fecha límite del proyecto",
+        "lastActivity": "Última actividad",
+        "requestsSection": {
+          "title": "Tus Solicitudes",
+          "viewAllQueue": "Ver cola de solicitudes",
+          "empty": "No tienes solicitudes asignadas en este proyecto.",
+          "childCount": "{count} requerimientos de entrega asociados",
+          "deadline": "Fecha límite",
+          "noDeadline": "Sin fecha límite",
+          "openRequest": "Ver solicitud",
+          "openRequestAria": "Ver solicitud {title}"
+        },
+        "submissionsSection": {
+          "title": "Tus Entregas Solicitadas",
+          "empty": "No tienes entregas solicitadas en este proyecto."
+        },
+        "reviewsSection": {
+          "title": "Revisiones de Producción",
+          "viewAllReviews": "Ver todas las revisiones",
+          "empty": "No hay entregables de producción liberados para revisión en este proyecto."
+        }
+      }
+    },
+    "clientRequests": {
+      "title": "Mis Solicitudes",
+      "subtitle": "Cola de solicitudes y tareas asignadas directamente a ti",
+      "childCount": "{count} entregas requeridas",
+      "deadline": "Fecha límite",
+      "noDeadline": "Sin fecha límite",
+      "openRequest": "Ver solicitud",
+      "openRequestAria": "Ver solicitud {title}",
+      "unnamedProject": "Sin nombre",
+      "untitledRequest": "Sin título",
+      "recovery": {
+        "title": "Error al cargar las solicitudes",
+        "description": "Ocurrió un error inesperado al cargar tus solicitudes asignadas. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Inicio"
+      },
+      "empty": {
+        "title": "Sin solicitudes pendientes",
+        "description": "No tienes solicitudes ni tareas asignadas directamente en este momento."
+      },
+      "status": {
+        "pending": "Pendiente",
+        "inProgress": "En progreso",
+        "inReview": "En revisión",
+        "completed": "Completada",
+        "blocked": "Bloqueada"
+      },
+      "priority": {
+        "low": "Baja",
+        "medium": "Media",
+        "high": "Alta",
+        "blocking": "Bloqueante"
+      },
+      "absence": {
+        "title": "Solicitud no disponible",
+        "description": "No se encontró la solicitud o no tienes permisos para acceder a ella.",
+        "returnAction": "Volver a Mis Solicitudes"
+      },
+      "detail": {
+        "backToQueue": "Volver a Mis Solicitudes",
+        "backToProject": "Volver a {projectName}",
+        "descriptionTitle": "Descripción de la solicitud",
+        "deadline": "Fecha límite",
+        "startedAt": "Iniciada el",
+        "completedAt": "Completada el",
+        "resourcesTitle": "Recursos adjuntos"
+      },
+      "actions": {
+        "startRequest": "Iniciar solicitud",
+        "startRequestAria": "Iniciar el trabajo en esta solicitud",
+        "starting": "Iniciando...",
+        "startSuccess": "Solicitud iniciada correctamente.",
+        "completeRequest": "Completar solicitud",
+        "completeRequestAria": "Marcar solicitud como completada",
+        "completing": "Completando...",
+        "completeSuccess": "Solicitud completada correctamente.",
+        "completedNotice": "Esta solicitud ha sido completada.",
+        "nonActionableNotice": "Esta solicitud se encuentra en un estado que no admite acciones directas.",
+        "prerequisiteTitle": "Requerimientos pendientes",
+        "prerequisiteMessage": "Hay {count, plural, =1 {1 entrega solicitada pendiente} other {# entregas solicitadas pendientes}} que deben enviarse antes de completar esta solicitud.",
+        "errors": {
+          "validationFailed": "Los datos de la solicitud no son válidos.",
+          "unauthorized": "No tienes autorización para realizar esta acción.",
+          "notFound": "La solicitud no fue encontrada o ya no está disponible.",
+          "invalidTransition": "La solicitud ya no se encuentra en un estado válido para esta acción.",
+          "conflict": "El estado de la solicitud ha cambiado. Se actualizará la página.",
+          "invariantViolation": "No se puede completar la solicitud porque existen entregas requeridas pendientes.",
+          "generic": "Ocurrió un error al actualizar la solicitud. Intenta de nuevo."
+        }
+      }
+    },
+    "clientSubmissions": {
+      "requirementsTitle": "Requerimientos de entrega",
+      "requirementsCount": "({count} requerimientos)",
+      "noRequirements": "No se requiere enviar entregables para esta solicitud.",
+      "status": {
+        "submitted": "Enviado",
+        "pending": "Pendiente"
+      },
+      "versionLabel": "Versión actual",
+      "deadline": "Fecha límite",
+      "noDeadline": "Sin fecha límite",
+      "readOnlyNotice": "Solo lectura",
+      "actions": {
+        "submitCta": "Enviar enlace",
+        "submitCtaReplacement": "Enviar enlace de reemplazo",
+        "dialogTitle": "Enviar enlace de entrega",
+        "dialogTitleReplacement": "Enviar reemplazo de entrega",
+        "dialogDescription": "Ingresa el enlace público HTTPS donde se encuentra el material solicitado.",
+        "urlLabel": "Enlace público HTTPS",
+        "urlPlaceholder": "https://drive.google.com/...",
+        "urlHelp": "El sistema únicamente registra la URL proporcionada. No se realiza descarga, inspección ni almacenamiento del archivo.",
+        "noteLabel": "Nota adicional (opcional)",
+        "notePlaceholder": "Agrega cualquier indicación relevante sobre este material...",
+        "noteHelp": "Máximo 1,000 caracteres (se ignoran espacios al inicio y final)",
+        "providerPreviewLabel": "Proveedor detectado (clasificación léxica)",
+        "deliverableLabel": "Entregable",
+        "confirmDialogTitle": "Confirmar envío de entrega",
+        "confirmDialogDescription": "Verifica la información antes de enviar. Esta acción registrará una versión inmutable.",
+        "confirmNotice": "Al confirmar, se registrará el enlace. La aplicación no valida la disponibilidad, permisos ni contenido del enlace externo.",
+        "confirmSubmit": "Confirmar y enviar enlace",
+        "submitting": "Enviando...",
+        "cancel": "Cancelar",
+        "successMessage": "Enlace de entrega registrado correctamente.",
+        "errors": {
+          "invalidLink": "El enlace ingresado no es una URL pública HTTPS válida.",
+          "linkTooLong": "El enlace excede el límite máximo de 2,048 bytes.",
+          "noteTooLong": "La nota excede los 1,000 caracteres permitidos.",
+          "unauthorized": "No tienes autorización para enviar este entregable.",
+          "notFound": "El requerimiento de entrega no fue encontrado o no está disponible.",
+          "invalidTransition": "El requerimiento ya no se encuentra pendiente de entrega.",
+          "conflict": "El estado del requerimiento ha cambiado. Se actualizará la información.",
+          "generic": "Ocurrió un error al registrar la entrega. Por favor, intenta de nuevo."
+        }
+      },
+      "correction": {
+        "reopenedNoticeTitle": "Reemplazo solicitado",
+        "reopenedNoticeDesc": "El equipo de gestión ha solicitado un nuevo enlace para este requerimiento.",
+        "reopenReasonHeading": "Motivo de la solicitud de reemplazo",
+        "replacementExplanation": "El nuevo envío creará una nueva versión inmutable. El enlace anterior se conservará en el historial."
+      },
+      "history": {
+        "title": "Historial de versiones y solicitudes",
+        "versionEntry": "Versión {versionNumber}",
+        "reopenedEntry": "Reabierto para corrección",
+        "submittedAt": "Enviado el {date}",
+        "reopenedAt": "Reabierto el {date}",
+        "reasonLabel": "Motivo",
+        "noteLabel": "Nota",
+        "emptyHistory": "No hay versiones anteriores registradas.",
+        "unavailable": "El historial no está disponible temporalmente."
+      },
+      "externalLink": {
+        "openLink": "Abrir enlace externo",
+        "openLinkAria": "Abrir enlace externo para {title} (abre en nueva pestaña)",
+        "registeredLinkLabel": "Enlace registrado"
+      },
+      "providers": {
+        "googleDrive": "Google Drive",
+        "dropbox": "Dropbox",
+        "oneDrive": "OneDrive",
+        "weTransfer": "WeTransfer",
+        "frameIo": "Frame.io",
+        "otherHttps": "Enlace HTTPS (Otro)"
+      }
+    },
+    "clientReviews": {
+      "title": "Revisiones de Producción",
+      "subtitle": "Entregables de video y diseño liberados para tu revisión y aprobación",
+      "versionLabel": "Versión",
+      "deadline": "Fecha límite de entrega",
+      "noDeadline": "Sin fecha límite",
+      "openReview": "Revisar entregable",
+      "openReviewAria": "Revisar entregable {title}",
+      "unnamedProject": "Sin nombre",
+      "untitledDeliverable": "Sin título",
+      "recovery": {
+        "title": "Error al cargar las revisiones",
+        "description": "Ocurrió un error inesperado al cargar los entregables de producción. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Inicio"
+      },
+      "awaitingSection": {
+        "title": "Pendientes de tu revisión",
+        "empty": "No tienes entregables pendientes de revisión en este momento."
+      },
+      "recentOutcomesSection": {
+        "title": "Revisiones recientes"
+      },
+      "empty": {
+        "title": "Sin entregables para revisión",
+        "description": "No hay entregables liberados de producción en tus proyectos actualmente."
+      },
+      "absence": {
+        "title": "Entregable no disponible",
+        "description": "No se encontró el entregable solicitado o no tienes acceso a él.",
+        "returnAction": "Volver a Revisiones"
+      },
+      "detail": {
+        "backToReviews": "Volver a Revisiones",
+        "backToProject": "Volver a {projectName}",
+        "versionUnavailable": "Versión no disponible",
+        "specificationsTitle": "Especificaciones",
+        "submissionNoteTitle": "Nota de entrega",
+        "deliveryDeadline": "Límite de entrega al cliente",
+        "submittedAt": "Entregado el",
+        "approvedAt": "Aprobado el",
+        "driveLinkLabel": "Material del entregable",
+        "driveLinkNotice": "Abre el enlace de Google Drive en una nueva pestaña para inspeccionar el material.",
+        "openDriveLink": "Abrir en Google Drive",
+        "driveLinkAria": "Abrir material de {title} en Google Drive (abre en una nueva pestaña)",
+        "noDriveLink": "No se proporcionó un enlace de Google Drive para esta versión.",
+        "inconsistentReviewTitle": "Revisión no disponible",
+        "inconsistentReviewMessage": "La información de este entregable presenta inconsistencias en los datos. No se pueden realizar acciones en este momento.",
+        "approvedNoticeTitle": "Entregable aprobado",
+        "approvedNoticeDesc": "Has aprobado este entregable. El equipo interno procederá con la entrega final.",
+        "changesRequestedNoticeTitle": "Cambios solicitados",
+        "changesRequestedNoticeDesc": "Has solicitado cambios. El equipo realizará las modificaciones necesarias y pasará por revisión interna antes de enviarte una nueva versión.",
+        "deliveredNoticeTitle": "Entregable finalizado",
+        "deliveredNoticeDesc": "Este entregable ha sido marcado como entregado formalmente.",
+        "readOnlyStateNotice": "Este entregable se encuentra en modo de solo lectura."
+      },
+      "feedbackHistory": {
+        "title": "Historial de revisiones del cliente",
+        "empty": "No hay comentarios de revisiones anteriores.",
+        "malformedNotice": "No fue posible cargar el historial de revisiones debido a una inconsistencia de datos.",
+        "decisionApproved": "Aprobado por cliente",
+        "decisionChangesRequested": "Cambios solicitados por cliente"
+      },
+      "actions": {
+        "approveDeliverable": "Aprobar entregable",
+        "approveAria": "Aprobar este entregable",
+        "approveDialogTitle": "Confirmar aprobación del entregable",
+        "approveDialogDescription": "Al aprobar este entregable, confirmas que cumple con tus requerimientos y el equipo procederá a la entrega final.",
+        "confirmApprove": "Sí, aprobar entregable",
+        "approving": "Aprobando...",
+        "requestChanges": "Solicitar cambios",
+        "requestChangesAria": "Solicitar cambios en este entregable",
+        "changesDialogTitle": "Solicitar cambios en el entregable",
+        "changesDialogDescription": "Describe detalladamente los cambios requeridos. El equipo realizará las modificaciones necesarias.",
+        "commentLabel": "Comentarios sobre los cambios requeridos",
+        "commentPlaceholder": "Indica claramente qué ajustes son necesarios...",
+        "commentHelp": "Comentario obligatorio (máximo 5,000 caracteres)",
+        "commentRequired": "Debes ingresar un comentario detallando los cambios solicitados.",
+        "commentTooLong": "El comentario no puede superar los 5,000 caracteres.",
+        "confirmRequestChanges": "Enviar solicitud de cambios",
+        "submittingChanges": "Enviando solicitud...",
+        "cancelAction": "Cancelar",
+        "errors": {
+          "validationFailed": "Los datos de la revisión no son válidos.",
+          "unauthorized": "No tienes autorización para revisar este entregable.",
+          "notFound": "El entregable no fue encontrado o ya no está disponible.",
+          "invalidTransition": "El entregable ya no se encuentra en estado de revisión.",
+          "conflict": "El estado del entregable ha cambiado. Se actualizará la página.",
+          "invariantViolation": "No se pudo registrar la revisión debido a una restricción del sistema.",
+          "generic": "Ocurrió un error al procesar la revisión. Intenta de nuevo."
+        }
       }
     }
   }

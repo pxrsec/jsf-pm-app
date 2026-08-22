@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import esCatalog from "../../messages/es-MX.json";
 
@@ -144,6 +144,10 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    cleanup();
+  });
+
   const baseUser = { id: "u-1", email: "user@jsf.internal" };
 
   describe("AppNav Server Component per role", () => {
@@ -196,7 +200,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(html).toContain("Project Manager");
     });
 
-    it("renders operator navigation with /operador and disabled agenda item", async () => {
+    it("renders operator navigation with /operador and active /operador/agenda link", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
@@ -213,15 +217,14 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
 
       expect(html).toContain('href="/operador"');
       expect(html).toContain('href="/operador/agenda"');
-      expect(html).toContain('aria-disabled="true"');
-      expect(html).toContain('tabindex="-1"');
+      expect(html).not.toContain('aria-disabled="true"');
       expect(html).not.toContain('href="/admin"');
       expect(html).not.toContain('href="/pm"');
       expect(html).toContain("Operator User");
       expect(html).toContain("Operador");
     });
 
-    it("renders client navigation with /cliente and disabled projects item", async () => {
+    it("renders client navigation with /cliente and live /cliente/proyectos link", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
@@ -238,8 +241,8 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
 
       expect(html).toContain('href="/cliente"');
       expect(html).toContain('href="/cliente/proyectos"');
-      expect(html).toContain('aria-disabled="true"');
-      expect(html).toContain('tabindex="-1"');
+      expect(html).not.toContain('aria-disabled="true"');
+      expect(html).not.toContain('tabindex="-1"');
       expect(html).not.toContain('href="/admin"');
       expect(html).toContain("Client User");
       expect(html).toContain("Cliente");
@@ -329,7 +332,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(projectLink).toHaveAttribute("href", "/admin/proyectos");
     });
 
-    it("renders disabled agenda affordance in drawer for operator", () => {
+    it("renders active agenda link in drawer for operator", () => {
       const profile = createMockProfile({
         id: "u-3",
         full_name: "Operator User",
@@ -349,9 +352,98 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       });
       fireEvent.click(toggleButton);
 
-      const agendaItem = screen.getByText("Mi Agenda");
-      expect(agendaItem).toHaveAttribute("aria-disabled", "true");
-      expect(agendaItem).toHaveAttribute("tabindex", "-1");
+      const agendaLink = screen.getByRole("link", { name: "Mi Agenda" });
+      expect(agendaLink).toBeInTheDocument();
+      expect(agendaLink).toHaveAttribute("href", "/operador/agenda");
+      expect(agendaLink).not.toHaveAttribute("aria-disabled");
+    });
+
+    it("renders active project link in drawer for client", () => {
+      const profile = createMockProfile({
+        id: "u-4",
+        full_name: "Client User",
+        role: "client",
+      });
+
+      render(
+        React.createElement(MobileNavToggle, {
+          role: "client",
+          profile,
+          unreadCount: 0,
+        }),
+      );
+
+      const toggleButton = screen.getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+      fireEvent.click(toggleButton);
+
+      const projectLink = screen.getByRole("link", { name: "Proyectos" });
+      expect(projectLink).toBeInTheDocument();
+      expect(projectLink).toHaveAttribute("href", "/cliente/proyectos");
+      expect(projectLink).not.toHaveAttribute("aria-disabled");
+    });
+
+    it("closes drawer when an internal navigation link is clicked", () => {
+      const profile = createMockProfile({
+        id: "u-4",
+        full_name: "Client User",
+        role: "client",
+      });
+
+      render(
+        React.createElement(MobileNavToggle, {
+          role: "client",
+          profile,
+          unreadCount: 0,
+        }),
+      );
+
+      const toggleButton = screen.getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+      fireEvent.click(toggleButton);
+
+      const projectLink = screen.getByRole("link", { name: "Proyectos" });
+      fireEvent.click(projectLink);
+
+      expect(
+        screen.getByRole("button", { name: "Abrir menú de navegación" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("link", { name: "Proyectos" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("closes drawer on Escape key and restores focus to toggle button", () => {
+      const profile = createMockProfile({
+        id: "u-3",
+        full_name: "Operator User",
+        role: "operator",
+      });
+
+      render(
+        React.createElement(MobileNavToggle, {
+          role: "operator",
+          profile,
+          unreadCount: 0,
+        }),
+      );
+
+      const toggleButton = screen.getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+      fireEvent.click(toggleButton);
+
+      expect(
+        screen.getByRole("button", { name: "Cerrar menú de navegación" }),
+      ).toBeInTheDocument();
+
+      fireEvent.keyDown(document, { key: "Escape" });
+
+      expect(
+        screen.getByRole("button", { name: "Abrir menú de navegación" }),
+      ).toBeInTheDocument();
     });
   });
 });
