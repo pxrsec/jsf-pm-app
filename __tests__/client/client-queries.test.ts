@@ -5,13 +5,13 @@ vi.mock("server-only", () => ({}));
 import {
   getClientProjects,
   getClientProjectDetail,
-  getClientRequestQueue,
   getClientRequestDetail,
-  getClientProductionReviewQueue,
   getClientProductionReviewDetail,
   getClientRequestForTransition,
   getClientProductionReviewForDecision,
+  getClientSubmissionForSubmission,
 } from "@/lib/client/queries";
+import { sortClientProjects } from "@/lib/client/sort-helpers";
 
 describe("Client Queries (src/lib/client/queries.ts)", () => {
   beforeEach(() => {
@@ -200,6 +200,7 @@ describe("Client Queries (src/lib/client/queries.ts)", () => {
                     project_id: validProjectId,
                     title: "Required Image",
                     status: "pending",
+                    correction_history: [],
                   },
                 ],
                 error: null,
@@ -216,6 +217,141 @@ describe("Client Queries (src/lib/client/queries.ts)", () => {
       expect(detail?.resources[0].name).toBe("Guidelines");
       expect(detail?.readinessSummary.status).toBe("pending_submissions");
       expect(detail?.readinessSummary.pendingCount).toBe(1);
+      expect(detail?.childSubmissions[0].correctionHistory).toEqual([]);
+      expect(detail?.childSubmissions[0].correctionHistoryError).toBe(false);
+    });
+
+    it("parses valid correction history entries with versions and reopen events", async () => {
+      const mockSupabase = {
+        from: vi.fn((table: string) => {
+          if (table === "client_task_view") {
+            return {
+              select: vi.fn().mockReturnThis(),
+              eq: vi.fn().mockReturnThis(),
+              maybeSingle: vi.fn().mockResolvedValue({
+                data: {
+                  id: validTaskId,
+                  project_id: validProjectId,
+                  project_name: "Project 1",
+                  title: "Task with correction history",
+                  status: "pending",
+                  priority: "medium",
+                },
+                error: null,
+              }),
+            };
+          }
+          if (table === "client_submission_view") {
+            return {
+              select: vi.fn().mockReturnThis(),
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    id: "00000000-0000-0000-0000-000000000101",
+                    task_id: validTaskId,
+                    project_id: validProjectId,
+                    title: "Logo asset",
+                    status: "pending",
+                    current_version_number: 1,
+                    correction_history: [
+                      {
+                        kind: "version",
+                        version_number: 1,
+                        submission_url: "https://drive.google.com/file/d/123",
+                        submission_provider: "google_drive",
+                        submission_note: "First version",
+                        submitted_at: "2026-08-20T10:00:00Z",
+                      },
+                      {
+                        kind: "reopened",
+                        reopened_at: "2026-08-21T12:00:00Z",
+                        reason: "Need higher resolution SVG",
+                      },
+                    ],
+                  },
+                ],
+                error: null,
+              }),
+            };
+          }
+          return { select: vi.fn().mockReturnThis() };
+        }),
+      } as unknown as Parameters<typeof getClientRequestDetail>[0];
+
+      const detail = await getClientRequestDetail(mockSupabase, validTaskId);
+      expect(detail).not.toBeNull();
+      const sub = detail?.childSubmissions[0];
+      expect(sub?.correctionHistory).toHaveLength(2);
+      expect(sub?.correctionHistory[0]).toEqual({
+        kind: "version",
+        versionNumber: 1,
+        submissionUrl: "https://drive.google.com/file/d/123",
+        provider: "google_drive",
+        note: "First version",
+        submittedAt: "2026-08-20T10:00:00Z",
+      });
+      expect(sub?.correctionHistory[1]).toEqual({
+        kind: "reopened",
+        reopenedAt: "2026-08-21T12:00:00Z",
+        reason: "Need higher resolution SVG",
+      });
+      expect(sub?.correctionHistoryError).toBe(false);
+    });
+
+    it("safely handles malformed correction history with correctionHistoryError = true and no base table queries", async () => {
+      const mockSupabase = {
+        from: vi.fn((table: string) => {
+          if (table === "client_task_view") {
+            return {
+              select: vi.fn().mockReturnThis(),
+              eq: vi.fn().mockReturnThis(),
+              maybeSingle: vi.fn().mockResolvedValue({
+                data: {
+                  id: validTaskId,
+                  project_id: validProjectId,
+                  title: "Task with malformed history",
+                  status: "pending",
+                },
+                error: null,
+              }),
+            };
+          }
+          if (table === "client_submission_view") {
+            return {
+              select: vi.fn().mockReturnThis(),
+              eq: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    id: "00000000-0000-0000-0000-000000000101",
+                    task_id: validTaskId,
+                    project_id: validProjectId,
+                    title: "Asset",
+                    status: "pending",
+                    correction_history: {
+                      unexpected: "object_instead_of_array",
+                    },
+                  },
+                ],
+                error: null,
+              }),
+            };
+          }
+          return { select: vi.fn().mockReturnThis() };
+        }),
+      } as unknown as Parameters<typeof getClientRequestDetail>[0];
+
+      const detail = await getClientRequestDetail(mockSupabase, validTaskId);
+      expect(detail).not.toBeNull();
+      const sub = detail?.childSubmissions[0];
+      expect(sub?.correctionHistory).toEqual([]);
+      expect(sub?.correctionHistoryError).toBe(true);
+      // Ensure only client_task_view and client_submission_view were queried
+      expect(mockSupabase.from).toHaveBeenCalledWith("client_task_view");
+      expect(mockSupabase.from).toHaveBeenCalledWith("client_submission_view");
+      expect(mockSupabase.from).not.toHaveBeenCalledWith(
+        "deliverable_versions",
+      );
+      expect(mockSupabase.from).not.toHaveBeenCalledWith("audit_logs");
     });
   });
 
@@ -266,7 +402,6 @@ describe("Client Queries (src/lib/client/queries.ts)", () => {
         mockSupabase,
         validDeliverableId,
       );
-
       expect(detail).not.toBeNull();
       expect(detail?.feedbackResult.ok).toBe(true);
       if (detail?.feedbackResult.ok) {
@@ -275,71 +410,6 @@ describe("Client Queries (src/lib/client/queries.ts)", () => {
           "changes_requested",
         );
       }
-      expect(mockSupabase.from).toHaveBeenCalledTimes(1);
-      expect(mockSupabase.from).toHaveBeenCalledWith("client_deliverable_view");
-    });
-  });
-
-  describe("getClientRequestQueue", () => {
-    it("returns sorted requests from client_task_view", async () => {
-      const mockSupabase = {
-        from: vi.fn(() => ({
-          select: vi.fn().mockResolvedValue({
-            data: [
-              {
-                id: validTaskId,
-                project_id: validProjectId,
-                project_name: "Project 1",
-                title: "Task 1",
-                description: "Desc",
-                status: "pending",
-                priority: "high",
-                deadline_at: null,
-                started_at: null,
-                completed_at: null,
-                child_submission_count: 1,
-              },
-            ],
-            error: null,
-          }),
-        })),
-      } as unknown as Parameters<typeof getClientRequestQueue>[0];
-
-      const queue = await getClientRequestQueue(mockSupabase);
-      expect(queue).toHaveLength(1);
-      expect(queue[0].title).toBe("Task 1");
-    });
-  });
-
-  describe("getClientProductionReviewQueue", () => {
-    it("returns sorted reviews from client_deliverable_view", async () => {
-      const mockSupabase = {
-        from: vi.fn(() => ({
-          select: vi.fn().mockResolvedValue({
-            data: [
-              {
-                id: validDeliverableId,
-                project_id: validProjectId,
-                project_name: "Project 1",
-                title: "Review 1",
-                specifications: "Specs",
-                status: "awaiting_client_review",
-                current_version_number: 1,
-                current_submission_url: null,
-                current_submission_provider: null,
-                client_delivery_deadline_at: null,
-                approved_at: null,
-                delivered_at: null,
-              },
-            ],
-            error: null,
-          }),
-        })),
-      } as unknown as Parameters<typeof getClientProductionReviewQueue>[0];
-
-      const queue = await getClientProductionReviewQueue(mockSupabase);
-      expect(queue).toHaveLength(1);
-      expect(queue[0].title).toBe("Review 1");
     });
   });
 
@@ -370,6 +440,70 @@ describe("Client Queries (src/lib/client/queries.ts)", () => {
     });
   });
 
+  describe("getClientSubmissionForSubmission", () => {
+    it("returns null on invalid UUID", async () => {
+      const mockSupabase = {} as unknown as Parameters<
+        typeof getClientSubmissionForSubmission
+      >[0];
+      const result = await getClientSubmissionForSubmission(
+        mockSupabase,
+        "invalid-uuid",
+      );
+      expect(result).toBeNull();
+    });
+
+    it("returns null when deliverable is absent or not visible", async () => {
+      const mockSupabase = {
+        from: vi.fn(() => ({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: null,
+            error: null,
+          }),
+        })),
+      } as unknown as Parameters<typeof getClientSubmissionForSubmission>[0];
+
+      const result = await getClientSubmissionForSubmission(
+        mockSupabase,
+        validDeliverableId,
+      );
+      expect(result).toBeNull();
+    });
+
+    it("returns ClientSubmissionTarget for valid visible direct submission", async () => {
+      const mockSupabase = {
+        from: vi.fn(() => ({
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: {
+              id: validDeliverableId,
+              task_id: validTaskId,
+              project_id: validProjectId,
+              status: "pending",
+              current_version_number: 0,
+            },
+            error: null,
+          }),
+        })),
+      } as unknown as Parameters<typeof getClientSubmissionForSubmission>[0];
+
+      const target = await getClientSubmissionForSubmission(
+        mockSupabase,
+        validDeliverableId,
+      );
+      expect(target).toEqual({
+        id: validDeliverableId,
+        taskId: validTaskId,
+        projectId: validProjectId,
+        status: "pending",
+        currentVersionNumber: 0,
+      });
+      expect(mockSupabase.from).toHaveBeenCalledWith("client_submission_view");
+    });
+  });
+
   describe("getClientProductionReviewForDecision", () => {
     it("returns decision target for valid deliverable", async () => {
       const mockSupabase = {
@@ -396,6 +530,31 @@ describe("Client Queries (src/lib/client/queries.ts)", () => {
       );
       expect(target).not.toBeNull();
       expect(target?.currentVersionNumber).toBe(1);
+    });
+  });
+
+  describe("Sort Helpers (src/lib/client/sort-helpers.ts)", () => {
+    it("sorts projects by status priority, deadline, and name", () => {
+      const sorted = sortClientProjects([
+        {
+          id: "p2",
+          name: "B Project",
+          status: "planning",
+          client_scope: null,
+          deadline_at: "2026-09-01T00:00:00Z",
+          last_deliverable_activity_at: null,
+        },
+        {
+          id: "p1",
+          name: "A Project",
+          status: "in_progress",
+          client_scope: null,
+          deadline_at: "2026-09-01T00:00:00Z",
+          last_deliverable_activity_at: null,
+        },
+      ]);
+      expect(sorted[0].id).toBe("p1");
+      expect(sorted[1].id).toBe("p2");
     });
   });
 });

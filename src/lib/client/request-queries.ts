@@ -8,11 +8,13 @@ import {
   type ClientRequestDetail,
   type ClientRequestTransitionTarget,
   type ClientSubmissionRequirementSummary,
+  type ClientSubmissionTarget,
   type TaskStatus,
   type TaskPriority,
   type DeliverableStatus,
   type SubmissionProvider,
   parseTaskResources,
+  parseClientCorrectionHistory,
   computeClientRequestReadiness,
   sortClientRequests,
 } from "./types";
@@ -26,7 +28,7 @@ const CLIENT_TASK_SELECT_FIELDS =
   "id, project_id, project_name, title, description, status, priority, deadline_at, started_at, completed_at, child_submission_count, resources" as const;
 
 const CLIENT_SUBMISSION_SELECT_FIELDS =
-  "id, task_id, task_title, project_id, project_name, title, specifications, submission_deadline_at, status, current_version_number, current_submission_provider, current_submission_url, current_submission_note, current_submitted_at" as const;
+  "id, task_id, task_title, project_id, project_name, title, specifications, submission_deadline_at, status, current_version_number, current_submission_provider, current_submission_url, current_submission_note, current_submitted_at, correction_history" as const;
 
 export async function getClientRequestQueue(
   supabase: TypedSupabase,
@@ -103,23 +105,30 @@ export async function getClientRequestDetail(
 
     const childSubmissions: ClientSubmissionRequirementSummary[] = subRows
       .filter((s): s is typeof s & { id: string } => Boolean(s.id))
-      .map((s) => ({
-        id: s.id,
-        task_id: s.task_id ?? taskId,
-        task_title: s.task_title ?? t.title,
-        project_id: s.project_id ?? t.project_id ?? "",
-        project_name: s.project_name ?? t.project_name,
-        title: s.title ?? "Sin título",
-        specifications: s.specifications,
-        submission_deadline_at: s.submission_deadline_at,
-        status: (s.status ?? "pending") as DeliverableStatus,
-        current_version_number: s.current_version_number,
-        current_submission_provider:
-          s.current_submission_provider as SubmissionProvider | null,
-        current_submission_url: s.current_submission_url,
-        current_submission_note: s.current_submission_note,
-        current_submitted_at: s.current_submitted_at,
-      }));
+      .map((s) => {
+        const historyParsed = parseClientCorrectionHistory(
+          s.correction_history,
+        );
+        return {
+          id: s.id,
+          task_id: s.task_id ?? taskId,
+          task_title: s.task_title ?? t.title,
+          project_id: s.project_id ?? t.project_id ?? "",
+          project_name: s.project_name ?? t.project_name,
+          title: s.title ?? "Sin título",
+          specifications: s.specifications,
+          submission_deadline_at: s.submission_deadline_at,
+          status: (s.status ?? "pending") as DeliverableStatus,
+          current_version_number: s.current_version_number,
+          current_submission_provider:
+            s.current_submission_provider as SubmissionProvider | null,
+          current_submission_url: s.current_submission_url,
+          current_submission_note: s.current_submission_note,
+          current_submitted_at: s.current_submitted_at,
+          correctionHistory: historyParsed.ok ? historyParsed.items : [],
+          correctionHistoryError: !historyParsed.ok,
+        };
+      });
 
     const resources = parseTaskResources(t.resources);
     const readinessSummary = computeClientRequestReadiness(childSubmissions);
@@ -172,6 +181,47 @@ export async function getClientRequestForTransition(
     };
   } catch (err) {
     logger.error("Unexpected error in getClientRequestForTransition", { err });
+    return null;
+  }
+}
+
+export async function getClientSubmissionForSubmission(
+  supabase: TypedSupabase,
+  deliverableId: string,
+): Promise<ClientSubmissionTarget | null> {
+  if (!UUID_REGEX.test(deliverableId)) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("client_submission_view")
+      .select("id, task_id, project_id, status, current_version_number")
+      .eq("id", deliverableId)
+      .maybeSingle();
+
+    if (
+      error ||
+      !data ||
+      !data.id ||
+      !data.task_id ||
+      !data.project_id ||
+      !data.status
+    ) {
+      return null;
+    }
+
+    return {
+      id: data.id,
+      taskId: data.task_id,
+      projectId: data.project_id,
+      status: data.status as DeliverableStatus,
+      currentVersionNumber: data.current_version_number,
+    };
+  } catch (err) {
+    logger.error("Unexpected error in getClientSubmissionForSubmission", {
+      err,
+    });
     return null;
   }
 }

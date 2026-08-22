@@ -121,6 +121,74 @@ export async function submitDeliverableVersion(
   }
 }
 
+export type SubmitClientDeliverableResult = {
+  deliverableId: string;
+  versionId: string;
+  versionNumber: number;
+  provider: Database["public"]["Enums"]["submission_provider"];
+  status: "submitted";
+};
+
+export type SubmitClientDeliverableCommandInput = {
+  deliverable_id: string;
+  submission_url: string;
+  submission_note?: string | null;
+};
+
+export async function submitClientDeliverable(
+  supabase: TypedSupabase,
+  input: SubmitClientDeliverableCommandInput,
+): Promise<CommandResult<SubmitClientDeliverableResult>> {
+  try {
+    const { data, error } = await supabase.rpc("submit_client_deliverable", {
+      p_deliverable_id: input.deliverable_id,
+      p_submission_url: input.submission_url,
+      p_submission_note: input.submission_note ?? undefined,
+    });
+
+    if (error) return { ok: false, error: mapSupabaseError(error) };
+    if (!data || typeof data !== "object") {
+      return {
+        ok: false,
+        error: {
+          code: "UNKNOWN",
+          message: "Unexpected response from submission command.",
+        },
+      };
+    }
+
+    const rec = data as Record<string, unknown>;
+    if (
+      typeof rec.deliverable_id !== "string" ||
+      typeof rec.version_id !== "string" ||
+      typeof rec.version_number !== "number" ||
+      typeof rec.provider !== "string"
+    ) {
+      return {
+        ok: false,
+        error: {
+          code: "UNKNOWN",
+          message: "Malformed response from submission command.",
+        },
+      };
+    }
+
+    return {
+      ok: true,
+      data: {
+        deliverableId: rec.deliverable_id,
+        versionId: rec.version_id,
+        versionNumber: rec.version_number,
+        provider:
+          rec.provider as Database["public"]["Enums"]["submission_provider"],
+        status: "submitted",
+      },
+    };
+  } catch (err) {
+    return { ok: false, error: mapSupabaseError(err as { message?: string }) };
+  }
+}
+
 export type ReviewDeliverableCommandInput = {
   deliverable_id: string;
   stage: Database["public"]["Enums"]["review_stage"];

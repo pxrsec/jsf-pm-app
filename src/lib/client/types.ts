@@ -25,6 +25,25 @@ export interface ClientProjectListItem {
   last_deliverable_activity_at: string | null;
 }
 
+export type ClientSubmissionCorrectionHistoryEntry =
+  | {
+      kind: "version";
+      versionNumber: number;
+      submissionUrl: string;
+      provider: SubmissionProvider;
+      note: string | null;
+      submittedAt: string;
+    }
+  | {
+      kind: "reopened";
+      reopenedAt: string;
+      reason: string;
+    };
+
+export type CorrectionHistoryParseResult =
+  | { ok: true; items: ClientSubmissionCorrectionHistoryEntry[] }
+  | { ok: false; reason: "malformed_json" };
+
 export interface ClientSubmissionRequirementSummary {
   id: string;
   task_id: string;
@@ -40,6 +59,8 @@ export interface ClientSubmissionRequirementSummary {
   current_submission_url: string | null;
   current_submission_note: string | null;
   current_submitted_at: string | null;
+  correctionHistory: ClientSubmissionCorrectionHistoryEntry[];
+  correctionHistoryError?: boolean;
 }
 
 export type ReadinessStatus =
@@ -141,6 +162,14 @@ export interface ClientRequestTransitionTarget {
   childSubmissionCount: number;
 }
 
+export interface ClientSubmissionTarget {
+  id: string;
+  taskId: string;
+  projectId: string;
+  status: DeliverableStatus;
+  currentVersionNumber: number | null;
+}
+
 export interface ClientProductionReviewTarget {
   id: string;
   projectId: string;
@@ -177,6 +206,65 @@ export function parseTaskResources(raw: Json | null): ClientTaskResource[] {
     }
   }
   return resources;
+}
+
+export function parseClientCorrectionHistory(
+  raw: Json | null | unknown,
+): CorrectionHistoryParseResult {
+  if (raw === null || raw === undefined) {
+    return { ok: true, items: [] };
+  }
+  if (!Array.isArray(raw)) {
+    return { ok: false, reason: "malformed_json" };
+  }
+  if (raw.length === 0) {
+    return { ok: true, items: [] };
+  }
+
+  const items: ClientSubmissionCorrectionHistoryEntry[] = [];
+  for (const entry of raw) {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      return { ok: false, reason: "malformed_json" };
+    }
+    const rec = entry as Record<string, unknown>;
+    const kind = rec.kind;
+    if (kind === "version") {
+      if (
+        typeof rec.version_number !== "number" ||
+        typeof rec.submission_url !== "string" ||
+        typeof rec.submission_provider !== "string" ||
+        typeof rec.submitted_at !== "string"
+      ) {
+        return { ok: false, reason: "malformed_json" };
+      }
+      const note =
+        typeof rec.submission_note === "string" ? rec.submission_note : null;
+      items.push({
+        kind: "version",
+        versionNumber: rec.version_number,
+        submissionUrl: rec.submission_url,
+        provider: rec.submission_provider as SubmissionProvider,
+        note,
+        submittedAt: rec.submitted_at,
+      });
+    } else if (kind === "reopened") {
+      if (
+        typeof rec.reopened_at !== "string" ||
+        typeof rec.reason !== "string"
+      ) {
+        return { ok: false, reason: "malformed_json" };
+      }
+      items.push({
+        kind: "reopened",
+        reopenedAt: rec.reopened_at,
+        reason: rec.reason,
+      });
+    } else {
+      return { ok: false, reason: "malformed_json" };
+    }
+  }
+
+  return { ok: true, items };
 }
 
 export function parseClientFeedbackHistory(
@@ -269,125 +357,8 @@ export function computeClientRequestReadiness(
   };
 }
 
-const compareDatesAsc = (a: string | null, b: string | null): number =>
-  !a && !b
-    ? 0
-    : !a
-      ? 1
-      : !b
-        ? -1
-        : new Date(a).getTime() - new Date(b).getTime();
-
-const compareDatesDesc = (a: string | null, b: string | null): number =>
-  !a && !b
-    ? 0
-    : !a
-      ? 1
-      : !b
-        ? -1
-        : new Date(b).getTime() - new Date(a).getTime();
-
-const PROJECT_STATUS_RANK: Record<ProjectStatus, number> = {
-  in_progress: 1,
-  planning: 2,
-  paused: 3,
-  completed: 4,
-  cancelled: 5,
-};
-
-export function sortClientProjects(
-  items: ClientProjectListItem[],
-): ClientProjectListItem[] {
-  return [...items].sort((a, b) => {
-    const rankDiff =
-      (PROJECT_STATUS_RANK[a.status] ?? 99) -
-      (PROJECT_STATUS_RANK[b.status] ?? 99);
-    if (rankDiff !== 0) return rankDiff;
-
-    const deadlineDiff = compareDatesAsc(a.deadline_at, b.deadline_at);
-    if (deadlineDiff !== 0) return deadlineDiff;
-
-    const nameDiff = a.name.localeCompare(b.name);
-    if (nameDiff !== 0) return nameDiff;
-
-    return a.id.localeCompare(b.id);
-  });
-}
-
-const PRIORITY_RANK: Record<TaskPriority, number> = {
-  blocking: 1,
-  high: 2,
-  medium: 3,
-  low: 4,
-};
-
-export function sortClientRequests(
-  items: ClientRequestQueueItem[],
-): ClientRequestQueueItem[] {
-  const now = new Date().getTime();
-
-  return [...items].sort((a, b) => {
-    const aCompleted = a.status === "completed";
-    const bCompleted = b.status === "completed";
-
-    if (aCompleted && !bCompleted) return 1;
-    if (!aCompleted && bCompleted) return -1;
-
-    if (aCompleted && bCompleted) {
-      const compDiff = compareDatesDesc(a.completed_at, b.completed_at);
-      if (compDiff !== 0) return compDiff;
-      return a.id.localeCompare(b.id);
-    }
-
-    // Both active
-    const aOverdue =
-      a.deadline_at && new Date(a.deadline_at).getTime() < now ? 1 : 0;
-    const bOverdue =
-      b.deadline_at && new Date(b.deadline_at).getTime() < now ? 1 : 0;
-
-    if (aOverdue && !bOverdue) return -1;
-    if (!aOverdue && bOverdue) return 1;
-    if (aOverdue && bOverdue) {
-      const overdueDiff = compareDatesAsc(a.deadline_at, b.deadline_at);
-      if (overdueDiff !== 0) return overdueDiff;
-    }
-
-    const priorityDiff =
-      (PRIORITY_RANK[a.priority] ?? 99) - (PRIORITY_RANK[b.priority] ?? 99);
-    if (priorityDiff !== 0) return priorityDiff;
-
-    const deadlineDiff = compareDatesAsc(a.deadline_at, b.deadline_at);
-    if (deadlineDiff !== 0) return deadlineDiff;
-
-    return a.id.localeCompare(b.id);
-  });
-}
-
-export function sortClientReviews(
-  items: ClientProductionReviewQueueItem[],
-): ClientProductionReviewQueueItem[] {
-  return [...items].sort((a, b) => {
-    const aAwaiting = a.status === "awaiting_client_review";
-    const bAwaiting = b.status === "awaiting_client_review";
-
-    if (aAwaiting && !bAwaiting) return -1;
-    if (!aAwaiting && bAwaiting) return 1;
-
-    if (aAwaiting && bAwaiting) {
-      const deadlineDiff = compareDatesAsc(
-        a.client_delivery_deadline_at,
-        b.client_delivery_deadline_at,
-      );
-      if (deadlineDiff !== 0) return deadlineDiff;
-      return a.id.localeCompare(b.id);
-    }
-
-    const dateDiff = compareDatesDesc(
-      a.approved_at ?? a.delivered_at,
-      b.approved_at ?? b.delivered_at,
-    );
-    if (dateDiff !== 0) return dateDiff;
-
-    return a.id.localeCompare(b.id);
-  });
-}
+export {
+  sortClientProjects,
+  sortClientRequests,
+  sortClientReviews,
+} from "./sort-helpers";

@@ -1,5 +1,30 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 10:56]
+
+**🚀 S05-05: Client Submission Planning Consumption, Pure Lexical URL Submission, and Correction Loop**
+
+- **🚀 Features:**
+  - **Client Submission Link Submission & Correction Flow (`ClientSubmissionActions`):** Implemented client submission modal with live lexical URL validation, provider preview classification, live note character counter (enforcing normalized post-trim length $\le 1000$ characters without raw HTML truncation), truthfulness disclaimer ("El sistema únicamente registra la URL proporcionada. No se realiza descarga, inspección ni almacenamiento del archivo"), confirmation step, double-submit protection, and live screen-reader announcements.
+  - **Correction Loop UI & Reopen History:** In direct request detail views, rendered distinct "Reemplazo solicitado" badges, displayed PM reopen reason and replacement explanation, while keeping previous versions intact in an immutable history list.
+  - **Separation of Presentation Contexts:** Preserved read-only summary display in project dashboards (`/cliente/proyectos/[project-id]`) while providing full interactive submission actions, registered link opening, and correction history strictly on canonical request detail views (`/cliente/tareas/[task-id]`).
+  - **Deliberate Outbound External Links:** Rendered submitted URLs with `target="_blank"` and `rel="noopener noreferrer"` without any server-side network dereferencing.
+  - **Malformed History Defense:** Automatically detects malformed correction history JSON, suppresses mutation actions, and renders a safe recovery warning without querying underlying database tables.
+
+- **🛠 Architecture & Security:**
+  - **Pure Lexical URL Validator & Classifier (`src/lib/client/submission-url.ts`):** Implemented zero-network pure regex and octet-length validation mirroring PostgreSQL `private.is_valid_client_submission_url` and provider classification (`google_drive`, `dropbox`, `onedrive`, `wetransfer`, `frame_io`, `other_https`) matching PostgreSQL `private.classify_client_submission_provider`.
+  - **Strict Server Action & Schema Validation (`src/lib/client/actions.ts` & `src/lib/client/schemas.ts`):** Implemented `submitClientSubmissionAction` and `SubmitClientDeliverableSchema` strictly rejecting non-string note inputs, pre-normalizing whitespace, enforcing $\le 1000$ chars, performing lexical pre-validation, and verifying direct client assignment and `pending` state before calling `submitClientDeliverable`.
+  - **Safe Error Code Mapping (`src/lib/projects/errors.ts`):** Extended `mapSupabaseError` with explicit classifications for direct-assignee failures (`UNAUTHORIZED`), invalid transitions/workflows (`INVALID_TRANSITION`), and authoritative URL/note constraints (`VALIDATION_FAILED`), preventing raw database string exposure.
+  - **Mechanical Types Extraction (`src/lib/client/sort-helpers.ts`):** Extracted sorting helpers into a dedicated helper module to strictly satisfy the $\le 400$ lines constraint while re-exporting all sorters from `src/lib/client/types.ts`.
+  - **Complete Bilingual Key Parity:** Added full Spanish (`messages/es-MX.json`) and English (`messages/en-US.json`) semantic translation trees under `projects.clientSubmissions` conforming to camelCase naming rules.
+
+- **🧪 Testing & Verification:**
+  - **Acceptance URL Corpus (`__tests__/client/client-submission-url.test.ts`):** 26 tests verifying all 7 standard valid provider URLs, 4 look-alike valid hosts mapped to `other_https`, 13 invalid URLs (scheme, credentials, ports, localhost, IP literals, whitespace, backslashes, $>2048$ bytes), and zero-network execution guarantee.
+  - **Server Actions Tests (`__tests__/client/client-actions.test.ts`):** 22 tests verifying auth, schema validation, non-string note rejection, whitespace normalization, preflight state checks, 4-route family bilingual revalidation, and error mapping.
+  - **Query Tests (`__tests__/client/client-queries.test.ts`):** 11 tests verifying correction history parsing, malformed JSON fallback, and direct submission target resolution.
+  - **UI Integration & Presentation Tests (`__tests__/client/client-portal.test.tsx`):** 29 component tests verifying summary vs detailed modes, correction banners, outbound link attributes, action suppression, and bilingual dictionary parity.
+  - **Full Automated Verification:** All 18 test suites (269 tests), TypeScript typecheck (`tsc --noEmit`), ESLint linting (0 errors, 0 warnings), Prettier formatting (`prettier --check .`), and Next.js production build (`next build`) passing 100%.
+
 ## [2026-08-22 @ 10:18]
 
 **🛠 S05-05: Harden Client Submission URLs, Safe Correction History & Database Types Generation**

@@ -160,6 +160,7 @@ export async function getClientProjectDetail(
         current_submission_url: s.current_submission_url,
         current_submission_note: s.current_submission_note,
         current_submitted_at: s.current_submitted_at,
+        correctionHistory: [],
       }));
 
     const delivRows = deliverablesRes.data ?? [];

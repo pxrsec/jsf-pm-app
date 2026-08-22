@@ -1086,7 +1086,68 @@
       "versionLabel": "Current version",
       "deadline": "Deadline",
       "noDeadline": "No deadline",
-      "readOnlyNotice": "Read only"
+      "readOnlyNotice": "Read only",
+      "actions": {
+        "submitCta": "Submit link",
+        "submitCtaReplacement": "Submit replacement link",
+        "dialogTitle": "Submit Deliverable Link",
+        "dialogTitleReplacement": "Submit Deliverable Replacement",
+        "dialogDescription": "Enter the public HTTPS link where the requested asset is located.",
+        "urlLabel": "Public HTTPS Link",
+        "urlPlaceholder": "https://drive.google.com/...",
+        "urlHelp": "The application only records the provided URL. Files are not downloaded, inspected, or hosted.",
+        "noteLabel": "Additional note (optional)",
+        "notePlaceholder": "Add any relevant details about this asset...",
+        "noteHelp": "Maximum 1,000 characters (leading/trailing whitespace ignored)",
+        "providerPreviewLabel": "Detected provider (lexical classification)",
+        "confirmDialogTitle": "Confirm Deliverable Submission",
+        "confirmDialogDescription": "Review the details before submitting. This action will record an immutable version.",
+        "confirmNotice": "Confirming records the link. The application does not verify the availability, permissions, or content of the external link.",
+        "confirmSubmit": "Confirm and submit link",
+        "submitting": "Submitting...",
+        "cancel": "Cancel",
+        "successMessage": "Deliverable link recorded successfully.",
+        "errors": {
+          "invalidLink": "The entered link is not a valid public HTTPS URL.",
+          "linkTooLong": "The URL exceeds the maximum limit of 2,048 bytes.",
+          "noteTooLong": "The note exceeds the 1,000 allowed characters.",
+          "unauthorized": "You do not have permission to submit this deliverable.",
+          "notFound": "The submission requirement was not found or is unavailable.",
+          "invalidTransition": "The requirement is no longer pending submission.",
+          "conflict": "The requirement state has changed. The page will be refreshed.",
+          "generic": "An error occurred while recording the submission. Please try again."
+        }
+      },
+      "correction": {
+        "reopenedNoticeTitle": "Replacement requested",
+        "reopenedNoticeDesc": "The management team has requested a new link for this requirement.",
+        "reopenReasonHeading": "Reason for replacement request",
+        "replacementExplanation": "Submitting a replacement creates a new immutable version. The previous link is preserved in history."
+      },
+      "history": {
+        "title": "Version & Request History",
+        "versionEntry": "Version {versionNumber}",
+        "reopenedEntry": "Reopened for correction",
+        "submittedAt": "Submitted on {date}",
+        "reopenedAt": "Reopened on {date}",
+        "reasonLabel": "Reason",
+        "noteLabel": "Note",
+        "emptyHistory": "No previous versions recorded.",
+        "unavailable": "History is temporarily unavailable."
+      },
+      "externalLink": {
+        "openLink": "Open external link",
+        "openLinkAria": "Open external link for {title} (opens in a new tab)",
+        "registeredLinkLabel": "Recorded link"
+      },
+      "providers": {
+        "googleDrive": "Google Drive",
+        "dropbox": "Dropbox",
+        "oneDrive": "OneDrive",
+        "weTransfer": "WeTransfer",
+        "frameIo": "Frame.io",
+        "otherHttps": "HTTPS Link (Other)"
+      }
     },
     "clientReviews": {
       "title": "Production Reviews",

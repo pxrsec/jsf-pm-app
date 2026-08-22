@@ -1086,7 +1086,68 @@
       "versionLabel": "Versión actual",
       "deadline": "Fecha límite",
       "noDeadline": "Sin fecha límite",
-      "readOnlyNotice": "Solo lectura"
+      "readOnlyNotice": "Solo lectura",
+      "actions": {
+        "submitCta": "Enviar enlace",
+        "submitCtaReplacement": "Enviar enlace de reemplazo",
+        "dialogTitle": "Enviar enlace de entrega",
+        "dialogTitleReplacement": "Enviar reemplazo de entrega",
+        "dialogDescription": "Ingresa el enlace público HTTPS donde se encuentra el material solicitado.",
+        "urlLabel": "Enlace público HTTPS",
+        "urlPlaceholder": "https://drive.google.com/...",
+        "urlHelp": "El sistema únicamente registra la URL proporcionada. No se realiza descarga, inspección ni almacenamiento del archivo.",
+        "noteLabel": "Nota adicional (opcional)",
+        "notePlaceholder": "Agrega cualquier indicación relevante sobre este material...",
+        "noteHelp": "Máximo 1,000 caracteres (se ignoran espacios al inicio y final)",
+        "providerPreviewLabel": "Proveedor detectado (clasificación léxica)",
+        "confirmDialogTitle": "Confirmar envío de entrega",
+        "confirmDialogDescription": "Verifica la información antes de enviar. Esta acción registrará una versión inmutable.",
+        "confirmNotice": "Al confirmar, se registrará el enlace. La aplicación no valida la disponibilidad, permisos ni contenido del enlace externo.",
+        "confirmSubmit": "Confirmar y enviar enlace",
+        "submitting": "Enviando...",
+        "cancel": "Cancelar",
+        "successMessage": "Enlace de entrega registrado correctamente.",
+        "errors": {
+          "invalidLink": "El enlace ingresado no es una URL pública HTTPS válida.",
+          "linkTooLong": "El enlace excede el límite máximo de 2,048 bytes.",
+          "noteTooLong": "La nota excede los 1,000 caracteres permitidos.",
+          "unauthorized": "No tienes autorización para enviar este entregable.",
+          "notFound": "El requerimiento de entrega no fue encontrado o no está disponible.",
+          "invalidTransition": "El requerimiento ya no se encuentra pendiente de entrega.",
+          "conflict": "El estado del requerimiento ha cambiado. Se actualizará la información.",
+          "generic": "Ocurrió un error al registrar la entrega. Por favor, intenta de nuevo."
+        }
+      },
+      "correction": {
+        "reopenedNoticeTitle": "Reemplazo solicitado",
+        "reopenedNoticeDesc": "El equipo de gestión ha solicitado un nuevo enlace para este requerimiento.",
+        "reopenReasonHeading": "Motivo de la solicitud de reemplazo",
+        "replacementExplanation": "El nuevo envío creará una nueva versión inmutable. El enlace anterior se conservará en el historial."
+      },
+      "history": {
+        "title": "Historial de versiones y solicitudes",
+        "versionEntry": "Versión {versionNumber}",
+        "reopenedEntry": "Reabierto para corrección",
+        "submittedAt": "Enviado el {date}",
+        "reopenedAt": "Reabierto el {date}",
+        "reasonLabel": "Motivo",
+        "noteLabel": "Nota",
+        "emptyHistory": "No hay versiones anteriores registradas.",
+        "unavailable": "El historial no está disponible temporalmente."
+      },
+      "externalLink": {
+        "openLink": "Abrir enlace externo",
+        "openLinkAria": "Abrir enlace externo para {title} (abre en nueva pestaña)",
+        "registeredLinkLabel": "Enlace registrado"
+      },
+      "providers": {
+        "googleDrive": "Google Drive",
+        "dropbox": "Dropbox",
+        "oneDrive": "OneDrive",
+        "weTransfer": "WeTransfer",
+        "frameIo": "Frame.io",
+        "otherHttps": "Enlace HTTPS (Otro)"
+      }
     },
     "clientReviews": {
       "title": "Revisiones de Producción",

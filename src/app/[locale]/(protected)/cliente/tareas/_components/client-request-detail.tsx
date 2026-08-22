@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { ClientSubmissionCard } from "../../proyectos/_components/client-submission-card";
 import { ClientRequestActions } from "./client-request-actions";
+import { ClientSubmissionActions } from "./client-submission-actions";
 
 interface ClientRequestDetailViewProps {
   request: ClientRequestDetailType;
@@ -36,6 +37,28 @@ export async function ClientRequestDetailView({
     deadline: subT("deadline"),
     noDeadline: subT("noDeadline"),
     readOnlyNotice: subT("readOnlyNotice"),
+    reopenedNoticeTitle: subT("correction.reopenedNoticeTitle"),
+    reopenedNoticeDesc: subT("correction.reopenedNoticeDesc"),
+    reopenReasonHeading: subT("correction.reopenReasonHeading"),
+    replacementExplanation: subT("correction.replacementExplanation"),
+    historyTitle: subT("history.title"),
+    historyVersionEntry: subT("history.versionEntry"),
+    historyReopenedEntry: subT("history.reopenedEntry"),
+    historySubmittedAt: subT("history.submittedAt"),
+    historyReopenedAt: subT("history.reopenedAt"),
+    historyReasonLabel: subT("history.reasonLabel"),
+    historyNoteLabel: subT("history.noteLabel"),
+    historyEmpty: subT("history.emptyHistory"),
+    historyUnavailable: subT("history.unavailable"),
+    openLink: subT("externalLink.openLink"),
+    openLinkAria: subT("externalLink.openLinkAria"),
+    currentUrlLabel: subT("externalLink.registeredLinkLabel"),
+    providerGoogleDrive: subT("providers.googleDrive"),
+    providerDropbox: subT("providers.dropbox"),
+    providerOneDrive: subT("providers.oneDrive"),
+    providerWeTransfer: subT("providers.weTransfer"),
+    providerFrameIo: subT("providers.frameIo"),
+    providerOtherHttps: subT("providers.otherHttps"),
   };
 
   return (
@@ -201,13 +224,31 @@ export async function ClientRequestDetailView({
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {request.childSubmissions.map((sub) => (
-              <ClientSubmissionCard
-                key={sub.id}
-                submission={sub}
-                translations={submissionTranslations}
-              />
-            ))}
+            {request.childSubmissions.map((sub) => {
+              const canSubmit =
+                sub.status === "pending" && !sub.correctionHistoryError;
+              const isReplacement = Boolean(
+                sub.current_version_number && sub.current_version_number > 0,
+              );
+
+              return (
+                <ClientSubmissionCard
+                  key={sub.id}
+                  submission={sub}
+                  mode="detailed"
+                  translations={submissionTranslations}
+                  actionSlot={
+                    canSubmit ? (
+                      <ClientSubmissionActions
+                        deliverableId={sub.id}
+                        deliverableTitle={sub.title}
+                        isReplacement={isReplacement}
+                      />
+                    ) : undefined
+                  }
+                />
+              );
+            })}
           </div>
         )}
       </section>

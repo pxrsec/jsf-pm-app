@@ -6,6 +6,7 @@ export {
   getClientRequestQueue,
   getClientRequestDetail,
   getClientRequestForTransition,
+  getClientSubmissionForSubmission,
 } from "./request-queries";
 
 export {

@@ -107,8 +107,12 @@ vi.mock("@/lib/client/actions", () => ({
   requestClientDeliverableChangesAction: vi
     .fn()
     .mockResolvedValue({ ok: true, data: {} }),
+  submitClientSubmissionAction: vi
+    .fn()
+    .mockResolvedValue({ ok: true, data: {} }),
 }));
 
+import enCatalog from "../../messages/en-US.json";
 import {
   parseClientFeedbackHistory,
   computeClientRequestReadiness,
@@ -117,11 +121,17 @@ import {
   type ClientSubmissionRequirementSummary,
   type ClientProjectDetail,
   type ClientProductionReviewDetail,
+  type ClientRequestDetail,
 } from "@/lib/client/types";
 import { ClientProjectList } from "@/app/[locale]/(protected)/cliente/proyectos/_components/client-project-list";
 import { ClientProjectDetailView } from "@/app/[locale]/(protected)/cliente/proyectos/_components/client-project-detail";
 import { ClientSubmissionCard } from "@/app/[locale]/(protected)/cliente/proyectos/_components/client-submission-card";
 import { ClientReviewDetailView } from "@/app/[locale]/(protected)/cliente/entregables/_components/client-review-detail";
+import { ClientRequestDetailView } from "@/app/[locale]/(protected)/cliente/tareas/_components/client-request-detail";
+
+afterEach(() => {
+  cleanup();
+});
 
 describe("Client Portal Domain Helpers & Parsers", () => {
   describe("parseClientFeedbackHistory", () => {
@@ -219,6 +229,7 @@ describe("Client Portal Domain Helpers & Parsers", () => {
       current_submission_url: null,
       current_submission_note: null,
       current_submitted_at: null,
+      correctionHistory: [],
     };
 
     it("returns no_requirements when list is empty", () => {
@@ -369,6 +380,7 @@ describe("Client Presentation & Review UI", () => {
           current_submission_url: null,
           current_submission_note: null,
           current_submitted_at: null,
+          correctionHistory: [],
         },
       ],
       releasedProductionReviews: [
@@ -418,6 +430,7 @@ describe("Client Presentation & Review UI", () => {
       current_submission_url: null,
       current_submission_note: null,
       current_submitted_at: null,
+      correctionHistory: [],
     };
 
     render(await ClientSubmissionCard({ submission: sub }));
@@ -541,5 +554,260 @@ describe("Client Presentation & Review UI", () => {
     expect(
       screen.queryByRole("button", { name: "Aprobar este entregable" }),
     ).not.toBeInTheDocument();
+  });
+
+  describe("ClientSubmissionCard Presentation Modes (S05-05)", () => {
+    it("renders read-only summary card without action slot or external link in summary mode", () => {
+      const submission: ClientSubmissionRequirementSummary = {
+        id: "s-1",
+        task_id: "t-1",
+        task_title: "Task 1",
+        project_id: "p-1",
+        project_name: "Project 1",
+        title: "Brand Logo Assets",
+        specifications: "Vector SVG and PNG 300dpi",
+        submission_deadline_at: "2026-09-01T00:00:00Z",
+        status: "pending",
+        current_version_number: null,
+        current_submission_provider: null,
+        current_submission_url: null,
+        current_submission_note: null,
+        current_submitted_at: null,
+        correctionHistory: [],
+      };
+
+      render(
+        <ClientSubmissionCard
+          submission={submission}
+          mode="summary"
+          actionSlot={<button data-testid="dummy-action">Submit</button>}
+        />,
+      );
+
+      expect(screen.getByText("Brand Logo Assets")).toBeInTheDocument();
+      expect(screen.getByText("Solo lectura")).toBeInTheDocument();
+      expect(screen.getByText("Pendiente")).toBeInTheDocument();
+      // Action slot must NOT be rendered in summary mode
+      expect(screen.queryByTestId("dummy-action")).not.toBeInTheDocument();
+    });
+
+    it("renders interactive action slot and detailed correction banners in detailed mode", () => {
+      const submission: ClientSubmissionRequirementSummary = {
+        id: "s-2",
+        task_id: "t-1",
+        task_title: "Task 1",
+        project_id: "p-1",
+        project_name: "Project 1",
+        title: "Raw Footage Archive",
+        specifications: "ProRes 422 files",
+        submission_deadline_at: null,
+        status: "pending",
+        current_version_number: 1, // Has previous version -> correction loop
+        current_submission_provider: "google_drive",
+        current_submission_url: "https://drive.google.com/file/d/old",
+        current_submission_note: "Initial version",
+        current_submitted_at: "2026-08-20T10:00:00Z",
+        correctionHistory: [
+          {
+            kind: "version",
+            versionNumber: 1,
+            submissionUrl: "https://drive.google.com/file/d/old",
+            provider: "google_drive",
+            note: "Initial version",
+            submittedAt: "2026-08-20T10:00:00Z",
+          },
+          {
+            kind: "reopened",
+            reopenedAt: "2026-08-21T11:00:00Z",
+            reason:
+              "Audio channel 2 was corrupted, please upload clean version",
+          },
+        ],
+      };
+
+      render(
+        <ClientSubmissionCard
+          submission={submission}
+          mode="detailed"
+          actionSlot={
+            <button data-testid="submit-action">
+              Enviar enlace de reemplazo
+            </button>
+          }
+        />,
+      );
+
+      expect(screen.getByText("Raw Footage Archive")).toBeInTheDocument();
+      expect(screen.getByText("Reemplazo solicitado")).toBeInTheDocument();
+      expect(
+        screen.getAllByText(
+          "Audio channel 2 was corrupted, please upload clean version",
+        ).length,
+      ).toBeGreaterThanOrEqual(1);
+      expect(screen.getByTestId("submit-action")).toBeInTheDocument();
+    });
+
+    it("renders terminal submitted state with external link, rel attributes, and immutable history", () => {
+      const submission: ClientSubmissionRequirementSummary = {
+        id: "s-3",
+        task_id: "t-1",
+        task_title: "Task 1",
+        project_id: "p-1",
+        project_name: "Project 1",
+        title: "Voiceover Audio Track",
+        specifications: "WAV 24bit 48kHz",
+        submission_deadline_at: null,
+        status: "submitted",
+        current_version_number: 1,
+        current_submission_provider: "wetransfer",
+        current_submission_url: "https://we.tl/t-voiceover123",
+        current_submission_note: "Recorded in studio A",
+        current_submitted_at: "2026-08-22T08:00:00Z",
+        correctionHistory: [
+          {
+            kind: "version",
+            versionNumber: 1,
+            submissionUrl: "https://we.tl/t-voiceover123",
+            provider: "wetransfer",
+            note: "Recorded in studio A",
+            submittedAt: "2026-08-22T08:00:00Z",
+          },
+        ],
+      };
+
+      render(<ClientSubmissionCard submission={submission} mode="detailed" />);
+
+      expect(screen.getByText("Voiceover Audio Track")).toBeInTheDocument();
+      expect(screen.getByText("Enviado")).toBeInTheDocument();
+
+      const externalLink = screen.getByRole("link", {
+        name: "Abrir enlace externo para Voiceover Audio Track (abre en nueva pestaña)",
+      });
+      expect(externalLink).toHaveAttribute(
+        "href",
+        "https://we.tl/t-voiceover123",
+      );
+      expect(externalLink).toHaveAttribute("target", "_blank");
+      expect(externalLink).toHaveAttribute("rel", "noopener noreferrer");
+
+      expect(
+        screen.getAllByText("Recorded in studio A").length,
+      ).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText("WeTransfer")).toBeInTheDocument();
+    });
+
+    it("renders safe recovery alert when correctionHistoryError is true", () => {
+      const submission: ClientSubmissionRequirementSummary = {
+        id: "s-4",
+        task_id: "t-1",
+        task_title: "Task 1",
+        project_id: "p-1",
+        project_name: "Project 1",
+        title: "Corrupted History Submission",
+        specifications: null,
+        submission_deadline_at: null,
+        status: "pending",
+        current_version_number: 1,
+        current_submission_provider: null,
+        current_submission_url: null,
+        current_submission_note: null,
+        current_submitted_at: null,
+        correctionHistory: [],
+        correctionHistoryError: true,
+      };
+
+      render(<ClientSubmissionCard submission={submission} mode="detailed" />);
+
+      expect(
+        screen.getByText("El historial no está disponible temporalmente."),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe("ClientRequestDetailView Integration (S05-05)", () => {
+    it("renders ClientSubmissionActions for pending submissions and suppresses them on correctionHistoryError", async () => {
+      const request: ClientRequestDetail = {
+        id: "t-1",
+        project_id: "p-1",
+        project_name: "Campaign 2026",
+        title: "Provide Assets Request",
+        description: "Please provide requested assets",
+        status: "pending",
+        priority: "high",
+        deadline_at: null,
+        started_at: null,
+        completed_at: null,
+        resources: [],
+        childSubmissions: [
+          {
+            id: "sub-valid",
+            task_id: "t-1",
+            task_title: "Provide Assets Request",
+            project_id: "p-1",
+            project_name: "Campaign 2026",
+            title: "Valid Submission",
+            specifications: null,
+            submission_deadline_at: null,
+            status: "pending",
+            current_version_number: null,
+            current_submission_provider: null,
+            current_submission_url: null,
+            current_submission_note: null,
+            current_submitted_at: null,
+            correctionHistory: [],
+            correctionHistoryError: false,
+          },
+          {
+            id: "sub-corrupt",
+            task_id: "t-1",
+            task_title: "Provide Assets Request",
+            project_id: "p-1",
+            project_name: "Campaign 2026",
+            title: "Corrupt Submission",
+            specifications: null,
+            submission_deadline_at: null,
+            status: "pending",
+            current_version_number: 1,
+            current_submission_provider: null,
+            current_submission_url: null,
+            current_submission_note: null,
+            current_submitted_at: null,
+            correctionHistory: [],
+            correctionHistoryError: true,
+          },
+        ],
+        readinessSummary: {
+          status: "pending_submissions",
+          pendingCount: 2,
+          totalCount: 2,
+        },
+      };
+
+      render(await ClientRequestDetailView({ request }));
+
+      expect(screen.getByText("Valid Submission")).toBeInTheDocument();
+      expect(screen.getByText("Corrupt Submission")).toBeInTheDocument();
+      // Only 1 submit action should be rendered (for sub-valid)
+      const submitButtons = screen.getAllByRole("button", {
+        name: /^Enviar enlace$/,
+      });
+      expect(submitButtons).toHaveLength(1);
+    });
+  });
+
+  describe("Localization Semantic Parity (S05-05)", () => {
+    it("ensures exact key structure parity for projects.clientSubmissions between es-MX and en-US", () => {
+      const getKeys = (obj: unknown, prefix = ""): string[] => {
+        if (!obj || typeof obj !== "object") return [prefix];
+        return Object.entries(obj as Record<string, unknown>).flatMap(
+          ([k, v]) => getKeys(v, prefix ? `${prefix}.${k}` : k),
+        );
+      };
+
+      const esKeys = getKeys(esCatalog.projects.clientSubmissions).sort();
+      const enKeys = getKeys(enCatalog.projects.clientSubmissions).sort();
+
+      expect(esKeys).toEqual(enKeys);
+    });
   });
 });

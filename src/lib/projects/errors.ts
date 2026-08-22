@@ -33,6 +33,9 @@ export function mapSupabaseError(
     msg.includes("Only an active PM Lead") ||
     msg.includes("Only active PM Lead") ||
     msg.includes("Only Admin") ||
+    msg.includes(
+      "Only the direct Client assignee can submit this deliverable",
+    ) ||
     msg.includes("cannot post internal collaboration comments") ||
     error.code === "42501"
   ) {
@@ -58,11 +61,23 @@ export function mapSupabaseError(
     msg.includes("cannot be transitioned") ||
     msg.includes("cannot submit version") ||
     msg.includes("is not in awaiting_internal_review") ||
-    msg.includes("must be approved before marking delivered")
+    msg.includes("must be approved before marking delivered") ||
+    msg.includes("is not pending") ||
+    msg.includes("is not a client_submission workflow")
   ) {
     return {
       code: "INVALID_TRANSITION",
       message: "This action is not allowed in the current status.",
+    };
+  }
+
+  if (
+    msg.includes("Submission URL must be a valid public HTTPS URL") ||
+    msg.includes("Submission note must be 1000 characters or fewer")
+  ) {
+    return {
+      code: "VALIDATION_FAILED",
+      message: "The submitted data is invalid.",
     };
   }
 
