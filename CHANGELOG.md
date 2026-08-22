@@ -1,5 +1,29 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 07:11]
+
+**🚀 S05-03: Operator Task Detail & Production-Submission Flow**
+
+- **🚀 Features:**
+  - **Canonical Operator Task Detail Route (`/operador/tareas/[task-id]` & `/en/operador/tareas/[task-id]`):** Delivered the server-rendered task detail view presenting authoritative urgency badges, task status/priority, title, project link, work description, timeline context, safe task resources, and assigned deliverables.
+  - **Safe Outbound Task Resources (`operator-task-resources.tsx`):** Rendered outbound resource links with strict `target="_blank"` and `rel="noopener noreferrer"`, with accessible labels and no speculative server-side dereferencing.
+  - **Assigned Deliverable Presentation (`operator-deliverable-card.tsx`):** Rendered deliverable cards with specifications, deadlines (submission, internal review, client delivery), current version badge (`v{n}`), and state-specific banners (`awaiting_internal_review`, `awaiting_client_review`, `approved`, `delivered`, `changes_requested`).
+  - **Operator Version Submission Dialog (`operator-submission-dialog.tsx`):** Implemented client submission modal with immediate lexical Google Drive URL validation, optional submission note (max 1000 chars with live counter), explicit truthfulness disclaimer, revision banner for `changes_requested` states, and double-submit protection.
+  - **Agenda Integration:** Linked task titles in `OperatorAgendaTaskCard` directly to canonical `/operador/tareas/[task-id]` route.
+
+- **🛠 Architecture & Security:**
+  - **Type Isolation (`src/lib/operator/types.ts`):** Established dedicated types and status mapping constants keeping all implementation files strictly under 400 lines.
+  - **Safe Read Projection (`src/lib/operator/queries.ts`):** Implemented `getOperatorTaskDetail` and preflight `getOperatorDeliverableForSubmission` querying strictly from `operator_agenda_view` under RLS.
+  - **Dedicated Server Action (`src/lib/operator/actions.ts`):** Implemented `submitOperatorDeliverableVersionAction` enforcing session authentication, operator role authorization, safe preflight deliverable lookup, `production` workflow & `pending`/`changes_requested` status gating, command adapter invocation (`submitDeliverableVersion`), and concrete path revalidation across `/operador/agenda`, `/operador/proyectos`, `/operador/proyectos/[project-id]`, and `/operador/tareas/[task-id]`.
+  - **Bilingual Localization:** Added matching translation keys under `projects.operatorTask` and `projects.operatorSubmission` across `messages/es-MX.json` and `messages/en-US.json`.
+
+- **🧪 Testing & Verification:**
+  - **Query Tests (`__tests__/operator/operator-queries.test.ts`):** 16 unit tests covering field projection, deduplication, resource ordering, task detail mapping, and preflight submission lookup.
+  - **Action Tests (`__tests__/operator/operator-actions.test.ts`):** 11 unit tests covering validation, session `AuthError` throwing, non-operator role rejection, `NOT_FOUND` / `INVALID_TRANSITION` guards, and path revalidations.
+  - **Component Tests (`__tests__/operator/operator-task-detail.test.tsx`):** 8 component tests covering outbound resource links, deliverable state notices, revision notices, dialog validation, and action invocation.
+  - **Route & Agenda Tests (`__tests__/operator/operator-agenda-routes.test.tsx`):** 7 tests covering task route linking, card urgency rendering, empty states, and translation parity.
+  - **Full Suite Status:** 4 test files, 42 tests passing with 0 errors. TypeScript, ESLint, Next.js production build, and Prettier checks passing 100%.
+
 ## [2026-08-22 @ 06:30]
 
 **🛠 S05-03: Operator Task Detail Safe Projection & Database Types Generation**

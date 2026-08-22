@@ -3,67 +3,32 @@ import "server-only";
 import type { Database } from "@/lib/database.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { logger } from "@/lib/logger";
+import {
+  OPERATOR_URGENCY_CATEGORIES,
+  type OperatorUrgencyCategory,
+  type OperatorTaskResource,
+  type OperatorTaskDeliverableDetail,
+  type OperatorTaskDetail,
+  type OperatorDeliverableForSubmission,
+  type OperatorAgendaItem,
+  type OperatorOwnWorkProject,
+  type OperatorOwnWorkProjectDetail,
+  type AgendaSelectRow,
+  type TaskDetailSelectRow,
+} from "./types";
+
+export * from "./types";
 
 type TypedSupabase = SupabaseClient<Database>;
 
-export const OPERATOR_URGENCY_CATEGORIES = [
-  "new",
-  "normal",
-  "upcoming",
-  "urgent",
-  "overdue",
-  "completed",
-] as const;
-
-export type OperatorUrgencyCategory =
-  (typeof OPERATOR_URGENCY_CATEGORIES)[number];
-
-export interface OperatorDeliverableSummary {
-  deliverableId: string;
-  deliverableTitle: string;
-  deliverableStatus: Database["public"]["Enums"]["deliverable_status"] | null;
-  deliverableWorkflowType:
-    Database["public"]["Enums"]["deliverable_workflow_type"] | null;
-  currentVersionNumber: number | null;
-  internalReviewDeadlineAt: string | null;
-  clientDeliveryDeadlineAt: string | null;
-}
-
-export interface OperatorAgendaItem {
-  taskId: string;
-  taskTitle: string;
-  taskDescription: string | null;
-  taskStatus: Database["public"]["Enums"]["task_status"];
-  taskPriority: Database["public"]["Enums"]["task_priority"];
-  taskStartedAt: string | null;
-  taskDeadlineAt: string | null;
-  assignedAt: string | null;
-  urgencyCategory: OperatorUrgencyCategory;
-  projectId: string;
-  projectName: string;
-  deliverables: OperatorDeliverableSummary[];
-}
-
-export interface OperatorOwnWorkProject {
-  projectId: string;
-  projectName: string;
-  ownTaskCount: number;
-  activeTaskCount: number;
-  completedTaskCount: number;
-  nearestDeadline: string | null;
-  urgencyCategories: OperatorUrgencyCategory[];
-}
-
-export interface OperatorOwnWorkProjectDetail {
-  projectId: string;
-  projectName: string;
-  tasks: OperatorAgendaItem[];
-}
-
-type AgendaViewRow = Database["public"]["Views"]["operator_agenda_view"]["Row"];
-
 const AGENDA_SELECT_FIELDS =
   "task_id, task_title, task_description, task_status, task_priority, task_started_at, task_deadline_at, assigned_at, urgency_category, project_id, project_name, deliverable_id, deliverable_title, deliverable_status, deliverable_workflow_type, current_version_number, internal_review_deadline_at, client_delivery_deadline_at" as const;
+
+const TASK_DETAIL_SELECT_FIELDS =
+  "task_id, project_id, project_name, task_title, task_description, task_status, task_priority, task_deadline_at, task_started_at, assigned_at, urgency_category, task_resources, deliverable_id, deliverable_title, deliverable_status, deliverable_workflow_type, current_version_number, deliverable_specifications, submission_deadline_at, internal_review_deadline_at, client_delivery_deadline_at" as const;
+
+const DELIVERABLE_SUBMISSION_SELECT_FIELDS =
+  "task_id, project_id, deliverable_id, deliverable_title, deliverable_workflow_type, deliverable_status" as const;
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -86,19 +51,23 @@ function isValidUrgencyCategory(
   );
 }
 
-function compareDatesAsc(a: string | null, b: string | null): number {
-  if (!a && !b) return 0;
-  if (!a) return 1;
-  if (!b) return -1;
-  return new Date(a).getTime() - new Date(b).getTime();
-}
+const compareDatesAsc = (a: string | null, b: string | null): number =>
+  !a && !b
+    ? 0
+    : !a
+      ? 1
+      : !b
+        ? -1
+        : new Date(a).getTime() - new Date(b).getTime();
 
-function compareDatesDesc(a: string | null, b: string | null): number {
-  if (!a && !b) return 0;
-  if (!a) return 1;
-  if (!b) return -1;
-  return new Date(b).getTime() - new Date(a).getTime();
-}
+const compareDatesDesc = (a: string | null, b: string | null): number =>
+  !a && !b
+    ? 0
+    : !a
+      ? 1
+      : !b
+        ? -1
+        : new Date(b).getTime() - new Date(a).getTime();
 
 export function sortAgendaItems(
   items: OperatorAgendaItem[],
@@ -128,7 +97,7 @@ export function sortAgendaItems(
 }
 
 export function mapAndDeduplicateAgendaRows(
-  rows: AgendaViewRow[],
+  rows: AgendaSelectRow[],
 ): OperatorAgendaItem[] {
   const taskMap = new Map<string, OperatorAgendaItem>();
 
@@ -141,7 +110,6 @@ export function mapAndDeduplicateAgendaRows(
     ) {
       continue;
     }
-
     if (!isValidUrgencyCategory(row.urgency_category)) {
       throw new Error(
         `Invalid or missing urgency_category returned from operator_agenda_view: ${row.urgency_category}`,
@@ -150,7 +118,6 @@ export function mapAndDeduplicateAgendaRows(
 
     const taskId = row.task_id;
     let item = taskMap.get(taskId);
-
     if (!item) {
       item = {
         taskId,
@@ -170,10 +137,10 @@ export function mapAndDeduplicateAgendaRows(
     }
 
     if (row.deliverable_id && row.deliverable_title) {
-      const alreadyHasDeliverable = item.deliverables.some(
+      const alreadyHas = item.deliverables.some(
         (d) => d.deliverableId === row.deliverable_id,
       );
-      if (!alreadyHasDeliverable) {
+      if (!alreadyHas) {
         item.deliverables.push({
           deliverableId: row.deliverable_id,
           deliverableTitle: row.deliverable_title,
@@ -187,8 +154,7 @@ export function mapAndDeduplicateAgendaRows(
     }
   }
 
-  const items = Array.from(taskMap.values());
-  return sortAgendaItems(items);
+  return sortAgendaItems(Array.from(taskMap.values()));
 }
 
 export async function getOperatorAgenda(
@@ -203,9 +169,7 @@ export async function getOperatorAgenda(
       logger.error("Failed to query operator_agenda_view", { error });
       throw new Error("Failed to fetch operator agenda");
     }
-
-    if (!data) return [];
-    return mapAndDeduplicateAgendaRows(data);
+    return data ? mapAndDeduplicateAgendaRows(data) : [];
   } catch (err) {
     logger.error("Error in getOperatorAgenda", { err });
     throw err;
@@ -264,9 +228,7 @@ export async function getOperatorOwnWorkProject(
   supabase: TypedSupabase,
   projectId: string,
 ): Promise<OperatorOwnWorkProjectDetail | null> {
-  if (!projectId || !UUID_REGEX.test(projectId)) {
-    return null;
-  }
+  if (!projectId || !UUID_REGEX.test(projectId)) return null;
 
   try {
     const { data, error } = await supabase
@@ -281,24 +243,176 @@ export async function getOperatorOwnWorkProject(
       });
       return null;
     }
-
-    if (!data || data.length === 0) {
-      return null;
-    }
-
+    if (!data || data.length === 0) return null;
     const tasks = mapAndDeduplicateAgendaRows(data);
-    if (tasks.length === 0) {
-      return null;
-    }
+    if (tasks.length === 0) return null;
 
-    const projectName = tasks[0].projectName;
-    return {
-      projectId,
-      projectName,
-      tasks,
-    };
+    return { projectId, projectName: tasks[0].projectName, tasks };
   } catch (err) {
     logger.error("Error in getOperatorOwnWorkProject", { err, projectId });
+    return null;
+  }
+}
+
+export function parseTaskResources(raw: unknown): OperatorTaskResource[] {
+  if (!Array.isArray(raw)) return [];
+  const resources: OperatorTaskResource[] = [];
+  for (const item of raw) {
+    if (
+      item &&
+      typeof item === "object" &&
+      typeof (item as Record<string, unknown>).id === "string" &&
+      typeof (item as Record<string, unknown>).name === "string" &&
+      typeof (item as Record<string, unknown>).url === "string"
+    ) {
+      resources.push({
+        id: (item as Record<string, unknown>).id as string,
+        name: (item as Record<string, unknown>).name as string,
+        url: (item as Record<string, unknown>).url as string,
+        sortOrder:
+          typeof (item as Record<string, unknown>).sort_order === "number"
+            ? ((item as Record<string, unknown>).sort_order as number)
+            : 0,
+      });
+    }
+  }
+  return resources.sort(
+    (a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id),
+  );
+}
+
+export function mapTaskDetailRows(
+  rows: TaskDetailSelectRow[],
+): OperatorTaskDetail | null {
+  if (!rows || rows.length === 0) return null;
+  const first = rows[0];
+  if (
+    !first.task_id ||
+    !first.task_title ||
+    !first.project_id ||
+    !first.project_name
+  ) {
+    return null;
+  }
+  if (!isValidUrgencyCategory(first.urgency_category)) {
+    throw new Error(
+      `Invalid or missing urgency_category returned from operator_agenda_view: ${first.urgency_category}`,
+    );
+  }
+
+  const resources = parseTaskResources(first.task_resources);
+  const deliverables: OperatorTaskDeliverableDetail[] = [];
+
+  for (const row of rows) {
+    if (row.deliverable_id && row.deliverable_title) {
+      if (!deliverables.some((d) => d.deliverableId === row.deliverable_id)) {
+        deliverables.push({
+          deliverableId: row.deliverable_id,
+          deliverableTitle: row.deliverable_title,
+          deliverableStatus: row.deliverable_status,
+          deliverableWorkflowType: row.deliverable_workflow_type,
+          currentVersionNumber: row.current_version_number,
+          deliverableSpecifications: row.deliverable_specifications,
+          submissionDeadlineAt: row.submission_deadline_at,
+          internalReviewDeadlineAt: row.internal_review_deadline_at,
+          clientDeliveryDeadlineAt: row.client_delivery_deadline_at,
+        });
+      }
+    }
+  }
+
+  return {
+    taskId: first.task_id,
+    taskTitle: first.task_title,
+    taskDescription: first.task_description,
+    taskStatus: first.task_status ?? "pending",
+    taskPriority: first.task_priority ?? "medium",
+    taskStartedAt: first.task_started_at,
+    taskDeadlineAt: first.task_deadline_at,
+    assignedAt: first.assigned_at,
+    urgencyCategory: first.urgency_category,
+    projectId: first.project_id,
+    projectName: first.project_name,
+    resources,
+    deliverables,
+  };
+}
+
+export async function getOperatorTaskDetail(
+  supabase: TypedSupabase,
+  taskId: string,
+): Promise<OperatorTaskDetail | null> {
+  if (!taskId || !UUID_REGEX.test(taskId)) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from("operator_agenda_view")
+      .select(TASK_DETAIL_SELECT_FIELDS)
+      .eq("task_id", taskId);
+
+    if (error) {
+      logger.error("Failed to query operator_agenda_view for task detail", {
+        error,
+        taskId,
+      });
+      return null;
+    }
+    if (!data || data.length === 0) return null;
+    return mapTaskDetailRows(data);
+  } catch (err) {
+    logger.error("Error in getOperatorTaskDetail", { err, taskId });
+    return null;
+  }
+}
+
+export async function getOperatorDeliverableForSubmission(
+  supabase: TypedSupabase,
+  deliverableId: string,
+): Promise<OperatorDeliverableForSubmission | null> {
+  if (!deliverableId || !UUID_REGEX.test(deliverableId)) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from("operator_agenda_view")
+      .select(DELIVERABLE_SUBMISSION_SELECT_FIELDS)
+      .eq("deliverable_id", deliverableId)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      logger.error(
+        "Failed to query operator_agenda_view for deliverable submission",
+        {
+          error,
+          deliverableId,
+        },
+      );
+      return null;
+    }
+
+    if (
+      !data ||
+      !data.task_id ||
+      !data.project_id ||
+      !data.deliverable_id ||
+      !data.deliverable_title
+    ) {
+      return null;
+    }
+
+    return {
+      taskId: data.task_id,
+      projectId: data.project_id,
+      deliverableId: data.deliverable_id,
+      deliverableTitle: data.deliverable_title,
+      deliverableWorkflowType: data.deliverable_workflow_type,
+      deliverableStatus: data.deliverable_status,
+    };
+  } catch (err) {
+    logger.error("Error in getOperatorDeliverableForSubmission", {
+      err,
+      deliverableId,
+    });
     return null;
   }
 }

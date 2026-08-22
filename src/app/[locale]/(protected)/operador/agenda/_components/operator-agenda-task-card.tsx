@@ -30,6 +30,7 @@ interface OperatorAgendaTaskCardProps {
     deadlineAtLabel: string;
     completedAtLabel: string;
     viewProjectAria: string;
+    openTaskAria?: string;
   };
 }
 
@@ -174,7 +175,13 @@ export function OperatorAgendaTaskCard({
         {/* Task Title & Project */}
         <div>
           <h3 className="text-base font-semibold text-foreground tracking-tight">
-            {item.taskTitle}
+            <Link
+              href={`/operador/tareas/${item.taskId}`}
+              aria-label={translations.openTaskAria ?? item.taskTitle}
+              className="hover:text-primary transition-colors underline-offset-4 hover:underline"
+            >
+              {item.taskTitle}
+            </Link>
           </h3>
 
           <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">

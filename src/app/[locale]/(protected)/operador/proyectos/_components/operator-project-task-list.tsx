@@ -87,6 +87,10 @@ export async function OperatorProjectTaskList({
       projectName: item.projectName,
     });
 
+    const openTaskAria = tAgenda("card.openTaskAria", {
+      taskTitle: item.taskTitle,
+    });
+
     return {
       urgencyLabel,
       urgencyAria,
@@ -97,6 +101,7 @@ export async function OperatorProjectTaskList({
       deadlineAtLabel,
       completedAtLabel,
       viewProjectAria,
+      openTaskAria,
     };
   }
 

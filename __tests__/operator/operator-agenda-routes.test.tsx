@@ -178,7 +178,7 @@ describe("Operator Agenda & Navigation Routes (__tests__/operator/operator-agend
       viewProjectAria: "Ver tareas del proyecto Commercial Campaign",
     };
 
-    it("renders task title, project link, non-color urgency cue, task status, and deliverable badge", () => {
+    it("renders task title with link to task route, project link, non-color urgency cue, task status, and deliverable badge", () => {
       const html = renderToStaticMarkup(
         React.createElement(OperatorAgendaTaskCard, {
           item: baseItem,
@@ -188,6 +188,9 @@ describe("Operator Agenda & Navigation Routes (__tests__/operator/operator-agend
       );
 
       expect(html).toContain("Color Grading Scene 3");
+      expect(html).toContain(
+        'href="/operador/tareas/00000000-0000-0000-0000-000000000001"',
+      );
       expect(html).toContain("Commercial Campaign");
       expect(html).toContain(
         'href="/operador/proyectos/10000000-0000-0000-0000-000000000001"',

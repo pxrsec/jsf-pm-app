@@ -847,7 +847,8 @@
         "assignedAt": "Assigned: {date}",
         "deadlineAt": "Deadline: {date}",
         "completedAt": "Completed: {date}",
-        "viewProjectAria": "View tasks for project {projectName}"
+        "viewProjectAria": "View tasks for project {projectName}",
+        "openTaskAria": "View details for task {taskTitle}"
       },
       "completedSection": {
         "title": "Completed today",
@@ -876,6 +877,77 @@
         "title": "Project not available",
         "description": "The requested project was not found or you do not have assigned tasks in it.",
         "returnAction": "Back to My Projects"
+      }
+    },
+    "operatorTask": {
+      "backToProject": "Back to project",
+      "backToAgenda": "Back to My Agenda",
+      "taskContext": "Task context",
+      "projectLabel": "Project",
+      "viewProjectAria": "View tasks for project {projectName}",
+      "descriptionTitle": "Work description",
+      "noDescription": "No description provided.",
+      "timeContext": "Timeline and deadlines",
+      "assignedAt": "Assigned: {date}",
+      "deadlineAt": "Deadline: {date}",
+      "startedAt": "Started: {date}",
+      "resourcesTitle": "Task resources",
+      "noResources": "No resources attached to this task.",
+      "externalResourceAria": "Open external resource: {name} (opens in a new tab)",
+      "deliverablesTitle": "Assigned deliverables",
+      "noDeliverables": "No deliverables assigned to this task.",
+      "specificationsTitle": "Specifications",
+      "noSpecifications": "No additional specifications.",
+      "submissionDeadline": "Submission deadline: {date}",
+      "internalReviewDeadline": "Internal review: {date}",
+      "clientDeliveryDeadline": "Client delivery: {date}",
+      "awaitingInternalReviewNotice": "Under internal review by PM team",
+      "awaitingClientReviewNotice": "Released for client review",
+      "approvedNotice": "Deliverable approved",
+      "deliveredNotice": "Deliverable finalized and delivered",
+      "changesRequestedNotice": "Revisions requested for this deliverable. Submitting a new version records an immutable entry and returns to internal review.",
+      "submitCta": "Submit production version",
+      "resubmitCta": "Submit revised version",
+      "deliverableStatus": {
+        "pending": "Pending",
+        "awaitingInternalReview": "Under internal review",
+        "awaitingClientReview": "Under client review",
+        "approved": "Approved",
+        "changesRequested": "Changes requested",
+        "delivered": "Delivered"
+      },
+      "absence": {
+        "title": "Task unavailable",
+        "description": "The requested task was not found or you do not have permission to access it.",
+        "returnAction": "Back to My Agenda"
+      }
+    },
+    "operatorSubmission": {
+      "dialogTitle": "Submit production version",
+      "dialogTitleRevision": "Submit revised version",
+      "dialogDescription": "Provide the Google Drive link with the deliverable ready for internal review.",
+      "truthfulnessNotice": "The application records the link exactly as provided, without downloading, previewing, or inspecting remote content.",
+      "revisionNotice": "This submission will record version v{nextVersion} and return to PM team internal review.",
+      "urlLabel": "Google Drive link",
+      "urlPlaceholder": "https://drive.google.com/... or https://docs.google.com/...",
+      "urlHelp": "Must be a valid HTTPS Google Drive or Google Docs link.",
+      "urlError": "The link must be a valid Google Drive HTTPS URL (drive.google.com or docs.google.com).",
+      "noteLabel": "Submission notes (optional)",
+      "notePlaceholder": "Details on changes, instructions, or context for this version...",
+      "noteHelp": "Maximum 1,000 characters.",
+      "charCount": "{count}/1000",
+      "cancelAction": "Cancel",
+      "submitAction": "Submit deliverable",
+      "submitting": "Submitting deliverable...",
+      "successToast": "Version v{version} successfully recorded for internal review.",
+      "errors": {
+        "validationFailed": "Please verify that the Google Drive link is valid.",
+        "unauthorized": "You are not authorized to submit this deliverable.",
+        "notFound": "Deliverable not found or no longer available.",
+        "invalidTransition": "The deliverable is no longer in a state eligible for submission.",
+        "conflict": "The deliverable status has changed. Refreshing data.",
+        "invariantViolation": "Could not process submission due to a system constraint.",
+        "generic": "An error occurred while submitting the deliverable. Please try again."
       }
     }
   }

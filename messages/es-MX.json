@@ -847,7 +847,8 @@
         "assignedAt": "Asignada: {date}",
         "deadlineAt": "Límite: {date}",
         "completedAt": "Completada: {date}",
-        "viewProjectAria": "Ver tareas del proyecto {projectName}"
+        "viewProjectAria": "Ver tareas del proyecto {projectName}",
+        "openTaskAria": "Ver detalle de la tarea {taskTitle}"
       },
       "completedSection": {
         "title": "Completadas hoy",
@@ -876,6 +877,77 @@
         "title": "Proyecto no disponible",
         "description": "No se encontró el proyecto solicitado o no tienes tareas asignadas en él.",
         "returnAction": "Volver a Mis Proyectos"
+      }
+    },
+    "operatorTask": {
+      "backToProject": "Volver al proyecto",
+      "backToAgenda": "Volver a Mi Agenda",
+      "taskContext": "Contexto de la tarea",
+      "projectLabel": "Proyecto",
+      "viewProjectAria": "Ver tareas del proyecto {projectName}",
+      "descriptionTitle": "Descripción del trabajo",
+      "noDescription": "Sin descripción proporcionada.",
+      "timeContext": "Tiempos y fechas límite",
+      "assignedAt": "Asignada: {date}",
+      "deadlineAt": "Fecha límite: {date}",
+      "startedAt": "Iniciada: {date}",
+      "resourcesTitle": "Recursos de la tarea",
+      "noResources": "No hay recursos adjuntos a esta tarea.",
+      "externalResourceAria": "Abrir recurso externo: {name} (abre en una nueva pestaña)",
+      "deliverablesTitle": "Entregables asignados",
+      "noDeliverables": "No hay entregables asignados a esta tarea.",
+      "specificationsTitle": "Especificaciones",
+      "noSpecifications": "Sin especificaciones adicionales.",
+      "submissionDeadline": "Límite de entrega: {date}",
+      "internalReviewDeadline": "Revisión interna: {date}",
+      "clientDeliveryDeadline": "Entrega al cliente: {date}",
+      "awaitingInternalReviewNotice": "En revisión interna por el equipo de PM",
+      "awaitingClientReviewNotice": "Enviado a revisión del cliente",
+      "approvedNotice": "Entregable aprobado",
+      "deliveredNotice": "Entregable finalizado y entregado",
+      "changesRequestedNotice": "Se solicitaron revisiones para este entregable. Al enviar una nueva versión, se registrará de forma inmutable y regresará a revisión interna.",
+      "submitCta": "Entregar versión de producción",
+      "resubmitCta": "Entregar versión corregida",
+      "deliverableStatus": {
+        "pending": "Pendiente",
+        "awaitingInternalReview": "En revisión interna",
+        "awaitingClientReview": "En revisión del cliente",
+        "approved": "Aprobado",
+        "changesRequested": "Cambios solicitados",
+        "delivered": "Entregado"
+      },
+      "absence": {
+        "title": "Tarea no disponible",
+        "description": "No se encontró la tarea solicitada o no tienes permisos para acceder a ella.",
+        "returnAction": "Volver a Mi Agenda"
+      }
+    },
+    "operatorSubmission": {
+      "dialogTitle": "Entregar versión de producción",
+      "dialogTitleRevision": "Entregar versión corregida",
+      "dialogDescription": "Proporciona el enlace de Google Drive con el entregable listo para revisión interna.",
+      "truthfulnessNotice": "La aplicación registra el enlace exactamente como se proporciona, sin descargar, previsualizar o inspeccionar el contenido remoto.",
+      "revisionNotice": "Esta entrega registrará la versión v{nextVersion} y regresará a revisión interna del equipo de PM.",
+      "urlLabel": "Enlace de Google Drive",
+      "urlPlaceholder": "https://drive.google.com/... o https://docs.google.com/...",
+      "urlHelp": "Debe ser un enlace HTTPS válido de Google Drive o Google Docs.",
+      "urlError": "El enlace debe ser una URL HTTPS válida de Google Drive (drive.google.com o docs.google.com).",
+      "noteLabel": "Notas de entrega (opcional)",
+      "notePlaceholder": "Detalles sobre los cambios, instrucciones o contexto de esta versión...",
+      "noteHelp": "Máximo 1,000 caracteres.",
+      "charCount": "{count}/1000",
+      "cancelAction": "Cancelar",
+      "submitAction": "Registrar entrega",
+      "submitting": "Registrando entrega...",
+      "successToast": "Versión v{version} registrada exitosamente para revisión interna.",
+      "errors": {
+        "validationFailed": "Verifica que el enlace de Google Drive sea válido.",
+        "unauthorized": "No tienes autorización para enviar este entregable.",
+        "notFound": "No se encontró el entregable o ya no está disponible.",
+        "invalidTransition": "El entregable ya no se encuentra en un estado disponible para entrega.",
+        "conflict": "El estado del entregable ha cambiado. Se actualizará la información.",
+        "invariantViolation": "No se pudo procesar la entrega debido a una restricción del sistema.",
+        "generic": "Ocurrió un error al enviar el entregable. Por favor intenta de nuevo."
       }
     }
   }
