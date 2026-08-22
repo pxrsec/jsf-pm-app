@@ -383,5 +383,67 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(projectLink).toHaveAttribute("href", "/cliente/proyectos");
       expect(projectLink).not.toHaveAttribute("aria-disabled");
     });
+
+    it("closes drawer when an internal navigation link is clicked", () => {
+      const profile = createMockProfile({
+        id: "u-4",
+        full_name: "Client User",
+        role: "client",
+      });
+
+      render(
+        React.createElement(MobileNavToggle, {
+          role: "client",
+          profile,
+          unreadCount: 0,
+        }),
+      );
+
+      const toggleButton = screen.getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+      fireEvent.click(toggleButton);
+
+      const projectLink = screen.getByRole("link", { name: "Proyectos" });
+      fireEvent.click(projectLink);
+
+      expect(
+        screen.getByRole("button", { name: "Abrir menú de navegación" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("link", { name: "Proyectos" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("closes drawer on Escape key and restores focus to toggle button", () => {
+      const profile = createMockProfile({
+        id: "u-3",
+        full_name: "Operator User",
+        role: "operator",
+      });
+
+      render(
+        React.createElement(MobileNavToggle, {
+          role: "operator",
+          profile,
+          unreadCount: 0,
+        }),
+      );
+
+      const toggleButton = screen.getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+      fireEvent.click(toggleButton);
+
+      expect(
+        screen.getByRole("button", { name: "Cerrar menú de navegación" }),
+      ).toBeInTheDocument();
+
+      fireEvent.keyDown(document, { key: "Escape" });
+
+      expect(
+        screen.getByRole("button", { name: "Abrir menú de navegación" }),
+      ).toBeInTheDocument();
+    });
   });
 });

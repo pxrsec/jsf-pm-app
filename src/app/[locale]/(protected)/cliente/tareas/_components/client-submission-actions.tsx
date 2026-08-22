@@ -43,7 +43,7 @@ const PROVIDER_KEY_MAP: Record<
 
 interface ClientSubmissionActionsProps {
   deliverableId: string;
-  deliverableTitle: string;
+  deliverableTitle: string | null;
   isReplacement?: boolean;
 }
 
@@ -317,9 +317,11 @@ export function ClientSubmissionActions({
 
               <div className="space-y-3 rounded-lg border border-border bg-card p-4 text-xs">
                 <div>
-                  <span className="text-muted-foreground">Entregable:</span>
+                  <span className="text-muted-foreground">
+                    {t("deliverableLabel")}:
+                  </span>
                   <p className="font-semibold text-foreground mt-0.5">
-                    {deliverableTitle}
+                    {deliverableTitle ?? t("deliverableLabel")}
                   </p>
                 </div>
 

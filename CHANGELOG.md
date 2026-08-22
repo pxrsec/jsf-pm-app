@@ -1,5 +1,26 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 12:15]
+
+**🚀 S05-07: Navigation, Recovery, Localization, Accessibility, and Closeout Verification**
+
+- **🚀 Features & Polish:**
+  - **Reused Standard Recovery Primitive (`ProjectRecoveryState`):** Standardized unexpected route error recovery across Operator (`/operador/error.tsx`) and Client (`/cliente/error.tsx`) portals using the shared `ProjectRecoveryState` component with localized error titles, descriptions, retry handlers, Sentry boundary capture (`boundary: "localized-route"`), and role-safe return links (`/operador`, `/cliente`).
+  - **44px Primary Touch Target Compliance:** Updated `MobileNavToggle` button (`min-h-[44px] min-w-[44px]`) and `ProjectRecoveryState` interactive retry and return controls to meet the 44px touch target accessibility standard.
+  - **Drawer Keyboard Navigation & Focus Management:** Verified and tested mobile drawer closing upon internal route navigation and `Escape` key press, ensuring immediate focus restoration to the toggle button.
+  - **Screen Reader Semantics & Loading Status:** Added `role="status"` and visually-hidden status announcements (`<span className="sr-only">`) to Operator and Client loading skeletons.
+
+- **🛠 Architecture, Localization & Types Hygiene:**
+  - **100% Bilingual Message Catalog Parity:** Synchronized all dictionary entries across `messages/es-MX.json` and `messages/en-US.json` for `shell.landing`, `projects.operatorAgenda`, `projects.operatorProjects`, `projects.operatorTask`, `projects.clientPortal`, `projects.clientProjects`, `projects.clientRequests`, `projects.clientSubmissions`, and `projects.clientReviews` with zero namespace mismatches.
+  - **Eliminated Static Query-Level Fallbacks:** Removed hardcoded Spanish strings (`"Sin nombre"`, `"Sin título"`) from query layers (`src/lib/client/project-queries.ts`, `request-queries.ts`, `review-queries.ts`), returning raw `null` values and delegating presentation fallbacks to localized message catalogs.
+  - **Nullable Domain Model Audit:** Updated `ClientProjectListItem`, `ClientSubmissionRequirementSummary`, `ClientRequestQueueItem`, `ClientRequestDetail`, `ClientProductionReviewQueueItem`, and `ClientProductionReviewDetail` types to strictly support nullable `name`, `title`, and `project_name` (`string | null`).
+  - **Presentation Layer Fallback Remediation:** Localized all missing project names and untitled titles across Client and Operator presentation components, eliminating hardcoded `"Proyecto"`, `"Sin nombre"`, and `"Sin título"`.
+
+- **🧪 Testing & Closeout Verification:**
+  - **Targeted Test Expansion:** Added tests in `__tests__/app-shell/navigation.test.ts` (drawer closure on link click and Escape, focus restoration), `__tests__/projects/project-recovery-state.test.tsx`, `__tests__/client/client-portal.test.tsx` (English presentation rendering and negative fallback assertions), and verified `__tests__/operator/operator-agenda-routes.test.tsx`.
+  - **Unified Verification Gate (`npm run verify`):** Executed full integration pipeline — Prettier formatting check (`format:check`), ESLint (`lint`), TypeScript typecheck (`typecheck`), Next.js App Router build (`build`), Vitest unit/integration suite (`test`: 53 test files, 478 passed, 0 failures), coverage thresholds (`test:coverage`), and production security audit (`audit:prod`: 0 vulnerabilities).
+  - **Closeout Verification Artifact:** Generated `dev-docs/specs/s05/s05-sprint-05-closeout-verification.md` detailing J-01 through J-10 manual journey verification, DoD compliance matrix, and complete file inventory.
+
 ## [2026-08-22 @ 10:56]
 
 **🚀 S05-05: Client Submission Planning Consumption, Pure Lexical URL Submission, and Correction Loop**

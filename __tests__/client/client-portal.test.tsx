@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { render, screen, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import esCatalog from "../../messages/es-MX.json";
+import enCatalog from "../../messages/en-US.json";
 
 vi.mock("server-only", () => ({}));
 
@@ -112,7 +113,6 @@ vi.mock("@/lib/client/actions", () => ({
     .mockResolvedValue({ ok: true, data: {} }),
 }));
 
-import enCatalog from "../../messages/en-US.json";
 import {
   parseClientFeedbackHistory,
   computeClientRequestReadiness,
@@ -121,11 +121,13 @@ import {
   type ClientSubmissionRequirementSummary,
   type ClientProjectDetail,
   type ClientProductionReviewDetail,
+  type ClientProductionReviewQueueItem,
   type ClientRequestDetail,
 } from "@/lib/client/types";
 import { ClientProjectList } from "@/app/[locale]/(protected)/cliente/proyectos/_components/client-project-list";
 import { ClientProjectDetailView } from "@/app/[locale]/(protected)/cliente/proyectos/_components/client-project-detail";
 import { ClientSubmissionCard } from "@/app/[locale]/(protected)/cliente/proyectos/_components/client-submission-card";
+import { ClientReviewSummaryCard } from "@/app/[locale]/(protected)/cliente/proyectos/_components/client-review-summary-card";
 import { ClientReviewDetailView } from "@/app/[locale]/(protected)/cliente/entregables/_components/client-review-detail";
 import { ClientRequestDetailView } from "@/app/[locale]/(protected)/cliente/tareas/_components/client-request-detail";
 
@@ -808,6 +810,46 @@ describe("Client Presentation & Review UI", () => {
       const enKeys = getKeys(enCatalog.projects.clientSubmissions).sort();
 
       expect(esKeys).toEqual(enKeys);
+    });
+  });
+
+  describe("English Presentation Rendering & Negative Fallback Assertions", () => {
+    it("renders ClientReviewSummaryCard in English without Spanish fallbacks", () => {
+      const reviewItem: ClientProductionReviewQueueItem = {
+        id: "rev-null-1",
+        project_id: "proj-1",
+        project_name: null,
+        title: null,
+        specifications: "Specs",
+        status: "awaiting_client_review",
+        current_version_number: 1,
+        current_submission_url: "https://drive.google.com/test",
+        current_submission_provider: "google_drive",
+        client_delivery_deadline_at: null,
+        approved_at: null,
+        delivered_at: null,
+      };
+
+      const reviewTranslations = {
+        versionLabel: enCatalog.projects.clientReviews.versionLabel,
+        deadline: enCatalog.projects.clientReviews.deadline,
+        noDeadline: enCatalog.projects.clientReviews.noDeadline,
+        openReview: enCatalog.projects.clientReviews.openReview,
+        untitledDeliverable:
+          enCatalog.projects.clientReviews.untitledDeliverable,
+      };
+
+      const { container } = render(
+        <ClientReviewSummaryCard
+          review={reviewItem}
+          translations={reviewTranslations}
+        />,
+      );
+
+      expect(container.textContent).toContain("Untitled deliverable");
+      expect(container.textContent).not.toContain("Sin título");
+      expect(container.textContent).not.toContain("Sin nombre");
+      expect(container.textContent).not.toContain("Proyecto");
     });
   });
 });

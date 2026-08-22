@@ -64,7 +64,7 @@ export async function ClientReviewDetailView({
             <FolderKanban className="h-4 w-4" aria-hidden="true" />
             <span>
               {t("backToProject", {
-                projectName: deliverable.project_name ?? "Proyecto",
+                projectName: deliverable.project_name ?? revT("unnamedProject"),
               })}
             </span>
           </Link>
@@ -80,13 +80,13 @@ export async function ClientReviewDetailView({
           <div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
               <FolderKanban className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>{deliverable.project_name ?? "Proyecto"}</span>
+              <span>{deliverable.project_name ?? revT("unnamedProject")}</span>
             </div>
             <h1
               id="deliverable-title-heading"
               className="text-xl sm:text-2xl font-bold tracking-tight text-foreground"
             >
-              {deliverable.title}
+              {deliverable.title ?? revT("untitledDeliverable")}
             </h1>
           </div>
 
@@ -192,7 +192,9 @@ export async function ClientReviewDetailView({
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors shrink-0"
-              aria-label={t("driveLinkAria", { title: deliverable.title })}
+              aria-label={t("driveLinkAria", {
+                title: deliverable.title ?? revT("untitledDeliverable"),
+              })}
             >
               <span>{t("openDriveLink")}</span>
               <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />

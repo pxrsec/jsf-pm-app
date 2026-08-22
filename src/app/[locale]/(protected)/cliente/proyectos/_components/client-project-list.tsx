@@ -73,7 +73,7 @@ export async function ClientProjectList({ projects }: ClientProjectListProps) {
                         id={`project-card-title-${project.id}`}
                         className="font-semibold text-foreground text-base line-clamp-1"
                       >
-                        {project.name}
+                        {project.name ?? t("unnamedProject")}
                       </h3>
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium shrink-0 ${statusConfig.badgeBg} ${statusConfig.badgeFg}`}
@@ -116,7 +116,7 @@ export async function ClientProjectList({ projects }: ClientProjectListProps) {
                       href={`/cliente/proyectos/${project.id}`}
                       className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary rounded"
                       aria-label={t("openProjectAria", {
-                        projectName: project.name,
+                        projectName: project.name ?? t("unnamedProject"),
                       })}
                     >
                       <span>{t("openProject")}</span>

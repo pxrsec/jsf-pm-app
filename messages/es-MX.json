@@ -48,12 +48,14 @@
       "operator": {
         "welcome": "Bienvenido, {name}",
         "myAgenda": "Mi agenda de tareas",
-        "emptyAgenda": "No tienes tareas pendientes en tu agenda."
+        "emptyAgenda": "No tienes tareas pendientes en tu agenda.",
+        "untitledTask": "Sin título"
       },
       "client": {
         "welcome": "Bienvenido, {name}",
         "myProjects": "Mis proyectos",
-        "emptyProjects": "No tienes proyectos activos asociados."
+        "emptyProjects": "No tienes proyectos activos asociados.",
+        "unnamedProject": "Sin nombre"
       }
     },
     "status": {
@@ -822,6 +824,13 @@
       "title": "Mi Agenda",
       "subtitle": "Tareas y entregables asignados bajo tu responsabilidad",
       "browseProjectsLink": "Ver proyectos asignados",
+      "untitledTask": "Sin título",
+      "recovery": {
+        "title": "Error al cargar la agenda",
+        "description": "Ocurrió un error inesperado al cargar tu agenda de tareas. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Inicio"
+      },
       "empty": {
         "title": "No hay tareas pendientes",
         "description": "No tienes tareas asignadas actualmente en tu agenda.",
@@ -860,6 +869,13 @@
       "subtitle": "Proyectos con tareas asignadas bajo tu responsabilidad",
       "backToAgenda": "Volver a Mi Agenda",
       "backToProjects": "Volver a Mis Proyectos",
+      "unnamedProject": "Sin nombre",
+      "recovery": {
+        "title": "Error al cargar los proyectos",
+        "description": "Ocurrió un error inesperado al cargar tus proyectos asignados. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Mi Agenda"
+      },
       "empty": {
         "title": "Sin proyectos asignados",
         "description": "No tienes proyectos con tareas asignadas actualmente.",
@@ -920,6 +936,12 @@
         "title": "Tarea no disponible",
         "description": "No se encontró la tarea solicitada o no tienes permisos para acceder a ella.",
         "returnAction": "Volver a Mi Agenda"
+      },
+      "recovery": {
+        "title": "Error al cargar la tarea",
+        "description": "Ocurrió un error inesperado al cargar la información de la tarea. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Mi Agenda"
       }
     },
     "operatorSubmission": {
@@ -953,6 +975,12 @@
     "clientPortal": {
       "welcomeSubtitle": "Espacio de trabajo seguro para consultar tus proyectos, solicitudes y revisiones.",
       "viewAllProjects": "Ver todos los proyectos",
+      "recovery": {
+        "title": "Error al cargar el portal de cliente",
+        "description": "Ocurrió un error inesperado al cargar tu espacio de trabajo. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Inicio"
+      },
       "quickLinks": {
         "projectsTitle": "Mis Proyectos",
         "projectsSubtitle": "Directorio de proyectos activos",
@@ -971,6 +999,13 @@
       "noDeadline": "Sin fecha límite",
       "openProject": "Ver detalles",
       "openProjectAria": "Ver detalles del proyecto {projectName}",
+      "unnamedProject": "Sin nombre",
+      "recovery": {
+        "title": "Error al cargar los proyectos",
+        "description": "Ocurrió un error inesperado al cargar tus proyectos asociados. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Inicio"
+      },
       "requestsBanner": {
         "title": "Tus solicitudes directas",
         "description": "Consulta las solicitudes y requerimientos asignados directamente a ti",
@@ -1020,6 +1055,14 @@
       "noDeadline": "Sin fecha límite",
       "openRequest": "Ver solicitud",
       "openRequestAria": "Ver solicitud {title}",
+      "unnamedProject": "Sin nombre",
+      "untitledRequest": "Sin título",
+      "recovery": {
+        "title": "Error al cargar las solicitudes",
+        "description": "Ocurrió un error inesperado al cargar tus solicitudes asignadas. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Inicio"
+      },
       "empty": {
         "title": "Sin solicitudes pendientes",
         "description": "No tienes solicitudes ni tareas asignadas directamente en este momento."
@@ -1100,6 +1143,7 @@
         "notePlaceholder": "Agrega cualquier indicación relevante sobre este material...",
         "noteHelp": "Máximo 1,000 caracteres (se ignoran espacios al inicio y final)",
         "providerPreviewLabel": "Proveedor detectado (clasificación léxica)",
+        "deliverableLabel": "Entregable",
         "confirmDialogTitle": "Confirmar envío de entrega",
         "confirmDialogDescription": "Verifica la información antes de enviar. Esta acción registrará una versión inmutable.",
         "confirmNotice": "Al confirmar, se registrará el enlace. La aplicación no valida la disponibilidad, permisos ni contenido del enlace externo.",
@@ -1157,6 +1201,14 @@
       "noDeadline": "Sin fecha límite",
       "openReview": "Revisar entregable",
       "openReviewAria": "Revisar entregable {title}",
+      "unnamedProject": "Sin nombre",
+      "untitledDeliverable": "Sin título",
+      "recovery": {
+        "title": "Error al cargar las revisiones",
+        "description": "Ocurrió un error inesperado al cargar los entregables de producción. Inténtalo de nuevo.",
+        "retryAction": "Intentar nuevamente",
+        "returnAction": "Volver a Inicio"
+      },
       "awaitingSection": {
         "title": "Pendientes de tu revisión",
         "empty": "No tienes entregables pendientes de revisión en este momento."

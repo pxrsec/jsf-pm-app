@@ -72,7 +72,7 @@ export function MobileNavToggle({
         aria-expanded={isOpen}
         aria-controls="mobile-nav-drawer"
         aria-label={isOpen ? t("closeMenu") : t("openMenu")}
-        className="h-9 w-9"
+        className="h-11 w-11 min-h-[44px] min-w-[44px]"
       >
         {isOpen ? (
           <X className="h-5 w-5" aria-hidden="true" />

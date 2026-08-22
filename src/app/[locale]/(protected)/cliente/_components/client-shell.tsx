@@ -135,7 +135,7 @@ export async function ClientShell({ profile, data }: ClientShellProps) {
                 <div className="rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md text-card-foreground flex flex-col justify-between h-full">
                   <div>
                     <h3 className="font-semibold text-foreground line-clamp-1">
-                      {project.name ?? "Sin nombre"}
+                      {project.name ?? t("landing.client.unnamedProject")}
                     </h3>
                     <div className="mt-2 flex items-center gap-2">
                       <span

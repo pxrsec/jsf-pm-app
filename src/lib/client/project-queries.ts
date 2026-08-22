@@ -54,7 +54,7 @@ export async function getClientProjects(
       .filter((r): r is typeof r & { id: string } => Boolean(r.id))
       .map((r) => ({
         id: r.id,
-        name: r.name ?? "Sin nombre",
+        name: r.name ?? null,
         status: (r.status ?? "planning") as ProjectStatus,
         client_scope: r.client_scope,
         deadline_at: r.deadline_at,
@@ -110,7 +110,7 @@ export async function getClientProjectDetail(
 
     const project: ClientProjectListItem = {
       id: projectIdVal,
-      name: pRow.name ?? "Sin nombre",
+      name: pRow.name ?? null,
       status: (pRow.status ?? "planning") as ProjectStatus,
       client_scope: pRow.client_scope,
       deadline_at: pRow.deadline_at,
@@ -128,7 +128,7 @@ export async function getClientProjectDetail(
           id: r.id,
           project_id: r.project_id ?? projectIdVal,
           project_name: r.project_name ?? project.name,
-          title: r.title ?? "Sin título",
+          title: r.title ?? null,
           description: r.description,
           status: (r.status ?? "pending") as TaskStatus,
           priority: (r.priority ?? "medium") as TaskPriority,
@@ -150,7 +150,7 @@ export async function getClientProjectDetail(
         task_title: s.task_title ?? null,
         project_id: s.project_id ?? projectIdVal,
         project_name: s.project_name ?? project.name,
-        title: s.title ?? "Sin título",
+        title: s.title ?? null,
         specifications: s.specifications,
         submission_deadline_at: s.submission_deadline_at,
         status: (s.status ?? "pending") as DeliverableStatus,
@@ -171,7 +171,7 @@ export async function getClientProjectDetail(
           id: d.id,
           project_id: d.project_id ?? projectIdVal,
           project_name: d.project_name ?? project.name,
-          title: d.title ?? "Sin título",
+          title: d.title ?? null,
           specifications: d.specifications,
           status: (d.status ?? "awaiting_client_review") as DeliverableStatus,
           current_version_number: d.current_version_number,

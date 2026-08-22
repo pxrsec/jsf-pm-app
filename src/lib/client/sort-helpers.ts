@@ -44,7 +44,7 @@ export function sortClientProjects(
     const deadlineDiff = compareDatesAsc(a.deadline_at, b.deadline_at);
     if (deadlineDiff !== 0) return deadlineDiff;
 
-    const nameDiff = a.name.localeCompare(b.name);
+    const nameDiff = (a.name ?? "").localeCompare(b.name ?? "");
     if (nameDiff !== 0) return nameDiff;
 
     return a.id.localeCompare(b.id);

@@ -38,6 +38,7 @@ export interface ClientSubmissionTranslations {
   providerWeTransfer?: string;
   providerFrameIo?: string;
   providerOtherHttps?: string;
+  untitledDeliverable?: string;
 }
 
 interface ClientSubmissionCardProps {
@@ -109,7 +110,7 @@ export function ClientSubmissionCard({
               id={`submission-title-${submission.id}`}
               className="font-medium text-foreground text-sm line-clamp-1"
             >
-              {submission.title}
+              {submission.title ?? translations?.untitledDeliverable ?? ""}
             </h4>
           </div>
 
@@ -181,9 +182,11 @@ export function ClientSubmissionCard({
                   translations?.openLinkAria
                     ? translations.openLinkAria.replace(
                         "{title}",
-                        submission.title,
+                        submission.title ??
+                          translations.untitledDeliverable ??
+                          "",
                       )
-                    : `Abrir enlace externo para ${submission.title} (abre en nueva pestaña)`
+                    : `Abrir enlace externo para ${submission.title ?? "entregable"} (abre en nueva pestaña)`
                 }
               >
                 <span className="line-clamp-1">

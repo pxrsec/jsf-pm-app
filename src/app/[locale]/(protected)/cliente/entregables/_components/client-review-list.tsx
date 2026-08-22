@@ -22,6 +22,7 @@ export async function ClientReviewList({ reviews }: ClientReviewListProps) {
     deadline: t("deadline"),
     noDeadline: t("noDeadline"),
     openReview: t("openReview"),
+    untitledDeliverable: t("untitledDeliverable"),
   };
 
   if (reviews.length === 0) {

@@ -59,6 +59,7 @@ export async function ClientRequestDetailView({
     providerWeTransfer: subT("providers.weTransfer"),
     providerFrameIo: subT("providers.frameIo"),
     providerOtherHttps: subT("providers.otherHttps"),
+    untitledDeliverable: reqT("untitledRequest"),
   };
 
   return (
@@ -80,7 +81,7 @@ export async function ClientRequestDetailView({
             <FolderKanban className="h-4 w-4" aria-hidden="true" />
             <span>
               {t("backToProject", {
-                projectName: request.project_name ?? "Proyecto",
+                projectName: request.project_name ?? reqT("unnamedProject"),
               })}
             </span>
           </Link>
@@ -96,13 +97,13 @@ export async function ClientRequestDetailView({
           <div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
               <FolderKanban className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>{request.project_name ?? "Proyecto"}</span>
+              <span>{request.project_name ?? reqT("unnamedProject")}</span>
             </div>
             <h1
               id="request-title-heading"
               className="text-xl sm:text-2xl font-bold tracking-tight text-foreground"
             >
-              {request.title}
+              {request.title ?? reqT("untitledRequest")}
             </h1>
           </div>
 

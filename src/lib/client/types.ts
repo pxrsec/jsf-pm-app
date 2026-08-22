@@ -18,7 +18,7 @@ export interface ClientTaskResource {
 
 export interface ClientProjectListItem {
   id: string;
-  name: string;
+  name: string | null;
   status: ProjectStatus;
   client_scope: string | null;
   deadline_at: string | null;
@@ -50,7 +50,7 @@ export interface ClientSubmissionRequirementSummary {
   task_title: string | null;
   project_id: string;
   project_name: string | null;
-  title: string;
+  title: string | null;
   specifications: string | null;
   submission_deadline_at: string | null;
   status: DeliverableStatus;
@@ -79,7 +79,7 @@ export interface ClientRequestQueueItem {
   id: string;
   project_id: string;
   project_name: string | null;
-  title: string;
+  title: string | null;
   description: string | null;
   status: TaskStatus;
   priority: TaskPriority;
@@ -93,7 +93,7 @@ export interface ClientRequestDetail {
   id: string;
   project_id: string;
   project_name: string | null;
-  title: string;
+  title: string | null;
   description: string | null;
   status: TaskStatus;
   priority: TaskPriority;
@@ -109,7 +109,7 @@ export interface ClientProductionReviewQueueItem {
   id: string;
   project_id: string;
   project_name: string | null;
-  title: string;
+  title: string | null;
   specifications: string | null;
   status: DeliverableStatus;
   current_version_number: number | null;
@@ -134,7 +134,7 @@ export interface ClientProductionReviewDetail {
   id: string;
   project_id: string;
   project_name: string | null;
-  title: string;
+  title: string | null;
   specifications: string | null;
   status: DeliverableStatus;
   current_version_number: number | null;

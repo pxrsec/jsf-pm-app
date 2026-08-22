@@ -12,6 +12,7 @@ interface ClientReviewSummaryCardProps {
     openReview?: string;
     openReviewAria?: string;
     statusLabel?: string;
+    untitledDeliverable?: string;
   };
 }
 
@@ -33,8 +34,10 @@ export function ClientReviewSummaryCard({
   const deadlineLabel = translations?.deadline ?? "Fecha límite";
   const noDeadlineLabel = translations?.noDeadline ?? "Sin fecha límite";
   const openReviewLabel = translations?.openReview ?? "Revisar entregable";
+  const untitledDeliverable = translations?.untitledDeliverable ?? "";
   const openReviewAriaLabel =
-    translations?.openReviewAria ?? `Revisar entregable ${review.title}`;
+    translations?.openReviewAria ??
+    (review.title ? `Revisar entregable ${review.title}` : openReviewLabel);
   const statusLabel = translations?.statusLabel ?? statusConfig.labelKey;
 
   return (
@@ -53,7 +56,7 @@ export function ClientReviewSummaryCard({
               id={`review-summary-title-${review.id}`}
               className="font-semibold text-foreground text-sm line-clamp-1"
             >
-              {review.title}
+              {review.title ?? untitledDeliverable}
             </h4>
           </div>
           <span

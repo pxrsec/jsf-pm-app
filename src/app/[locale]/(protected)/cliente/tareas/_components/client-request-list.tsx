@@ -41,7 +41,7 @@ export async function ClientRequestList({ requests }: ClientRequestListProps) {
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <FolderKanban className="h-3.5 w-3.5" aria-hidden="true" />
                     <span className="line-clamp-1">
-                      {req.project_name ?? "Proyecto"}
+                      {req.project_name ?? t("unnamedProject")}
                     </span>
                   </div>
 
@@ -50,7 +50,7 @@ export async function ClientRequestList({ requests }: ClientRequestListProps) {
                       id={`req-card-title-${req.id}`}
                       className="font-semibold text-foreground text-base line-clamp-1"
                     >
-                      {req.title}
+                      {req.title ?? t("untitledRequest")}
                     </h3>
                   </div>
 
@@ -99,7 +99,9 @@ export async function ClientRequestList({ requests }: ClientRequestListProps) {
                   <Link
                     href={`/cliente/tareas/${req.id}`}
                     className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary rounded"
-                    aria-label={t("openRequestAria", { title: req.title })}
+                    aria-label={t("openRequestAria", {
+                      title: req.title ?? t("untitledRequest"),
+                    })}
                   >
                     <span>{t("openRequest")}</span>
                     <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />

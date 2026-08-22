@@ -48,12 +48,14 @@
       "operator": {
         "welcome": "Welcome, {name}",
         "myAgenda": "My task agenda",
-        "emptyAgenda": "You have no pending tasks in your agenda."
+        "emptyAgenda": "You have no pending tasks in your agenda.",
+        "untitledTask": "Untitled task"
       },
       "client": {
         "welcome": "Welcome, {name}",
         "myProjects": "My projects",
-        "emptyProjects": "You have no active projects associated."
+        "emptyProjects": "You have no active projects associated.",
+        "unnamedProject": "Unnamed project"
       }
     },
     "status": {
@@ -822,6 +824,13 @@
       "title": "My Agenda",
       "subtitle": "Tasks and deliverables assigned under your responsibility",
       "browseProjectsLink": "View assigned projects",
+      "untitledTask": "Untitled task",
+      "recovery": {
+        "title": "Error loading agenda",
+        "description": "An unexpected error occurred while loading your task agenda. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to Home"
+      },
       "empty": {
         "title": "No pending tasks",
         "description": "You currently have no tasks assigned in your agenda.",
@@ -860,6 +869,13 @@
       "subtitle": "Projects with tasks assigned under your responsibility",
       "backToAgenda": "Back to My Agenda",
       "backToProjects": "Back to My Projects",
+      "unnamedProject": "Unnamed project",
+      "recovery": {
+        "title": "Error loading projects",
+        "description": "An unexpected error occurred while loading your assigned projects. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to My Agenda"
+      },
       "empty": {
         "title": "No assigned projects",
         "description": "You currently have no projects with assigned tasks.",
@@ -920,6 +936,12 @@
         "title": "Task unavailable",
         "description": "The requested task was not found or you do not have permission to access it.",
         "returnAction": "Back to My Agenda"
+      },
+      "recovery": {
+        "title": "Error loading task",
+        "description": "An unexpected error occurred while loading task information. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to My Agenda"
       }
     },
     "operatorSubmission": {
@@ -953,6 +975,12 @@
     "clientPortal": {
       "welcomeSubtitle": "Secure workspace to view your projects, requests, and reviews.",
       "viewAllProjects": "View all projects",
+      "recovery": {
+        "title": "Error loading client portal",
+        "description": "An unexpected error occurred while loading your workspace. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to Home"
+      },
       "quickLinks": {
         "projectsTitle": "My Projects",
         "projectsSubtitle": "Active project directory",
@@ -971,6 +999,13 @@
       "noDeadline": "No deadline",
       "openProject": "View details",
       "openProjectAria": "View details for project {projectName}",
+      "unnamedProject": "Unnamed project",
+      "recovery": {
+        "title": "Error loading projects",
+        "description": "An unexpected error occurred while loading your associated projects. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to Home"
+      },
       "requestsBanner": {
         "title": "Your direct requests",
         "description": "View requests and requirements directly assigned to you",
@@ -1020,6 +1055,14 @@
       "noDeadline": "No deadline",
       "openRequest": "View request",
       "openRequestAria": "View request {title}",
+      "unnamedProject": "Unnamed project",
+      "untitledRequest": "Untitled request",
+      "recovery": {
+        "title": "Error loading requests",
+        "description": "An unexpected error occurred while loading your assigned requests. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to Home"
+      },
       "empty": {
         "title": "No pending requests",
         "description": "You have no requests or tasks directly assigned at this time."
@@ -1100,6 +1143,7 @@
         "notePlaceholder": "Add any relevant details about this asset...",
         "noteHelp": "Maximum 1,000 characters (leading/trailing whitespace ignored)",
         "providerPreviewLabel": "Detected provider (lexical classification)",
+        "deliverableLabel": "Deliverable",
         "confirmDialogTitle": "Confirm Deliverable Submission",
         "confirmDialogDescription": "Review the details before submitting. This action will record an immutable version.",
         "confirmNotice": "Confirming records the link. The application does not verify the availability, permissions, or content of the external link.",
@@ -1157,6 +1201,14 @@
       "noDeadline": "No deadline",
       "openReview": "Review deliverable",
       "openReviewAria": "Review deliverable {title}",
+      "unnamedProject": "Unnamed project",
+      "untitledDeliverable": "Untitled deliverable",
+      "recovery": {
+        "title": "Error loading reviews",
+        "description": "An unexpected error occurred while loading production deliverables. Please try again.",
+        "retryAction": "Try again",
+        "returnAction": "Back to Home"
+      },
       "awaitingSection": {
         "title": "Awaiting your review",
         "empty": "You have no deliverables awaiting review at this time."

@@ -26,6 +26,7 @@ export async function ClientProjectDetailView({
   detail,
 }: ClientProjectDetailProps) {
   const t = await getTranslations("projects.clientProjects.detail");
+  const projT = await getTranslations("projects.clientProjects");
   const reqT = await getTranslations("projects.clientRequests");
   const subT = await getTranslations("projects.clientSubmissions");
   const revT = await getTranslations("projects.clientReviews");
@@ -47,6 +48,7 @@ export async function ClientProjectDetailView({
     deadline: subT("deadline"),
     noDeadline: subT("noDeadline"),
     readOnlyNotice: subT("readOnlyNotice"),
+    untitledDeliverable: reqT("untitledRequest"),
   };
 
   const reviewTranslations = {
@@ -54,6 +56,7 @@ export async function ClientProjectDetailView({
     deadline: revT("deadline"),
     noDeadline: revT("noDeadline"),
     openReview: revT("openReview"),
+    untitledDeliverable: revT("untitledDeliverable"),
   };
 
   return (
@@ -84,7 +87,7 @@ export async function ClientProjectDetailView({
                 id="project-context-heading"
                 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground"
               >
-                {project.name}
+                {project.name ?? projT("unnamedProject")}
               </h1>
               <p className="text-xs text-muted-foreground">
                 {t("sectionContext")}
@@ -187,7 +190,7 @@ export async function ClientProjectDetailView({
                         id={`req-title-${req.id}`}
                         className="font-semibold text-foreground text-sm line-clamp-1"
                       >
-                        {req.title}
+                        {req.title ?? reqT("untitledRequest")}
                       </h3>
                       <div className="flex items-center gap-1.5 shrink-0">
                         <span
@@ -238,7 +241,7 @@ export async function ClientProjectDetailView({
                       href={`/cliente/tareas/${req.id}`}
                       className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                       aria-label={t("requestsSection.openRequestAria", {
-                        title: req.title,
+                        title: req.title ?? reqT("untitledRequest"),
                       })}
                     >
                       <span>{t("requestsSection.openRequest")}</span>

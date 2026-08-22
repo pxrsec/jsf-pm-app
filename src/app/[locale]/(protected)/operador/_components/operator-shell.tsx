@@ -58,7 +58,7 @@ export async function OperatorShell({ profile, data }: OperatorShellProps) {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold text-foreground">
-                        {item.task_title ?? "Sin título"}
+                        {item.task_title ?? t("landing.operator.untitledTask")}
                       </h3>
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${statusConfig.badgeBg} ${statusConfig.badgeFg}`}
