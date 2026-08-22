@@ -6,7 +6,6 @@ import type {
   CreateDeliverableInput,
   UpdateDeliverableInput,
   SubmitDeliverableVersionInput,
-  ReviewDeliverableInput,
   ReportBrokenLinkInput,
 } from "./schemas";
 import type { Deliverable } from "./queries";
@@ -122,9 +121,16 @@ export async function submitDeliverableVersion(
   }
 }
 
+export type ReviewDeliverableCommandInput = {
+  deliverable_id: string;
+  stage: Database["public"]["Enums"]["review_stage"];
+  decision: Database["public"]["Enums"]["review_decision"];
+  comments?: string | null;
+};
+
 export async function reviewDeliverable(
   supabase: TypedSupabase,
-  input: ReviewDeliverableInput,
+  input: ReviewDeliverableCommandInput,
 ): Promise<CommandResult<ReviewDeliverableResult>> {
   try {
     const { data, error } = await supabase.rpc("review_deliverable", {

@@ -227,13 +227,16 @@ Both policies are lexical only. A detected provider is classification, not reach
 
 **Scope**
 
-1. Activate Client navigation only for routes that are real and usable after this sprint. The primary Client entry experience contains a multiple-project index, an own-work queue, and an entry point to released production reviews. It must not resemble the PM workspace.
-2. Render project cards/list from the Client-safe project projection only. A Client may open a required project detail route at `/cliente/proyectos/[project-id]`, which combines only that Client’s own direct requests/submissions for the selected project with project-scoped released production reviews. It must not expose a project-wide task list, another Client’s direct work, membership, internal description, internal deadlines, comments, audit history, or PM controls.
+1. Activate Client navigation only for routes that are real and usable after this item. The primary Client entry experience contains a multiple-project index, an own-work queue, and a real entry point to released production reviews. It must not resemble the PM workspace.
+2. Render project cards/list from the Client-safe project projection only. A Client may open a required project detail route at `/cliente/proyectos/[project-id]`, which combines only that Client’s own direct requests/submissions for the selected project with project-scoped released production reviews and links those reviews only to the real canonical review routes delivered by this item. It must not expose a project-wide task list, another Client’s direct work, membership, internal description, internal deadlines, comments, audit history, or PM controls.
 3. Render the direct-request queue from the direct-assignee Client task projection. It must support all active Client-member projects and may be filtered by a project ID only after the Client-safe server read; sort with the approved priority/overdue/nearest-deadline behavior and distinguish `blocking` priority from `blocked` status without exposing PM-only context.
 4. Provide an accessible client-request task detail screen/drawer that contains PM-written client-safe title, description, priority, deadline, safe resources, child client-submission summary, and the currently allowed action.
 5. Permit only direct Client transitions `pending → in_progress`, `pending → completed`, and `in_progress → completed`. The UI must not offer assignment, scope edit, deadline edit, priority edit, deletion, reopening, block control, Kanban, internal review, or PM status controls.
 6. Before a completion attempt, show a concise server-derived explanation when required child client submissions remain pending. The command result, not a client count, is decisive.
 7. Show safe confirmation and result states. If the task completion command is rejected because a child submission is still pending, refresh the client-safe task/submission state and direct the Client to the outstanding requirement without disclosing unrelated details.
+8. Deliver the complete Client production-review experience previously sequenced as S05-06: a Client-safe production-review queue at `/cliente/entregables`, bookmarkable detail at `/cliente/entregables/[deliverable-id]`, deliberate outbound opening of the current stored Google Drive URL, approval confirmation, mandatory-comment change request, current-version-safe command handling, and truthful approved/changes-requested results. The Client view remains project-scoped; direct assignment is irrelevant to review access.
+9. Client review actions must use `review_deliverable()` with server-fixed `stage = client`; the command selects/locks the current version. Browser input never supplies actor, stage, project membership, status, version identity, or lifecycle target. Stale, competing, unauthorized, and duplicate decisions refresh the authoritative representation without fabricated feedback or state.
+10. After approval, show the authoritative `approved` state and explain that final delivery is an existing internal handoff. After a change request, show `changes_requested` and explain that internal revision plus PM re-review are required before a new Client review; neither Client nor Operator UI may bypass that sequence.
 
 **Completion conditions**
 
@@ -241,7 +244,9 @@ Both policies are lexical only. A detected provider is classification, not reach
 - A Client sees only their own direct assignments; two Clients sharing a project remain isolated from each other’s client-request records and client-submission records.
 - A Client can start/complete only their own client request through the constrained command.
 - A request cannot complete until all active child client submissions are `submitted`; both UI and server outcome remain truthful.
-- No Client route exposes internal descriptions, comments, feedback, audit data, other assignees, or project-wide task views.
+- Any active Client member of a project can open only Client-safe released production-review context for that project, deliberate-open the stored Drive link, and make one authoritative review decision only when the current state is `awaiting_client_review`.
+- Client approval/change-request actions are version-scoped, immutable, attributed, conflict-safe, and command-authoritative; a change request requires a non-empty comment and preserves the mandatory internal re-review loop.
+- No Client route exposes internal descriptions, comments, internal feedback, audit data, other assignees, or project-wide task views. Client-stage feedback returned by the Client-safe review projection is the sole permitted feedback representation.
 
 ---
 
@@ -274,30 +279,11 @@ Both policies are lexical only. A detected provider is classification, not reach
 
 ---
 
-### S05-06 — Deliver Client production review and safe released-deliverable history
+### S05-06 — Absorbed into S05-04 by S05-DEC-02
 
-**Objective:** enable a Client member to make one authoritative, version-scoped decision on released production work without exposing the internal production process.
+**Disposition:** the Project Owner accepted S05-DEC-02 on 2026-08-22: the complete Client production-review queue/detail/action scope is delivered with S05-04 to avoid a temporary read-only review surface, dead navigation, duplicate presentation, and later replacement work.
 
-**Scope**
-
-1. Provide a Client-safe production-review list/detail using the committed Client deliverable projection. Include only production deliverables available to project Client reviewers and only fields the safe projection permits: Client-visible title/specifications, current Google Drive URL, Client deadline, current version/status, and Client-visible feedback history.
-2. The primary review detail must identify the exact current version being reviewed. It must not expose internal feedback, internal reviewer identity beyond any expressly client-visible data, operator/private project context, raw audit events, or non-released versions.
-3. Provide deliberate outbound opening of the current Google Drive URL. This action must not proxy or preview the resource.
-4. When state is `awaiting_client_review`, show exactly two authoritative Client actions:
-   - **Approve deliverable:** localized confirmation dialog; submit the allowed Client review decision.
-   - **Request changes:** mandatory localized comment, inline validation, confirmation where appropriate, then submit the allowed Client review decision.
-5. Use the constrained review command with current-version identity. It must lock/serialize the decision. On a stale or competing decision, show a generic safe conflict state, refresh the server-rendered review representation, and do not fabricate feedback or status.
-6. After approval, show the authoritative `approved` state and explain that final delivery is recorded through the existing authorized internal handoff, not by the Client.
-7. After a Client change request, show the authoritative `changes_requested` state and explain that the internal team will revise and re-review before any return to Client review. The Client must not see a control that bypasses the PM review stage.
-8. Include Client-safe broken-link reporting only if the committed safe representation and existing command permit it. Reporting records an incident only; it does not alter lifecycle status, declare a URL broken, or cause a remote check.
-
-**Completion conditions**
-
-- Any active Client member of the project may review an eligible released production deliverable, while direct Client assignment remains irrelevant to this project-scoped review surface.
-- The decision applies only to the exact current version in `awaiting_client_review`.
-- Approval and changes-requested decisions are immutable, attributed to the actual Client, audited, and atomically transition the lifecycle through the existing command boundary.
-- A change request requires a non-empty comment; a stale/duplicate/unauthorized attempt is safely rejected without false local history.
-- The client-visible result accurately preserves the mandatory internal re-review loop.
+**Implementation treatment:** S05-06 creates no separate routes, components, action wrappers, test files, or closeout evidence. Its original scope is binding inside S05-04. Client-safe link-incident reporting remains deferred unless a later accepted scope supplies a Client-safe current version ID; the committed `client_deliverable_view` does not expose one, so S05-04 must not use an internal version lookup as a workaround.
 
 ---
 

@@ -1,5 +1,34 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 09:37]
+
+**🚀 S05-04: Client Portal Safe Project Dashboard & Direct-Request Queue**
+
+- **🚀 Features:**
+  - **Live Client Navigation & Shell Integration:** Activated the live `/cliente/proyectos` link in `AppNav` and `MobileNavToggle` for client users, and updated `ClientShell` with localized quick links to `/cliente/proyectos`, `/cliente/tareas`, `/cliente/entregables`, and direct project cards.
+  - **Client Project Browser & Workspace (`/cliente/proyectos` & `/cliente/proyectos/[project-id]`):** Implemented client project list and project detail views featuring 4 separated sections: Project Context (with status badge and client scope), Your Requests (with child count and status), Your Requested Submissions (read-only requirements with pending/submitted indicators), and Released Production Reviews (with deliverable status and review link).
+  - **Client Direct-Request Queue & Detail (`/cliente/tareas` & `/cliente/tareas/[task-id]`):** Implemented direct-assignee client request queue and detail views featuring plain-text descriptions, timeline dates, display-only approved resources, read-only child submission summaries, and interactive lifecycle controls.
+  - **Client Request Lifecycle Actions (`ClientRequestActions`):** Implemented localized client action leaves for starting (`pending` → `in_progress`) and completing (`in_progress` → `completed`) client requests with double-click protection and inline error mapping.
+  - **Client Production Review Queue & Detail (`/cliente/entregables` & `/cliente/entregables/[deliverable-id]`):** Implemented client review list (split into Awaiting Your Review and Recent Outcomes) and canonical review detail view featuring deliberate outbound Google Drive review links (`target="_blank"`, `rel="noopener noreferrer"`) and parsed client feedback history without internal IDs.
+  - **Client Production Review Actions (`ClientReviewActions`):** Implemented approval and revision request controls with double-submit protection, character counters (1-2000 chars for revisions), and strict review action suppression if version or feedback data is invalid.
+  - **Strict Error Code Catalog Mapping:** Implemented explicit client error mapping (`CLIENT_ERROR_KEY_BY_CODE`) mapping domain error codes (`VALIDATION_FAILED`, `UNAUTHORIZED`, `NOT_FOUND`, `INVALID_TRANSITION`, `CONFLICT`, `INVARIANT_VIOLATION`, `UNKNOWN`) to semantic catalog keys, preventing raw backend message leakage.
+
+- **🛠 Architecture & Security:**
+  - **Deliverables Command Adapter (`src/lib/deliverables/commands.ts`):** Extended `ReviewDeliverableCommandInput` to support `stage: "internal" | "client"`, keeping PM internal reviews and Client production reviews strictly separated.
+  - **Server-Only Safe View Queries (`src/lib/client/`):** Created modular typed query boundaries (`project-queries.ts`, `request-queries.ts`, `review-queries.ts`, `queries.ts`) projecting strictly from `client_project_view`, `client_task_view`, `client_submission_view`, and `client_deliverable_view` under RLS.
+  - **Dedicated Client Server Actions (`src/lib/client/actions.ts`):** Implemented `startClientRequestAction`, `completeClientRequestAction`, `approveClientDeliverableAction`, and `requestClientDeliverableChangesAction` enforcing session authentication, client role authorization, safe preflight state verification, command execution, and localized path revalidation.
+  - **Preserved Locale on Non-Client Redirects:** All `/cliente/*` server routes check session role and redirect non-client users using locale-preserving prefixes.
+  - **Bilingual Translation Parity:** Added complete Spanish (`messages/es-MX.json`) and English (`messages/en-US.json`) dictionaries under `projects.clientPortal`, `projects.clientProjects`, `projects.clientRequests`, `projects.clientSubmissions`, and `projects.clientReviews`.
+  - **Line Limit Strict Adherence:** Kept all 24 production implementation files strictly $\le 300$ lines.
+
+- **🧪 Testing & Verification:**
+  - **Action Tests (`__tests__/client/client-actions.test.ts`):** 18 unit tests verifying input validation, session enforcement, non-client role rejection, preflight check guards, command execution, and path revalidations.
+  - **Query Tests (`__tests__/client/client-queries.test.ts`):** 11 unit tests verifying field projections, direct task scoping, child submission isolation, and feedback parsing.
+  - **Presentation & Review Tests (`__tests__/client/client-portal.test.tsx`):** 13 component tests verifying feedback parser, readiness computation, sort order, empty states, 4-section layout, outbound review links, action eligibility, and safe recovery states.
+  - **Shell & Navigation Tests (`__tests__/app-shell/navigation.test.ts`, `__tests__/app-shell/role-landing.test.ts`):** 20 tests verifying live client navigation links, drawer toggles, and shell landing components.
+  - **Semantic Key Parity (`__tests__/i18n/key-naming.test.ts`):** Verified translation key naming and full semantic dictionary parity.
+  - **Full Automated Suite:** 6 test files, 65 tests passing (0 failures). `typecheck`, Next.js production `build`, `lint` (0 errors, 0 warnings), and `format:check` passing 100%.
+
 ## [2026-08-22 @ 07:11]
 
 **🚀 S05-03: Operator Task Detail & Production-Submission Flow**

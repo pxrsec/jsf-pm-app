@@ -949,6 +949,229 @@
         "invariantViolation": "Could not process submission due to a system constraint.",
         "generic": "An error occurred while submitting the deliverable. Please try again."
       }
+    },
+    "clientPortal": {
+      "welcomeSubtitle": "Secure workspace to view your projects, requests, and reviews.",
+      "viewAllProjects": "View all projects",
+      "quickLinks": {
+        "projectsTitle": "My Projects",
+        "projectsSubtitle": "Active project directory",
+        "requestsTitle": "My Requests",
+        "requestsSubtitle": "Assigned requests queue",
+        "reviewsTitle": "Production Reviews",
+        "reviewsSubtitle": "Deliverables awaiting review",
+        "viewAll": "Go to section"
+      }
+    },
+    "clientProjects": {
+      "title": "My Projects",
+      "subtitle": "Projects in which you participate as a client",
+      "listHeading": "Project list",
+      "deadline": "Deadline",
+      "noDeadline": "No deadline",
+      "openProject": "View details",
+      "openProjectAria": "View details for project {projectName}",
+      "requestsBanner": {
+        "title": "Your direct requests",
+        "description": "View requests and requirements directly assigned to you",
+        "cta": "View requests queue"
+      },
+      "empty": {
+        "title": "No active projects",
+        "description": "You currently have no active associated projects."
+      },
+      "absence": {
+        "title": "Project unavailable",
+        "description": "The requested project was not found or you do not have access to it.",
+        "returnAction": "Back to My Projects"
+      },
+      "detail": {
+        "backToProjects": "Back to My Projects",
+        "sectionContext": "Project information and requirements",
+        "scopeLabel": "Project Scope",
+        "deadline": "Project deadline",
+        "lastActivity": "Last activity",
+        "requestsSection": {
+          "title": "Your Requests",
+          "viewAllQueue": "View requests queue",
+          "empty": "You have no assigned requests in this project.",
+          "childCount": "{count} associated delivery requirements",
+          "deadline": "Deadline",
+          "noDeadline": "No deadline",
+          "openRequest": "View request",
+          "openRequestAria": "View request {title}"
+        },
+        "submissionsSection": {
+          "title": "Your Requested Submissions",
+          "empty": "You have no requested submissions in this project."
+        },
+        "reviewsSection": {
+          "title": "Production Reviews",
+          "viewAllReviews": "View all reviews",
+          "empty": "There are no released production deliverables for review in this project."
+        }
+      }
+    },
+    "clientRequests": {
+      "title": "My Requests",
+      "subtitle": "Queue of requests and tasks assigned directly to you",
+      "childCount": "{count} required submissions",
+      "deadline": "Deadline",
+      "noDeadline": "No deadline",
+      "openRequest": "View request",
+      "openRequestAria": "View request {title}",
+      "empty": {
+        "title": "No pending requests",
+        "description": "You have no requests or tasks directly assigned at this time."
+      },
+      "status": {
+        "pending": "Pending",
+        "inProgress": "In progress",
+        "inReview": "In review",
+        "completed": "Completed",
+        "blocked": "Blocked"
+      },
+      "priority": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "blocking": "Blocking"
+      },
+      "absence": {
+        "title": "Request unavailable",
+        "description": "The request was not found or you do not have permission to access it.",
+        "returnAction": "Back to My Requests"
+      },
+      "detail": {
+        "backToQueue": "Back to My Requests",
+        "backToProject": "Back to {projectName}",
+        "descriptionTitle": "Request Description",
+        "deadline": "Deadline",
+        "startedAt": "Started on",
+        "completedAt": "Completed on",
+        "resourcesTitle": "Attached Resources"
+      },
+      "actions": {
+        "startRequest": "Start request",
+        "startRequestAria": "Start work on this request",
+        "starting": "Starting...",
+        "startSuccess": "Request started successfully.",
+        "completeRequest": "Complete request",
+        "completeRequestAria": "Mark request as completed",
+        "completing": "Completing...",
+        "completeSuccess": "Request completed successfully.",
+        "completedNotice": "This request has been completed.",
+        "nonActionableNotice": "This request is in a state that does not accept direct actions.",
+        "prerequisiteTitle": "Pending requirements",
+        "prerequisiteMessage": "There {count, plural, =1 {is 1 pending submission} other {are # pending submissions}} that must be submitted before completing this request.",
+        "errors": {
+          "validationFailed": "The request data is invalid.",
+          "unauthorized": "You are not authorized to perform this action.",
+          "notFound": "The request was not found or is no longer available.",
+          "invalidTransition": "The request is no longer in a valid state for this action.",
+          "conflict": "The request state has changed. Refreshing data.",
+          "invariantViolation": "Cannot complete request because there are pending required submissions.",
+          "generic": "An error occurred while updating the request. Please try again."
+        }
+      }
+    },
+    "clientSubmissions": {
+      "requirementsTitle": "Submission Requirements",
+      "requirementsCount": "({count} requirements)",
+      "noRequirements": "No submissions are required for this request.",
+      "status": {
+        "submitted": "Submitted",
+        "pending": "Pending"
+      },
+      "versionLabel": "Current version",
+      "deadline": "Deadline",
+      "noDeadline": "No deadline",
+      "readOnlyNotice": "Read only"
+    },
+    "clientReviews": {
+      "title": "Production Reviews",
+      "subtitle": "Video and design deliverables released for your review and approval",
+      "versionLabel": "Version",
+      "deadline": "Delivery deadline",
+      "noDeadline": "No deadline",
+      "openReview": "Review deliverable",
+      "openReviewAria": "Review deliverable {title}",
+      "awaitingSection": {
+        "title": "Awaiting your review",
+        "empty": "You have no deliverables awaiting review at this time."
+      },
+      "recentOutcomesSection": {
+        "title": "Recent review outcomes"
+      },
+      "empty": {
+        "title": "No deliverables for review",
+        "description": "There are no released production deliverables in your projects currently."
+      },
+      "absence": {
+        "title": "Deliverable unavailable",
+        "description": "The requested deliverable was not found or you do not have access to it.",
+        "returnAction": "Back to Reviews"
+      },
+      "detail": {
+        "backToReviews": "Back to Reviews",
+        "backToProject": "Back to {projectName}",
+        "versionUnavailable": "Version unavailable",
+        "specificationsTitle": "Specifications",
+        "submissionNoteTitle": "Submission Note",
+        "deliveryDeadline": "Client delivery deadline",
+        "submittedAt": "Submitted on",
+        "approvedAt": "Approved on",
+        "driveLinkLabel": "Deliverable Material",
+        "driveLinkNotice": "Opens the Google Drive link in a new tab to inspect material.",
+        "openDriveLink": "Open in Google Drive",
+        "driveLinkAria": "Open material for {title} in Google Drive (opens in a new tab)",
+        "noDriveLink": "No Google Drive link was provided for this version.",
+        "inconsistentReviewTitle": "Review unavailable",
+        "inconsistentReviewMessage": "The data for this deliverable is inconsistent. Actions cannot be performed at this time.",
+        "approvedNoticeTitle": "Deliverable approved",
+        "approvedNoticeDesc": "You have approved this deliverable. The internal team will proceed with final delivery.",
+        "changesRequestedNoticeTitle": "Changes requested",
+        "changesRequestedNoticeDesc": "You have requested changes. The team will revise the deliverable and pass internal review before submitting a new version to you.",
+        "deliveredNoticeTitle": "Deliverable finalized",
+        "deliveredNoticeDesc": "This deliverable has been formally marked as delivered.",
+        "readOnlyStateNotice": "This deliverable is in read-only mode."
+      },
+      "feedbackHistory": {
+        "title": "Client Review History",
+        "empty": "No previous review comments.",
+        "malformedNotice": "Could not load review history due to a data inconsistency.",
+        "decisionApproved": "Approved by client",
+        "decisionChangesRequested": "Changes requested by client"
+      },
+      "actions": {
+        "approveDeliverable": "Approve deliverable",
+        "approveAria": "Approve this deliverable",
+        "approveDialogTitle": "Confirm deliverable approval",
+        "approveDialogDescription": "By approving this deliverable, you confirm it meets your requirements and the team will proceed to final delivery.",
+        "confirmApprove": "Yes, approve deliverable",
+        "approving": "Approving...",
+        "requestChanges": "Request changes",
+        "requestChangesAria": "Request changes for this deliverable",
+        "changesDialogTitle": "Request changes on deliverable",
+        "changesDialogDescription": "Describe the required changes in detail. The team will make the necessary modifications.",
+        "commentLabel": "Comments on required changes",
+        "commentPlaceholder": "Clearly specify what adjustments are needed...",
+        "commentHelp": "Required comment (maximum 5,000 characters)",
+        "commentRequired": "You must enter a comment detailing the requested changes.",
+        "commentTooLong": "The comment cannot exceed 5,000 characters.",
+        "confirmRequestChanges": "Submit change request",
+        "submittingChanges": "Submitting request...",
+        "cancelAction": "Cancel",
+        "errors": {
+          "validationFailed": "The review data is invalid.",
+          "unauthorized": "You are not authorized to review this deliverable.",
+          "notFound": "The deliverable was not found or is no longer available.",
+          "invalidTransition": "The deliverable is no longer in a state eligible for review.",
+          "conflict": "The deliverable state has changed. Refreshing data.",
+          "invariantViolation": "Could not record review due to a system constraint.",
+          "generic": "An error occurred while processing the review. Please try again."
+        }
+      }
     }
   }
 }

@@ -124,8 +124,8 @@ Routes below are the S05 implementation target. Spanish remains unprefixed; the 
 | Client direct-request queue | `/cliente/tareas` | Same | `client_task_view`: ID/project/title/description/status/priority/deadline/resources/child count. Sort by documented priority/overdue/nearest deadline using only returned fields. | Server-rendered queue across all Client-visible projects. Refresh after Client request transition or Client submission. |
 | Client direct-request detail | `/cliente/tareas/[task-id]` | Same | Fetch from `client_task_view` constrained to target ID; do not use internal `getTaskDetail`. Child submission cards are read from `client_submission_view` constrained to the same task. | Missing/not-visible target is a safe not-found. |
 | Client submission form | Within direct-request detail or `/cliente/tareas/[task-id]/entregables/[deliverable-id]` | Same; direct assignment remains database-enforced | `client_submission_view` constrained to target ID and task ID; only accepted Client fields. | Success refreshes request detail and Client queue. `submitted` is terminal from the Client perspective. |
-| Client production-review queue | `/cliente/entregables` | Same | `client_deliverable_view` filtered by Client-visible lifecycle status. | Do not merge this with direct client-submission records. |
-| Client production-review detail | `/cliente/entregables/[deliverable-id]` | Same; project Client membership enforced by view/RPC | `client_deliverable_view` constrained to target ID: title/specifications/current version/current Drive URL/client deadline/client feedback history. | Success/conflict refreshes detail and review queue from server. |
+| Client production-review queue | `/cliente/entregables` | Same | `client_deliverable_view` filtered by Client-visible lifecycle status. | Delivered by S05-04 under S05-DEC-02. Do not merge this with direct client-submission records. |
+| Client production-review detail | `/cliente/entregables/[deliverable-id]` | Same; project Client membership enforced by view/RPC | `client_deliverable_view` constrained to target ID: title/specifications/current version/current Drive URL/client deadline/client feedback history. | Delivered by S05-04 under S05-DEC-02. Success/conflict refreshes detail and review queue from server. |
 | Client-safe archive entry | Deferred unless a later S05 implementation spec proves current `client_deliverable_view` supports the intended archive UX without an archive-specific query/policy change. | n/a | `client_deliverable_view` may display released/approved/delivered records; it is not automatically a full archive implementation. | Do not introduce new archive search/filter behavior in S05. |
 
 ---
@@ -271,11 +271,10 @@ The committed client-submission RPC uses a lexical regex and provider classifica
 1. Treat S05-DEC-01 as accepted migration scope; create its test-first and implementation contract before any E6 UI work depends on the revised agenda semantics.
 2. Build test-first contracts for the role-safe query modules and each new Client/Operator action; retain the exact S05 mapping rows as traceability reference.
 3. Implement E6 using `operator_agenda_view` and a dedicated Operator submission action.
-4. Implement E7 Client project/request/submission read/actions from Client views and existing RPCs.
-5. Implement Client production review only after Client-safe detail/read tests and Client action tests are in place.
-6. Add navigation only as each target route becomes usable.
-7. If a live schema/application mismatch appears, stop that item and apply the migration boundary stated in the approved S05 plan; do not use direct DDL, dashboard edits, generated-type edits, or client-side authorization as a substitute.
+4. Implement the full E7 Client portal/request/submission/review journey in S05-04 only after Client-safe detail/read tests and Client action tests are in place; S05-06 is absorbed by S05-DEC-02 and creates no duplicate implementation slice.
+5. Add navigation only as each target route becomes usable.
+6. If a live schema/application mismatch appears, stop that item and apply the migration boundary stated in the approved S05 plan; do not use direct DDL, dashboard edits, generated-type edits, or client-side authorization as a substitute.
 
 ## 9. S05-01 completion record
 
-S05-01 is complete. This reference is the mapping baseline for successor test-first and implementation specifications. S05-DEC-01 is accepted: E6 now requires the narrowly scoped Operator-agenda migration described in Section 7.3; no other Project Owner decision or default Client schema migration is required before the next S05 contracts.
+S05-01 is complete. This reference is the mapping baseline for successor test-first and implementation specifications. S05-DEC-01 is accepted: E6 requires the narrowly scoped Operator-agenda migration described in Section 7.3. S05-DEC-02 is accepted: the complete Client production-review route/detail/action scope is owned by S05-04; S05-06 is absorbed and creates no duplicate implementation. No Client schema migration is authorized or required by that ownership change.

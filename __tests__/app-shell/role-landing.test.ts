@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import esCatalog from "../../messages/es-MX.json";
 
@@ -27,6 +28,29 @@ vi.mock("next-intl/server", () => ({
       return fullPath;
     };
   }),
+}));
+
+vi.mock("@/i18n/routing", () => ({
+  Link: ({
+    href,
+    children,
+    className,
+  }: {
+    href: string;
+    children: React.ReactNode;
+    className?: string;
+  }) =>
+    React.createElement(
+      "a",
+      { href, className, "data-testid": "locale-link" },
+      children,
+    ),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  usePathname: () => "/",
 }));
 
 import { AdminShell } from "@/app/[locale]/(protected)/admin/_components/admin-shell";

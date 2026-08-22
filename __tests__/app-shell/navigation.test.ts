@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import esCatalog from "../../messages/es-MX.json";
 
@@ -144,6 +144,10 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    cleanup();
+  });
+
   const baseUser = { id: "u-1", email: "user@jsf.internal" };
 
   describe("AppNav Server Component per role", () => {
@@ -220,7 +224,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(html).toContain("Operador");
     });
 
-    it("renders client navigation with /cliente and disabled projects item", async () => {
+    it("renders client navigation with /cliente and live /cliente/proyectos link", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
@@ -237,8 +241,8 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
 
       expect(html).toContain('href="/cliente"');
       expect(html).toContain('href="/cliente/proyectos"');
-      expect(html).toContain('aria-disabled="true"');
-      expect(html).toContain('tabindex="-1"');
+      expect(html).not.toContain('aria-disabled="true"');
+      expect(html).not.toContain('tabindex="-1"');
       expect(html).not.toContain('href="/admin"');
       expect(html).toContain("Client User");
       expect(html).toContain("Cliente");
@@ -352,6 +356,32 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(agendaLink).toBeInTheDocument();
       expect(agendaLink).toHaveAttribute("href", "/operador/agenda");
       expect(agendaLink).not.toHaveAttribute("aria-disabled");
+    });
+
+    it("renders active project link in drawer for client", () => {
+      const profile = createMockProfile({
+        id: "u-4",
+        full_name: "Client User",
+        role: "client",
+      });
+
+      render(
+        React.createElement(MobileNavToggle, {
+          role: "client",
+          profile,
+          unreadCount: 0,
+        }),
+      );
+
+      const toggleButton = screen.getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+      fireEvent.click(toggleButton);
+
+      const projectLink = screen.getByRole("link", { name: "Proyectos" });
+      expect(projectLink).toBeInTheDocument();
+      expect(projectLink).toHaveAttribute("href", "/cliente/proyectos");
+      expect(projectLink).not.toHaveAttribute("aria-disabled");
     });
   });
 });

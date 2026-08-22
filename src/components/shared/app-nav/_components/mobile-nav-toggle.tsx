@@ -112,24 +112,13 @@ export function MobileNavToggle({
               {t("links.home")}
             </Link>
 
-            {role === "admin" || role === "pm" || role === "operator" ? (
-              <Link
-                href={secondaryNavigationItem.href}
-                onClick={() => setIsOpen(false)}
-                className="px-3 py-2 rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
-                {secondaryNavigationItem.label}
-              </Link>
-            ) : (
-              <a
-                href={secondaryNavigationItem.href}
-                aria-disabled="true"
-                tabIndex={-1}
-                className="px-3 py-2 rounded-md font-medium text-muted-foreground cursor-not-allowed opacity-60"
-              >
-                {secondaryNavigationItem.label}
-              </a>
-            )}
+            <Link
+              href={secondaryNavigationItem.href}
+              onClick={() => setIsOpen(false)}
+              className="px-3 py-2 rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              {secondaryNavigationItem.label}
+            </Link>
           </div>
 
           <div className="pt-2 border-t border-border">
