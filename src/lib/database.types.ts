@@ -1702,6 +1702,10 @@ export type Database = {
         }
         Returns: Json
       }
+      evaluate_notification_alerts: {
+        Args: { p_project_id?: string }
+        Returns: Json
+      }
       get_project_completion_readiness: {
         Args: { p_project_id: string }
         Returns: Json

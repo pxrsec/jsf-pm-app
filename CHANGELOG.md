@@ -1,5 +1,14 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 14:17]
+
+**🛠 S06-E08: Notification Capability Suppression & Alert Evaluation Migrations**
+
+- **🛠 Architecture & Database:**
+  - **Applied Notification Capability Suppression Migration (`supabase/migrations/20260822140000_s06_e08_notification_capability_suppression.sql`):** Applied the S06-E08 notification capability migration to `jsf-pm-dev` via Supabase MCP. Added `suppressed` terminal value to `public.notification_delivery_status`, added `suppression_reason` and `suppressed_at` columns to `public.notification_recipients` with suppression state constraints and indexing, implemented transactional disabled-provider fan-out (`private.fan_out_disabled_external_notifications`), preserved monotonic receipt and read boundaries, narrowed recipient select policy to in-app rows, and created safe read RPCs `public.list_my_in_app_notifications` and `public.list_suppressed_notification_operations`.
+  - **Applied Authoritative Alert Evaluation Migration (`supabase/migrations/20260822150000_s06_e08_alert_evaluation.sql`):** Applied the S06-E08 alert evaluation migration to `jsf-pm-dev` via Supabase MCP. Implemented database-authoritative alert evaluator (`private.evaluate_notification_alerts` / `public.evaluate_notification_alerts`) for disjoint task deadline reminders (24h/12h/6h/overdue) and production deliverable review-inactivity reminders (capped at 5 intervals before transition to stalled), with role-based execution boundaries for Admin, active PM Lead, and `service_role`.
+  - **Database Types Synchronization (`src/lib/database.types.ts`):** Regenerated TypeScript types from `jsf-pm-dev` via Supabase MCP `generate_typescript_types` and updated `src/lib/database.types.ts` with newly added enum value, recipient suppression columns, and RPC function definitions (`evaluate_notification_alerts`, `list_my_in_app_notifications`, `list_suppressed_notification_operations`).
+
 ## [2026-08-22 @ 12:15]
 
 **🚀 S05-07: Navigation, Recovery, Localization, Accessibility, and Closeout Verification**

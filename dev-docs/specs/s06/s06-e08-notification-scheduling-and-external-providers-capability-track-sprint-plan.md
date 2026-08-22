@@ -77,9 +77,12 @@ This plan does not authorize a provider operation or silently supersede ADR-024.
 
 ### 4.1 Hard prerequisite
 
-**No S06 application work item may begin until the reviewed S06 notification-capability migration has been created, applied to `jsf-pm-dev` through Supabase MCP, and its generated `src/lib/database.types.ts` output has been regenerated unchanged through Supabase MCP.**
+**No S06 application work item may begin until both reviewed S06 migrations have been created, applied to `jsf-pm-dev` through Supabase MCP, and their resulting `src/lib/database.types.ts` output has been regenerated unchanged through Supabase MCP:**
 
-This plan specifies the migration; it does not create or apply it. The applied migration source and generated types become the implementation baseline. If their resulting names/types differ from this specification, update the S06 implementation references before coding. Do not compensate with manual generated-type edits, direct DDL, a dashboard edit, generic SQL, or a client-only state model.
+1. `supabase/migrations/20260822140000_s06_e08_notification_capability_suppression.sql`; and
+2. `supabase/migrations/20260822150000_s06_e08_alert_evaluation.sql`.
+
+The applied migration sources and generated types become the implementation baseline. If their resulting names/types differ from this specification, update the S06 implementation references before coding. Do not compensate with manual generated-type edits, direct DDL, a dashboard edit, generic SQL, or a client-only state model.
 
 ### 4.2 Required migration scope
 
@@ -461,7 +464,7 @@ Run only against the approved mutable sandbox after focused automation is green.
 
 Sprint 06 capability track is complete only when all conditions below are met.
 
-1. The reviewed S06 migration is applied to `jsf-pm-dev`; generated types are regenerated unchanged; source/applied/type provenance is recorded.
+1. Both reviewed S06 migrations are applied to `jsf-pm-dev`; generated types are regenerated unchanged; source/applied/type provenance is recorded.
 2. Existing lifecycle commands create one canonical event and deterministic eligible recipient/channel fan-out without duplicate domain events.
 3. In-app notification inbox/history, unread badge/count, read-one/read-all behavior, safe navigation, loading/error/empty/retry states, and accessible localized UX work under real authentication.
 4. Eligible disabled external channels create terminal `suppressed` recipient records with the sole S06 safe reason `provider_disabled`; ineligible channels create no external row.
