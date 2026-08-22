@@ -853,6 +853,8 @@ export type Database = {
           provider_message_id: string | null
           read_at: string | null
           sent_at: string | null
+          suppressed_at: string | null
+          suppression_reason: string | null
           template_id: string | null
           updated_at: string
           user_id: string
@@ -874,6 +876,8 @@ export type Database = {
           provider_message_id?: string | null
           read_at?: string | null
           sent_at?: string | null
+          suppressed_at?: string | null
+          suppression_reason?: string | null
           template_id?: string | null
           updated_at?: string
           user_id: string
@@ -895,6 +899,8 @@ export type Database = {
           provider_message_id?: string | null
           read_at?: string | null
           sent_at?: string | null
+          suppressed_at?: string | null
+          suppression_reason?: string | null
           template_id?: string | null
           updated_at?: string
           user_id?: string
@@ -1700,6 +1706,36 @@ export type Database = {
         Args: { p_project_id: string }
         Returns: Json
       }
+      list_my_in_app_notifications: {
+        Args: { p_before?: string; p_limit?: number }
+        Returns: {
+          created_at: string
+          delivery_status: Database["public"]["Enums"]["notification_delivery_status"]
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          event_id: string
+          occurred_at: string
+          project_id: string
+          read_at: string
+          recipient_id: string
+          trigger: Database["public"]["Enums"]["notification_trigger"]
+        }[]
+      }
+      list_suppressed_notification_operations: {
+        Args: { p_before?: string; p_limit?: number }
+        Returns: {
+          channel: Database["public"]["Enums"]["notification_channel"]
+          delivery_status: Database["public"]["Enums"]["notification_delivery_status"]
+          event_id: string
+          first_created_at: string
+          last_suppressed_at: string
+          project_id: string
+          project_name: string
+          recipient_count: number
+          suppression_reason: string
+          trigger: Database["public"]["Enums"]["notification_trigger"]
+        }[]
+      }
       mark_all_notifications_read: { Args: never; Returns: number }
       mark_deliverable_delivered: {
         Args: { p_deliverable_id: string }
@@ -1836,6 +1872,7 @@ export type Database = {
         | "read"
         | "failed"
         | "cancelled"
+        | "suppressed"
       notification_trigger:
         | "user_invited"
         | "project_assigned"
@@ -2068,6 +2105,7 @@ export const Constants = {
         "read",
         "failed",
         "cancelled",
+        "suppressed",
       ],
       notification_trigger: [
         "user_invited",
