@@ -1,5 +1,13 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 06:30]
+
+**🛠 S05-03: Operator Task Detail Safe Projection & Database Types Generation**
+
+- **🛠 Architecture & Database:**
+  - **Applied Migration (`supabase/migrations/20260821170000_s05_03_operator_task_detail_safe_projection.sql`):** Applied the S05-03 security-invoker projection migration to `jsf-pm-dev` via Supabase MCP `apply_migration`, extending `public.operator_agenda_view` with aggregated `task_resources` (JSONB), `deliverable_specifications`, and `submission_deadline_at`.
+  - **Database Types Synchronization (`src/lib/database.types.ts`):** Regenerated TypeScript types from `jsf-pm-dev` via Supabase MCP `generate_typescript_types` and updated `src/lib/database.types.ts`.
+
 ## [2026-08-21 @ 16:19]
 
 **🚀 S05-02: Operator My Day Agenda & Own-Work Navigation**

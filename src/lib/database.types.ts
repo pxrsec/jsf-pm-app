@@ -1616,6 +1616,7 @@ export type Database = {
           client_delivery_deadline_at: string | null
           current_version_number: number | null
           deliverable_id: string | null
+          deliverable_specifications: string | null
           deliverable_status:
             | Database["public"]["Enums"]["deliverable_status"]
             | null
@@ -1626,10 +1627,12 @@ export type Database = {
           internal_review_deadline_at: string | null
           project_id: string | null
           project_name: string | null
+          submission_deadline_at: string | null
           task_deadline_at: string | null
           task_description: string | null
           task_id: string | null
           task_priority: Database["public"]["Enums"]["task_priority"] | null
+          task_resources: Json | null
           task_started_at: string | null
           task_status: Database["public"]["Enums"]["task_status"] | null
           task_title: string | null
