@@ -33,23 +33,53 @@ describe("S07 E09 candidate migration source contracts", () => {
       "update_calendar_milestone",
       "soft_delete_calendar_milestone",
     ]) {
-      expect(m1).toMatch(new RegExp(`create\\s+function\\s+public\\.${fn}`, "i"));
-      expect(m1).toMatch(new RegExp(`revoke\\s+all\\s+on\\s+function\\s+public\\.${fn}[\\s\\S]*?from\\s+public`, "i"));
-      expect(m1).toMatch(new RegExp(`grant\\s+execute\\s+on\\s+function\\s+public\\.${fn}[\\s\\S]*?to\\s+authenticated`, "i"));
+      expect(m1).toMatch(
+        new RegExp(`create\\s+function\\s+public\\.${fn}`, "i"),
+      );
+      expect(m1).toMatch(
+        new RegExp(
+          `revoke\\s+all\\s+on\\s+function\\s+public\\.${fn}[\\s\\S]*?from\\s+public`,
+          "i",
+        ),
+      );
+      expect(m1).toMatch(
+        new RegExp(
+          `grant\\s+execute\\s+on\\s+function\\s+public\\.${fn}[\\s\\S]*?to\\s+authenticated`,
+          "i",
+        ),
+      );
     }
     expect(m1).toContain("set search_path = pg_catalog, public");
     expect(m1).toContain("Calendar range must not exceed 93 days");
-    expect(m1).toContain("revoke insert, update, delete on table public.calendar_events from authenticated");
-    for (const token of ["chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]) {
+    expect(m1).toContain(
+      "revoke insert, update, delete on table public.calendar_events from authenticated",
+    );
+    for (const token of [
+      "chart-1",
+      "chart-2",
+      "chart-3",
+      "chart-4",
+      "chart-5",
+    ]) {
       expect(m1).toContain(`'${token}'`);
     }
   });
 
   it("M2 confines archive and link incidents to purpose-limited read functions", () => {
-    for (const fn of ["list_finalized_production_archive", "list_role_safe_link_incidents"]) {
-      expect(m2).toMatch(new RegExp(`create\\s+function\\s+public\\.${fn}`, "i"));
+    for (const fn of [
+      "list_finalized_production_archive",
+      "list_role_safe_link_incidents",
+    ]) {
+      expect(m2).toMatch(
+        new RegExp(`create\\s+function\\s+public\\.${fn}`, "i"),
+      );
       expect(m2).toMatch(new RegExp(`security\\s+definer`, "i"));
-      expect(m2).toMatch(new RegExp(`revoke\\s+all\\s+on\\s+function\\s+public\\.${fn}[\\s\\S]*?from\\s+anon`, "i"));
+      expect(m2).toMatch(
+        new RegExp(
+          `revoke\\s+all\\s+on\\s+function\\s+public\\.${fn}[\\s\\S]*?from\\s+anon`,
+          "i",
+        ),
+      );
     }
     expect(m2).toContain("d.workflow_type = 'production'");
     expect(m2).toContain("d.status in ('approved', 'delivered')");
@@ -64,8 +94,15 @@ describe("S07 E09 candidate migration source contracts", () => {
       "list_admin_audit_history",
       "list_admin_user_invitation_state",
     ]) {
-      expect(m3).toMatch(new RegExp(`create\\s+function\\s+public\\.${fn}`, "i"));
-      expect(m3).toMatch(new RegExp(`grant\\s+execute\\s+on\\s+function\\s+public\\.${fn}[\\s\\S]*?to\\s+authenticated`, "i"));
+      expect(m3).toMatch(
+        new RegExp(`create\\s+function\\s+public\\.${fn}`, "i"),
+      );
+      expect(m3).toMatch(
+        new RegExp(
+          `grant\\s+execute\\s+on\\s+function\\s+public\\.${fn}[\\s\\S]*?to\\s+authenticated`,
+          "i",
+        ),
+      );
     }
     expect(m3).toContain("Admin access required");
     expect(m3).toContain("Audit range must not exceed 93 days");
