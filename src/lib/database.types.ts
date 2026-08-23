@@ -1693,6 +1693,27 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { p_token_hash: string }; Returns: Json }
+      create_calendar_milestone: {
+        Args: {
+          p_color_override: string
+          p_description: string
+          p_ends_at: string
+          p_is_all_day: boolean
+          p_project_id: string
+          p_starts_at: string
+          p_title: string
+        }
+        Returns: {
+          color_override: string
+          ends_at: string
+          entity_id: string
+          event_type: Database["public"]["Enums"]["calendar_event_type"]
+          is_all_day: boolean
+          project_id: string
+          starts_at: string
+          title: string
+        }[]
+      }
       create_collaboration_comment: {
         Args: {
           p_body: string
@@ -1709,6 +1730,98 @@ export type Database = {
       get_project_completion_readiness: {
         Args: { p_project_id: string }
         Returns: Json
+      }
+      get_scoped_operations_metrics: {
+        Args: { p_from?: string; p_project_id?: string; p_to?: string }
+        Returns: {
+          active_task_count: number
+          average_client_review_hours: number
+          average_completion_cycle_duration_days: number
+          client_review_cycle_count: number
+          completion_cycle_count: number
+          deadline_attention_count: number
+          finalized_deliverable_count: number
+          overdue_task_count: number
+          production_deliverable_counts_by_status: Json
+          project_counts_by_status: Json
+          range_from: string
+          range_to: string
+          reopening_cycle_count: number
+          suppressed_external_queue_count: number
+          unread_in_app_queue_count: number
+          unresolved_link_report_count: number
+        }[]
+      }
+      list_admin_audit_history: {
+        Args: {
+          p_before_audit_id?: number
+          p_before_created_at?: string
+          p_from: string
+          p_limit?: number
+          p_to: string
+        }
+        Returns: {
+          action: string
+          actor_role: Database["public"]["Enums"]["app_role"]
+          audit_id: number
+          changed_field_summary: string
+          created_at: string
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          new_status: string
+          old_status: string
+          project_id: string
+          project_name: string
+        }[]
+      }
+      list_admin_user_invitation_state: {
+        Args: {
+          p_before_created_at?: string
+          p_before_profile_id?: string
+          p_limit?: number
+        }
+        Returns: {
+          application_role: Database["public"]["Enums"]["app_role"]
+          created_at: string
+          email_notifications_enabled: boolean
+          full_name: string
+          invitation_accepted_at: string
+          invitation_expires_at: string
+          invitation_id: string
+          invitation_revoked_at: string
+          invitation_status: Database["public"]["Enums"]["invite_status"]
+          is_active: boolean
+          last_seen_at: string
+          preferred_locale: string
+          profile_id: string
+          project_id: string
+          project_name: string
+          record_id: string
+          record_kind: string
+          whatsapp_opt_in: boolean
+        }[]
+      }
+      list_finalized_production_archive: {
+        Args: {
+          p_before_deliverable_id?: string
+          p_before_finalized_at?: string
+          p_from?: string
+          p_limit?: number
+          p_project_id?: string
+          p_status?: Database["public"]["Enums"]["deliverable_status"]
+          p_to?: string
+        }
+        Returns: {
+          current_submission_url: string
+          current_version_number: number
+          deliverable_id: string
+          deliverable_title: string
+          final_status: Database["public"]["Enums"]["deliverable_status"]
+          finalized_at: string
+          project_drive_folder_url: string
+          project_id: string
+          project_name: string
+        }[]
       }
       list_my_in_app_notifications: {
         Args: {
@@ -1727,6 +1840,42 @@ export type Database = {
           read_at: string
           recipient_id: string
           trigger: Database["public"]["Enums"]["notification_trigger"]
+        }[]
+      }
+      list_role_safe_calendar_events: {
+        Args: { p_from: string; p_project_id?: string; p_to: string }
+        Returns: {
+          color_override: string
+          ends_at: string
+          entity_id: string
+          event_type: Database["public"]["Enums"]["calendar_event_type"]
+          is_all_day: boolean
+          project_id: string
+          starts_at: string
+          title: string
+        }[]
+      }
+      list_role_safe_link_incidents: {
+        Args: {
+          p_before_incident_id?: string
+          p_before_reported_at?: string
+          p_from?: string
+          p_limit?: number
+          p_project_id?: string
+          p_status?: Database["public"]["Enums"]["link_report_status"]
+          p_to?: string
+        }
+        Returns: {
+          deliverable_id: string
+          deliverable_title: string
+          incident_id: string
+          incident_status: Database["public"]["Enums"]["link_report_status"]
+          project_id: string
+          project_name: string
+          reason: string
+          reported_at: string
+          resolution_note: string
+          resolved_at: string
         }[]
       }
       list_suppressed_notification_operations: {
@@ -1795,6 +1944,10 @@ export type Database = {
         }
         Returns: Json
       }
+      soft_delete_calendar_milestone: {
+        Args: { p_event_id: string }
+        Returns: boolean
+      }
       soft_delete_entity: {
         Args: {
           p_entity_id: string
@@ -1835,6 +1988,27 @@ export type Database = {
           p_task_id: string
         }
         Returns: Json
+      }
+      update_calendar_milestone: {
+        Args: {
+          p_color_override: string
+          p_description: string
+          p_ends_at: string
+          p_event_id: string
+          p_is_all_day: boolean
+          p_starts_at: string
+          p_title: string
+        }
+        Returns: {
+          color_override: string
+          ends_at: string
+          entity_id: string
+          event_type: Database["public"]["Enums"]["calendar_event_type"]
+          is_all_day: boolean
+          project_id: string
+          starts_at: string
+          title: string
+        }[]
       }
     }
     Enums: {

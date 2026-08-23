@@ -1,5 +1,161 @@
 # JSF PM App Development Changelog
 
+## [2026-08-23 @ 17:19]
+
+**🐛 Hotfixes / 🛠 Architecture: ESLint Boundary Override & Server-Only Guard for Alert Evaluator Action**
+
+- **ESLint Flat-Config Scoped Override (`eslint.config.mjs`):** Added a targeted configuration block for `src/lib/notifications/alert-evaluator-actions.ts` that enforces the repository's strict Prisma prohibition while permitting `@/lib/supabase/admin` exclusively for this server action.
+- **Server-Only Boundary Guard (`src/lib/notifications/alert-evaluator-actions.ts`):** Added `import "server-only";` immediately after `"use server";` to guarantee build-time isolation from client bundles.
+- **Preserved Boundaries:** Global restricted-import guards for `@/lib/supabase/admin` remain fully enforced across all client components (`src/components/**`), hooks (`src/hooks/**`), pages (`src/app/!(api)/**`), middleware/proxy (`proxy.ts`), and other shared notification modules.
+- **Verification:**
+  - `src/lib/notifications/__tests__/alert-evaluator-actions.test.ts`: 12/12 tests passed.
+  - `__tests__/supabase/admin.test.ts`, `__tests__/config/prisma-guard.test.ts`, `channel-adapters.test.ts`, `provider-endpoint-guards.test.ts`: 38/38 tests passed.
+  - `npm run lint`: 0 errors, 0 warnings across all files.
+  - `npm run typecheck`: 0 errors (`tsc --noEmit`).
+  - `npm run format:check`: 100% Prettier compliant.
+
+## [2026-08-23 @ 16:38]
+
+**S07-E09-M4: Scope Calendar Events Direct Select Policy Migration Applied**
+
+- Applied migration `20260823143000_s07_e09_scope_calendar_events_direct_select.sql` (`20260823143000_s07_e09_scope_calendar_events_direct_select`) to `jsf-pm-dev` via Supabase MCP `apply_migration`.
+- Replaced permissive `calendar_events_select_policy` on `public.calendar_events` to enforce `deleted_at is null and (select private.is_project_pm(project_id))`, eliminating direct manual-milestone read bypass for Operators and Clients.
+- Verified live policy posture in `pg_policies` and executed runtime RLS query assertions under authenticated role contexts:
+  1. Admin direct milestone read succeeds.
+  2. PM Lead / PM Watcher direct read succeeds strictly for assigned/active PM projects and is denied for unassigned projects.
+  3. Operator direct read is denied (0 rows returned).
+  4. Client direct read is denied (0 rows returned).
+- Generated TypeScript definitions verified via Supabase MCP `generate_typescript_types` (exact match; no schema/type alterations).
+- Verified focused migration test suite and strict typecheck (`tsc --noEmit`) passing cleanly.
+
+## [2026-08-23 @ 16:08]
+
+**S07-E09-M3: Scoped Operations Metrics & Admin Projections Migration Applied**
+
+- Applied migration `20260823142000_s07_e09_scoped-operations-metrics-and-admin-projections.sql` (`20260823142000_s07_e09_scoped_operations_metrics_and_admin_projections`) to `jsf-pm-dev` via Supabase MCP `apply_migration`.
+- Created authenticated, read-only `SECURITY DEFINER` RPC functions:
+  - `get_scoped_operations_metrics`: Computes role-safe aggregates for project status distribution, active/overdue/deadline task counts, deliverable metrics, client review cycles, completion cycles, and notification/incident queues with strict 93-day window validation and role authorization.
+  - `list_admin_audit_history`: Provides Admin-only bounded audit event inspection with structured changed-field summarization, 93-day date boundary enforcement, and keyset pagination.
+  - `list_admin_user_invitation_state`: Provides Admin-only unified operational streams of profiles and invitations with keyset pagination.
+- Applied hardened search paths (`pg_catalog, public`), revoked execution from `public` and `anon`, and granted execution to `authenticated`.
+- Regenerated TypeScript definitions in `src/lib/database.types.ts` via Supabase MCP `generate_typescript_types`.
+- Verified focused migration test suite `__tests__/database/s07-e09-migrations.test.ts` (4 tests passing).
+
+## [2026-08-23 @ 16:05]
+
+**S07-E09-M2: Finalized Production Archive & Link Incidents Migration Applied**
+
+- Applied migration `20260823141000_s07_e09_finalized-production-archive-and-link-incidents.sql` (`20260823141000_s07_e09_finalized_production_archive_and_link_incidents`) to `jsf-pm-dev` via Supabase MCP `apply_migration`.
+- Created purpose-limited `SECURITY DEFINER` read RPC functions:
+  - `list_finalized_production_archive`: Exposes role-safe finalized production deliverable archive with complete keyset pagination, 93-day date boundary enforcement, and scoped project metadata visibility for operators.
+  - `list_role_safe_link_incidents`: Exposes role-safe deliverable link report incident listing strictly restricted to Admin and PM project leads/watchers with complete keyset pagination and 93-day date boundary enforcement.
+- Applied hardened search paths (`pg_catalog, public`), revoked execution from `public` and `anon`, and granted execution to `authenticated`.
+- Regenerated TypeScript definitions in `src/lib/database.types.ts` via Supabase MCP `generate_typescript_types`.
+- Verified focused migration test suite `__tests__/database/s07-e09-migrations.test.ts` (4 tests passing).
+
+## [2026-08-23 @ 16:01]
+
+**S07-E09-M1: Calendar Role-Safe Feed & Audited Milestones Migration Applied**
+
+- Applied migration `20260823140000_s07_e09_calendar-role-safe-feed-and-milestones.sql` (`20260823140000_s07_e09_calendar_role_safe_feed_and_milestones`) to `jsf-pm-dev` via Supabase MCP.
+- Narrowed `calendar_events.color_override` constraint to design-system chart tokens (`chart-1` through `chart-5`).
+- Created and exposed RPC functions: `list_role_safe_calendar_events`, `create_calendar_milestone`, `update_calendar_milestone`, and `soft_delete_calendar_milestone` with hardened search paths, role-safe access controls, and structured audit logs.
+- Revoked direct table mutation (`INSERT`, `UPDATE`, `DELETE`) on `calendar_events` for `authenticated` role in favor of audited command RPCs.
+- Regenerated TypeScript definitions in `src/lib/database.types.ts` via Supabase MCP `generate_typescript_types`.
+- Verified complete test suite (72 test files, 667 tests passing) and strict typecheck (`tsc --noEmit`) passing cleanly.
+
+## [2026-08-23 @ 14:38]
+
+**S07-M0-SD: SECURITY DEFINER hardening applied to development**
+
+- Applied `20260823130000_s07_m0_security_definer_command_hardening` to `jsf-pm-dev`.
+- Verified all seven reviewed routines retain hardened function posture and intended authenticated/service-role execution; `PUBLIC` and `anon` execution remain denied.
+- Completed non-enumerating invite errors, explicit notification-read authentication guards, closed administrative entity allowlists/no-op semantics, stale reopen-check removal, and the approved recovery-state allowlist.
+- Generated types remain unchanged; focused M0-SD tests and typecheck pass. The current full suite remains blocked by the unrelated `React.act is not a function` runtime failure.
+
+## [2026-08-23 @ 14:31]
+
+**🛠 S07-M0-SD: SECURITY DEFINER Disposition Audit & Candidate Migration Hardening**
+
+- **🛠 Architecture & Security Hardening:**
+  - **Candidate Migration Authoring (`supabase/migrations/20260823130000_s07_m0_security_definer_command_hardening.sql`):** Authored candidate forward migration refactoring the 7 target `SECURITY DEFINER` routines while preserving signatures, postgres ownership, hardened search path (`pg_catalog, public`), and role ACLs:
+    1. `accept_invite`: Replaced sensitive email interpolation with static, non-enumerating error message (`'Invitation does not belong to the authenticated user'`).
+    2. `mark_notification_read`: Added explicit `auth.uid()` null check failing fast with `'Authentication required'`.
+    3. `mark_all_notifications_read`: Added explicit `auth.uid()` null check failing fast with `'Authentication required'`.
+    4. `soft_delete_entity`: Implemented explicit closed allowlist (8 entities), fail-closed error on unsupported types before dynamic SQL, `ROW_COUNT` inspection returning `false` on no-ops, and audit log suppression on no-ops.
+    5. `restore_entity`: Implemented explicit closed allowlist (8 entities), immutable type rejection, fail-closed error on unsupported types, `ROW_COUNT` inspection returning `false` on no-ops, and audit log suppression on no-ops.
+    6. `reopen_client_deliverable`: Removed invalid dead pre-load check `private.is_project_lead(p_deliverable_id)` while preserving authoritative post-load Admin/PM Lead check against `v_deliv.project_id`.
+    7. `recover_project_status`: Enforced approved recovery target allowlist (`planning`, `in_progress`, `paused`) and rejected terminal transitions (`completed`, `cancelled`).
+  - **Application Schema Synchronization (`src/lib/projects/schemas.ts`):** Synchronized `RecoverProjectStatusSchema` target status enum with the approved recovery policy (`planning`, `in_progress`, `paused`).
+  - **Static Contract Test Suite (`__tests__/database/security-definer-refactor.test.ts`):** Implemented comprehensive static source-contract test suite asserting SQL transaction wrapping, 7 function declarations, grants/revokes, security modes, search paths, error non-enumeration, null guards, allowlist mapping, and dead check removal.
+  - **Test Suite Updates (`__tests__/projects/schemas.test.ts`):** Expanded schema test coverage asserting acceptance of valid recovery targets and explicit rejection of `completed` and `cancelled`.
+  - **Comprehensive Inspection Report (`dev-docs/specs/s07/s07-m0-security-definer-disposition-audit-and-refactor-report.md`):** Documented complete routine inventory, approved R5 policy, routine-by-routine comparison, test verification results, and boundary preservation statement.
+  - **Zero Remote Database/Git Mutation Boundary:** Verified that no migration was applied, no remote database state was modified, and no git commits or branch alterations occurred.
+
+## [2026-08-23 @ 13:34]
+
+**S07-M0-C: server-only alert-evaluator privilege remediation**
+
+- Applied `20260823111500_s07_m0_server_only_notification_alert_evaluator` to `jsf-pm-dev`.
+- Removed `EXECUTE` from `PUBLIC`, `anon`, and `authenticated` on both evaluator routines; preserved service-role-only runtime execution.
+- Verified the public authenticated `SECURITY DEFINER` Advisor finding is cleared, while the server action continues to perform all authorization and local-demo gates before using `createAdminClient()`.
+- Generated database types remain unchanged; typecheck and focused evaluator tests pass.
+
+## [2026-08-23 @ 13:30]
+
+**🛠 S07-M0-C: Server-Only Notification Alert Evaluator Refactor & Pre-Execution Inspection**
+
+- **🛠 Architecture & Security Refactor:**
+  - **Comprehensive Inspection & Preflight (`dev-docs/specs/s07/s07-m0-c-server-only-alert-evaluator-refactor-and-pre-execution-inspection-report.md`):** Completed thorough codebase audit and live database catalog inspection on `jsf-pm-dev` regarding `public.evaluate_notification_alerts(uuid)` and `private.evaluate_notification_alerts(uuid)`.
+  - **Server-Only PostgREST Boundary (Option B):** Verified that retaining `public.evaluate_notification_alerts` with `service_role` execution provides the necessary narrow transport boundary for server-held service-role calls without exposing internal schemas (`private`) or creating out-of-band transports.
+  - **Server Action Trust Boundary Refactor (`src/lib/notifications/alert-evaluator-actions.ts`):** Refactored `evaluateNotificationAlertsAction` to instantiate `createAdminClient()` strictly after all 6 verification layers succeed (valid session, demo flag enabled, local loopback posture, strict schema parsing, role authorization, and PM lead project validation under the cookie client).
+  - **Enhanced Test Verification (`src/lib/notifications/__tests__/alert-evaluator-actions.test.ts`):** Expanded unit test suite to assert that `createAdminClient()` is never called upon failed authorization or posture checks, and that authorized evaluations receive the privileged admin client without leaking credentials.
+  - **Candidate Migration Verification (`supabase/migrations/20260823111500_s07_m0_server_only_notification_alert_evaluator.sql`):** Verified that the candidate migration correctly revokes `EXECUTE` from `public`, `anon`, and `authenticated` on both public and private evaluator routines and grants `EXECUTE` solely to `service_role`. Issued preflight verdict `safe to proceed to later manual application`.
+  - **Zero Credential / Provider Drift:** Verified that no secrets were exposed, no external delivery providers or schedulers were activated, no migrations were applied, and generated TypeScript types (`src/lib/database.types.ts`) remained untouched.
+
+## [2026-08-23 @ 13:02]
+
+**S07-M0-B: citext extension relocation and compatibility verification**
+
+- Applied `20260823100000_s07_m0_move_citext_to_extensions` to `jsf-pm-dev`.
+- Moved `citext` 1.6 from `public` to `extensions`; the Security Advisor no longer reports the `extension_in_public` finding.
+- Verified both existing email columns now resolve to `extensions.citext`, retain case-insensitive comparison behavior, and leave all generated TypeScript types unchanged.
+- Recompiled `public.accept_invite(bytea)` with its explicit `extensions.citext` local declaration while preserving `SECURITY DEFINER`, hardened search path, owner, signature, and existing authenticated/service-role ACL.
+- Confirmed no citext extension-owned routines remain in `public`; typecheck and the focused schema/invite test set pass.
+
+## [2026-08-23 @ 12:55]
+
+**🛠 S07-M0-B: citext Extension Relocation Pre-Execution Inspection**
+
+- **🛠 Architecture & Security Inspection:**
+  - **Comprehensive Repository & Live Catalog Preflight (`dev-docs/specs/s07/s07-m0-b-citext-relocation-pre-execution-inspection-report.md`):** Conducted exhaustive static codebase audit and read-only catalog inspection on `jsf-pm-dev` regarding the relocation of the `citext` extension from `public` to `extensions` and the recompilation of `public.accept_invite(bytea)`.
+  - **Extension Relocatability & Object Identity Verification:** Proved that PostgreSQL `citext` 1.6 is natively relocatable (`relocatable = true`). Confirmed that `ALTER EXTENSION citext SET SCHEMA extensions;` preserves type OIDs, operator OIDs, and function OIDs without requiring table rewrites, data migrations, or column conversions on `public.client_contacts.email` and `public.invite_tokens.email`.
+  - **RPC Search-Path Hardening:** Confirmed that recompiling `public.accept_invite(bytea)` with local declaration `v_user_email extensions.citext` guarantees type resolution under hardened `search_path = pg_catalog, public` while maintaining its `SECURITY DEFINER` posture, ACL, signature, and behavioral contract.
+  - **Zero Application & Generated Type Drift:** Proved that PostgREST serialization and generated TypeScript types (`src/lib/database.types.ts`) remain 100% invariant (0 diff). Validated that all invitation completion routes, client contact queries, and synthetic demo bootstrap scripts operate transparently.
+  - **Replay Fidelity & Preflight Verdict:** Verified clean zero-to-current migration replay (`supabase db reset`) from historical baseline without mutating historical migrations. Issued formal preflight verdict `safe to proceed to later manual application`.
+  - **Strict Boundary Guarantee:** Applied 0 migrations, performed 0 database mutations, modified 0 application/test/type files, and preserved all non-negotiable architectural boundaries.
+
+## [2026-08-23 @ 12:16]
+
+**S07-M0-A: RLS event-trigger reconciliation and privilege remediation**
+
+- Reconciled the canonical `public.rls_auto_enable()` definition and `ensure_rls` DDL event trigger in `supabase/migrations/20260823083000_s07_m0_revoke_rls_auto_enable_execute.sql`.
+- Applied the M0-A migration to `jsf-pm-dev`; it preserves the enabled `ddl_command_end` trigger for `CREATE TABLE`, `CREATE TABLE AS`, and `SELECT INTO`.
+- Revoked direct `EXECUTE` on `public.rls_auto_enable()` from `public`, `anon`, and `authenticated`; the live ACL now contains only `postgres` and `service_role`.
+- Verified the event trigger enables RLS on a transaction-rolled-back public-table probe; the probe table is absent after rollback.
+- Verified generated TypeScript types remain byte-equivalent to `src/lib/database.types.ts`, and the Security Advisor no longer reports `rls_auto_enable()`.
+
+## [2026-08-23 @ 11:58]
+
+**🛠 S07-M0-A: RLS Event-Trigger Execute Revocation Pre-Execution Inspection**
+
+- **🛠 Architecture & Security Inspection:**
+  - **Comprehensive Repository & Live Catalog Preflight (`dev-docs/specs/s07/s07-m0-a-rls-auto-enable-revocation-pre-execution-inspection-report.md`):** Conducted exhaustive static codebase audit and read-only catalog inspection on `jsf-pm-dev` regarding `public.rls_auto_enable()` and DDL event trigger `ensure_rls`.
+  - **Runtime RPC Non-Usage Determination:** Proved definitively that `rls_auto_enable()` is not an application runtime RPC across all `src/` TypeScript/TSX code, OpenAPI contracts (`contracts/openapi/jsf-pm-api.openapi.yaml`), and generated types (`src/lib/database.types.ts`).
+  - **Source Reconciliation Defect Identification:** Discovered that neither `public.rls_auto_enable()` nor `ensure_rls` is defined in the repository migration chain (`supabase/migrations/`), causing clean zero-to-current replays to fail on bare `REVOKE` statements. Issued formal preflight verdict `needs source correction`.
+  - **Remediation & Verification Plan:** Formulated canonical idempotent DDL specification to define the function and event trigger in the forward migration source before revoking `public`, `anon`, and `authenticated` execution privileges, alongside complete post-application catalog and Security Advisor verification protocols.
+  - **Zero Migration & Data Mutation Guarantee:** Applied 0 migrations, performed 0 database mutations, modified 0 database types, and maintained strict read-only boundary.
+
 ## [2026-08-23 @ 07:50]
 
 **🚀 S06-07: Navigation, Localization, Accessibility, Focused Evidence, and Sprint Closeout**

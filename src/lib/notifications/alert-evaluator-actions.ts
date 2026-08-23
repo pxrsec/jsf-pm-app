@@ -1,9 +1,12 @@
 "use server";
 
+import "server-only";
+
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { requireSession, AuthError } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { isNotificationDemoAlertEvaluationEnabled } from "./config";
 import {
   isLocalNotificationDemoPosture,
@@ -36,7 +39,7 @@ function revalidateNotificationAffectedPaths(): void {
 /**
  * Server action to execute manual notification alert evaluation in development demo posture.
  * Validates session, demo flag, local posture, role scope, and PM lead capacity before
- * calling the database evaluator public RPC.
+ * calling the database evaluator public RPC with the server-held admin client.
  */
 export async function evaluateNotificationAlertsAction(
   rawInput: unknown,
@@ -70,7 +73,8 @@ export async function evaluateNotificationAlertsAction(
     }
 
     try {
-      summary = await evaluateNotificationAlerts(supabase, null);
+      const adminClient = createAdminClient();
+      summary = await evaluateNotificationAlerts(adminClient, null);
     } catch {
       return { ok: false, error: { code: "UNAVAILABLE" } };
     }
@@ -90,8 +94,9 @@ export async function evaluateNotificationAlertsAction(
     }
 
     try {
+      const adminClient = createAdminClient();
       summary = await evaluateNotificationAlerts(
-        supabase,
+        adminClient,
         parsed.data.projectId,
       );
     } catch {

@@ -147,6 +147,28 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  {
+    files: ["src/lib/notifications/alert-evaluator-actions.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@prisma/client",
+              message:
+                "Prisma is forbidden. Use Supabase client boundaries and migrations instead.",
+            },
+            {
+              name: "prisma",
+              message:
+                "Prisma is forbidden. Use Supabase client boundaries and migrations instead.",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
