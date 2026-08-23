@@ -74,13 +74,7 @@ export type TransitionProjectStatusInput = z.infer<
 
 export const RecoverProjectStatusSchema = z.object({
   project_id: z.string().uuid(),
-  target_status: z.enum([
-    "planning",
-    "in_progress",
-    "paused",
-    "completed",
-    "cancelled",
-  ]),
+  target_status: z.enum(["planning", "in_progress", "paused"]),
   reason: z.string().trim().min(1, "Reason is mandatory").max(500),
 });
 

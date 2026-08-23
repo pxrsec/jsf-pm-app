@@ -127,13 +127,26 @@ describe("Project Domain Schemas", () => {
       expect(result.success).toBe(false);
     });
 
-    it("accepts valid recovery payload", () => {
-      const result = RecoverProjectStatusSchema.safeParse({
-        project_id: validProjectId,
-        target_status: "in_progress",
-        reason: "Administrative rollback of accidental cancellation",
-      });
-      expect(result.success).toBe(true);
+    it("accepts valid recovery targets (planning, in_progress, paused)", () => {
+      for (const target of ["planning", "in_progress", "paused"] as const) {
+        const result = RecoverProjectStatusSchema.safeParse({
+          project_id: validProjectId,
+          target_status: target,
+          reason: "Administrative rollback of accidental cancellation",
+        });
+        expect(result.success).toBe(true);
+      }
+    });
+
+    it("rejects disallowed recovery targets (completed, cancelled)", () => {
+      for (const target of ["completed", "cancelled"]) {
+        const result = RecoverProjectStatusSchema.safeParse({
+          project_id: validProjectId,
+          target_status: target,
+          reason: "Attempted invalid recovery transition",
+        });
+        expect(result.success).toBe(false);
+      }
     });
   });
 

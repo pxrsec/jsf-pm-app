@@ -1,5 +1,33 @@
 # JSF PM App Development Changelog
 
+## [2026-08-23 @ 14:38]
+
+**S07-M0-SD: SECURITY DEFINER hardening applied to development**
+
+- Applied `20260823130000_s07_m0_security_definer_command_hardening` to `jsf-pm-dev`.
+- Verified all seven reviewed routines retain hardened function posture and intended authenticated/service-role execution; `PUBLIC` and `anon` execution remain denied.
+- Completed non-enumerating invite errors, explicit notification-read authentication guards, closed administrative entity allowlists/no-op semantics, stale reopen-check removal, and the approved recovery-state allowlist.
+- Generated types remain unchanged; focused M0-SD tests and typecheck pass. The current full suite remains blocked by the unrelated `React.act is not a function` runtime failure.
+
+## [2026-08-23 @ 14:31]
+
+**🛠 S07-M0-SD: SECURITY DEFINER Disposition Audit & Candidate Migration Hardening**
+
+- **🛠 Architecture & Security Hardening:**
+  - **Candidate Migration Authoring (`supabase/migrations/20260823130000_s07_m0_security_definer_command_hardening.sql`):** Authored candidate forward migration refactoring the 7 target `SECURITY DEFINER` routines while preserving signatures, postgres ownership, hardened search path (`pg_catalog, public`), and role ACLs:
+    1. `accept_invite`: Replaced sensitive email interpolation with static, non-enumerating error message (`'Invitation does not belong to the authenticated user'`).
+    2. `mark_notification_read`: Added explicit `auth.uid()` null check failing fast with `'Authentication required'`.
+    3. `mark_all_notifications_read`: Added explicit `auth.uid()` null check failing fast with `'Authentication required'`.
+    4. `soft_delete_entity`: Implemented explicit closed allowlist (8 entities), fail-closed error on unsupported types before dynamic SQL, `ROW_COUNT` inspection returning `false` on no-ops, and audit log suppression on no-ops.
+    5. `restore_entity`: Implemented explicit closed allowlist (8 entities), immutable type rejection, fail-closed error on unsupported types, `ROW_COUNT` inspection returning `false` on no-ops, and audit log suppression on no-ops.
+    6. `reopen_client_deliverable`: Removed invalid dead pre-load check `private.is_project_lead(p_deliverable_id)` while preserving authoritative post-load Admin/PM Lead check against `v_deliv.project_id`.
+    7. `recover_project_status`: Enforced approved recovery target allowlist (`planning`, `in_progress`, `paused`) and rejected terminal transitions (`completed`, `cancelled`).
+  - **Application Schema Synchronization (`src/lib/projects/schemas.ts`):** Synchronized `RecoverProjectStatusSchema` target status enum with the approved recovery policy (`planning`, `in_progress`, `paused`).
+  - **Static Contract Test Suite (`__tests__/database/security-definer-refactor.test.ts`):** Implemented comprehensive static source-contract test suite asserting SQL transaction wrapping, 7 function declarations, grants/revokes, security modes, search paths, error non-enumeration, null guards, allowlist mapping, and dead check removal.
+  - **Test Suite Updates (`__tests__/projects/schemas.test.ts`):** Expanded schema test coverage asserting acceptance of valid recovery targets and explicit rejection of `completed` and `cancelled`.
+  - **Comprehensive Inspection Report (`dev-docs/specs/s07/s07-m0-security-definer-disposition-audit-and-refactor-report.md`):** Documented complete routine inventory, approved R5 policy, routine-by-routine comparison, test verification results, and boundary preservation statement.
+  - **Zero Remote Database/Git Mutation Boundary:** Verified that no migration was applied, no remote database state was modified, and no git commits or branch alterations occurred.
+
 ## [2026-08-23 @ 13:34]
 
 **S07-M0-C: server-only alert-evaluator privilege remediation**

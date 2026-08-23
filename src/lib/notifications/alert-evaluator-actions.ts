@@ -18,9 +18,7 @@ import {
 } from "./alert-evaluator-schemas";
 
 export type AlertEvaluationActionErrorCode =
-  | "VALIDATION_FAILED"
-  | "UNAUTHORIZED"
-  | "UNAVAILABLE";
+  "VALIDATION_FAILED" | "UNAUTHORIZED" | "UNAVAILABLE";
 
 export type AlertEvaluationActionResult =
   | { ok: true; data: AlertEvaluationSummary }
