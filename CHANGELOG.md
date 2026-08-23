@@ -1,5 +1,23 @@
 # JSF PM App Development Changelog
 
+## [2026-08-23 @ 06:21]
+
+**🚀 S06-06: Inactive Provider-Facing Routes and Activation-Safe Boundaries Implementation**
+
+- **🚀 Features & Routes:**
+  - **Inactive Route Shells (`src/app/api/webhooks/whatsapp/route.ts`, `src/app/api/workflows/notification-processor/route.ts`, `src/app/api/workflows/alert-scheduler/route.ts`):** Created the 4 contract-reserved provider-facing route shells (`GET`/`POST` for WhatsApp webhook, `POST` for notification processor, `POST` for alert scheduler) as thin server-only delegators to `rejectInactiveProviderEndpoint()` with type-only `import { type NextRequest, NextResponse } from "next/server"`.
+  - **Uniform Inactive Rejection Guard (`src/lib/notifications/provider-endpoint-guards.ts`):** Implemented server-only rejection returning fixed 404 HTTP status, standard `ApiError` envelope (`code: "not_found"`, `message: "Not found"`), and an opaque UUID `request_id` generated via `globalThis.crypto.randomUUID()`. Guaranteed zero disclosure of provider state, route identity, configuration, or signature validity, with no custom headers (`Retry-After`, `x-provider-status`, CORS).
+  - **Module-Private Future Seam (`src/lib/notifications/provider-endpoint-guards.ts`):** Embedded module-private `type VerifiedProviderRequest<TPayload>` and documented the normative 7-step future activation order ensuring signature verification precedes side-effect commands without exposing active execution branches or callable verifiers.
+
+- **🛠 Architecture & Security:**
+  - **OpenAPI Contract Reconciliation (`contracts/openapi/jsf-pm-api.openapi.yaml`):** Reconciled the 4 reserved operations (`verifyWhatsappWebhook`, `receiveWhatsappWebhook`, `runNotificationProcessor`, `runAlertScheduler`) by replacing legacy `x-provider-status: deferred` and `200` operational response descriptions with `x-provider-status: inactive` and the exact uniform 404 `ApiError` response definition.
+  - **ESLint Server-Only Import Boundary (`eslint.config.mjs`):** Extended restricted import configuration to explicitly block `@/lib/notifications/provider-endpoint-guards` and `src/lib/notifications/provider-endpoint-guards` from client components, shared modules, and middleware.
+
+- **🧪 Testing & Verification:**
+  - **Provider Endpoint Guard Unit & Static Suite (`src/lib/notifications/__tests__/provider-endpoint-guards.test.ts`):** 5 tests verifying exact 404 status and error envelope, UUID v4 format and distinctness, static enforcement of server-only and zero prohibited imports/crypto APIs, ESLint restriction presence, and operation-scoped OpenAPI contract structure.
+  - **Route Handlers Test Suites (`src/app/api/webhooks/whatsapp/route.test.ts`, `src/app/api/workflows/notification-processor/route.test.ts`, `src/app/api/workflows/alert-scheduler/route.test.ts`):** 12 tests across the three route suites verifying spy delegation to the guard under arbitrary opaque query/header/body inputs, unmocked real 404/not_found envelope responses, strict exported method constraints (`GET`/`POST` for WhatsApp, `POST` for workflows), and static source checks proving zero request dereferencing or side-effect APIs.
+  - **Full Repository Verification:** 100% pass across Vitest (17 S06-06 tests), TypeScript typecheck (`tsc --noEmit`), ESLint (0 errors, 0 warnings), Prettier formatting check, and Next.js App Router production build (`next build`).
+
 ## [2026-08-22 @ 18:22]
 
 **🚀 S06-05: Shared Alert Evaluation Development-Only Manual Control Implementation**

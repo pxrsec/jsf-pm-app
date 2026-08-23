@@ -91,6 +91,16 @@ const eslintConfig = defineConfig([
                 "Notification provider configuration and adapters are server-only and cannot be imported in client components, shared modules, or middleware.",
             },
             {
+              name: "@/lib/notifications/provider-endpoint-guards",
+              message:
+                "Notification provider endpoint guards are server-only and cannot be imported in client components, shared modules, or middleware.",
+            },
+            {
+              name: "src/lib/notifications/provider-endpoint-guards",
+              message:
+                "Notification provider endpoint guards are server-only and cannot be imported in client components, shared modules, or middleware.",
+            },
+            {
               name: "@prisma/client",
               message:
                 "Prisma is forbidden. Use Supabase client boundaries and migrations instead.",
