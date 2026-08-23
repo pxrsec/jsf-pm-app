@@ -1,5 +1,19 @@
 # JSF PM App Development Changelog
 
+## [2026-08-23 @ 17:19]
+
+**🐛 Hotfixes / 🛠 Architecture: ESLint Boundary Override & Server-Only Guard for Alert Evaluator Action**
+
+- **ESLint Flat-Config Scoped Override (`eslint.config.mjs`):** Added a targeted configuration block for `src/lib/notifications/alert-evaluator-actions.ts` that enforces the repository's strict Prisma prohibition while permitting `@/lib/supabase/admin` exclusively for this server action.
+- **Server-Only Boundary Guard (`src/lib/notifications/alert-evaluator-actions.ts`):** Added `import "server-only";` immediately after `"use server";` to guarantee build-time isolation from client bundles.
+- **Preserved Boundaries:** Global restricted-import guards for `@/lib/supabase/admin` remain fully enforced across all client components (`src/components/**`), hooks (`src/hooks/**`), pages (`src/app/!(api)/**`), middleware/proxy (`proxy.ts`), and other shared notification modules.
+- **Verification:**
+  - `src/lib/notifications/__tests__/alert-evaluator-actions.test.ts`: 12/12 tests passed.
+  - `__tests__/supabase/admin.test.ts`, `__tests__/config/prisma-guard.test.ts`, `channel-adapters.test.ts`, `provider-endpoint-guards.test.ts`: 38/38 tests passed.
+  - `npm run lint`: 0 errors, 0 warnings across all files.
+  - `npm run typecheck`: 0 errors (`tsc --noEmit`).
+  - `npm run format:check`: 100% Prettier compliant.
+
 ## [2026-08-23 @ 16:38]
 
 **S07-E09-M4: Scope Calendar Events Direct Select Policy Migration Applied**

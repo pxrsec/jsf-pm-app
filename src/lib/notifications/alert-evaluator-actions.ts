@@ -1,5 +1,7 @@
 "use server";
 
+import "server-only";
+
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { requireSession, AuthError } from "@/lib/auth/session";
