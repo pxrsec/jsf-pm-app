@@ -46,15 +46,45 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
     expect(enCatalog).toHaveProperty("notificationOperations");
   });
 
-  it("both catalogs contain future-only shell.nav.links.notifications", () => {
+  it("both catalogs contain active shell.nav.links.notifications, notificationOperations, and inbox aria keys", () => {
     const esShell = esCatalog.shell as {
-      nav?: { links?: { notifications?: string } };
+      nav?: {
+        links?: { notifications?: string; notificationOperations?: string };
+        notifications?: {
+          inboxLinkAria?: string;
+          inboxLinkAriaWithCount?: string;
+        };
+      };
     };
     const enShell = enCatalog.shell as {
-      nav?: { links?: { notifications?: string } };
+      nav?: {
+        links?: { notifications?: string; notificationOperations?: string };
+        notifications?: {
+          inboxLinkAria?: string;
+          inboxLinkAriaWithCount?: string;
+        };
+      };
     };
-    expect(esShell?.nav?.links?.notifications).toBeDefined();
-    expect(enShell?.nav?.links?.notifications).toBeDefined();
+    expect(esShell?.nav?.links?.notifications).toBe("Notificaciones");
+    expect(enShell?.nav?.links?.notifications).toBe("Notifications");
+    expect(esShell?.nav?.links?.notificationOperations).toBe(
+      "Operaciones de Notificaciones",
+    );
+    expect(enShell?.nav?.links?.notificationOperations).toBe(
+      "Notification Operations",
+    );
+    expect(esShell?.nav?.notifications?.inboxLinkAria).toBe(
+      "Bandeja de notificaciones",
+    );
+    expect(enShell?.nav?.notifications?.inboxLinkAria).toBe(
+      "Notification inbox",
+    );
+    expect(esShell?.nav?.notifications?.inboxLinkAriaWithCount).toBe(
+      "Bandeja de notificaciones, {count} no leídas",
+    );
+    expect(enShell?.nav?.notifications?.inboxLinkAriaWithCount).toBe(
+      "Notification inbox, {count} unread",
+    );
   });
 
   it("all 15 category title/description pairs exist under notifications.categories in both catalogs", () => {

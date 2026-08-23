@@ -117,6 +117,7 @@ describe("S02-E02-03: Static Schema Contract Verification", () => {
         "read",
         "failed",
         "cancelled",
+        "suppressed",
       ],
       notification_trigger: [
         "user_invited",
@@ -180,13 +181,20 @@ describe("S02-E02-03: Static Schema Contract Verification", () => {
     };
 
     it("migration SQL creates all 22 enums with exact scoped values in declaration blocks", () => {
-      const migrationContent = fs.readFileSync(migrationPath, "utf-8");
+      const migrationsDir = path.resolve(repoRoot, "supabase/migrations");
+      const migrationFiles = fs
+        .readdirSync(migrationsDir)
+        .filter((f) => f.endsWith(".sql"));
+      const allMigrationsContent = migrationFiles
+        .map((f) => fs.readFileSync(path.join(migrationsDir, f), "utf-8"))
+        .join("\n");
+
       for (const [enumName, values] of Object.entries(expectedEnums)) {
         const createEnumRegex = new RegExp(
           `CREATE\\s+TYPE\\s+(?:public\\.)?${enumName}\\s+AS\\s+ENUM\\s*\\(([^)]+)\\)`,
           "i",
         );
-        const match = migrationContent.match(createEnumRegex);
+        const match = allMigrationsContent.match(createEnumRegex);
         expect(
           match,
           `Missing CREATE TYPE ${enumName} AS ENUM declaration block in migration`,
@@ -194,9 +202,14 @@ describe("S02-E02-03: Static Schema Contract Verification", () => {
 
         const enumBlock = match![1];
         for (const val of values) {
+          const inCreate = enumBlock.includes(`'${val}'`);
+          const inAlter = new RegExp(
+            `ALTER\\s+TYPE\\s+(?:public\\.)?${enumName}\\s+ADD\\s+VALUE(?:\\s+IF\\s+NOT\\s+EXISTS)?\\s+'${val}'`,
+            "i",
+          ).test(allMigrationsContent);
           expect(
-            enumBlock.includes(`'${val}'`),
-            `Missing value '${val}' inside enum declaration block for ${enumName}`,
+            inCreate || inAlter,
+            `Missing value '${val}' inside enum declaration block or ALTER TYPE for ${enumName}`,
           ).toBe(true);
         }
       }
@@ -364,6 +377,8 @@ describe("S02-E02-03: Static Schema Contract Verification", () => {
         function scan(dir: string) {
           const entries = fs.readdirSync(dir, { withFileTypes: true });
           for (const entry of entries) {
+            if (entry.name === "__tests__" || entry.name.startsWith("."))
+              continue;
             const p = path.join(dir, entry.name);
             if (entry.isDirectory()) {
               scan(p);

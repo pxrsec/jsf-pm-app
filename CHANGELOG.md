@@ -1,5 +1,26 @@
 # JSF PM App Development Changelog
 
+## [2026-08-23 @ 07:50]
+
+**🚀 S06-07: Navigation, Localization, Accessibility, Focused Evidence, and Sprint Closeout**
+
+- **🚀 Features & Navigation:**
+  - **Server-Derived Operations Capability (`src/app/[locale]/(protected)/layout.tsx`):** Derived fail-closed `canAccessNotificationOperations: boolean` on the server (`true` for Admin, `hasActivePmLeadMembership` for PM, `false` for Operator and Client) and passed it to navigation presentation.
+  - **Desktop Navigation (`src/components/shared/app-nav/app-nav.tsx`):** Integrated accessible in-app inbox link for all authenticated roles (`/notificaciones`) with unread badge pill (`aria-hidden="true"`) and polite live region (`role="status" aria-live="polite"`). Rendered operations navigation link (`/pm/notificaciones` or `/admin/notificaciones`) exclusively for Admin and PM Lead users.
+  - **Mobile Navigation Drawer (`src/components/shared/app-nav/_components/mobile-nav-toggle.tsx`):** Added responsive drawer links for inbox and conditional operations with minimum 44px touch targets, automatic drawer closure on link selection, and Escape key focus restoration.
+  - **Visual Badge Component (`src/components/shared/app-nav/_components/notification-badge.tsx`):** Preserved visual count presentation with `99+` overflow formatting while isolating accessibility semantics to the owning link and sibling live region.
+
+- **🛠 Architecture, Localization & OpenAPI:**
+  - **Message Catalogs Parity (`messages/es-MX.json`, `messages/en-US.json`):** Added `shell.nav.links.notificationOperations`, `shell.nav.notifications.inboxLinkAria`, and `shell.nav.notifications.inboxLinkAriaWithCount` with 100% Spanish/English parity and matching `{count}` interpolation.
+  - **OpenAPI Contract Reconciliation (`contracts/openapi/jsf-pm-api.openapi.yaml`):** Reconciled `NotificationDeliveryStatus` enum by adding `suppressed`; updated descriptions for the 4 inactive operations (`verifyWhatsappWebhook`, `receiveWhatsappWebhook`, `runNotificationProcessor`, `runAlertScheduler`) to state the truthful S06 inactive 404 contract.
+  - **Zero Migration & Data Boundary Guarantee:** Explicitly verified that S06-07 created/applied zero migrations, modified zero database types, and invoked zero Supabase MCP/DDL tools.
+
+- **🧪 Testing, Verification & Closeout:**
+  - **Navigation & Capability Matrix Tests (`__tests__/app-shell/navigation.test.ts`, `__tests__/integration/role-journey.test.ts`):** 19 tests verifying complete 5-role capability matrix across desktop and mobile views, accessible link naming, status live regions, drawer closure, and negative access safeguards.
+  - **OpenAPI & Catalog Tests (`src/lib/notifications/__tests__/provider-endpoint-guards.test.ts`, `__tests__/i18n/message-catalogs.test.ts`, `__tests__/i18n/key-naming.test.ts`):** Verified enum consistency, absence of stale descriptions, catalog parity, and key naming rules.
+  - **Full Integrated Repository Gate (`npm run verify`):** Passed 100% cleanly: Prettier formatting check, ESLint (0 errors, 0 warnings), TypeScript check (`tsc --noEmit`), Next.js App Router build, Vitest suite (70 passed / 4 skipped, 651 tests), test coverage thresholds, and production audit (0 vulnerabilities).
+  - **Factual Closeout Record (`dev-docs/specs/s06/s06-sprint-06-closeout-verification.md`):** Authored complete sprint closeout record detailing DoD traceability, route/command maps, manual localhost journeys J-01 through J-10, and deferred scope. External provider activation, dispatch, receipt handling, scheduling, deployment, and production verification remain deferred.
+
 ## [2026-08-23 @ 06:21]
 
 **🚀 S06-06: Inactive Provider-Facing Routes and Activation-Safe Boundaries Implementation**

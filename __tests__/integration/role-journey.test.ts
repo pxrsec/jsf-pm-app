@@ -327,12 +327,12 @@ describe("S03-E03-03 Positive-Path Cross-Role & Integration Test Suite", () => {
       expect(html).toContain('<nav aria-label="Navegación principal"');
     });
 
-    it("P-16 & P-17: NotificationBadge renders 99+ and accurate aria-label for count 100", () => {
+    it("P-16 & P-17: NotificationBadge renders 99+ and aria-hidden for count 100", () => {
       const html = renderToStaticMarkup(
         React.createElement(NotificationBadge, { count: 100 }),
       );
       expect(html).toContain("99+");
-      expect(html).toContain('aria-label="Notificaciones no leídas: 100"');
+      expect(html).toContain('aria-hidden="true"');
     });
 
     it("P-20: Mobile nav toggle includes aria-expanded and aria-controls attributes", () => {
@@ -342,6 +342,7 @@ describe("S03-E03-03 Positive-Path Cross-Role & Integration Test Suite", () => {
           role: "admin",
           profile,
           unreadCount: 0,
+          canAccessNotificationOperations: true,
         }),
       );
       expect(html).toContain('aria-expanded="false"');

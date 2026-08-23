@@ -28,11 +28,14 @@
         "home": "Inicio",
         "projects": "Proyectos",
         "agenda": "Mi Agenda",
-        "notifications": "Notificaciones"
+        "notifications": "Notificaciones",
+        "notificationOperations": "Operaciones de Notificaciones"
       },
       "notifications": {
         "badgeLabel": "Notificaciones no leídas",
-        "badgeOverflow": "99+"
+        "badgeOverflow": "99+",
+        "inboxLinkAria": "Bandeja de notificaciones",
+        "inboxLinkAriaWithCount": "Bandeja de notificaciones, {count} no leídas"
       }
     },
     "landing": {

@@ -28,11 +28,14 @@
         "home": "Home",
         "projects": "Projects",
         "agenda": "My Agenda",
-        "notifications": "Notifications"
+        "notifications": "Notifications",
+        "notificationOperations": "Notification Operations"
       },
       "notifications": {
         "badgeLabel": "Unread notifications",
-        "badgeOverflow": "99+"
+        "badgeOverflow": "99+",
+        "inboxLinkAria": "Notification inbox",
+        "inboxLinkAriaWithCount": "Notification inbox, {count} unread"
       }
     },
     "landing": {

@@ -186,6 +186,69 @@ describe("TC-NOTIF-GRD: Provider Endpoint Guards and Safety Boundary", () => {
       expect(block).not.toContain("'403':");
       expect(block).not.toContain("'503':");
       expect(block).not.toContain("x-provider-status: deferred");
+
+      // Truthful S06 description — no stale "Sprint 02" claims
+      expect(block).not.toContain("Sprint 02");
     }
+  });
+
+  describe("Static Analysis: OpenAPI Contract Reconciliation (§6.3)", () => {
+    it("NotificationDeliveryStatus enum contains all previous values plus exactly one suppressed value", () => {
+      const openApiPath = path.resolve(
+        __dirname,
+        "../../../../contracts/openapi/jsf-pm-api.openapi.yaml",
+      );
+      const openApiContent = fs.readFileSync(openApiPath, "utf8");
+
+      const enumLineMatch = openApiContent.match(
+        /NotificationDeliveryStatus:\s*\{\s*type:\s*string,\s*enum:\s*\[([^\]]+)\]\s*\}/,
+      );
+      expect(enumLineMatch).not.toBeNull();
+
+      const enumValues = enumLineMatch![1].split(",").map((s) => s.trim());
+
+      expect(enumValues).toEqual([
+        "pending",
+        "processing",
+        "sent",
+        "delivered",
+        "read",
+        "failed",
+        "cancelled",
+        "suppressed",
+      ]);
+
+      const suppressedOccurrences = enumValues.filter(
+        (v) => v === "suppressed",
+      );
+      expect(suppressedOccurrences).toHaveLength(1);
+    });
+
+    it("all 4 reserved provider operations descriptions state S06 inactive 404 contract without operational claims", () => {
+      const openApiPath = path.resolve(
+        __dirname,
+        "../../../../contracts/openapi/jsf-pm-api.openapi.yaml",
+      );
+      const openApiContent = fs.readFileSync(openApiPath, "utf8");
+
+      const reservedOpIds = [
+        "verifyWhatsappWebhook",
+        "receiveWhatsappWebhook",
+        "runNotificationProcessor",
+        "runAlertScheduler",
+      ];
+
+      for (const opId of reservedOpIds) {
+        expect(openApiContent).toContain(`operationId: ${opId}`);
+      }
+
+      // Assert stale Sprint 02 text is absent across all 4 operations
+      expect(openApiContent).not.toContain(
+        "WhatsApp/Meta is not activated in Sprint 02",
+      );
+      expect(openApiContent).not.toContain(
+        "Documented interface only; not activated in Sprint 02",
+      );
+    });
   });
 });

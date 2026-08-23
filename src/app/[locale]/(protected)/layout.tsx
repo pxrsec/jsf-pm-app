@@ -8,6 +8,7 @@ import {
 } from "@/lib/auth/routes";
 import { createClient } from "@/lib/supabase/server";
 import { getUnreadNotificationCount } from "@/lib/shell-data/shell-queries";
+import { hasActivePmLeadMembership } from "@/lib/notifications/operations-authorization";
 import { AppNav } from "@/components/shared/app-nav/app-nav";
 
 export default async function ProtectedLayout({
@@ -63,9 +64,27 @@ export default async function ProtectedLayout({
     session.user.id,
   );
 
+  let canAccessNotificationOperations = false;
+  if (session.role === "admin") {
+    canAccessNotificationOperations = true;
+  } else if (session.role === "pm") {
+    try {
+      canAccessNotificationOperations = await hasActivePmLeadMembership(
+        supabase,
+        session.user.id,
+      );
+    } catch {
+      canAccessNotificationOperations = false;
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <AppNav session={session} unreadCount={unreadCount} />
+      <AppNav
+        session={session}
+        unreadCount={unreadCount}
+        canAccessNotificationOperations={canAccessNotificationOperations}
+      />
       <main id="main-content" tabIndex={-1} className="flex-1">
         {children}
       </main>
