@@ -1,5 +1,26 @@
 # JSF PM App Development Changelog
 
+## [2026-08-23 @ 13:34]
+
+**S07-M0-C: server-only alert-evaluator privilege remediation**
+
+- Applied `20260823111500_s07_m0_server_only_notification_alert_evaluator` to `jsf-pm-dev`.
+- Removed `EXECUTE` from `PUBLIC`, `anon`, and `authenticated` on both evaluator routines; preserved service-role-only runtime execution.
+- Verified the public authenticated `SECURITY DEFINER` Advisor finding is cleared, while the server action continues to perform all authorization and local-demo gates before using `createAdminClient()`.
+- Generated database types remain unchanged; typecheck and focused evaluator tests pass.
+
+## [2026-08-23 @ 13:30]
+
+**🛠 S07-M0-C: Server-Only Notification Alert Evaluator Refactor & Pre-Execution Inspection**
+
+- **🛠 Architecture & Security Refactor:**
+  - **Comprehensive Inspection & Preflight (`dev-docs/specs/s07/s07-m0-c-server-only-alert-evaluator-refactor-and-pre-execution-inspection-report.md`):** Completed thorough codebase audit and live database catalog inspection on `jsf-pm-dev` regarding `public.evaluate_notification_alerts(uuid)` and `private.evaluate_notification_alerts(uuid)`.
+  - **Server-Only PostgREST Boundary (Option B):** Verified that retaining `public.evaluate_notification_alerts` with `service_role` execution provides the necessary narrow transport boundary for server-held service-role calls without exposing internal schemas (`private`) or creating out-of-band transports.
+  - **Server Action Trust Boundary Refactor (`src/lib/notifications/alert-evaluator-actions.ts`):** Refactored `evaluateNotificationAlertsAction` to instantiate `createAdminClient()` strictly after all 6 verification layers succeed (valid session, demo flag enabled, local loopback posture, strict schema parsing, role authorization, and PM lead project validation under the cookie client).
+  - **Enhanced Test Verification (`src/lib/notifications/__tests__/alert-evaluator-actions.test.ts`):** Expanded unit test suite to assert that `createAdminClient()` is never called upon failed authorization or posture checks, and that authorized evaluations receive the privileged admin client without leaking credentials.
+  - **Candidate Migration Verification (`supabase/migrations/20260823111500_s07_m0_server_only_notification_alert_evaluator.sql`):** Verified that the candidate migration correctly revokes `EXECUTE` from `public`, `anon`, and `authenticated` on both public and private evaluator routines and grants `EXECUTE` solely to `service_role`. Issued preflight verdict `safe to proceed to later manual application`.
+  - **Zero Credential / Provider Drift:** Verified that no secrets were exposed, no external delivery providers or schedulers were activated, no migrations were applied, and generated TypeScript types (`src/lib/database.types.ts`) remained untouched.
+
 ## [2026-08-23 @ 13:02]
 
 **S07-M0-B: citext extension relocation and compatibility verification**

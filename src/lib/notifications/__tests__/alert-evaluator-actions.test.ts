@@ -29,9 +29,17 @@ vi.mock("@/lib/auth/session", () => {
   };
 });
 
-const mockCreateClient = vi.fn(() => ({}));
+const mockUserClient = { kind: "user-client" };
+const mockAdminClient = { kind: "admin-client" };
+
+const mockCreateClient = vi.fn(() => mockUserClient);
 vi.mock("@/lib/supabase/server", () => ({
   createClient: () => mockCreateClient(),
+}));
+
+const mockCreateAdminClient = vi.fn(() => mockAdminClient);
+vi.mock("@/lib/supabase/admin", () => ({
+  createAdminClient: () => mockCreateAdminClient(),
 }));
 
 const mockIsNotificationDemoAlertEvaluationEnabled = vi.fn();
@@ -76,7 +84,7 @@ describe("evaluateNotificationAlertsAction", () => {
   });
 
   describe("Authentication and Environment Posture Gates", () => {
-    it("1. Returns UNAUTHORIZED on AuthError without invoking evaluator", async () => {
+    it("1. Returns UNAUTHORIZED on AuthError without invoking admin client or evaluator", async () => {
       mockRequireSession.mockRejectedValueOnce(
         new AuthError("UNAUTHENTICATED", "Session missing"),
       );
@@ -87,11 +95,12 @@ describe("evaluateNotificationAlertsAction", () => {
         ok: false,
         error: { code: "UNAUTHORIZED" },
       });
+      expect(mockCreateAdminClient).not.toHaveBeenCalled();
       expect(mockEvaluateNotificationAlerts).not.toHaveBeenCalled();
       expect(mockRevalidatePath).not.toHaveBeenCalled();
     });
 
-    it("2. Re-throws unexpected non-AuthError to route boundary", async () => {
+    it("2. Re-throws unexpected non-AuthError to route boundary without invoking admin client", async () => {
       mockRequireSession.mockRejectedValueOnce(
         new Error("Fatal connection crash"),
       );
@@ -99,9 +108,11 @@ describe("evaluateNotificationAlertsAction", () => {
       await expect(evaluateNotificationAlertsAction({})).rejects.toThrow(
         "Fatal connection crash",
       );
+      expect(mockCreateAdminClient).not.toHaveBeenCalled();
+      expect(mockEvaluateNotificationAlerts).not.toHaveBeenCalled();
     });
 
-    it("3. Returns UNAVAILABLE when demo flag is disabled", async () => {
+    it("3. Returns UNAVAILABLE when demo flag is disabled without invoking admin client", async () => {
       mockRequireSession.mockResolvedValueOnce({
         user: { id: "admin-1" },
         role: "admin",
@@ -114,11 +125,12 @@ describe("evaluateNotificationAlertsAction", () => {
         ok: false,
         error: { code: "UNAVAILABLE" },
       });
+      expect(mockCreateAdminClient).not.toHaveBeenCalled();
       expect(mockEvaluateNotificationAlerts).not.toHaveBeenCalled();
       expect(mockAssertPmLeadForProject).not.toHaveBeenCalled();
     });
 
-    it("4. Returns UNAVAILABLE when local demonstration posture is false", async () => {
+    it("4. Returns UNAVAILABLE when local demonstration posture is false without invoking admin client", async () => {
       mockRequireSession.mockResolvedValueOnce({
         user: { id: "admin-1" },
         role: "admin",
@@ -131,12 +143,13 @@ describe("evaluateNotificationAlertsAction", () => {
         ok: false,
         error: { code: "UNAVAILABLE" },
       });
+      expect(mockCreateAdminClient).not.toHaveBeenCalled();
       expect(mockEvaluateNotificationAlerts).not.toHaveBeenCalled();
     });
   });
 
   describe("Admin Global Evaluation", () => {
-    it("1. Accepts empty object, calls evaluator with exact null, revalidates paths, and returns summary", async () => {
+    it("1. Accepts empty object, calls evaluator with privileged admin client and exact null, revalidates paths, and returns summary", async () => {
       mockRequireSession.mockResolvedValueOnce({
         user: { id: "admin-1" },
         role: "admin",
@@ -145,9 +158,10 @@ describe("evaluateNotificationAlertsAction", () => {
 
       const result = await evaluateNotificationAlertsAction({});
 
+      expect(mockCreateAdminClient).toHaveBeenCalledTimes(1);
       expect(mockEvaluateNotificationAlerts).toHaveBeenCalledTimes(1);
       expect(mockEvaluateNotificationAlerts).toHaveBeenCalledWith(
-        expect.anything(),
+        mockAdminClient,
         null,
       );
       expect(result).toEqual({
@@ -169,7 +183,7 @@ describe("evaluateNotificationAlertsAction", () => {
       );
     });
 
-    it("2. Rejects extra input with VALIDATION_FAILED", async () => {
+    it("2. Rejects extra input with VALIDATION_FAILED without invoking admin client", async () => {
       mockRequireSession.mockResolvedValueOnce({
         user: { id: "admin-1" },
         role: "admin",
@@ -183,13 +197,14 @@ describe("evaluateNotificationAlertsAction", () => {
         ok: false,
         error: { code: "VALIDATION_FAILED" },
       });
+      expect(mockCreateAdminClient).not.toHaveBeenCalled();
       expect(mockEvaluateNotificationAlerts).not.toHaveBeenCalled();
       expect(mockRevalidatePath).not.toHaveBeenCalled();
     });
   });
 
   describe("PM Selected Project Evaluation", () => {
-    it("1. Validates PM Lead capacity on exact project, calls evaluator with project UUID, and revalidates paths", async () => {
+    it("1. Validates PM Lead capacity with cookie client, calls evaluator with privileged admin client and project UUID, and revalidates paths", async () => {
       mockRequireSession.mockResolvedValueOnce({
         user: { id: "pm-1" },
         role: "pm",
@@ -202,12 +217,13 @@ describe("evaluateNotificationAlertsAction", () => {
       });
 
       expect(mockAssertPmLeadForProject).toHaveBeenCalledWith(
-        expect.anything(),
+        mockUserClient,
         "pm-1",
         validProjectId,
       );
+      expect(mockCreateAdminClient).toHaveBeenCalledTimes(1);
       expect(mockEvaluateNotificationAlerts).toHaveBeenCalledWith(
-        expect.anything(),
+        mockAdminClient,
         validProjectId,
       );
       expect(result).toEqual({
@@ -217,7 +233,7 @@ describe("evaluateNotificationAlertsAction", () => {
       expect(mockRevalidatePath).toHaveBeenCalledTimes(7);
     });
 
-    it("2. Fails closed with UNAUTHORIZED if PM user is not an active PM Lead for that project", async () => {
+    it("2. Fails closed with UNAUTHORIZED if PM user is not an active PM Lead for that project without invoking admin client", async () => {
       mockRequireSession.mockResolvedValueOnce({
         user: { id: "pm-1" },
         role: "pm",
@@ -228,15 +244,21 @@ describe("evaluateNotificationAlertsAction", () => {
         projectId: validProjectId,
       });
 
+      expect(mockAssertPmLeadForProject).toHaveBeenCalledWith(
+        mockUserClient,
+        "pm-1",
+        validProjectId,
+      );
       expect(result).toEqual({
         ok: false,
         error: { code: "UNAUTHORIZED" },
       });
+      expect(mockCreateAdminClient).not.toHaveBeenCalled();
       expect(mockEvaluateNotificationAlerts).not.toHaveBeenCalled();
       expect(mockRevalidatePath).not.toHaveBeenCalled();
     });
 
-    it("3. Rejects invalid input (non-UUID, missing projectId, extra keys) with VALIDATION_FAILED", async () => {
+    it("3. Rejects invalid input (non-UUID, missing projectId, extra keys) with VALIDATION_FAILED without invoking admin client", async () => {
       mockRequireSession.mockResolvedValue({
         user: { id: "pm-1" },
         role: "pm",
@@ -269,12 +291,13 @@ describe("evaluateNotificationAlertsAction", () => {
       });
 
       expect(mockAssertPmLeadForProject).not.toHaveBeenCalled();
+      expect(mockCreateAdminClient).not.toHaveBeenCalled();
       expect(mockEvaluateNotificationAlerts).not.toHaveBeenCalled();
     });
   });
 
   describe("Other Roles and Error Mapping", () => {
-    it("1. Returns UNAUTHORIZED for Operator and Client roles", async () => {
+    it("1. Returns UNAUTHORIZED for Operator and Client roles without invoking admin client", async () => {
       mockRequireSession.mockResolvedValueOnce({
         user: { id: "op-1" },
         role: "operator",
@@ -297,6 +320,7 @@ describe("evaluateNotificationAlertsAction", () => {
         error: { code: "UNAUTHORIZED" },
       });
 
+      expect(mockCreateAdminClient).not.toHaveBeenCalled();
       expect(mockEvaluateNotificationAlerts).not.toHaveBeenCalled();
     });
 
@@ -315,6 +339,27 @@ describe("evaluateNotificationAlertsAction", () => {
         ok: false,
         error: { code: "UNAVAILABLE" },
       });
+      expect(mockCreateAdminClient).toHaveBeenCalledTimes(1);
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
+    });
+
+    it("3. Maps admin client instantiation failure to UNAVAILABLE and skips revalidation", async () => {
+      mockRequireSession.mockResolvedValueOnce({
+        user: { id: "admin-1" },
+        role: "admin",
+      });
+      mockCreateAdminClient.mockImplementationOnce(() => {
+        throw new Error("Missing secret key");
+      });
+
+      const result = await evaluateNotificationAlertsAction({});
+
+      expect(result).toEqual({
+        ok: false,
+        error: { code: "UNAVAILABLE" },
+      });
+      expect(mockCreateAdminClient).toHaveBeenCalledTimes(1);
+      expect(mockEvaluateNotificationAlerts).not.toHaveBeenCalled();
       expect(mockRevalidatePath).not.toHaveBeenCalled();
     });
   });
