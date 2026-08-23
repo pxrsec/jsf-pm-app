@@ -1,5 +1,18 @@
 # JSF PM App Development Changelog
 
+## [2026-08-23 @ 16:08]
+
+**S07-E09-M3: Scoped Operations Metrics & Admin Projections Migration Applied**
+
+- Applied migration `20260823142000_s07_e09_scoped-operations-metrics-and-admin-projections.sql` (`20260823142000_s07_e09_scoped_operations_metrics_and_admin_projections`) to `jsf-pm-dev` via Supabase MCP `apply_migration`.
+- Created authenticated, read-only `SECURITY DEFINER` RPC functions:
+  - `get_scoped_operations_metrics`: Computes role-safe aggregates for project status distribution, active/overdue/deadline task counts, deliverable metrics, client review cycles, completion cycles, and notification/incident queues with strict 93-day window validation and role authorization.
+  - `list_admin_audit_history`: Provides Admin-only bounded audit event inspection with structured changed-field summarization, 93-day date boundary enforcement, and keyset pagination.
+  - `list_admin_user_invitation_state`: Provides Admin-only unified operational streams of profiles and invitations with keyset pagination.
+- Applied hardened search paths (`pg_catalog, public`), revoked execution from `public` and `anon`, and granted execution to `authenticated`.
+- Regenerated TypeScript definitions in `src/lib/database.types.ts` via Supabase MCP `generate_typescript_types`.
+- Verified focused migration test suite `__tests__/database/s07-e09-migrations.test.ts` (4 tests passing).
+
 ## [2026-08-23 @ 16:05]
 
 **S07-E09-M2: Finalized Production Archive & Link Incidents Migration Applied**
