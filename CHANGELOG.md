@@ -1,5 +1,19 @@
 # JSF PM App Development Changelog
 
+## [2026-08-23 @ 16:38]
+
+**S07-E09-M4: Scope Calendar Events Direct Select Policy Migration Applied**
+
+- Applied migration `20260823143000_s07_e09_scope_calendar_events_direct_select.sql` (`20260823143000_s07_e09_scope_calendar_events_direct_select`) to `jsf-pm-dev` via Supabase MCP `apply_migration`.
+- Replaced permissive `calendar_events_select_policy` on `public.calendar_events` to enforce `deleted_at is null and (select private.is_project_pm(project_id))`, eliminating direct manual-milestone read bypass for Operators and Clients.
+- Verified live policy posture in `pg_policies` and executed runtime RLS query assertions under authenticated role contexts:
+  1. Admin direct milestone read succeeds.
+  2. PM Lead / PM Watcher direct read succeeds strictly for assigned/active PM projects and is denied for unassigned projects.
+  3. Operator direct read is denied (0 rows returned).
+  4. Client direct read is denied (0 rows returned).
+- Generated TypeScript definitions verified via Supabase MCP `generate_typescript_types` (exact match; no schema/type alterations).
+- Verified focused migration test suite and strict typecheck (`tsc --noEmit`) passing cleanly.
+
 ## [2026-08-23 @ 16:08]
 
 **S07-E09-M3: Scoped Operations Metrics & Admin Projections Migration Applied**
