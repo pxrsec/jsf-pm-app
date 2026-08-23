@@ -2,201 +2,214 @@
 
 ## 1. Identity, Authority, Evidence Basis, and Verdict
 
-- **Sprint Title:** Sprint 06 / Epic 08 — Notification Scheduling and External Providers Capability Track
+- **Document ID:** `S06-CLOSEOUT-01`
+- **Sprint:** Sprint 06 / Epic 08 — Notification Scheduling and External Providers Capability Track
 - **Controlling Specification:** `dev-docs/specs/s06/s06-07-navigation-localization-accessibility-focused-evidence-and-sprint-closeout-spec.md`
 - **Governing Sprint Plan:** `dev-docs/specs/s06/s06-e08-notification-scheduling-and-external-providers-capability-track-sprint-plan.md`
-- **Capability Contract Reference:** `dev-docs/specs/s06/s06-e08-notification-capability-contract-mapping-reference.md`
-- **Repository Branch:** Current working branch (`main` / local workspace)
-- **Target Verification Environment:** Localhost / `jsf-pm-dev` development sandbox
-- **Integration Status:** All S06-01 through S06-07 work items implemented, verified through automated test suites, and validated through final repository verification gate.
-- **Sprint Verdict:** **Ready for Review**
+- **Capability Mapping:** `dev-docs/specs/s06/s06-e08-notification-capability-contract-mapping-reference.md`
+- **Implementation Commit:** `89dca32` (`feat: s06-07 implementation. localization and accessiblity-focused evidence`)
+- **Implementation Branch:** `feature/s06-e08-notification-scheduling-and-external-providers-capability-track`
+- **Target Development Environment:** `jsf-pm-dev` and localhost development sandbox
+- **Evidence basis:** S06 implementation artifacts and tests, implementation-recorded manual journeys J-01 through J-10, current source review, and the verification records in §5. This closeout does not claim production, provider, or hosted-environment evidence.
+- **Verdict:** **Ready for Review — development capability only.** Sprint 06 is not production-ready and does not authorize provider activation, deployment, or production database activity.
 
 ---
 
 ## 2. Sprint Definition-of-Done Traceability
 
-| DoD Item | Description | Status | Evidence & Verification | Limitations & Boundaries |
-| --- | --- | --- | --- | --- |
-| **DoD-01** | External Provider Suppression Policy | **Met** | Migration `20260822140000_s06_e08_notification_capability_suppression.sql`, `channel-adapters.ts`, `channel-adapters.test.ts`. External recipients (`whatsapp`, `email`) transition to terminal `suppressed` with `suppression_reason = 'provider_disabled'`, `attempt_count = 0`, `next_attempt_at = NULL`. | No external dispatch, no provider API calls, no auto-replay. |
-| **DoD-02** | Provider Endpoints Inactive 404 Contract | **Met** | Routes `/api/webhooks/whatsapp`, `/api/workflows/alert-scheduler`, `/api/workflows/notification-processor`, `provider-endpoint-guards.ts`, `provider-endpoint-guards.test.ts`. Return structured 404 with code `PROVIDER_INACTIVE`. | Inactive stub routes only; no webhook verification or scheduled triggers. |
-| **DoD-03** | Server Configuration Safety Boundary | **Met** | `src/config/server.config.ts`, `src/config/app.config.ts`, `server.config.test.ts`, `credential-exposure.test.ts`. Zero client exposure of secrets; strict server-side validation. | No real external provider API keys stored or loaded. |
-| **DoD-04** | In-App Notification Inbox & Mark Read | **Met** | Route `/[locale]/notificaciones`, `notification-inbox.tsx`, `actions.ts`, `queries.ts`, `notification-inbox.test.tsx`. Keyset pagination, unread indicator, single mark read, mark all read. | In-app channel only; RLS strictly self-scoped (`recipient_id = auth.uid()`). |
-| **DoD-05** | Notification Operations Queue | **Met** | Route `/[locale]/pm/notificaciones`, `notification-operations-queue.tsx`, `operations-actions.ts`, `operations-queries.ts`, `notification-operations-queue.test.tsx`. Authorized queue inspection with terminal suppression details. | Accessible only to Admin and PM Lead; denied to PM Watcher, Operator, and Client. |
-| **DoD-06** | Manual Alert Evaluation Capability | **Met** | `manual-alert-evaluation-dialog.tsx`, `alert-evaluator.ts`, `alert-evaluator-actions.ts`, `manual-alert-evaluation-dialog.test.tsx`. Evaluates deadlines and inactivity, creates in-app notifications and external suppressions. | Local development manual trigger only; no background timer or daemon. |
-| **DoD-07** | Keyset Pagination Integrity | **Met** | Keyset pagination implemented in both inbox and operations queue via `created_at, id` cursor; tested in `notification-inbox.test.tsx` and `notification-operations-queue.test.tsx`. | No offset/limit pagination; cursor-based ordering preserved across refreshes. |
-| **DoD-08** | Navigation & Accessibility Integration | **Met** | `app-nav.tsx`, `mobile-nav-toggle.tsx`, `notification-badge.tsx`, `layout.tsx`, `navigation.test.ts`. Header/drawer inbox link for all roles; operations link for Admin/PM Lead only. | WCAG 2.1 AA keyboard navigation, polite live region, 44px minimum targets. |
-| **DoD-09** | Spanish & English Localization Parity | **Met** | `messages/es-MX.json`, `messages/en-US.json`, `message-catalogs.test.ts`, `key-naming.test.ts`. Complete parity across `shell`, `notifications`, and `notificationOperations` namespaces. | 100% key parity; source code identifiers remain English. |
-| **DoD-10** | OpenAPI Contract Reconciliation | **Met** | `contracts/openapi/jsf-pm-api.openapi.yaml`. Added `suppressed` to `NotificationDeliveryStatus` enum; updated descriptions of 4 inactive operations to reflect S06 404 contract. | Reserved operation definitions only; no active endpoint behavior claimed. |
-| **DoD-11** | Strict TypeScript & Architecture Limits | **Met** | `tsc --noEmit` passed with 0 errors; all implementation files conform to <= 400 lines (excluding generated `database.types.ts`). App Router RSC/Client boundaries preserved. | Strict TypeScript enforced across entire codebase. |
-| **DoD-12** | Database & Migration Provenance | **Met** | 4 migrations committed under `supabase/migrations/`; static schema contracts verified in `schema-contract.test.ts`. S06-07 created/applied 0 migrations. | Zero direct database DDL or Supabase MCP usage by Antigravity in S06-07. |
-| **DoD-13** | Integrated Repository Gate (npm run verify) | **Met** | Full repository verification gate executed and passed: format check, ESLint, TypeScript check, Next.js build, 70/74 test files passing (651 tests), coverage, zero audit vulnerabilities. | Verified on local repository state. |
+| DoD | Status | Factual evidence and boundary |
+| --- | --- | --- |
+| External-provider suppression | Met | External channels become terminal `suppressed` records with controlled `provider_disabled` reason and no dispatch attempt. Historical suppression is not a future send queue. |
+| Inactive provider endpoints | Met | The four reserved endpoints return the generic 404 `ApiError` envelope with `error.code: "not_found"`; they do not parse a body, inspect signatures/configuration, construct a client, or invoke a provider. |
+| Server configuration safety | Met | `src/lib/notifications/config.ts` fails closed for missing, blank, placeholder, malformed, partial, invalid, or explicitly disabled external-delivery configuration. |
+| In-app inbox and read state | Met | Authenticated recipients have self-scoped inbox history, keyset pagination, single-read, and mark-all-read behavior. |
+| Authorized operations queue | Met | Admin and active PM Lead access the authorized operations projection. PM Watcher, non-lead PM, Operator, and Client are denied at the server boundary. |
+| Development-only manual evaluation | Met | The evaluator is independently gated by a demo flag plus local-development posture; it is not a scheduler. |
+| Navigation, localization, and scoped accessibility | Met | Desktop/mobile navigation, role matrix, localized names, linked visual badge, live-status semantics, drawer closure, Escape/focus restoration, and target-size coverage are implemented and tested. This is not a formal WCAG conformance certification. |
+| OpenAPI reconciliation | Met | `NotificationDeliveryStatus` contains `suppressed`; the four provider operations retain their method, path, IDs, security declarations, inactive metadata, and 404 contract. |
+| Migration/type provenance | Met | S06 contains four prior committed migrations. S06-07 created/applied no migration and did not regenerate `src/lib/database.types.ts`. |
+| Integrated repository gate | Met in the supported local-development verification posture; follow-up recorded | The normal development verification run recorded in §5 passed. A parent process exporting `NODE_ENV=production` causes Vitest to load React’s production export, where `act` is unavailable; this is a verification-environment reproducibility concern, not provider activation. |
 
 ---
 
 ## 3. Implemented Route, Command, Projection, and Navigation Map
 
-### 3.1 Protected User Routes
+### 3.1 Protected routes
 
-- **In-App Notification Inbox:** `/[locale]/notificaciones` (Dynamic RSC + Client Inbox Component)
-  - *Access:* All authenticated roles (`admin`, `pm`, `operator`, `client`).
-  - *Data Projection:* Self-scoped in-app notifications (`recipient_id = auth.uid()`), keyset pagination, unread status.
-  - *Actions:* `markNotificationReadAction`, `markAllNotificationsReadAction`.
+- **Recipient inbox:** `/[locale]/notificaciones`
+  - Available to every active authenticated application role.
+  - Uses the self-scoped `list_my_in_app_notifications` projection and recipient-level read actions.
+- **PM operations queue:** `/[locale]/pm/notificaciones`
+  - PM role plus active PM Lead membership is required before queue data is queried.
+  - Denied PM callers redirect to the locale-preserving PM home route.
+- **Admin operations queue:** `/[locale]/admin/notificaciones`
+  - This is a real Admin page, not a redirect.
+  - Admin role is required before the global operations projection is queried.
 
-- **Notification Operations Queue:** `/[locale]/pm/notificaciones` (and `/[locale]/admin/notificaciones` redirect)
-  - *Access:* Admin and PM Lead (`canAccessNotificationOperations: true`).
-  - *Data Projection:* Project-scoped (for PM Lead) or global (for Admin) operational records, terminal suppression details, failure reasons.
-  - *Denial:* PM Watcher, non-lead PM, Operator, and Client are safely denied and redirected without data leakage.
+### 3.2 Navigation authorization and presentation
 
-### 3.2 Navigation Boundaries
+`src/app/[locale]/(protected)/layout.tsx` derives `canAccessNotificationOperations` on the server:
 
-- **Server-Derived Capability:** Derived in `src/app/[locale]/(protected)/layout.tsx`:
-  - `admin`: `canAccessNotificationOperations = true`
-  - `pm`: `canAccessNotificationOperations = await hasActivePmLeadMembership(supabase, user.id)`
-  - `operator`: `canAccessNotificationOperations = false`
-  - `client`: `canAccessNotificationOperations = false`
-- **Presentation Matrix:**
-  - *Desktop AppNav:* Inbox link with unread badge pill (`aria-hidden="true"`) and polite live-region status node (`role="status" aria-live="polite"`). Operations link rendered only when `canAccessNotificationOperations && (role === "admin" || role === "pm")`.
-  - *Mobile Drawer:* Dedicated inbox link and conditional operations link with `min-h-[44px]` touch targets, automatic drawer closure on link click, and Escape key focus restoration.
+| Role/capacity | Inbox | Operations link | Operations destination |
+| --- | --- | --- | --- |
+| Admin | Present | Present | `/admin/notificaciones` |
+| Active PM Lead | Present | Present | `/pm/notificaciones` |
+| PM Watcher / non-lead PM | Present | Absent | None |
+| Operator | Present | Absent | None |
+| Client | Present | Absent | None |
 
-### 3.3 Reserved Inactive Endpoints (404 Contract)
+The desktop and mobile links use `@/i18n/routing` `Link`. The inbox link owns the localized accessible name. `NotificationBadge` is visual-only and `aria-hidden`; one sibling `role="status" aria-live="polite"` node reports the unread count, including zero, without becoming another interactive control.
 
-- `GET /api/webhooks/whatsapp`: Returns HTTP 404 (`PROVIDER_INACTIVE`).
-- `POST /api/webhooks/whatsapp`: Returns HTTP 404 (`PROVIDER_INACTIVE`).
-- `POST /api/workflows/notification-processor`: Returns HTTP 404 (`PROVIDER_INACTIVE`).
-- `POST /api/workflows/alert-scheduler`: Returns HTTP 404 (`PROVIDER_INACTIVE`).
+### 3.3 Inactive endpoint contract
+
+- `GET /api/webhooks/whatsapp`
+- `POST /api/webhooks/whatsapp`
+- `POST /api/workflows/notification-processor`
+- `POST /api/workflows/alert-scheduler`
+
+Each returns HTTP 404 with generic `ApiError` content (`not_found`) and an opaque request ID. Route/static tests prove this response boundary; they are not database-mutation, provider-delivery, webhook-signature, or deployment evidence.
 
 ---
 
 ## 4. Changed-Artifact Inventory and Migration/Type Provenance
 
-### 4.1 Artifacts Modified in S06-07
+### 4.1 S06-07 artifacts
 
-- `src/app/[locale]/(protected)/layout.tsx`: Server capability computation and prop propagation.
-- `src/components/shared/app-nav/app-nav.tsx`: Desktop navigation inbox & operations links, live region, mandatory prop.
-- `src/components/shared/app-nav/_components/mobile-nav-toggle.tsx`: Mobile navigation drawer inbox & operations links.
-- `src/components/shared/app-nav/_components/notification-badge.tsx`: Visual badge presentation pill (`aria-hidden="true"`).
-- `messages/es-MX.json`: Added `shell.nav.links.notificationOperations`, `shell.nav.notifications.inboxLinkAria`, `shell.nav.notifications.inboxLinkAriaWithCount`.
-- `messages/en-US.json`: Added English translations with exact structural parity.
-- `contracts/openapi/jsf-pm-api.openapi.yaml`: Added `suppressed` enum value and updated inactive operation descriptions.
-- `__tests__/integration/role-journey.test.ts`: Updated fixtures for mandatory `canAccessNotificationOperations`.
-- `__tests__/app-shell/navigation.test.ts`: Added full 5-role desktop/mobile navigation matrix and accessibility tests.
-- `__tests__/i18n/message-catalogs.test.ts`: Added assertions for new keys and parameter interpolation.
-- `__tests__/i18n/key-naming.test.ts`: Added notification namespaces and semantic token allowlist.
-- `__tests__/database/schema-contract.test.ts`: Added `suppressed` enum validation and test scanner adjustment.
-- `src/lib/notifications/__tests__/provider-endpoint-guards.test.ts`: Added OpenAPI static schema verification suite.
+- `src/app/[locale]/(protected)/layout.tsx`
+- `src/components/shared/app-nav/app-nav.tsx`
+- `src/components/shared/app-nav/_components/mobile-nav-toggle.tsx`
+- `src/components/shared/app-nav/_components/notification-badge.tsx`
+- `messages/es-MX.json` and `messages/en-US.json`
+- `contracts/openapi/jsf-pm-api.openapi.yaml`
+- `__tests__/app-shell/navigation.test.ts`
+- `__tests__/integration/role-journey.test.ts`
+- `__tests__/i18n/message-catalogs.test.ts`
+- `__tests__/i18n/key-naming.test.ts`
+- `__tests__/database/schema-contract.test.ts`
+- `src/lib/notifications/__tests__/provider-endpoint-guards.test.ts`
+- `CHANGELOG.md`
+- `dev-docs/specs/s06/s06-07-navigation-localization-accessibility-focused-evidence-and-sprint-closeout-spec.md`
+- This closeout record.
 
-### 4.2 Migration and Type Provenance
+### 4.2 Migration and generated-type provenance
 
-All 4 database migrations for Sprint 06 were authored, reviewed, and committed in prior cards:
-1. `supabase/migrations/20260822140000_s06_e08_notification_capability_suppression.sql`
-2. `supabase/migrations/20260822150000_s06_e08_alert_evaluation.sql`
-3. `supabase/migrations/20260822160000_s06_e08_notification_inbox_keyset_pagination.sql`
-4. `supabase/migrations/20260822170000_s06_e08_notification_operations_queue_keyset_pagination.sql`
+The applied Sprint 06 migration baseline is:
 
-*Explicit S06-07 Confirmation:* S06-07 created **zero** migrations, applied **zero** database changes, generated **zero** database types, and invoked **zero** Supabase MCP or DDL tools.
+1. `20260822140000_s06_e08_notification_capability_suppression.sql`
+2. `20260822150000_s06_e08_alert_evaluation.sql`
+3. `20260822160000_s06_e08_notification_inbox_keyset_pagination.sql`
+4. `20260822170000_s06_e08_notification_operations_queue_keyset_pagination.sql`
+
+S06-07 created no migration, made no database/schema mutation, made no Supabase MCP call, and did not modify generated database types. This is a statement about S06-07 scope, not proof of every earlier database application event.
 
 ---
 
 ## 5. Automated Verification Record
 
-### 5.1 Focused S06 Automated Regression Suite
+### 5.1 Focused S06 regression evidence
 
-- **Command:** `npx vitest run src/lib/notifications/__tests__/ __tests__/app-shell/navigation.test.ts __tests__/i18n/message-catalogs.test.ts __tests__/integration/role-journey.test.ts src/app/[locale]/(protected)/notificaciones/ src/app/[locale]/(protected)/pm/notificaciones/ src/app/api/webhooks/whatsapp/ src/app/api/workflows/`
-- **Result:** **18 test files passed | 0 failed** (168 tests passed)
-- **Duration:** 14.28s
+The committed S06 focused suite recorded **18 passing test files / 168 passing tests**. It covered navigation, localization/catalog parity, role journeys, inbox and operations behavior, evaluator behavior, inactive endpoint guards, and route shells.
 
-### 5.2 Final Repository Verification Gate (`npm run verify`)
+### 5.2 Integrated repository gate
 
-- **Command:** `npm run verify`
-- **Constituent Commands & Outcomes:**
-  1. `npm run format:check` (`prettier --check .`): **Passed** — *All matched files use Prettier code style!*
-  2. `npm run lint` (`eslint .`): **Passed** — *0 errors, 0 warnings*
-  3. `npm run typecheck` (`tsc --noEmit`): **Passed** — *0 errors*
-  4. `npm run build` (`next build`): **Passed** — *Compiled successfully in 80s, TypeScript validated in 23.1s, static pages generated*
-  5. `npm run test` (`vitest run --passWithNoTests`): **Passed** — *70 test files passed | 4 skipped (74 total), 651 tests passed | 9 skipped (660 total)*
-  6. `npm run test:coverage` (`vitest run --coverage --passWithNoTests`): **Passed** — *All coverage thresholds met across all packages*
-  7. `npm run audit:prod` (`npm audit --omit=dev --audit-level=high`): **Passed** — *found 0 vulnerabilities*
-- **Final Gate Status:** **PASSED (Exit code 0)**
+The repository script is:
+
+```bash
+npm run verify
+```
+
+It executes formatting, lint, typecheck, production build, full tests, coverage, and the production-dependency audit.
+
+- **Recorded developer-local result:** passed — 70 test files passed, 4 skipped; 651 tests passed, 9 skipped; coverage thresholds met; `npm audit --omit=dev --audit-level=high` found 0 vulnerabilities.
+- **Review reproduction with no inherited `NODE_ENV`:** `env -u NODE_ENV npm run verify` passed with the same 70/4 files and 651/9 tests, coverage thresholds, and zero production audit vulnerabilities.
+- **Reproducibility note:** a parent-shell `NODE_ENV=production` made a bare `npm run verify` fail during Vitest because React’s production export lacks `act`. Next.js configuration reads `NODE_ENV`; it does not set it. The approved follow-up is to define the test environment explicitly in repository scripts or CI. This does not activate providers and does not change the S06 development-capability verdict.
+
+### 5.3 Post-gate documentation checks
+
+```bash
+npx prettier --check dev-docs/specs/s06/s06-sprint-06-closeout-verification.md CHANGELOG.md
+git diff --check
+```
+
+Both passed during closeout review.
 
 ---
 
 ## 6. Manual Localhost Evidence
 
-*Evidence recorded in local development sandbox environment (`localhost:3000` / `jsf-pm-dev`).*
+The following are implementation-recorded localhost observations. They remain development-sandbox evidence and were not re-performed during the closeout document review.
 
-| ID | Persona & Viewport | Locale | Route / Action | Observed Local Result | Verdict | Limitation / Scope |
-| --- | --- | --- | --- | --- | --- | --- |
-| **J-01** | Admin (Desktop) | `es-MX` | `/pm/proyectos` -> Click header Inbox link | Navigates to `/notificaciones`; inbox loads self notifications; visual badge displays unread count; no provider or operational data shown. | **Passed** | Localhost sandbox session; in-app items only. |
-| **J-02** | PM Lead (Desktop) | `es-MX` | `/pm/proyectos` -> Click Inbox link, then Operations link | Inbox opens at `/notificaciones`; operations queue opens at `/pm/notificaciones` showing authorized project suppressions with truthful no-send copy. | **Passed** | Operations scoped to active lead project memberships. |
-| **J-03** | PM Watcher (Desktop) | `es-MX` | Direct URL navigation to `/pm/notificaciones` | Header renders Inbox link but NO Operations link; direct navigation to `/pm/notificaciones` safely redirects to `/pm` without leaking queue data. | **Passed** | Fail-closed server derivation blocks non-lead PM. |
-| **J-04** | Operator / Client (Desktop) | `es-MX` | `/operador` & `/cliente` -> Inspect navigation | Inbox link rendered and functional; Operations link completely absent; zero operational or provider metadata exposed. | **Passed** | Operator and Client roles strictly isolated to personal inbox. |
-| **J-05** | Recipient State Refresh | `es-MX` | Known lifecycle event -> Mark single read -> Mark all read | Single mark read decrements unread count and updates item state; Mark All marks remaining items read; badge hides when count reaches 0. | **Passed** | Database RPC `mark_notification_read` / `mark_all_notifications_read`. |
-| **J-06** | PM Lead Evaluator | `es-MX` | `/pm/notificaciones` -> Open Evaluator -> Select project -> Evaluate | Dialog opens with truthful no-send explanation; project selector lists PM Lead's projects; evaluation returns safe aggregate counts; repeated run in same window shows zero new events (idempotent). | **Passed** | Local manual evaluation only; no background daemon. Admin evaluates globally; PM Lead evaluates selected project. |
-| **J-07** | Non-Lead Evaluation Denial | `es-MX` | PM Watcher / Operator forged action attempt | Server action rejects request with `UNAUTHORIZED` error; role=alert displays localized error message; zero data leaked. | **Passed** | Server-side authorization check blocks unauthorized invocations. |
-| **J-08** | Inactive Provider Endpoints | `es-MX` | HTTP GET/POST to WhatsApp and Workflow routes | All 4 routes return HTTP 404 with structured `ApiError` envelope and `code: "PROVIDER_INACTIVE"`; no database mutation occurs. | **Passed** | Endpoints remain strictly inactive in Sprint 06. |
-| **J-09** | English Locale Navigation | `en-US` | `/en/notificaciones` & `/en/pm/notificaciones` | All navigation links preserve `/en` prefix; copy matches English catalog; denied role redirect maintains locale prefix. | **Passed** | Tested under `en-US` locale routing. |
-| **J-10** | Mobile & Accessibility (375px) | `es-MX` / `en-US` | 375px viewport -> Open drawer -> Navigate -> Test Escape | Mobile drawer contains 44px touch targets for Inbox and Operations; clicking link closes drawer; pressing Escape closes drawer and restores focus; both light and dark themes render high-contrast legible text. | **Passed** | Screen reader polite live-region verified via automated testing. |
-
----
-
-## 7. Localization, Theme, Accessibility, Security, and Truthfulness
-
-- **Localization:** 100% Spanish/English catalog parity across all notification and navigation namespaces (`shell`, `notifications`, `notificationOperations`).
-- **Accessibility:**
-  - Desktop inbox link owns the accessible name (`inboxLinkAria` / `inboxLinkAriaWithCount`).
-  - Visual badge is marked `aria-hidden="true"` to prevent double-announcing count.
-  - Sibling polite status node (`role="status" aria-live="polite"`) provides non-intrusive live-region updates.
-  - Touch targets meet or exceed 44x44px.
-  - Keyboard navigation and Escape-to-close behavior verified on mobile drawer and dialogs.
-- **Security & Authorization:**
-  - Fail-closed capability evaluation at server boundary.
-  - RLS strictly enforced on `notification_recipients` (self-only inbox).
-  - Privileged operational queue access restricted to Admin and PM Lead.
-  - No secret exposure in client bundles, logs, or error responses.
-- **Truthfulness:** All UI banners, queue explanations, and evaluator dialogs truthfully explain that external messages are not sent and remain terminally suppressed.
+| ID | Recorded observation | Scope and limitation |
+| --- | --- | --- |
+| J-01 | Admin navigation from an Admin route opened `/notificaciones`; inbox data remained recipient-scoped and contained no operational/provider details. | Spanish localhost sandbox. |
+| J-02 | PM Lead opened inbox and `/pm/notificaciones`; operations content was project scoped and described external delivery truthfully as suppressed. | Active PM Lead membership required. |
+| J-03 | PM Watcher saw the inbox but no operations link; direct PM operations navigation redirected safely to `/pm`. | Server denial before queue query. |
+| J-04 | Operator and Client saw and used inbox navigation but no operations link. | No operations/provider metadata exposed. |
+| J-05 | A sandbox lifecycle event changed unread state; single-read and mark-all-read refreshed authoritative inbox state. | In-app recipient behavior only. |
+| J-06 | Admin global and PM Lead selected-project evaluator paths were exercised; repeated same-window evaluation recorded no new events. | Local manual control only. The original manual evidence, not route/component tests, is the claimed source for idempotency observation. |
+| J-07 | Disallowed evaluator callers saw no control; a forged action received a controlled authorization error without queue/evaluator detail. | Server action denial boundary. |
+| J-08 | The four inactive endpoints returned uniform generic 404 envelopes. | This proves endpoint response behavior only; it does not independently prove database non-mutation. |
+| J-09 | English locale inbox/operations navigation preserved `/en` routing and denied-role redirects preserved locale. | English locale sandbox. |
+| J-10 | At 375px in light/dark themes, the drawer links closed on selection, Escape restored focus, controls met target-size expectations, and visible status did not rely only on color. | Scoped keyboard/visual observation. DOM/ARIA tests cover live-region semantics; no assistive-technology or formal WCAG audit is claimed. |
 
 ---
 
-## 8. OpenAPI Contract Reconciliation
+## 7. Localization, Accessibility, Security, and Truthfulness Findings
 
-- **File:** `contracts/openapi/jsf-pm-api.openapi.yaml`
-- **Enum Reconciliation:** `NotificationDeliveryStatus` enum contains `suppressed` alongside `pending`, `processing`, `sent`, `delivered`, `read`, `failed`, `cancelled`.
-- **Reserved Inactive Endpoints:**
-  - `verifyWhatsappWebhook` (`GET /api/webhooks/whatsapp`): Documented as returning 404 in Sprint 06.
-  - `receiveWhatsappWebhook` (`POST /api/webhooks/whatsapp`): Documented as returning 404 in Sprint 06.
-  - `runNotificationProcessor` (`POST /api/workflows/notification-processor`): Documented as returning 404 in Sprint 06.
-  - `runAlertScheduler` (`POST /api/workflows/alert-scheduler`): Documented as returning 404 in Sprint 06.
-- **Static Verification:** Verified via automated static analysis in `src/lib/notifications/__tests__/provider-endpoint-guards.test.ts`.
+- Spanish and English message catalogs have matching required navigation keys and `{count}` interpolation.
+- The inbox remains present at zero unread count; overflow renders visually as `99+`.
+- Presentation never grants operations authorization; protected pages, server actions, RPCs, and RLS remain authoritative.
+- Suppression is explicit terminal non-delivery. No UI, evaluator, or queue claim represents a send, receipt, retry, or provider activation.
+- The reviewed scope demonstrates accessible implementation controls. It does not represent a formal WCAG 2.1 AA assessment, legal accessibility certification, or production assistive-technology audit.
+
+---
+
+## 8. OpenAPI Reconciliation Record
+
+`contracts/openapi/jsf-pm-api.openapi.yaml` now contains `suppressed` exactly once in `NotificationDeliveryStatus`, preserving `pending`, `processing`, `sent`, `delivered`, `read`, `failed`, and `cancelled`.
+
+The following operations retain their IDs, paths, methods, security declarations, `x-provider-status: inactive`, and sole generic 404 `ApiError` response:
+
+- `verifyWhatsappWebhook`
+- `receiveWhatsappWebhook`
+- `runNotificationProcessor`
+- `runAlertScheduler`
+
+Their descriptions now state the Sprint 06 inactive boundary without stale Sprint 02 language.
 
 ---
 
 ## 9. Environment and Operational Status
 
-- **Database:** Supabase development sandbox (`jsf-pm-dev`) with all 4 S06 migrations applied.
-- **Local Application:** Next.js 16 App Router application operating under same-origin security boundary.
-- **Zero S06-07 Mutation:** S06-07 introduced zero database migrations, modified zero database types, and performed zero remote state alterations.
+- Development data plane: `jsf-pm-dev` with the four Sprint 06 migration baseline files already applied before S06-07.
+- Local application: Next.js App Router development sandbox.
+- S06-07: zero new migration, generated-type, provider, scheduler, webhook, deployment, DNS, or hosted-environment operation.
+- `NODE_ENV` is a runtime/build/test-mode variable. It is not an external-provider activation switch. The current source has no provider dispatch adapter or active provider endpoint behind it.
+- `EXTERNAL_DELIVERY_MODE` is absent from the reviewed local variable-name inventory, yielding the fail-closed `mode_missing` state. Even an `active-ready` configuration cannot send because `channel-adapters.ts` currently returns disabled-only adapters.
 
 ---
 
 ## 10. Deferred Activation Scope and Known Limitations
 
-The following capabilities are explicitly deferred and must not be claimed as active:
+Deferred work includes:
 
-1. **External Email Dispatch:** Resend account setup, domain verification, API keys, template compilation, and live SMTP/API dispatch.
-2. **WhatsApp Business Messaging:** Meta Business registration, phone number provisioning, template pre-approval, webhook signature verification, and live dispatch.
-3. **Automated Scheduling & Workflows:** Upstash QStash account provisioning, cron scheduling, HTTP message signing, and automated background execution.
-4. **Historical Replay:** Automatic requeueing, replaying, or migrating of existing `suppressed` records.
-5. **Production Deployment:** Vercel/Cloudflare production deployments, production DNS configuration, and hosted production Supabase migrations.
-6. **Advanced Features:** Deep linking from inbox items, search/filter/archive for inbox, service workers, offline caching, and client-side polling.
+1. Concrete Resend and WhatsApp dispatch adapters, message rendering/payload policy, idempotency, controlled retries, and provider-result persistence.
+2. Meta application/business/phone/template setup and public webhook verification, raw-body handling, signature/replay defense, and receipt processing.
+3. Upstash QStash/Workflow account setup, signature verification, queue/schedule creation, and safe operational observability.
+4. A separately accepted activation ADR/runbook, environment-specific secrets, sender/domain/DNS configuration, recipient controls, rollback, and production smoke evidence.
+5. Production Supabase migration deployment, production RLS/RPC validation, hosting, DNS, legal/privacy approval, and production deployment.
+6. Any replay or requeue of historical `suppressed` records; this remains prohibited.
+
+The prospective sequence and required decision gates are documented in `dev-docs/documentation/production-promotion-and-external-provider-activation-runbook.md`. That document is planning guidance, not production authorization.
 
 ---
 
 ## 11. Closeout Sign-Off and Next Owner Action
 
-- **Sprint Closeout Statement:**
-  > **Sprint 06 now provides a role-safe, localized, accessible development notification capability: recipients can navigate to their own in-app inbox; Admin and active PM Lead users can navigate to the already-authorized terminal-suppression operations surface; the manual evaluator remains local-development-only; and provider-facing routes remain inert. External provider activation, dispatch, receipt processing, scheduling, deployment, and production verification remain deferred.**
+> **Sprint 06 provides a role-safe, localized, accessible development notification capability. Recipients can navigate to their own in-app inbox; Admin and active PM Lead users can navigate to the already-authorized terminal-suppression operations surface; the evaluator is local-development-only; and provider-facing routes remain inert. Provider activation, dispatch, receipts, scheduling, deployment, production database activity, and production verification remain deferred.**
 
-- **Next Owner Action:**
-  - Review this closeout verification record alongside the automated test evidence.
-  - Authorize sprint transition / pull request integration under Project Owner review authority.
-  - No Git mutation, branch merge, or push is performed by this session.
+**Next owner actions:**
+
+1. Begin Sprint 07 planning/execution from commit `89dca32` under normal project branch and review controls.
+2. Create a bounded operational follow-up to make the verification/test environment explicit in scripts or CI; do not use `NODE_ENV` as an application provider switch.
+3. Before any provider or production release work, accept a dedicated activation ADR/runbook and use the future-promotion document as the checklist baseline.
