@@ -1,5 +1,27 @@
 # JSF PM App Development Changelog
 
+## [2026-08-23 @ 13:02]
+
+**S07-M0-B: citext extension relocation and compatibility verification**
+
+- Applied `20260823100000_s07_m0_move_citext_to_extensions` to `jsf-pm-dev`.
+- Moved `citext` 1.6 from `public` to `extensions`; the Security Advisor no longer reports the `extension_in_public` finding.
+- Verified both existing email columns now resolve to `extensions.citext`, retain case-insensitive comparison behavior, and leave all generated TypeScript types unchanged.
+- Recompiled `public.accept_invite(bytea)` with its explicit `extensions.citext` local declaration while preserving `SECURITY DEFINER`, hardened search path, owner, signature, and existing authenticated/service-role ACL.
+- Confirmed no citext extension-owned routines remain in `public`; typecheck and the focused schema/invite test set pass.
+
+## [2026-08-23 @ 12:55]
+
+**🛠 S07-M0-B: citext Extension Relocation Pre-Execution Inspection**
+
+- **🛠 Architecture & Security Inspection:**
+  - **Comprehensive Repository & Live Catalog Preflight (`dev-docs/specs/s07/s07-m0-b-citext-relocation-pre-execution-inspection-report.md`):** Conducted exhaustive static codebase audit and read-only catalog inspection on `jsf-pm-dev` regarding the relocation of the `citext` extension from `public` to `extensions` and the recompilation of `public.accept_invite(bytea)`.
+  - **Extension Relocatability & Object Identity Verification:** Proved that PostgreSQL `citext` 1.6 is natively relocatable (`relocatable = true`). Confirmed that `ALTER EXTENSION citext SET SCHEMA extensions;` preserves type OIDs, operator OIDs, and function OIDs without requiring table rewrites, data migrations, or column conversions on `public.client_contacts.email` and `public.invite_tokens.email`.
+  - **RPC Search-Path Hardening:** Confirmed that recompiling `public.accept_invite(bytea)` with local declaration `v_user_email extensions.citext` guarantees type resolution under hardened `search_path = pg_catalog, public` while maintaining its `SECURITY DEFINER` posture, ACL, signature, and behavioral contract.
+  - **Zero Application & Generated Type Drift:** Proved that PostgREST serialization and generated TypeScript types (`src/lib/database.types.ts`) remain 100% invariant (0 diff). Validated that all invitation completion routes, client contact queries, and synthetic demo bootstrap scripts operate transparently.
+  - **Replay Fidelity & Preflight Verdict:** Verified clean zero-to-current migration replay (`supabase db reset`) from historical baseline without mutating historical migrations. Issued formal preflight verdict `safe to proceed to later manual application`.
+  - **Strict Boundary Guarantee:** Applied 0 migrations, performed 0 database mutations, modified 0 application/test/type files, and preserved all non-negotiable architectural boundaries.
+
 ## [2026-08-23 @ 12:16]
 
 **S07-M0-A: RLS event-trigger reconciliation and privilege remediation**
