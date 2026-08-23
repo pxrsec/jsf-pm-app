@@ -1731,6 +1731,28 @@ export type Database = {
         Args: { p_project_id: string }
         Returns: Json
       }
+      list_finalized_production_archive: {
+        Args: {
+          p_before_deliverable_id?: string
+          p_before_finalized_at?: string
+          p_from?: string
+          p_limit?: number
+          p_project_id?: string
+          p_status?: Database["public"]["Enums"]["deliverable_status"]
+          p_to?: string
+        }
+        Returns: {
+          current_submission_url: string
+          current_version_number: number
+          deliverable_id: string
+          deliverable_title: string
+          final_status: Database["public"]["Enums"]["deliverable_status"]
+          finalized_at: string
+          project_drive_folder_url: string
+          project_id: string
+          project_name: string
+        }[]
+      }
       list_my_in_app_notifications: {
         Args: {
           p_before_created_at?: string
@@ -1761,6 +1783,29 @@ export type Database = {
           project_id: string
           starts_at: string
           title: string
+        }[]
+      }
+      list_role_safe_link_incidents: {
+        Args: {
+          p_before_incident_id?: string
+          p_before_reported_at?: string
+          p_from?: string
+          p_limit?: number
+          p_project_id?: string
+          p_status?: Database["public"]["Enums"]["link_report_status"]
+          p_to?: string
+        }
+        Returns: {
+          deliverable_id: string
+          deliverable_title: string
+          incident_id: string
+          incident_status: Database["public"]["Enums"]["link_report_status"]
+          project_id: string
+          project_name: string
+          reason: string
+          reported_at: string
+          resolution_note: string
+          resolved_at: string
         }[]
       }
       list_suppressed_notification_operations: {

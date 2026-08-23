@@ -1,5 +1,17 @@
 # JSF PM App Development Changelog
 
+## [2026-08-23 @ 16:05]
+
+**S07-E09-M2: Finalized Production Archive & Link Incidents Migration Applied**
+
+- Applied migration `20260823141000_s07_e09_finalized-production-archive-and-link-incidents.sql` (`20260823141000_s07_e09_finalized_production_archive_and_link_incidents`) to `jsf-pm-dev` via Supabase MCP `apply_migration`.
+- Created purpose-limited `SECURITY DEFINER` read RPC functions:
+  - `list_finalized_production_archive`: Exposes role-safe finalized production deliverable archive with complete keyset pagination, 93-day date boundary enforcement, and scoped project metadata visibility for operators.
+  - `list_role_safe_link_incidents`: Exposes role-safe deliverable link report incident listing strictly restricted to Admin and PM project leads/watchers with complete keyset pagination and 93-day date boundary enforcement.
+- Applied hardened search paths (`pg_catalog, public`), revoked execution from `public` and `anon`, and granted execution to `authenticated`.
+- Regenerated TypeScript definitions in `src/lib/database.types.ts` via Supabase MCP `generate_typescript_types`.
+- Verified focused migration test suite `__tests__/database/s07-e09-migrations.test.ts` (4 tests passing).
+
 ## [2026-08-23 @ 16:01]
 
 **S07-E09-M1: Calendar Role-Safe Feed & Audited Milestones Migration Applied**
