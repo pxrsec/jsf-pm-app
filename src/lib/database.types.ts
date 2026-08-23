@@ -1693,6 +1693,27 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { p_token_hash: string }; Returns: Json }
+      create_calendar_milestone: {
+        Args: {
+          p_color_override: string
+          p_description: string
+          p_ends_at: string
+          p_is_all_day: boolean
+          p_project_id: string
+          p_starts_at: string
+          p_title: string
+        }
+        Returns: {
+          color_override: string
+          ends_at: string
+          entity_id: string
+          event_type: Database["public"]["Enums"]["calendar_event_type"]
+          is_all_day: boolean
+          project_id: string
+          starts_at: string
+          title: string
+        }[]
+      }
       create_collaboration_comment: {
         Args: {
           p_body: string
@@ -1727,6 +1748,19 @@ export type Database = {
           read_at: string
           recipient_id: string
           trigger: Database["public"]["Enums"]["notification_trigger"]
+        }[]
+      }
+      list_role_safe_calendar_events: {
+        Args: { p_from: string; p_project_id?: string; p_to: string }
+        Returns: {
+          color_override: string
+          ends_at: string
+          entity_id: string
+          event_type: Database["public"]["Enums"]["calendar_event_type"]
+          is_all_day: boolean
+          project_id: string
+          starts_at: string
+          title: string
         }[]
       }
       list_suppressed_notification_operations: {
@@ -1795,6 +1829,10 @@ export type Database = {
         }
         Returns: Json
       }
+      soft_delete_calendar_milestone: {
+        Args: { p_event_id: string }
+        Returns: boolean
+      }
       soft_delete_entity: {
         Args: {
           p_entity_id: string
@@ -1835,6 +1873,27 @@ export type Database = {
           p_task_id: string
         }
         Returns: Json
+      }
+      update_calendar_milestone: {
+        Args: {
+          p_color_override: string
+          p_description: string
+          p_ends_at: string
+          p_event_id: string
+          p_is_all_day: boolean
+          p_starts_at: string
+          p_title: string
+        }
+        Returns: {
+          color_override: string
+          ends_at: string
+          entity_id: string
+          event_type: Database["public"]["Enums"]["calendar_event_type"]
+          is_all_day: boolean
+          project_id: string
+          starts_at: string
+          title: string
+        }[]
       }
     }
     Enums: {

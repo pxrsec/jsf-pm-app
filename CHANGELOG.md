@@ -1,5 +1,16 @@
 # JSF PM App Development Changelog
 
+## [2026-08-23 @ 16:01]
+
+**S07-E09-M1: Calendar Role-Safe Feed & Audited Milestones Migration Applied**
+
+- Applied migration `20260823140000_s07_e09_calendar-role-safe-feed-and-milestones.sql` (`20260823140000_s07_e09_calendar_role_safe_feed_and_milestones`) to `jsf-pm-dev` via Supabase MCP.
+- Narrowed `calendar_events.color_override` constraint to design-system chart tokens (`chart-1` through `chart-5`).
+- Created and exposed RPC functions: `list_role_safe_calendar_events`, `create_calendar_milestone`, `update_calendar_milestone`, and `soft_delete_calendar_milestone` with hardened search paths, role-safe access controls, and structured audit logs.
+- Revoked direct table mutation (`INSERT`, `UPDATE`, `DELETE`) on `calendar_events` for `authenticated` role in favor of audited command RPCs.
+- Regenerated TypeScript definitions in `src/lib/database.types.ts` via Supabase MCP `generate_typescript_types`.
+- Verified complete test suite (72 test files, 667 tests passing) and strict typecheck (`tsc --noEmit`) passing cleanly.
+
 ## [2026-08-23 @ 14:38]
 
 **S07-M0-SD: SECURITY DEFINER hardening applied to development**
