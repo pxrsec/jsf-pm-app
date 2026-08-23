@@ -1415,6 +1415,32 @@
     "projectContext": "Proyecto: {project}",
     "noProjectContext": "Sin contexto de proyecto",
     "firstCreatedAt": "Primera creación:",
-    "lastSuppressedAt": "Última supresión:"
+    "lastSuppressedAt": "Última supresión:",
+    "manualEvaluation": {
+      "trigger": "Evaluar alertas ahora",
+      "triggerAria": "Abrir diálogo para evaluar alertas de notificación",
+      "dialogTitle": "Evaluar alertas de notificación",
+      "dialogDescription": "Ejecuta la evaluación de recordatorios según las reglas de tiempo y estado en la base de datos.",
+      "noSendExplanation": "Esta acción evalúa los recordatorios actuales y puede crear registros de notificación en la aplicación y registros de supresión terminal. No envía correos electrónicos ni mensajes de WhatsApp.",
+      "projectLabel": "Proyecto a evaluar",
+      "projectAria": "Seleccionar proyecto para evaluar alertas",
+      "cancel": "Cancelar",
+      "confirm": "Evaluar ahora",
+      "pending": "Evaluando alertas...",
+      "successTitle": "Evaluación completada",
+      "zeroResult": "No se crearon nuevos registros de recordatorio en esta evaluación.",
+      "summary": {
+        "tasksEvaluated": "Tareas evaluadas: {count}",
+        "reviewsEvaluated": "Revisiones evaluadas: {count}",
+        "eventsCreated": "Eventos creados: {count}",
+        "inAppRecipientsCreated": "Destinatarios en la app: {count}",
+        "externalSuppressionsCreated": "Supresiones externas: {count}"
+      },
+      "errors": {
+        "validation": "La solicitud de evaluación no es válida.",
+        "unauthorized": "No tienes autorización para ejecutar esta evaluación de alertas.",
+        "unavailable": "El servicio de evaluación no está disponible en este momento."
+      }
+    }
   }
 }

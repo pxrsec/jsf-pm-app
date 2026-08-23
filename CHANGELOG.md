@@ -1,5 +1,28 @@
 # JSF PM App Development Changelog
 
+## [2026-08-22 @ 18:22]
+
+**🚀 S06-05: Shared Alert Evaluation Development-Only Manual Control Implementation**
+
+- **🚀 Features & User Interface:**
+  - **Manual Alert Evaluation Dialog (`src/app/[locale]/(protected)/pm/notificaciones/_components/manual-alert-evaluation-dialog.tsx`):** Delivered controlled `<AlertDialog>` with proper Base UI composition, min 44px touch targets, PM project selector with `<Label>` and server-authorized options, truthful no-send explanation note, live pending state, polite `aria-live` result announcement with non-leaking aggregate counts, `role="alert"` error feedback, and `router.refresh()` on success.
+  - **Shared Presentation Screen Integration (`src/app/[locale]/(protected)/pm/notificaciones/_components/notification-operations-screen.tsx`):** Rendered optional `manualAlertEvaluation` control above the operations queue for authorized internal callers in local demo posture.
+  - **Route Server Entry Points (`src/app/[locale]/(protected)/pm/notificaciones/page.tsx`, `src/app/[locale]/(protected)/admin/notificaciones/page.tsx`):** Gated manual evaluation control behind `isNotificationDemoAlertEvaluationEnabled()` and `isLocalNotificationDemoPosture()`. PM route validates active PM Lead status and queries active lead projects via `listActivePmLeadEvaluationProjects`; Admin route provides global evaluation control (`kind: "admin-global"`).
+
+- **🛠 Architecture & Security:**
+  - **Evaluator Schemas & DTOs (`src/lib/notifications/alert-evaluator-schemas.ts`):** Defined strict Zod schemas (`EvaluateAlertsAsAdminSchema`, `EvaluateAlertsAsPmLeadSchema`, `AlertEvaluationRawSummarySchema`) with `.strict()` and safe non-negative integer validation (`z.number().finite().int().nonnegative().safe()`).
+  - **Server-Only Alert Evaluator (`src/lib/notifications/alert-evaluator.ts`):** Implemented `isLocalNotificationDemoPosture()` ensuring `NODE_ENV === "development"` and loopback hostname matching (`localhost`, `127.0.0.1`, `[::1]`); `evaluateNotificationAlerts(supabase, projectId)` invoking public RPC `evaluate_notification_alerts` with exact `p_project_id: null` for Admin and UUID for PM; `listActivePmLeadEvaluationProjects()` querying active, non-terminal projects; and `assertPmLeadForProject()` enforcing exact project authorization.
+  - **Server Actions (`src/lib/notifications/alert-evaluator-actions.ts`):** Implemented `evaluateNotificationAlertsAction` with session validation (`requireSession`), demo flag and local posture enforcement, strict input parsing, PM lead capacity verification, non-leaking error mapping (`VALIDATION_FAILED`, `UNAUTHORIZED`, `UNAVAILABLE`), and comprehensive Next.js 16 cache revalidation across 6 concrete paths and protected layout.
+  - **Message Catalogs Parity (`messages/es-MX.json`, `messages/en-US.json`):** Added complete 20-leaf-key `notificationOperations.manualEvaluation` subtree across Spanish and English catalogs with exact semantic parity.
+
+- **🧪 Testing & Verification:**
+  - **Evaluator Module Unit Tests (`src/lib/notifications/__tests__/alert-evaluator.test.ts`):** 17 tests verifying loopback posture parsing, IPv6 formatting, RPC call signatures with exact null/UUID, strict summary schema validation (rejection of decimals, NaN, Infinity, negative numbers, overflow, unexpected keys), query deduplication, terminal status filtering, and fail-closed error handling.
+  - **Server Actions Unit Tests (`src/lib/notifications/__tests__/alert-evaluator-actions.test.ts`):** 11 tests verifying session errors, demo posture gates, Admin global execution with exact null, PM Lead capacity checks, unauthorized role rejection, error mapping, path revalidations, and side-effect absence.
+  - **Dialog Component Unit & Accessibility Tests (`src/app/[locale]/(protected)/pm/notificaciones/_components/manual-alert-evaluation-dialog.test.tsx`):** 8 tests verifying trigger rendering, accessible labels, truthful warning, Admin submission, PM project selection without UUID leakage, zero-result feedback, controlled pending safety, and `role="alert"` error states.
+  - **Routes Integration Tests (`src/app/[locale]/(protected)/pm/notificaciones/notification-operations-routes.test.tsx`):** 11 tests verifying prop passing and gating for Admin and PM routes, redirect preservation, and failure isolation.
+  - **Message Catalog Parity Suite (`__tests__/i18n/message-catalogs.test.ts`):** 10 tests verifying 43 leaf keys across both locales.
+  - **Full Repository Verification:** 100% pass across Vitest (57 S06-05 tests + 142 full notification suite tests), TypeScript typecheck (`tsc --noEmit`), ESLint (0 errors, 0 warnings), Prettier formatting check.
+
 ## [2026-08-22 @ 17:25]
 
 **🚀 S06-04: Authorized Internal Notification Queue and Suppressed-Delivery Diagnostics Implementation**

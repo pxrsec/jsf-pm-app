@@ -5,6 +5,11 @@ import { requireSession } from "@/lib/auth/session";
 import { ROLE_DEFAULT_PATHS } from "@/lib/auth/routes";
 import { createClient } from "@/lib/supabase/server";
 import { listSuppressedNotificationOperationsPage } from "@/lib/notifications/operations-queries";
+import {
+  isLocalNotificationDemoPosture,
+  isNotificationDemoAlertEvaluationEnabled,
+} from "@/lib/notifications/alert-evaluator";
+import type { ManualAlertEvaluationControl } from "@/lib/notifications/alert-evaluator-schemas";
 import { NotificationOperationsScreen } from "@/app/[locale]/(protected)/pm/notificaciones/_components/notification-operations-screen";
 
 export default async function AdminNotificationOperationsPage() {
@@ -21,7 +26,21 @@ export default async function AdminNotificationOperationsPage() {
   }
 
   const supabase = createClient(cookieStore);
+
+  let manualAlertEvaluation: ManualAlertEvaluationControl | undefined;
+  if (
+    isNotificationDemoAlertEvaluationEnabled() &&
+    isLocalNotificationDemoPosture()
+  ) {
+    manualAlertEvaluation = { kind: "admin-global" };
+  }
+
   const initialPage = await listSuppressedNotificationOperationsPage(supabase);
 
-  return <NotificationOperationsScreen initialPage={initialPage} />;
+  return (
+    <NotificationOperationsScreen
+      initialPage={initialPage}
+      manualAlertEvaluation={manualAlertEvaluation}
+    />
+  );
 }

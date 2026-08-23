@@ -1415,6 +1415,32 @@
     "projectContext": "Project: {project}",
     "noProjectContext": "No project context",
     "firstCreatedAt": "First created:",
-    "lastSuppressedAt": "Last suppressed:"
+    "lastSuppressedAt": "Last suppressed:",
+    "manualEvaluation": {
+      "trigger": "Evaluate alerts now",
+      "triggerAria": "Open dialog to evaluate notification alerts",
+      "dialogTitle": "Evaluate notification alerts",
+      "dialogDescription": "Runs reminder evaluation based on database-authoritative timing and status rules.",
+      "noSendExplanation": "This action evaluates current reminders and may create in-app notification records and terminal suppression records. It does not send emails or WhatsApp messages.",
+      "projectLabel": "Project to evaluate",
+      "projectAria": "Select project to evaluate alerts",
+      "cancel": "Cancel",
+      "confirm": "Evaluate now",
+      "pending": "Evaluating alerts...",
+      "successTitle": "Evaluation completed",
+      "zeroResult": "No new reminder records were created during this evaluation.",
+      "summary": {
+        "tasksEvaluated": "Tasks evaluated: {count}",
+        "reviewsEvaluated": "Reviews evaluated: {count}",
+        "eventsCreated": "Events created: {count}",
+        "inAppRecipientsCreated": "In-app recipients: {count}",
+        "externalSuppressionsCreated": "External suppressions: {count}"
+      },
+      "errors": {
+        "validation": "Invalid evaluation request.",
+        "unauthorized": "You are not authorized to run this alert evaluation.",
+        "unavailable": "The evaluation service is currently unavailable."
+      }
+    }
   }
 }

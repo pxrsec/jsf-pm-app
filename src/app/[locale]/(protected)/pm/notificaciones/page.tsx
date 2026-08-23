@@ -6,6 +6,12 @@ import { ROLE_DEFAULT_PATHS } from "@/lib/auth/routes";
 import { createClient } from "@/lib/supabase/server";
 import { hasActivePmLeadMembership } from "@/lib/notifications/operations-authorization";
 import { listSuppressedNotificationOperationsPage } from "@/lib/notifications/operations-queries";
+import {
+  isLocalNotificationDemoPosture,
+  isNotificationDemoAlertEvaluationEnabled,
+  listActivePmLeadEvaluationProjects,
+} from "@/lib/notifications/alert-evaluator";
+import type { ManualAlertEvaluationControl } from "@/lib/notifications/alert-evaluator-schemas";
 import { NotificationOperationsScreen } from "./_components/notification-operations-screen";
 
 export default async function PmNotificationOperationsPage() {
@@ -27,7 +33,29 @@ export default async function PmNotificationOperationsPage() {
     redirect(`${localePrefix}/pm`);
   }
 
+  let manualAlertEvaluation: ManualAlertEvaluationControl | undefined;
+  if (
+    isNotificationDemoAlertEvaluationEnabled() &&
+    isLocalNotificationDemoPosture()
+  ) {
+    const projects = await listActivePmLeadEvaluationProjects(
+      supabase,
+      session.user.id,
+    );
+    if (projects.length > 0) {
+      manualAlertEvaluation = {
+        kind: "pm-project",
+        projects,
+      };
+    }
+  }
+
   const initialPage = await listSuppressedNotificationOperationsPage(supabase);
 
-  return <NotificationOperationsScreen initialPage={initialPage} />;
+  return (
+    <NotificationOperationsScreen
+      initialPage={initialPage}
+      manualAlertEvaluation={manualAlertEvaluation}
+    />
+  );
 }

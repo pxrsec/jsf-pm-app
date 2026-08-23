@@ -137,7 +137,7 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
     expect(esNotificationKeys).toHaveLength(54);
   });
 
-  it("all 23 required leaf keys exist under notificationOperations in both catalogs with identical structure", () => {
+  it("all 43 required leaf keys exist under notificationOperations in both catalogs with identical structure", () => {
     const requiredKeys = [
       "title",
       "description",
@@ -162,6 +162,26 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
       "noProjectContext",
       "firstCreatedAt",
       "lastSuppressedAt",
+      "manualEvaluation.trigger",
+      "manualEvaluation.triggerAria",
+      "manualEvaluation.dialogTitle",
+      "manualEvaluation.dialogDescription",
+      "manualEvaluation.noSendExplanation",
+      "manualEvaluation.projectLabel",
+      "manualEvaluation.projectAria",
+      "manualEvaluation.cancel",
+      "manualEvaluation.confirm",
+      "manualEvaluation.pending",
+      "manualEvaluation.successTitle",
+      "manualEvaluation.zeroResult",
+      "manualEvaluation.summary.tasksEvaluated",
+      "manualEvaluation.summary.reviewsEvaluated",
+      "manualEvaluation.summary.eventsCreated",
+      "manualEvaluation.summary.inAppRecipientsCreated",
+      "manualEvaluation.summary.externalSuppressionsCreated",
+      "manualEvaluation.errors.validation",
+      "manualEvaluation.errors.unauthorized",
+      "manualEvaluation.errors.unavailable",
     ];
 
     function getNestedValue(
@@ -197,7 +217,7 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
     const esOpsKeys = collectKeys(esOps).sort();
     const enOpsKeys = collectKeys(enOps).sort();
     expect(esOpsKeys).toEqual(enOpsKeys);
-    expect(esOpsKeys).toHaveLength(23);
+    expect(esOpsKeys).toHaveLength(43);
   });
 
   it("no missing keys in either catalog (complete key sets)", () => {

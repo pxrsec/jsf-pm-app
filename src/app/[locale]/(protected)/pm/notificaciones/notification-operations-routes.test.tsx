@@ -44,12 +44,23 @@ vi.mock("@/lib/notifications/operations-queries", () => ({
     mockListSuppressedNotificationOperationsPage(supabase),
 }));
 
+const mockIsNotificationDemoAlertEvaluationEnabled = vi.fn();
+const mockIsLocalNotificationDemoPosture = vi.fn();
+const mockListActivePmLeadEvaluationProjects = vi.fn();
+vi.mock("@/lib/notifications/alert-evaluator", () => ({
+  isNotificationDemoAlertEvaluationEnabled: () =>
+    mockIsNotificationDemoAlertEvaluationEnabled(),
+  isLocalNotificationDemoPosture: () => mockIsLocalNotificationDemoPosture(),
+  listActivePmLeadEvaluationProjects: (supabase: unknown, userId: string) =>
+    mockListActivePmLeadEvaluationProjects(supabase, userId),
+}));
+
+const mockScreen = vi.fn();
 vi.mock("./_components/notification-operations-screen", () => ({
-  NotificationOperationsScreen: vi.fn(
-    ({ initialPage }: { initialPage: unknown }) => (
-      <div data-testid="screen">{JSON.stringify(initialPage)}</div>
-    ),
-  ),
+  NotificationOperationsScreen: (props: unknown) => {
+    mockScreen(props);
+    return <div data-testid="screen">{JSON.stringify(props)}</div>;
+  },
 }));
 
 import PmNotificationOperationsPage from "./page";
@@ -60,10 +71,15 @@ describe("Notification Operations Route Server Entry Points", () => {
     vi.clearAllMocks();
     mockCookies.mockResolvedValue({} as never);
     mockGetLocale.mockResolvedValue("es-MX");
+    mockIsNotificationDemoAlertEvaluationEnabled.mockReturnValue(true);
+    mockIsLocalNotificationDemoPosture.mockReturnValue(true);
+    mockListActivePmLeadEvaluationProjects.mockResolvedValue([
+      { id: "proj-1", name: "Alpha Project" },
+    ]);
   });
 
   describe("PM Operations Route (pm/notificaciones/page.tsx)", () => {
-    it("1. PM Lead: authorizes capacity, fetches first page, and renders screen", async () => {
+    it("1. PM Lead with demo flag & posture enabled: passes pm-project manual control with lead projects", async () => {
       mockRequireSession.mockResolvedValueOnce({
         user: { id: "user-pm-lead" },
         profile: {
@@ -91,14 +107,98 @@ describe("Notification Operations Route Server Entry Points", () => {
         expect.anything(),
         "user-pm-lead",
       );
-      expect(
-        mockListSuppressedNotificationOperationsPage,
-      ).toHaveBeenCalledTimes(1);
+      expect(mockListActivePmLeadEvaluationProjects).toHaveBeenCalledWith(
+        expect.anything(),
+        "user-pm-lead",
+      );
+      expect(element.props).toEqual({
+        initialPage: mockInitialPage,
+        manualAlertEvaluation: {
+          kind: "pm-project",
+          projects: [{ id: "proj-1", name: "Alpha Project" }],
+        },
+      });
       expect(mockRedirect).not.toHaveBeenCalled();
-      expect(element).toBeDefined();
     });
 
-    it("2. PM Watcher (no PM lead capacity): redirects to localized /pm without querying queue", async () => {
+    it("2. PM Lead with demo flag disabled: omits manual control prop", async () => {
+      mockRequireSession.mockResolvedValueOnce({
+        user: { id: "user-pm-lead" },
+        role: "pm",
+      });
+      mockHasActivePmLeadMembership.mockResolvedValueOnce(true);
+      mockIsNotificationDemoAlertEvaluationEnabled.mockReturnValueOnce(false);
+
+      const mockInitialPage = {
+        operations: [],
+        nextCursor: null,
+        hasMore: false,
+      };
+      mockListSuppressedNotificationOperationsPage.mockResolvedValueOnce(
+        mockInitialPage,
+      );
+
+      const element = await PmNotificationOperationsPage();
+
+      expect(mockListActivePmLeadEvaluationProjects).not.toHaveBeenCalled();
+      expect(element.props).toEqual({
+        initialPage: mockInitialPage,
+        manualAlertEvaluation: undefined,
+      });
+    });
+
+    it("3. PM Lead with non-local posture: omits manual control prop", async () => {
+      mockRequireSession.mockResolvedValueOnce({
+        user: { id: "user-pm-lead" },
+        role: "pm",
+      });
+      mockHasActivePmLeadMembership.mockResolvedValueOnce(true);
+      mockIsLocalNotificationDemoPosture.mockReturnValueOnce(false);
+
+      const mockInitialPage = {
+        operations: [],
+        nextCursor: null,
+        hasMore: false,
+      };
+      mockListSuppressedNotificationOperationsPage.mockResolvedValueOnce(
+        mockInitialPage,
+      );
+
+      const element = await PmNotificationOperationsPage();
+
+      expect(mockListActivePmLeadEvaluationProjects).not.toHaveBeenCalled();
+      expect(element.props).toEqual({
+        initialPage: mockInitialPage,
+        manualAlertEvaluation: undefined,
+      });
+    });
+
+    it("4. PM Lead with empty projects list: omits manual control prop and preserves queue rendering", async () => {
+      mockRequireSession.mockResolvedValueOnce({
+        user: { id: "user-pm-lead" },
+        role: "pm",
+      });
+      mockHasActivePmLeadMembership.mockResolvedValueOnce(true);
+      mockListActivePmLeadEvaluationProjects.mockResolvedValueOnce([]);
+
+      const mockInitialPage = {
+        operations: [],
+        nextCursor: null,
+        hasMore: false,
+      };
+      mockListSuppressedNotificationOperationsPage.mockResolvedValueOnce(
+        mockInitialPage,
+      );
+
+      const element = await PmNotificationOperationsPage();
+
+      expect(element.props).toEqual({
+        initialPage: mockInitialPage,
+        manualAlertEvaluation: undefined,
+      });
+    });
+
+    it("5. PM Watcher (no PM lead capacity): redirects to localized /pm without querying queue or evaluator", async () => {
       mockRequireSession.mockResolvedValueOnce({
         user: { id: "user-pm-watcher" },
         profile: {
@@ -119,9 +219,10 @@ describe("Notification Operations Route Server Entry Points", () => {
       expect(
         mockListSuppressedNotificationOperationsPage,
       ).not.toHaveBeenCalled();
+      expect(mockListActivePmLeadEvaluationProjects).not.toHaveBeenCalled();
     });
 
-    it("3. English locale PM Watcher: redirects to /en/pm", async () => {
+    it("6. English locale PM Watcher: redirects to /en/pm", async () => {
       mockGetLocale.mockResolvedValueOnce("en-US");
       mockRequireSession.mockResolvedValueOnce({
         user: { id: "user-pm-watcher-en" },
@@ -145,7 +246,7 @@ describe("Notification Operations Route Server Entry Points", () => {
       ).not.toHaveBeenCalled();
     });
 
-    it("4. Non-PM user attempting PM operations route: redirects to role default path", async () => {
+    it("7. Non-PM user attempting PM operations route: redirects to role default path", async () => {
       mockRequireSession.mockResolvedValueOnce({
         user: { id: "user-op" },
         profile: {
@@ -170,7 +271,7 @@ describe("Notification Operations Route Server Entry Points", () => {
   });
 
   describe("Admin Operations Route (admin/notificaciones/page.tsx)", () => {
-    it("1. Admin user: fetches first page and renders screen without membership check", async () => {
+    it("1. Admin user with demo flag & posture enabled: passes admin-global manual control", async () => {
       mockRequireSession.mockResolvedValueOnce({
         user: { id: "user-admin" },
         profile: {
@@ -194,14 +295,63 @@ describe("Notification Operations Route Server Entry Points", () => {
       const element = await AdminNotificationOperationsPage();
 
       expect(mockHasActivePmLeadMembership).not.toHaveBeenCalled();
-      expect(
-        mockListSuppressedNotificationOperationsPage,
-      ).toHaveBeenCalledTimes(1);
+      expect(element.props).toEqual({
+        initialPage: mockInitialPage,
+        manualAlertEvaluation: { kind: "admin-global" },
+      });
       expect(mockRedirect).not.toHaveBeenCalled();
       expect(element).toBeDefined();
     });
 
-    it("2. PM user attempting Admin route directly: redirects to /pm without querying queue", async () => {
+    it("2. Admin user with demo flag disabled: omits manual control prop", async () => {
+      mockRequireSession.mockResolvedValueOnce({
+        user: { id: "user-admin" },
+        role: "admin",
+      });
+      mockIsNotificationDemoAlertEvaluationEnabled.mockReturnValueOnce(false);
+
+      const mockInitialPage = {
+        operations: [],
+        nextCursor: null,
+        hasMore: false,
+      };
+      mockListSuppressedNotificationOperationsPage.mockResolvedValueOnce(
+        mockInitialPage,
+      );
+
+      const element = await AdminNotificationOperationsPage();
+
+      expect(element.props).toEqual({
+        initialPage: mockInitialPage,
+        manualAlertEvaluation: undefined,
+      });
+    });
+
+    it("3. Admin user with non-local posture: omits manual control prop", async () => {
+      mockRequireSession.mockResolvedValueOnce({
+        user: { id: "user-admin" },
+        role: "admin",
+      });
+      mockIsLocalNotificationDemoPosture.mockReturnValueOnce(false);
+
+      const mockInitialPage = {
+        operations: [],
+        nextCursor: null,
+        hasMore: false,
+      };
+      mockListSuppressedNotificationOperationsPage.mockResolvedValueOnce(
+        mockInitialPage,
+      );
+
+      const element = await AdminNotificationOperationsPage();
+
+      expect(element.props).toEqual({
+        initialPage: mockInitialPage,
+        manualAlertEvaluation: undefined,
+      });
+    });
+
+    it("4. PM user attempting Admin route directly: redirects to /pm without querying queue", async () => {
       mockRequireSession.mockResolvedValueOnce({
         user: { id: "user-pm" },
         profile: {
