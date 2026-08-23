@@ -1,5 +1,26 @@
 # JSF PM App Development Changelog
 
+## [2026-08-23 @ 12:16]
+
+**S07-M0-A: RLS event-trigger reconciliation and privilege remediation**
+
+- Reconciled the canonical `public.rls_auto_enable()` definition and `ensure_rls` DDL event trigger in `supabase/migrations/20260823083000_s07_m0_revoke_rls_auto_enable_execute.sql`.
+- Applied the M0-A migration to `jsf-pm-dev`; it preserves the enabled `ddl_command_end` trigger for `CREATE TABLE`, `CREATE TABLE AS`, and `SELECT INTO`.
+- Revoked direct `EXECUTE` on `public.rls_auto_enable()` from `public`, `anon`, and `authenticated`; the live ACL now contains only `postgres` and `service_role`.
+- Verified the event trigger enables RLS on a transaction-rolled-back public-table probe; the probe table is absent after rollback.
+- Verified generated TypeScript types remain byte-equivalent to `src/lib/database.types.ts`, and the Security Advisor no longer reports `rls_auto_enable()`.
+
+## [2026-08-23 @ 11:58]
+
+**🛠 S07-M0-A: RLS Event-Trigger Execute Revocation Pre-Execution Inspection**
+
+- **🛠 Architecture & Security Inspection:**
+  - **Comprehensive Repository & Live Catalog Preflight (`dev-docs/specs/s07/s07-m0-a-rls-auto-enable-revocation-pre-execution-inspection-report.md`):** Conducted exhaustive static codebase audit and read-only catalog inspection on `jsf-pm-dev` regarding `public.rls_auto_enable()` and DDL event trigger `ensure_rls`.
+  - **Runtime RPC Non-Usage Determination:** Proved definitively that `rls_auto_enable()` is not an application runtime RPC across all `src/` TypeScript/TSX code, OpenAPI contracts (`contracts/openapi/jsf-pm-api.openapi.yaml`), and generated types (`src/lib/database.types.ts`).
+  - **Source Reconciliation Defect Identification:** Discovered that neither `public.rls_auto_enable()` nor `ensure_rls` is defined in the repository migration chain (`supabase/migrations/`), causing clean zero-to-current replays to fail on bare `REVOKE` statements. Issued formal preflight verdict `needs source correction`.
+  - **Remediation & Verification Plan:** Formulated canonical idempotent DDL specification to define the function and event trigger in the forward migration source before revoking `public`, `anon`, and `authenticated` execution privileges, alongside complete post-application catalog and Security Advisor verification protocols.
+  - **Zero Migration & Data Mutation Guarantee:** Applied 0 migrations, performed 0 database mutations, modified 0 database types, and maintained strict read-only boundary.
+
 ## [2026-08-23 @ 07:50]
 
 **🚀 S06-07: Navigation, Localization, Accessibility, Focused Evidence, and Sprint Closeout**
