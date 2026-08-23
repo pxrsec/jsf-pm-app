@@ -27,11 +27,15 @@
       "links": {
         "home": "Home",
         "projects": "Projects",
-        "agenda": "My Agenda"
+        "agenda": "My Agenda",
+        "notifications": "Notifications",
+        "notificationOperations": "Notification Operations"
       },
       "notifications": {
         "badgeLabel": "Unread notifications",
-        "badgeOverflow": "99+"
+        "badgeOverflow": "99+",
+        "inboxLinkAria": "Notification inbox",
+        "inboxLinkAriaWithCount": "Notification inbox, {count} unread"
       }
     },
     "landing": {
@@ -1284,6 +1288,161 @@
           "invariantViolation": "Could not record review due to a system constraint.",
           "generic": "An error occurred while processing the review. Please try again."
         }
+      }
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "In-app notification history.",
+    "listLabel": "Notification list",
+    "unreadState": "Unread",
+    "readState": "Read",
+    "markRead": "Mark as read",
+    "markReadAria": "Mark {category} as read",
+    "markAllRead": "Mark all as read",
+    "markAllReadAria": "Mark all notifications as read",
+    "markAllUnavailable": "All notifications are up to date",
+    "readSuccess": "Notification marked as read",
+    "allReadSuccess": "All notifications marked as read",
+    "alreadyUpToDate": "All notifications are up to date",
+    "loadMore": "Load more",
+    "loadMoreAria": "Load more notifications",
+    "loading": "Loading notifications...",
+    "empty": {
+      "title": "Inbox is empty",
+      "description": "You have no in-app notifications."
+    },
+    "error": {
+      "title": "Error loading notifications",
+      "description": "Could not load notifications. Please try again.",
+      "retry": "Retry"
+    },
+    "errors": {
+      "validation": "Invalid request.",
+      "unauthenticated": "Invalid or expired session.",
+      "unavailable": "The service is currently unavailable."
+    },
+    "categories": {
+      "invitation": {
+        "title": "Invitation",
+        "description": "Notification related to user invitations."
+      },
+      "projectAssignment": {
+        "title": "Project Assignment",
+        "description": "You have been assigned to a project."
+      },
+      "taskAssignment": {
+        "title": "Task Assignment",
+        "description": "You have been assigned a new task."
+      },
+      "taskStatusChanged": {
+        "title": "Task Status",
+        "description": "A task status has been updated."
+      },
+      "clientTaskBlocking": {
+        "title": "Blocking Task",
+        "description": "A task requires urgent client attention."
+      },
+      "clientSubmission": {
+        "title": "Client Submission",
+        "description": "A client submission was received or reopened."
+      },
+      "deliverableSubmitted": {
+        "title": "Deliverable Submitted",
+        "description": "A new deliverable version was submitted for review."
+      },
+      "changesRequested": {
+        "title": "Changes Requested",
+        "description": "Changes were requested on a deliverable."
+      },
+      "reviewApproved": {
+        "title": "Review Approved",
+        "description": "A deliverable was approved in review."
+      },
+      "deliverableDelivered": {
+        "title": "Deliverable Delivered",
+        "description": "A deliverable was marked as delivered."
+      },
+      "deadlineReminder": {
+        "title": "Deadline Reminder",
+        "description": "An upcoming task or project deadline approaches."
+      },
+      "deadlineOverdue": {
+        "title": "Deadline Overdue",
+        "description": "A task deadline is overdue."
+      },
+      "reviewInactivityReminder": {
+        "title": "Review Reminder",
+        "description": "Pending reviews require attention."
+      },
+      "linkReportedBroken": {
+        "title": "Broken Link Reported",
+        "description": "A broken link was reported on a deliverable."
+      },
+      "system": {
+        "title": "System",
+        "description": "System announcement."
+      }
+    }
+  },
+  "notificationOperations": {
+    "title": "Notification Operations",
+    "description": "Internal operational history of suppressed external deliveries.",
+    "listLabel": "Suppressed notification operations list",
+    "empty": {
+      "title": "No suppressed operations",
+      "description": "No authorized suppressed external delivery records found."
+    },
+    "loadMore": "Load more",
+    "loadMoreAria": "Load more suppressed operations",
+    "loadingMore": "Loading additional operations...",
+    "loadMoreSuccess": "Additional operations loaded successfully.",
+    "retry": "Retry",
+    "errors": {
+      "validation": "Invalid request.",
+      "unauthorized": "You are not authorized to view notification operations.",
+      "unavailable": "The operations service is currently unavailable."
+    },
+    "status": {
+      "suppressed": "Suppressed"
+    },
+    "channels": {
+      "email": "Email",
+      "whatsapp": "WhatsApp"
+    },
+    "reasons": {
+      "providerDisabled": "External provider disabled"
+    },
+    "terminalExplanation": "Was not sent in this environment and will not auto-send later.",
+    "recipientCount": "{count, plural, =1 {1 recipient} other {# recipients}}",
+    "projectContext": "Project: {project}",
+    "noProjectContext": "No project context",
+    "firstCreatedAt": "First created:",
+    "lastSuppressedAt": "Last suppressed:",
+    "manualEvaluation": {
+      "trigger": "Evaluate alerts now",
+      "triggerAria": "Open dialog to evaluate notification alerts",
+      "dialogTitle": "Evaluate notification alerts",
+      "dialogDescription": "Runs reminder evaluation based on database-authoritative timing and status rules.",
+      "noSendExplanation": "This action evaluates current reminders and may create in-app notification records and terminal suppression records. It does not send emails or WhatsApp messages.",
+      "projectLabel": "Project to evaluate",
+      "projectAria": "Select project to evaluate alerts",
+      "cancel": "Cancel",
+      "confirm": "Evaluate now",
+      "pending": "Evaluating alerts...",
+      "successTitle": "Evaluation completed",
+      "zeroResult": "No new reminder records were created during this evaluation.",
+      "summary": {
+        "tasksEvaluated": "Tasks evaluated: {count}",
+        "reviewsEvaluated": "Reviews evaluated: {count}",
+        "eventsCreated": "Events created: {count}",
+        "inAppRecipientsCreated": "In-app recipients: {count}",
+        "externalSuppressionsCreated": "External suppressions: {count}"
+      },
+      "errors": {
+        "validation": "Invalid evaluation request.",
+        "unauthorized": "You are not authorized to run this alert evaluation.",
+        "unavailable": "The evaluation service is currently unavailable."
       }
     }
   }

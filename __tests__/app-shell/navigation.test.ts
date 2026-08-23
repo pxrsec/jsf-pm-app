@@ -14,15 +14,17 @@ vi.mock("@/i18n/routing", () => ({
     children,
     className,
     onClick,
+    ...props
   }: {
     href: string;
     children: React.ReactNode;
     className?: string;
     onClick?: () => void;
+    [key: string]: unknown;
   }) =>
     React.createElement(
       "a",
-      { href, className, onClick, "data-testid": "locale-link" },
+      { href, className, onClick, ...props, "data-testid": "locale-link" },
       children,
     ),
   useRouter: () => ({
@@ -150,8 +152,8 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
 
   const baseUser = { id: "u-1", email: "user@jsf.internal" };
 
-  describe("AppNav Server Component per role", () => {
-    it("renders admin navigation with /admin and live /admin/proyectos link", async () => {
+  describe("AppNav Server Component per role and capability", () => {
+    it("renders admin navigation with /admin, /admin/proyectos, /notificaciones, and /admin/notificaciones", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
@@ -163,12 +165,23 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       };
 
       const html = renderToStaticMarkup(
-        await AppNav({ session, unreadCount: 3 }),
+        await AppNav({
+          session,
+          unreadCount: 3,
+          canAccessNotificationOperations: true,
+        }),
       );
 
       expect(html).toContain('href="/admin"');
       expect(html).toContain('href="/admin/proyectos"');
-      expect(html).not.toContain('aria-disabled="true"');
+      expect(html).toContain('href="/notificaciones"');
+      expect(html).toContain(
+        'aria-label="Bandeja de notificaciones, 3 no leídas"',
+      );
+      expect(html).toContain('href="/admin/notificaciones"');
+      expect(html).toContain("Operaciones de Notificaciones");
+      expect(html).toContain('role="status" aria-live="polite"');
+      expect(html).toContain("Notificaciones no leídas: 3");
       expect(html).not.toContain('href="/pm"');
       expect(html).not.toContain('href="/operador"');
       expect(html).not.toContain('href="/cliente"');
@@ -177,30 +190,67 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(html).toContain('aria-label="Navegación principal"');
     });
 
-    it("renders pm navigation with /pm and live /pm/proyectos link", async () => {
+    it("renders pm lead navigation with /pm, /pm/proyectos, /notificaciones, and /pm/notificaciones", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
           id: "u-2",
-          full_name: "PM User",
+          full_name: "PM Lead User",
           role: "pm",
         }),
         role: "pm",
       };
 
       const html = renderToStaticMarkup(
-        await AppNav({ session, unreadCount: 0 }),
+        await AppNav({
+          session,
+          unreadCount: 0,
+          canAccessNotificationOperations: true,
+        }),
       );
 
       expect(html).toContain('href="/pm"');
       expect(html).toContain('href="/pm/proyectos"');
-      expect(html).not.toContain('aria-disabled="true"');
+      expect(html).toContain('href="/notificaciones"');
+      expect(html).toContain('aria-label="Bandeja de notificaciones"');
+      expect(html).toContain('href="/pm/notificaciones"');
+      expect(html).toContain("Operaciones de Notificaciones");
+      expect(html).toContain('role="status" aria-live="polite"');
+      expect(html).toContain("Notificaciones no leídas: 0");
       expect(html).not.toContain('href="/admin"');
-      expect(html).toContain("PM User");
+      expect(html).toContain("PM Lead User");
       expect(html).toContain("Project Manager");
     });
 
-    it("renders operator navigation with /operador and active /operador/agenda link", async () => {
+    it("renders pm watcher navigation with /pm, /pm/proyectos, /notificaciones, and NO operations link", async () => {
+      const session: SessionContext = {
+        user: baseUser as unknown as SessionContext["user"],
+        profile: createMockProfile({
+          id: "u-2w",
+          full_name: "PM Watcher User",
+          role: "pm",
+        }),
+        role: "pm",
+      };
+
+      const html = renderToStaticMarkup(
+        await AppNav({
+          session,
+          unreadCount: 0,
+          canAccessNotificationOperations: false,
+        }),
+      );
+
+      expect(html).toContain('href="/pm"');
+      expect(html).toContain('href="/pm/proyectos"');
+      expect(html).toContain('href="/notificaciones"');
+      expect(html).not.toContain('href="/pm/notificaciones"');
+      expect(html).not.toContain('href="/admin/notificaciones"');
+      expect(html).not.toContain("Operaciones de Notificaciones");
+      expect(html).toContain("PM Watcher User");
+    });
+
+    it("renders operator navigation with /operador, /operador/agenda, /notificaciones, and NO operations link", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
@@ -212,19 +262,27 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       };
 
       const html = renderToStaticMarkup(
-        await AppNav({ session, unreadCount: 7 }),
+        await AppNav({
+          session,
+          unreadCount: 7,
+          canAccessNotificationOperations: false,
+        }),
       );
 
       expect(html).toContain('href="/operador"');
       expect(html).toContain('href="/operador/agenda"');
-      expect(html).not.toContain('aria-disabled="true"');
-      expect(html).not.toContain('href="/admin"');
-      expect(html).not.toContain('href="/pm"');
+      expect(html).toContain('href="/notificaciones"');
+      expect(html).toContain(
+        'aria-label="Bandeja de notificaciones, 7 no leídas"',
+      );
+      expect(html).not.toContain('href="/operador/notificaciones"');
+      expect(html).not.toContain('href="/admin/notificaciones"');
+      expect(html).not.toContain('href="/pm/notificaciones"');
       expect(html).toContain("Operator User");
       expect(html).toContain("Operador");
     });
 
-    it("renders client navigation with /cliente and live /cliente/proyectos link", async () => {
+    it("renders client navigation with /cliente, /cliente/proyectos, /notificaciones, and NO operations link", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
@@ -236,42 +294,73 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       };
 
       const html = renderToStaticMarkup(
-        await AppNav({ session, unreadCount: 0 }),
+        await AppNav({
+          session,
+          unreadCount: 0,
+          canAccessNotificationOperations: false,
+        }),
       );
 
       expect(html).toContain('href="/cliente"');
       expect(html).toContain('href="/cliente/proyectos"');
-      expect(html).not.toContain('aria-disabled="true"');
-      expect(html).not.toContain('tabindex="-1"');
-      expect(html).not.toContain('href="/admin"');
+      expect(html).toContain('href="/notificaciones"');
+      expect(html).toContain('aria-label="Bandeja de notificaciones"');
+      expect(html).not.toContain('href="/cliente/notificaciones"');
+      expect(html).not.toContain('href="/admin/notificaciones"');
+      expect(html).not.toContain('href="/pm/notificaciones"');
       expect(html).toContain("Client User");
       expect(html).toContain("Cliente");
     });
+
+    it("produces NO operations link for operator even if capability boolean is accidentally true", async () => {
+      const session: SessionContext = {
+        user: baseUser as unknown as SessionContext["user"],
+        profile: createMockProfile({
+          id: "u-3",
+          full_name: "Operator User",
+          role: "operator",
+        }),
+        role: "operator",
+      };
+
+      const html = renderToStaticMarkup(
+        await AppNav({
+          session,
+          unreadCount: 0,
+          canAccessNotificationOperations: true,
+        }),
+      );
+
+      expect(html).not.toContain('href="/admin/notificaciones"');
+      expect(html).not.toContain('href="/pm/notificaciones"');
+      expect(html).not.toContain("Operaciones de Notificaciones");
+    });
   });
 
-  describe("NotificationBadge", () => {
-    it("renders visually hidden with aria-live when count is 0", () => {
+  describe("NotificationBadge Visual Presentation", () => {
+    it("renders nothing when count is 0", () => {
       const html = renderToStaticMarkup(
         React.createElement(NotificationBadge, { count: 0 }),
       );
-      expect(html).toContain("sr-only");
-      expect(html).toContain('aria-label="Notificaciones no leídas: 0"');
+      expect(html).toBe("");
     });
 
-    it("renders numeric count when count is 5", () => {
+    it("renders numeric count with aria-hidden when count is 5", () => {
       const html = renderToStaticMarkup(
         React.createElement(NotificationBadge, { count: 5 }),
       );
       expect(html).toContain("5");
-      expect(html).toContain('aria-label="Notificaciones no leídas: 5"');
+      expect(html).toContain('aria-hidden="true"');
+      expect(html).not.toContain('role="status"');
     });
 
-    it("renders 99+ when count is 100", () => {
+    it("renders 99+ with aria-hidden when count is 100", () => {
       const html = renderToStaticMarkup(
         React.createElement(NotificationBadge, { count: 100 }),
       );
       expect(html).toContain("99+");
-      expect(html).toContain('aria-label="Notificaciones no leídas: 100"');
+      expect(html).toContain('aria-hidden="true"');
+      expect(html).not.toContain('role="status"');
     });
   });
 
@@ -284,7 +373,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
     });
   });
 
-  describe("MobileNavToggle", () => {
+  describe("MobileNavToggle Drawer & Role Matrix", () => {
     it("renders closed toggle with accessible aria attributes", () => {
       const profile = createMockProfile({
         id: "u-1",
@@ -297,6 +386,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
           role: "admin",
           profile,
           unreadCount: 2,
+          canAccessNotificationOperations: true,
         }),
       );
 
@@ -304,7 +394,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(html).toContain('aria-controls="mobile-nav-drawer"');
     });
 
-    it("opens drawer and renders live project link for admin on toggle", () => {
+    it("opens drawer and renders live links for admin including operations link", () => {
       const profile = createMockProfile({
         id: "u-1",
         full_name: "Admin User",
@@ -316,6 +406,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
           role: "admin",
           profile,
           unreadCount: 2,
+          canAccessNotificationOperations: true,
         }),
       );
 
@@ -328,11 +419,73 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         screen.getByRole("button", { name: "Cerrar menú de navegación" }),
       ).toBeInTheDocument();
       const projectLink = screen.getByRole("link", { name: "Proyectos" });
-      expect(projectLink).toBeInTheDocument();
       expect(projectLink).toHaveAttribute("href", "/admin/proyectos");
+
+      const inboxLink = screen.getByRole("link", {
+        name: "Bandeja de notificaciones, 2 no leídas",
+      });
+      expect(inboxLink).toHaveAttribute("href", "/notificaciones");
+
+      const operationsLink = screen.getByRole("link", {
+        name: "Operaciones de Notificaciones",
+      });
+      expect(operationsLink).toHaveAttribute("href", "/admin/notificaciones");
     });
 
-    it("renders active agenda link in drawer for operator", () => {
+    it("opens drawer and renders operations link for PM Lead", () => {
+      const profile = createMockProfile({
+        id: "u-2",
+        full_name: "PM Lead",
+        role: "pm",
+      });
+
+      render(
+        React.createElement(MobileNavToggle, {
+          role: "pm",
+          profile,
+          unreadCount: 0,
+          canAccessNotificationOperations: true,
+        }),
+      );
+
+      const toggleButton = screen.getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+      fireEvent.click(toggleButton);
+
+      const operationsLink = screen.getByRole("link", {
+        name: "Operaciones de Notificaciones",
+      });
+      expect(operationsLink).toHaveAttribute("href", "/pm/notificaciones");
+    });
+
+    it("opens drawer and does NOT render operations link for PM Watcher", () => {
+      const profile = createMockProfile({
+        id: "u-2w",
+        full_name: "PM Watcher",
+        role: "pm",
+      });
+
+      render(
+        React.createElement(MobileNavToggle, {
+          role: "pm",
+          profile,
+          unreadCount: 0,
+          canAccessNotificationOperations: false,
+        }),
+      );
+
+      const toggleButton = screen.getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+      fireEvent.click(toggleButton);
+
+      expect(
+        screen.queryByRole("link", { name: "Operaciones de Notificaciones" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("renders active agenda link and inbox in drawer for operator, no operations", () => {
       const profile = createMockProfile({
         id: "u-3",
         full_name: "Operator User",
@@ -344,6 +497,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
           role: "operator",
           profile,
           unreadCount: 0,
+          canAccessNotificationOperations: false,
         }),
       );
 
@@ -355,10 +509,18 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       const agendaLink = screen.getByRole("link", { name: "Mi Agenda" });
       expect(agendaLink).toBeInTheDocument();
       expect(agendaLink).toHaveAttribute("href", "/operador/agenda");
-      expect(agendaLink).not.toHaveAttribute("aria-disabled");
+
+      const inboxLink = screen.getByRole("link", {
+        name: "Bandeja de notificaciones",
+      });
+      expect(inboxLink).toHaveAttribute("href", "/notificaciones");
+
+      expect(
+        screen.queryByRole("link", { name: "Operaciones de Notificaciones" }),
+      ).not.toBeInTheDocument();
     });
 
-    it("renders active project link in drawer for client", () => {
+    it("renders active project link and inbox in drawer for client, no operations", () => {
       const profile = createMockProfile({
         id: "u-4",
         full_name: "Client User",
@@ -370,6 +532,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
           role: "client",
           profile,
           unreadCount: 0,
+          canAccessNotificationOperations: false,
         }),
       );
 
@@ -381,10 +544,18 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       const projectLink = screen.getByRole("link", { name: "Proyectos" });
       expect(projectLink).toBeInTheDocument();
       expect(projectLink).toHaveAttribute("href", "/cliente/proyectos");
-      expect(projectLink).not.toHaveAttribute("aria-disabled");
+
+      const inboxLink = screen.getByRole("link", {
+        name: "Bandeja de notificaciones",
+      });
+      expect(inboxLink).toHaveAttribute("href", "/notificaciones");
+
+      expect(
+        screen.queryByRole("link", { name: "Operaciones de Notificaciones" }),
+      ).not.toBeInTheDocument();
     });
 
-    it("closes drawer when an internal navigation link is clicked", () => {
+    it("closes drawer when inbox navigation link is clicked", () => {
       const profile = createMockProfile({
         id: "u-4",
         full_name: "Client User",
@@ -396,6 +567,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
           role: "client",
           profile,
           unreadCount: 0,
+          canAccessNotificationOperations: false,
         }),
       );
 
@@ -404,14 +576,50 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       });
       fireEvent.click(toggleButton);
 
-      const projectLink = screen.getByRole("link", { name: "Proyectos" });
-      fireEvent.click(projectLink);
+      const inboxLink = screen.getByRole("link", {
+        name: "Bandeja de notificaciones",
+      });
+      fireEvent.click(inboxLink);
 
       expect(
         screen.getByRole("button", { name: "Abrir menú de navegación" }),
       ).toBeInTheDocument();
       expect(
-        screen.queryByRole("link", { name: "Proyectos" }),
+        screen.queryByRole("link", { name: "Bandeja de notificaciones" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("closes drawer when operations navigation link is clicked", () => {
+      const profile = createMockProfile({
+        id: "u-1",
+        full_name: "Admin User",
+        role: "admin",
+      });
+
+      render(
+        React.createElement(MobileNavToggle, {
+          role: "admin",
+          profile,
+          unreadCount: 0,
+          canAccessNotificationOperations: true,
+        }),
+      );
+
+      const toggleButton = screen.getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+      fireEvent.click(toggleButton);
+
+      const operationsLink = screen.getByRole("link", {
+        name: "Operaciones de Notificaciones",
+      });
+      fireEvent.click(operationsLink);
+
+      expect(
+        screen.getByRole("button", { name: "Abrir menú de navegación" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("link", { name: "Operaciones de Notificaciones" }),
       ).not.toBeInTheDocument();
     });
 
@@ -427,6 +635,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
           role: "operator",
           profile,
           unreadCount: 0,
+          canAccessNotificationOperations: false,
         }),
       );
 

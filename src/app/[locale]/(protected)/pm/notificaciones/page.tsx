@@ -1,0 +1,61 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
+import { requireSession } from "@/lib/auth/session";
+import { ROLE_DEFAULT_PATHS } from "@/lib/auth/routes";
+import { createClient } from "@/lib/supabase/server";
+import { hasActivePmLeadMembership } from "@/lib/notifications/operations-authorization";
+import { listSuppressedNotificationOperationsPage } from "@/lib/notifications/operations-queries";
+import {
+  isLocalNotificationDemoPosture,
+  isNotificationDemoAlertEvaluationEnabled,
+  listActivePmLeadEvaluationProjects,
+} from "@/lib/notifications/alert-evaluator";
+import type { ManualAlertEvaluationControl } from "@/lib/notifications/alert-evaluator-schemas";
+import { NotificationOperationsScreen } from "./_components/notification-operations-screen";
+
+export default async function PmNotificationOperationsPage() {
+  const cookieStore = await cookies();
+  const locale = await getLocale();
+  const localePrefix = locale === "en-US" ? "/en" : "";
+
+  const session = await requireSession(cookieStore);
+
+  if (session.role !== "pm") {
+    redirect(
+      `${localePrefix}${ROLE_DEFAULT_PATHS[session.role] ?? "/iniciar-sesion"}`,
+    );
+  }
+
+  const supabase = createClient(cookieStore);
+  const isLead = await hasActivePmLeadMembership(supabase, session.user.id);
+  if (!isLead) {
+    redirect(`${localePrefix}/pm`);
+  }
+
+  let manualAlertEvaluation: ManualAlertEvaluationControl | undefined;
+  if (
+    isNotificationDemoAlertEvaluationEnabled() &&
+    isLocalNotificationDemoPosture()
+  ) {
+    const projects = await listActivePmLeadEvaluationProjects(
+      supabase,
+      session.user.id,
+    );
+    if (projects.length > 0) {
+      manualAlertEvaluation = {
+        kind: "pm-project",
+        projects,
+      };
+    }
+  }
+
+  const initialPage = await listSuppressedNotificationOperationsPage(supabase);
+
+  return (
+    <NotificationOperationsScreen
+      initialPage={initialPage}
+      manualAlertEvaluation={manualAlertEvaluation}
+    />
+  );
+}

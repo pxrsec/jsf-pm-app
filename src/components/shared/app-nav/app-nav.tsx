@@ -11,9 +11,14 @@ import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 interface AppNavProps {
   session: SessionContext;
   unreadCount: number;
+  canAccessNotificationOperations: boolean;
 }
 
-export async function AppNav({ session, unreadCount }: AppNavProps) {
+export async function AppNav({
+  session,
+  unreadCount,
+  canAccessNotificationOperations,
+}: AppNavProps) {
   const t = await getTranslations("shell.nav");
   const brandT = await getTranslations("shell.brand");
   const { role, profile } = session;
@@ -35,6 +40,18 @@ export async function AppNav({ session, unreadCount }: AppNavProps) {
         : role === "operator"
           ? { href: "/operador/agenda", label: t("links.agenda") }
           : { href: "/cliente/proyectos", label: t("links.projects") };
+
+  const inboxAriaLabel =
+    unreadCount > 0
+      ? t("notifications.inboxLinkAriaWithCount", { count: unreadCount })
+      : t("notifications.inboxLinkAria");
+
+  const operationsHref =
+    canAccessNotificationOperations && (role === "admin" || role === "pm")
+      ? role === "admin"
+        ? "/admin/notificaciones"
+        : "/pm/notificaciones"
+      : null;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur">
@@ -71,16 +88,34 @@ export async function AppNav({ session, unreadCount }: AppNavProps) {
             >
               {secondaryNavigationItem.label}
             </Link>
+
+            <Link
+              href="/notificaciones"
+              aria-label={inboxAriaLabel}
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span>{t("links.notifications")}</span>
+              <NotificationBadge count={unreadCount} />
+            </Link>
+
+            <span className="sr-only" role="status" aria-live="polite">
+              {`${t("notifications.badgeLabel")}: ${unreadCount}`}
+            </span>
+
+            {operationsHref && (
+              <Link
+                href={operationsHref}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("links.notificationOperations")}
+              </Link>
+            )}
           </nav>
         </div>
 
         <div className="hidden md:flex md:items-center md:gap-4">
           <LanguageSwitcher />
           <ThemeToggle />
-
-          <div className="flex items-center gap-2">
-            <NotificationBadge count={unreadCount} />
-          </div>
 
           <div className="text-right">
             <p className="text-sm font-semibold text-foreground">
@@ -98,6 +133,7 @@ export async function AppNav({ session, unreadCount }: AppNavProps) {
           role={role}
           profile={profile}
           unreadCount={unreadCount}
+          canAccessNotificationOperations={canAccessNotificationOperations}
         />
       </div>
     </header>

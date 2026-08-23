@@ -626,50 +626,61 @@ paths:
       operationId: verifyWhatsappWebhook
       tags: [Webhooks]
       summary: Meta verification challenge
-      x-provider-status: deferred
-      description: >-
-        Documented interface only. WhatsApp/Meta is not activated in
-        Sprint 02 or any sprint prior to Epic 8; this operation exists so
-        the contract and future webhook handler stay in lockstep once
-        activation occurs.
+      x-provider-status: inactive
+      description: Documented interface only. Reserved but inactive in Sprint 06; uniformly returns the documented generic 404 API error without request parsing, signature verification, configuration inspection, provider client construction, database commands, receipt, scheduling, or dispatch.
       security: []
       parameters:
         - { name: hub.mode, in: query, required: true, schema: { type: string } }
         - { name: hub.verify_token, in: query, required: true, schema: { type: string } }
         - { name: hub.challenge, in: query, required: true, schema: { type: string } }
-      responses: { '200': { description: Plain-text Meta challenge }, '403': { description: Invalid verification token } }
+      responses:
+        '404':
+          description: Generic inactive endpoint rejection. No request body, signature, provider configuration, provider client, scheduler, database command, receipt, or dispatch is processed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
     post:
       operationId: receiveWhatsappWebhook
       tags: [Webhooks]
       summary: Verify and record monotonic WhatsApp receipt updates
-      x-provider-status: deferred
-      description: >-
-        Documented interface only; not activated in Sprint 02. See
-        `verifyWhatsappWebhook`.
+      x-provider-status: inactive
+      description: Documented interface only. Reserved but inactive in Sprint 06; uniformly returns the documented generic 404 API error without request parsing, signature verification, configuration inspection, provider client construction, database commands, receipt, scheduling, or dispatch.
       security: [{ MetaWebhookSignature: [] }]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MetaWebhookPayload' } } } }
-      responses: { '200': { description: Accepted; duplicate or stale receipt is a safe no-op }, '401': { $ref: '#/components/responses/InvalidWebhookSignature' } }
+      responses:
+        '404':
+          description: Generic inactive endpoint rejection. No request body, signature, provider configuration, provider client, scheduler, database command, receipt, or dispatch is processed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
   /api/workflows/notification-processor:
     post:
       operationId: runNotificationProcessor
       tags: [Workflows]
       summary: Upstash-signed durable outbound notification processor
-      x-provider-status: deferred
-      description: >-
-        Documented interface only; not activated in Sprint 02. Real
-        dispatch begins only once Upstash QStash schedules are configured
-        per ADR-008/E8.
+      x-provider-status: inactive
+      description: Documented interface only. Reserved but inactive in Sprint 06; uniformly returns the documented generic 404 API error without request parsing, signature verification, configuration inspection, provider client construction, database commands, receipt, scheduling, or dispatch.
       security: [{ UpstashSignature: [] }]
-      responses: { '200': { description: Workflow accepted/continued }, '401': { $ref: '#/components/responses/Unauthenticated' } }
+      responses:
+        '404':
+          description: Generic inactive endpoint rejection. No request body, signature, provider configuration, provider client, scheduler, database command, receipt, or dispatch is processed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
   /api/workflows/alert-scheduler:
     post:
       operationId: runAlertScheduler
       tags: [Workflows]
       summary: Upstash-signed durable alert scheduler
-      x-provider-status: deferred
-      description: Documented interface only; not activated in Sprint 02.
+      x-provider-status: inactive
+      description: Documented interface only. Reserved but inactive in Sprint 06; uniformly returns the documented generic 404 API error without request parsing, signature verification, configuration inspection, provider client construction, database commands, receipt, scheduling, or dispatch.
       security: [{ UpstashSignature: [] }]
-      responses: { '200': { description: Workflow accepted/continued }, '401': { $ref: '#/components/responses/Unauthenticated' } }
+      responses:
+        '404':
+          description: Generic inactive endpoint rejection. No request body, signature, provider configuration, provider client, scheduler, database command, receipt, or dispatch is processed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
 components:
   securitySchemes:
     SupabaseSessionCookie:
@@ -735,7 +746,7 @@ components:
     DeliverableStatus: { type: string, enum: [pending, awaiting_internal_review, awaiting_client_review, approved, changes_requested, delivered, submitted] }
     SubmissionProvider: { type: string, enum: [google_drive, dropbox, onedrive, wetransfer, frame_io, other_https] }
     ReviewDecision: { type: string, enum: [approved, changes_requested] }
-    NotificationDeliveryStatus: { type: string, enum: [pending, processing, sent, delivered, read, failed, cancelled] }
+    NotificationDeliveryStatus: { type: string, enum: [pending, processing, sent, delivered, read, failed, cancelled, suppressed] }
     ApiError:
       type: object
       additionalProperties: false

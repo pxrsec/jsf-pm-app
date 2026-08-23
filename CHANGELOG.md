@@ -1,5 +1,165 @@
 # JSF PM App Development Changelog
 
+## [2026-08-23 @ 07:50]
+
+**🚀 S06-07: Navigation, Localization, Accessibility, Focused Evidence, and Sprint Closeout**
+
+- **🚀 Features & Navigation:**
+  - **Server-Derived Operations Capability (`src/app/[locale]/(protected)/layout.tsx`):** Derived fail-closed `canAccessNotificationOperations: boolean` on the server (`true` for Admin, `hasActivePmLeadMembership` for PM, `false` for Operator and Client) and passed it to navigation presentation.
+  - **Desktop Navigation (`src/components/shared/app-nav/app-nav.tsx`):** Integrated accessible in-app inbox link for all authenticated roles (`/notificaciones`) with unread badge pill (`aria-hidden="true"`) and polite live region (`role="status" aria-live="polite"`). Rendered operations navigation link (`/pm/notificaciones` or `/admin/notificaciones`) exclusively for Admin and PM Lead users.
+  - **Mobile Navigation Drawer (`src/components/shared/app-nav/_components/mobile-nav-toggle.tsx`):** Added responsive drawer links for inbox and conditional operations with minimum 44px touch targets, automatic drawer closure on link selection, and Escape key focus restoration.
+  - **Visual Badge Component (`src/components/shared/app-nav/_components/notification-badge.tsx`):** Preserved visual count presentation with `99+` overflow formatting while isolating accessibility semantics to the owning link and sibling live region.
+
+- **🛠 Architecture, Localization & OpenAPI:**
+  - **Message Catalogs Parity (`messages/es-MX.json`, `messages/en-US.json`):** Added `shell.nav.links.notificationOperations`, `shell.nav.notifications.inboxLinkAria`, and `shell.nav.notifications.inboxLinkAriaWithCount` with 100% Spanish/English parity and matching `{count}` interpolation.
+  - **OpenAPI Contract Reconciliation (`contracts/openapi/jsf-pm-api.openapi.yaml`):** Reconciled `NotificationDeliveryStatus` enum by adding `suppressed`; updated descriptions for the 4 inactive operations (`verifyWhatsappWebhook`, `receiveWhatsappWebhook`, `runNotificationProcessor`, `runAlertScheduler`) to state the truthful S06 inactive 404 contract.
+  - **Zero Migration & Data Boundary Guarantee:** Explicitly verified that S06-07 created/applied zero migrations, modified zero database types, and invoked zero Supabase MCP/DDL tools.
+
+- **🧪 Testing, Verification & Closeout:**
+  - **Navigation & Capability Matrix Tests (`__tests__/app-shell/navigation.test.ts`, `__tests__/integration/role-journey.test.ts`):** 19 tests verifying complete 5-role capability matrix across desktop and mobile views, accessible link naming, status live regions, drawer closure, and negative access safeguards.
+  - **OpenAPI & Catalog Tests (`src/lib/notifications/__tests__/provider-endpoint-guards.test.ts`, `__tests__/i18n/message-catalogs.test.ts`, `__tests__/i18n/key-naming.test.ts`):** Verified enum consistency, absence of stale descriptions, catalog parity, and key naming rules.
+  - **Integrated Repository Gate (`npm run verify`):** Passed in the supported local-development verification posture: Prettier formatting check, ESLint (0 errors, 0 warnings), TypeScript check (`tsc --noEmit`), Next.js App Router build, Vitest suite (70 passed / 4 skipped, 651 tests), test coverage thresholds, and production audit (0 vulnerabilities). The closeout records the inherited-`NODE_ENV=production` Vitest reproducibility concern and its bounded follow-up.
+  - **Factual Closeout Record (`dev-docs/specs/s06/s06-sprint-06-closeout-verification.md`):** Authored complete sprint closeout record detailing DoD traceability, route/command maps, manual localhost journeys J-01 through J-10, deferred scope, and the distinction between development capability and production activation. External provider activation, dispatch, receipt handling, scheduling, deployment, and production verification remain deferred.
+  - **Future Promotion Baseline (`dev-docs/documentation/production-promotion-and-external-provider-activation-runbook.md`):** Added a non-authorizing, updateable checklist for later activation ADRs, staging/production database promotion, environment separation, provider prerequisites, secure public endpoint/schedule work, release gates, and rollback.
+
+## [2026-08-23 @ 06:21]
+
+**🚀 S06-06: Inactive Provider-Facing Routes and Activation-Safe Boundaries Implementation**
+
+- **🚀 Features & Routes:**
+  - **Inactive Route Shells (`src/app/api/webhooks/whatsapp/route.ts`, `src/app/api/workflows/notification-processor/route.ts`, `src/app/api/workflows/alert-scheduler/route.ts`):** Created the 4 contract-reserved provider-facing route shells (`GET`/`POST` for WhatsApp webhook, `POST` for notification processor, `POST` for alert scheduler) as thin server-only delegators to `rejectInactiveProviderEndpoint()` with type-only `import { type NextRequest, NextResponse } from "next/server"`.
+  - **Uniform Inactive Rejection Guard (`src/lib/notifications/provider-endpoint-guards.ts`):** Implemented server-only rejection returning fixed 404 HTTP status, standard `ApiError` envelope (`code: "not_found"`, `message: "Not found"`), and an opaque UUID `request_id` generated via `globalThis.crypto.randomUUID()`. Guaranteed zero disclosure of provider state, route identity, configuration, or signature validity, with no custom headers (`Retry-After`, `x-provider-status`, CORS).
+  - **Module-Private Future Seam (`src/lib/notifications/provider-endpoint-guards.ts`):** Embedded module-private `type VerifiedProviderRequest<TPayload>` and documented the normative 7-step future activation order ensuring signature verification precedes side-effect commands without exposing active execution branches or callable verifiers.
+
+- **🛠 Architecture & Security:**
+  - **OpenAPI Contract Reconciliation (`contracts/openapi/jsf-pm-api.openapi.yaml`):** Reconciled the 4 reserved operations (`verifyWhatsappWebhook`, `receiveWhatsappWebhook`, `runNotificationProcessor`, `runAlertScheduler`) by replacing legacy `x-provider-status: deferred` and `200` operational response descriptions with `x-provider-status: inactive` and the exact uniform 404 `ApiError` response definition.
+  - **ESLint Server-Only Import Boundary (`eslint.config.mjs`):** Extended restricted import configuration to explicitly block `@/lib/notifications/provider-endpoint-guards` and `src/lib/notifications/provider-endpoint-guards` from client components, shared modules, and middleware.
+
+- **🧪 Testing & Verification:**
+  - **Provider Endpoint Guard Unit & Static Suite (`src/lib/notifications/__tests__/provider-endpoint-guards.test.ts`):** 5 tests verifying exact 404 status and error envelope, UUID v4 format and distinctness, static enforcement of server-only and zero prohibited imports/crypto APIs, ESLint restriction presence, and operation-scoped OpenAPI contract structure.
+  - **Route Handlers Test Suites (`src/app/api/webhooks/whatsapp/route.test.ts`, `src/app/api/workflows/notification-processor/route.test.ts`, `src/app/api/workflows/alert-scheduler/route.test.ts`):** 12 tests across the three route suites verifying spy delegation to the guard under arbitrary opaque query/header/body inputs, unmocked real 404/not_found envelope responses, strict exported method constraints (`GET`/`POST` for WhatsApp, `POST` for workflows), and static source checks proving zero request dereferencing or side-effect APIs.
+  - **Full Repository Verification:** 100% pass across Vitest (17 S06-06 tests), TypeScript typecheck (`tsc --noEmit`), ESLint (0 errors, 0 warnings), Prettier formatting check, and Next.js App Router production build (`next build`).
+
+## [2026-08-22 @ 18:22]
+
+**🚀 S06-05: Shared Alert Evaluation Development-Only Manual Control Implementation**
+
+- **🚀 Features & User Interface:**
+  - **Manual Alert Evaluation Dialog (`src/app/[locale]/(protected)/pm/notificaciones/_components/manual-alert-evaluation-dialog.tsx`):** Delivered controlled `<AlertDialog>` with proper Base UI composition, min 44px touch targets, PM project selector with `<Label>` and server-authorized options, truthful no-send explanation note, live pending state, polite `aria-live` result announcement with non-leaking aggregate counts, `role="alert"` error feedback, and `router.refresh()` on success.
+  - **Shared Presentation Screen Integration (`src/app/[locale]/(protected)/pm/notificaciones/_components/notification-operations-screen.tsx`):** Rendered optional `manualAlertEvaluation` control above the operations queue for authorized internal callers in local demo posture.
+  - **Route Server Entry Points (`src/app/[locale]/(protected)/pm/notificaciones/page.tsx`, `src/app/[locale]/(protected)/admin/notificaciones/page.tsx`):** Gated manual evaluation control behind `isNotificationDemoAlertEvaluationEnabled()` and `isLocalNotificationDemoPosture()`. PM route validates active PM Lead status and queries active lead projects via `listActivePmLeadEvaluationProjects`; Admin route provides global evaluation control (`kind: "admin-global"`).
+
+- **🛠 Architecture & Security:**
+  - **Evaluator Schemas & DTOs (`src/lib/notifications/alert-evaluator-schemas.ts`):** Defined strict Zod schemas (`EvaluateAlertsAsAdminSchema`, `EvaluateAlertsAsPmLeadSchema`, `AlertEvaluationRawSummarySchema`) with `.strict()` and safe non-negative integer validation (`z.number().finite().int().nonnegative().safe()`).
+  - **Server-Only Alert Evaluator (`src/lib/notifications/alert-evaluator.ts`):** Implemented `isLocalNotificationDemoPosture()` ensuring `NODE_ENV === "development"` and loopback hostname matching (`localhost`, `127.0.0.1`, `[::1]`); `evaluateNotificationAlerts(supabase, projectId)` invoking public RPC `evaluate_notification_alerts` with exact `p_project_id: null` for Admin and UUID for PM; `listActivePmLeadEvaluationProjects()` querying active, non-terminal projects; and `assertPmLeadForProject()` enforcing exact project authorization.
+  - **Server Actions (`src/lib/notifications/alert-evaluator-actions.ts`):** Implemented `evaluateNotificationAlertsAction` with session validation (`requireSession`), demo flag and local posture enforcement, strict input parsing, PM lead capacity verification, non-leaking error mapping (`VALIDATION_FAILED`, `UNAUTHORIZED`, `UNAVAILABLE`), and comprehensive Next.js 16 cache revalidation across 6 concrete paths and protected layout.
+  - **Message Catalogs Parity (`messages/es-MX.json`, `messages/en-US.json`):** Added complete 20-leaf-key `notificationOperations.manualEvaluation` subtree across Spanish and English catalogs with exact semantic parity.
+
+- **🧪 Testing & Verification:**
+  - **Evaluator Module Unit Tests (`src/lib/notifications/__tests__/alert-evaluator.test.ts`):** 17 tests verifying loopback posture parsing, IPv6 formatting, RPC call signatures with exact null/UUID, strict summary schema validation (rejection of decimals, NaN, Infinity, negative numbers, overflow, unexpected keys), query deduplication, terminal status filtering, and fail-closed error handling.
+  - **Server Actions Unit Tests (`src/lib/notifications/__tests__/alert-evaluator-actions.test.ts`):** 11 tests verifying session errors, demo posture gates, Admin global execution with exact null, PM Lead capacity checks, unauthorized role rejection, error mapping, path revalidations, and side-effect absence.
+  - **Dialog Component Unit & Accessibility Tests (`src/app/[locale]/(protected)/pm/notificaciones/_components/manual-alert-evaluation-dialog.test.tsx`):** 8 tests verifying trigger rendering, accessible labels, truthful warning, Admin submission, PM project selection without UUID leakage, zero-result feedback, controlled pending safety, and `role="alert"` error states.
+  - **Routes Integration Tests (`src/app/[locale]/(protected)/pm/notificaciones/notification-operations-routes.test.tsx`):** 11 tests verifying prop passing and gating for Admin and PM routes, redirect preservation, and failure isolation.
+  - **Message Catalog Parity Suite (`__tests__/i18n/message-catalogs.test.ts`):** 10 tests verifying 43 leaf keys across both locales.
+  - **Full Repository Verification:** 100% pass across Vitest (57 S06-05 tests + 142 full notification suite tests), TypeScript typecheck (`tsc --noEmit`), ESLint (0 errors, 0 warnings), Prettier formatting check.
+
+## [2026-08-22 @ 17:25]
+
+**🚀 S06-04: Authorized Internal Notification Queue and Suppressed-Delivery Diagnostics Implementation**
+
+- **🚀 Features & User Interface:**
+  - **Authorized Role-Scoped Routes (`src/app/[locale]/(protected)/pm/notificaciones/page.tsx`, `src/app/[locale]/(protected)/admin/notificaciones/page.tsx`):** Delivered the internal operations queue for `admin` (global) and `pm` with active `pm_lead` project capacity. Enforced session checks, server capacity checks (`hasActivePmLeadMembership`), locale preservation via `getLocale()`, and fail-closed redirects without exposing queue existence.
+  - **Shared Presentation Screen (`src/app/[locale]/(protected)/pm/notificaciones/_components/notification-operations-screen.tsx`):** Created a shared server-only presentation screen helper rendering the localized heading, safe description, and role-neutral operations queue.
+  - **Operations Queue Component (`src/app/[locale]/(protected)/pm/notificaciones/_components/notification-operations-queue.tsx`):** Client interaction component rendering ordered list (`<ol aria-label="...">`) with composite React keys (`${operation.eventId}:${operation.channel}`), authoritative prop reconciliation on `initialPage` changes, visible polite status announcements (`role="status"`), visible alert region (`role="alert"`), retry handling, and focus transfer to status region on pagination exhaustion.
+  - **Suppressed Delivery Item (`src/app/[locale]/(protected)/pm/notificaciones/_components/suppressed-delivery-status.tsx`):** Rendered terminal status badge (`Suprimida`), channel badge (`Correo electrónico` / `WhatsApp`), safe event category derived from 21-trigger mapping, controlled reason (`Proveedor externo desactivado`), dedicated terminal explanation sentence, aggregate recipient count, safe project context, and localized ISO timestamps without disclosing sensitive recipient contacts, event IDs, or raw payloads.
+  - **Empty State Component (`src/app/[locale]/(protected)/pm/notificaciones/_components/notification-operations-empty-state.tsx`):** Localized empty state for authorized callers with no suppression records.
+
+- **🛠 Architecture & Security:**
+  - **Pure Contracts & Zod Schemas (`src/lib/notifications/operations-contracts.ts`, `src/lib/notifications/operations-schemas.ts`):** Defined isolated DTOs (`SuppressedNotificationOperation`, `SuppressedNotificationOperationsCursor`, `SuppressedNotificationOperationsPage`), constant `NOTIFICATION_OPERATIONS_PAGE_SIZE = 25`, and strict composite cursor validation schema (`LoadSuppressedNotificationOperationsPageSchema`).
+  - **Server-Only Authorization (`src/lib/notifications/operations-authorization.ts`):** Implemented `hasActivePmLeadMembership` with a multi-membership-safe `.limit(1)` existence query and `assertNotificationOperationsAccess` with distinct `NotificationOperationsAuthorizationError`.
+  - **Server-Only Keyset Queries (`src/lib/notifications/operations-queries.ts`):** Created `listSuppressedNotificationOperationsPage` calling `list_suppressed_notification_operations` with complete raw row validation, 26-row fetch / 25-row retention, 25th-row keyset derivation, and non-leaking generic error handling.
+  - **Server Action (`src/lib/notifications/operations-actions.ts`):** Implemented read-only continuation action `loadSuppressedNotificationOperationsPageAction` with step-by-step exception mapping (`VALIDATION_FAILED`, `UNAUTHORIZED`, `UNAVAILABLE`) and zero `revalidatePath` side effects.
+  - **Message Catalogs Parity (`messages/es-MX.json`, `messages/en-US.json`):** Added complete 23-leaf-key `notificationOperations` namespace across Spanish and English with exact semantic key parity.
+
+- **🧪 Testing & Verification:**
+  - **Server Queries Test Suite (`src/lib/notifications/__tests__/operations-queries.test.ts`):** 8 tests verifying default RPC parameters, composite cursor handling, malformed cursor rejection, sensitive field exclusion, raw row validation fail-closed behavior, keyset pagination boundary, and RPC error logging.
+  - **Server Actions Test Suite (`src/lib/notifications/__tests__/operations-actions.test.ts`):** 9 tests verifying validation failure, AuthError mapping, PM Watcher denial without query invocation, PM Lead authorization, fail-closed membership query errors, Admin authorization, and query error handling.
+  - **Queue Component Test Suite (`notification-operations-queue.test.tsx`):** 7 tests verifying terminal state rendering, dual-channel composite key rendering for shared event IDs, privacy non-leakage, empty states, load-more continuation, error/retry states, semantic landmarks, and ARIA attributes.
+  - **Route Server Entry Test Suite (`notification-operations-routes.test.tsx`):** 6 tests verifying PM Lead access, PM Watcher localized redirects, English locale redirects, unauthorized role redirects, and Admin access.
+  - **Route Guard Regression Suite (`__tests__/app-shell/route-guard.test.ts`):** Verified Admin and PM access to `/admin/notificaciones` and `/pm/notificaciones`, and cross-role redirects (`/pm/notificaciones` -> `/admin`, `/admin/notificaciones` -> `/pm`).
+  - **Message Catalog Verification (`__tests__/i18n/message-catalogs.test.ts`):** Verified all 23 leaf keys in `notificationOperations` and identical tree structure.
+  - **Full Automated Verification:** 100% pass across Vitest (64/64 tests passing), TypeScript typecheck (`tsc --noEmit`), ESLint (0 errors, 0 warnings), Prettier formatting check, and Next.js App Router production build (`next build`).
+
+## [2026-08-22 @ 16:46]
+
+**🛠 S06-E08: Notification Operations Queue Keyset Pagination Migration & Types Regeneration**
+
+- **🛠 Architecture & Database:**
+  - **Applied Migration (`supabase/migrations/20260822170000_s06_e08_notification_operations_queue_keyset_pagination.sql`):** Applied the keyset pagination migration for the safe aggregated suppressed-delivery queue to `jsf-pm-dev` via Supabase MCP `apply_migration`. Dropped the superseded timestamp-only overload `public.list_suppressed_notification_operations(integer, timestamptz)` and introduced complete composite cursor keyset pagination via `public.list_suppressed_notification_operations(p_limit, p_before_suppressed_at, p_before_event_id, p_before_channel)` with deterministic ordering (`last_suppressed_at DESC, event_id DESC, channel DESC`), strict input completeness validation, valid channel checks, and authenticated execute grant.
+  - **Database Types Synchronization (`src/lib/database.types.ts`):** Regenerated TypeScript types from `jsf-pm-dev` via Supabase MCP `generate_typescript_types` and updated `src/lib/database.types.ts` with the new keyset cursor parameter signature (`p_before_channel`, `p_before_event_id`, `p_before_suppressed_at`, `p_limit`).
+
+## [2026-08-22 @ 16:26]
+
+**🚀 S06-03: Notification Recipient Inbox, History, and Read State Implementation**
+
+- **🚀 Features & User Interface:**
+  - **Shared Authenticated Inbox Route (`src/app/[locale]/(protected)/notificaciones/page.tsx`):** Implemented the recipient notifications inbox page accessible to all authenticated roles (`admin`, `pm`, `operator`, `client`) with server-side session enforcement (`requireSession`), initial keyset page loading (`listRecipientInboxPage`), and localized metadata.
+  - **Accessible Loading Skeleton (`src/app/[locale]/(protected)/notificaciones/loading.tsx`):** Created localized loading skeleton with `role="status"`, `aria-busy="true"`, and `aria-live="polite"`, displaying placeholder header, action bar, and card items with zero hard-coded text.
+  - **Route Error Boundary (`src/app/[locale]/(protected)/notificaciones/error.tsx`):** Implemented client error boundary capturing exceptions to Sentry (`{ boundary: "localized-route" }`), rendering generic localized copy without leaking internal stacks or digests, with native retry (`reset()`) and minimum touch targets (`min-h-[44px] min-w-[44px]`).
+  - **Interactive Notification Inbox (`src/app/[locale]/(protected)/notificaciones/_components/notification-inbox.tsx`):** Client interaction component managing single and mark-all read mutations with shared pending states, focus management on removal, keyboard accessibility, screen-reader status announcements, ordered list semantic structure (`<ol aria-label="...">`), and keyset pagination ("Load More").
+  - **Inbox List Item & Empty State (`src/app/[locale]/(protected)/notificaciones/_components/*`):** Created `NotificationInboxItem` featuring category badge, explicit textual read/unread indicator, formatted timestamp, category-generic copy, and unread action button; and `NotificationEmptyState` with `BellOff` iconography and localized empty messaging.
+  - **Trigger-to-Category Resolver (`src/app/[locale]/(protected)/notificaciones/_components/types.ts`):** Mapped all 21 `notification_trigger` enum variants deterministically to 15 user-facing category keys without exposing raw trigger identifiers or payload fields.
+
+- **🛠 Architecture & Security:**
+  - **Shared Route Exception Boundary (`src/lib/auth/routes.ts`, `src/app/[locale]/(protected)/layout.tsx`):** Added `/notificaciones` to protected path prefixes and exported `SHARED_AUTHENTICATED_PATH_PREFIXES` to permit all authenticated roles through the shared inbox while maintaining strict role-home enforcement for role-specific routes.
+  - **Pure Browser-Safe Contracts (`src/lib/notifications/inbox-contracts.ts`):** Defined isolated DTOs (`RecipientInboxNotification`, `RecipientInboxCursor`, `RecipientInboxPage`) with type-only database imports, safe for client components and free of server-only runtime dependencies.
+  - **Server-Only RPC Query Layer (`src/lib/notifications/queries.ts`):** Created typed `listRecipientInboxPage` caller with strict cursor validation, 26-row sentinel fetch, 25-row result clamping, `readAt: row.read_at ?? null` normalization, 25th-row keyset continuation derivation, and bounded diagnostic logging via `@/lib/logger`.
+  - **Server Actions Layer (`src/lib/notifications/actions.ts`):** Implemented `"use server"` mutations `markNotificationReadAction`, `markAllNotificationsReadAction`, and `loadRecipientInboxPageAction` with strict Zod validation, session verification, narrow error mapping (`VALIDATION_FAILED`, `UNAUTHENTICATED`, `UNAVAILABLE`), and multi-path cache invalidation (`/notificaciones`, `/en/notificaciones`, `/[locale]/(protected)` layout).
+  - **Message Catalogs Parity (`messages/es-MX.json`, `messages/en-US.json`):** Added complete 54-leaf-key `notifications` namespace across Spanish and English (including 30 category titles/descriptions) plus `shell.nav.links.notifications`.
+
+- **🧪 Testing & Verification:**
+  - **Route Guard Test Suite (`__tests__/app-shell/route-guard.test.ts`):** Verified all 4 active roles (`admin`, `pm`, `operator`, `client`) access `/notificaciones` and `/en/notificaciones` without redirects, cross-role protections remain enforced, and unlisted shared routes (`/notificaciones-interna`) redirect to role defaults.
+  - **Server Queries Test Suite (`src/lib/notifications/__tests__/queries.test.ts`):** 8 tests validating default calls, valid/malformed cursors, sensitive field exclusion, null normalization, keyset pagination boundary (25 vs 26 rows), and RPC failure error isolation.
+  - **Server Actions Test Suite (`src/lib/notifications/__tests__/actions.test.ts`):** 15 tests validating UUID/timestamp validation, unauthenticated mapping, error propagation, RPC execution, cache revalidation, and failure error codes.
+  - **Component & Error Test Suites (`notification-inbox.test.tsx`, `error.test.tsx`):** 13 tests validating trigger-to-category mapping, raw payload non-exposure, read/unread indicators, button disablement, action execution, empty states, pagination retry, ARIA landmarks, touch targets, and Sentry boundary integration.
+  - **Message Catalog Parity (`__tests__/i18n/message-catalogs.test.ts`):** 9 tests validating identical JSON structure, required namespaces, 54 notification keys, and complete category coverage.
+  - **Full Automated Verification:** 100% pass across Vitest (65/65 tests passing), TypeScript compiler checks (`tsc --noEmit`), ESLint (0 errors, 0 warnings), Prettier formatting check, and Next.js App Router production build (`next build`).
+
+## [2026-08-22 @ 15:42]
+
+**🛠 S06-E08 / S06-03: Notification Inbox Keyset Pagination Migration & Types Regeneration**
+
+- **🛠 Architecture & Database:**
+  - **Applied Migration (`supabase/migrations/20260822160000_s06_e08_notification_inbox_keyset_pagination.sql`):** Applied the S06-03 recipient inbox history migration to `jsf-pm-dev` via Supabase MCP `apply_migration`. Dropped the superseded two-argument function `public.list_my_in_app_notifications(integer, timestamptz)` and introduced complete keyset cursor pagination via `public.list_my_in_app_notifications(p_limit, p_before_created_at, p_before_recipient_id)` with deterministic ordering (`created_at DESC, id DESC`), strict input pair validation, and authenticated-only execute grants.
+  - **Database Types Synchronization (`src/lib/database.types.ts`):** Regenerated TypeScript types from `jsf-pm-dev` via Supabase MCP `generate_typescript_types` and updated `src/lib/database.types.ts` with the new keyset cursor argument signature (`p_before_created_at`, `p_before_recipient_id`, `p_limit`).
+
+## [2026-08-22 @ 15:02]
+
+**🚀 S06-02: Server-Only Configuration and Provider-Ready Disabled Adapters**
+
+- **🛠 Architecture & Security:**
+  - **Server-Only Configuration Boundary (`src/lib/notifications/config.ts`):** Implemented server-only environment parser reading strictly the 9 designated notification variables (`EXTERNAL_DELIVERY_MODE`, `NOTIFICATION_DEMO_ALERT_EVALUATION_ENABLED`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `WHATSAPP_API_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_BUSINESS_ACCOUNT_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_API_VERSION`). Implemented conservative placeholder detection engine (`replace_me`, `replace-me`, `example`, `placeholder`, `changeme`, `your_`, `your-`, `<`, `>`, etc.) and fail-closed evaluation. Discards raw strings function-locally without exporting secrets or raw env values.
+  - **Pure Server-Only Types & Discriminated Capabilities (`src/lib/notifications/types.ts`):** Defined closed channel set (`email`, `whatsapp`), delivery modes (`disabled`, `active`), safe internal diagnostic/configuration codes (`ExternalDeliveryConfigurationCode`, `ProviderConfigurationCode`), capability snapshot (`ExternalDeliveryCapability` with `disabled`, `invalid`, and `active-ready` variants), and adapter contracts (`DisabledAdapterRequest`, `DisabledAdapterResult`, `NotificationChannelAdapter`).
+  - **Disabled Channel Adapters & Seam Factory (`src/lib/notifications/channel-adapters.ts`):** Implemented `DisabledEmailAdapter` and `DisabledWhatsAppAdapter` returning deterministic `not_dispatched` / `provider_disabled` results with zero side effects, no provider client creation, no network calls, and no provider SDK imports (`resend`, `@upstash/qstash`, `@upstash/workflow`). Selection factory returns disabled adapters across all modes (including `active-ready`).
+  - **Safe Diagnostic & Localization Key Mapping (`src/lib/notifications/errors.ts`):** Created bounded diagnostic helper mapping internal codes to semantic localization keys (`provider_disabled` -> `providerDisabled`, `external_delivery_unavailable` -> `externalDeliveryUnavailable`) with exhaustive type safety via `as const satisfies Record<SafeNotificationDiagnosticCode, NotificationLocalizationKey>`.
+  - **ESLint Flat-Config Import Boundary (`eslint.config.mjs`):** Enforced structural restricted imports for all 8 notification module paths (`@/lib/notifications/*` and `src/lib/notifications/*`) preventing imports into client components, shared modules, hooks, and middleware/proxies, with a targeted flat-config override for `src/lib/notifications/**` to permit intra-folder server-only imports while preserving Prisma and admin Supabase client restrictions.
+  - **Safe Environment Template (`.env.example`):** Added explicit default `EXTERNAL_DELIVERY_MODE=disabled` and `NOTIFICATION_DEMO_ALERT_EVALUATION_ENABLED=false` with safe placeholder comments stating external delivery and webhooks remain deferred in S06.
+
+- **🧪 Testing & Verification:**
+  - **Configuration Parser Test Suite (`src/lib/notifications/__tests__/config.test.ts`):** 14 tests verifying missing/blank/placeholder/invalid/explicit-disabled modes, active multi-provider prerequisites, placeholder detection across all patterns, malformed email/WhatsApp validation, active-ready state generation, zero raw export leakage, static `server-only` import checks, demo flag parsing, and no unrelated env reads.
+  - **Channel Adapters & Import Boundary Test Suite (`src/lib/notifications/__tests__/channel-adapters.test.ts`):** 11 tests verifying channel matching, dispatch result invariants (no message IDs/receipts/error causes), zero fetch/network calls under both disabled and active-ready configs, static `server-only` import checks, zero provider SDK imports, closed channel unions, non-throwing behavior, structural ESLint rule verification, and errors diagnostic mappings.
+  - **Deterministic Test Harness:** Enforced `server-only` mocking, `vi.resetModules()` per dynamic import, `process.env` snapshot/restoration, synthetic data only, and global `fetch` stub lifecycle restoration across all suites.
+  - **Automated Verification:** Verified 100% pass across Vitest (25/25 tests passing), TypeScript compiler checks (`tsc --noEmit`), ESLint (0 errors, 0 warnings), Prettier formatting (`prettier --check`), and Next.js App Router production build (`next build`).
+
+## [2026-08-22 @ 14:17]
+
+**🛠 S06-E08: Notification Capability Suppression & Alert Evaluation Migrations**
+
+- **🛠 Architecture & Database:**
+  - **Applied Notification Capability Suppression Migration (`supabase/migrations/20260822140000_s06_e08_notification_capability_suppression.sql`):** Applied the S06-E08 notification capability migration to `jsf-pm-dev` via Supabase MCP. Added `suppressed` terminal value to `public.notification_delivery_status`, added `suppression_reason` and `suppressed_at` columns to `public.notification_recipients` with suppression state constraints and indexing, implemented transactional disabled-provider fan-out (`private.fan_out_disabled_external_notifications`), preserved monotonic receipt and read boundaries, narrowed recipient select policy to in-app rows, and created safe read RPCs `public.list_my_in_app_notifications` and `public.list_suppressed_notification_operations`.
+  - **Applied Authoritative Alert Evaluation Migration (`supabase/migrations/20260822150000_s06_e08_alert_evaluation.sql`):** Applied the S06-E08 alert evaluation migration to `jsf-pm-dev` via Supabase MCP. Implemented database-authoritative alert evaluator (`private.evaluate_notification_alerts` / `public.evaluate_notification_alerts`) for disjoint task deadline reminders (24h/12h/6h/overdue) and production deliverable review-inactivity reminders (capped at 5 intervals before transition to stalled), with role-based execution boundaries for Admin, active PM Lead, and `service_role`.
+  - **Database Types Synchronization (`src/lib/database.types.ts`):** Regenerated TypeScript types from `jsf-pm-dev` via Supabase MCP `generate_typescript_types` and updated `src/lib/database.types.ts` with newly added enum value, recipient suppression columns, and RPC function definitions (`evaluate_notification_alerts`, `list_my_in_app_notifications`, `list_suppressed_notification_operations`).
+
 ## [2026-08-22 @ 12:15]
 
 **🚀 S05-07: Navigation, Recovery, Localization, Accessibility, and Closeout Verification**

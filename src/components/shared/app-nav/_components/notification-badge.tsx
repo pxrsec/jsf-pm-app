@@ -12,24 +12,14 @@ export function NotificationBadge({
   const t = useTranslations("shell.nav.notifications");
 
   if (count <= 0) {
-    return (
-      <span
-        className="sr-only"
-        aria-live="polite"
-        aria-label={`${t("badgeLabel")}: 0`}
-      >
-        0
-      </span>
-    );
+    return null;
   }
 
   const displayCount = count > 99 ? t("badgeOverflow") : count.toString();
-  const accessibleLabel = `${t("badgeLabel")}: ${count}`;
 
   return (
     <span
-      role="status"
-      aria-label={accessibleLabel}
+      aria-hidden="true"
       className={
         className ??
         "inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-destructive-foreground bg-destructive rounded-full shadow-sm"

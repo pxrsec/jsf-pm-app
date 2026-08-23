@@ -2,9 +2,13 @@ import "server-only";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireSession, AuthError } from "@/lib/auth/session";
-import { ROLE_DEFAULT_PATHS } from "@/lib/auth/routes";
+import {
+  ROLE_DEFAULT_PATHS,
+  SHARED_AUTHENTICATED_PATH_PREFIXES,
+} from "@/lib/auth/routes";
 import { createClient } from "@/lib/supabase/server";
 import { getUnreadNotificationCount } from "@/lib/shell-data/shell-queries";
+import { hasActivePmLeadMembership } from "@/lib/notifications/operations-authorization";
 import { AppNav } from "@/components/shared/app-nav/app-nav";
 
 export default async function ProtectedLayout({
@@ -45,7 +49,12 @@ export default async function ProtectedLayout({
   const prefix = isEnglish ? "/en" : "";
   const pathname = rawPathname.replace(/^\/en/, "");
 
-  if (pathname && !pathname.startsWith(rolePath)) {
+  const isSharedAuthenticated = SHARED_AUTHENTICATED_PATH_PREFIXES.some(
+    (sharedPrefix) =>
+      pathname === sharedPrefix || pathname.startsWith(`${sharedPrefix}/`),
+  );
+
+  if (pathname && !isSharedAuthenticated && !pathname.startsWith(rolePath)) {
     redirect(`${prefix}${rolePath}`);
   }
 
@@ -55,9 +64,27 @@ export default async function ProtectedLayout({
     session.user.id,
   );
 
+  let canAccessNotificationOperations = false;
+  if (session.role === "admin") {
+    canAccessNotificationOperations = true;
+  } else if (session.role === "pm") {
+    try {
+      canAccessNotificationOperations = await hasActivePmLeadMembership(
+        supabase,
+        session.user.id,
+      );
+    } catch {
+      canAccessNotificationOperations = false;
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <AppNav session={session} unreadCount={unreadCount} />
+      <AppNav
+        session={session}
+        unreadCount={unreadCount}
+        canAccessNotificationOperations={canAccessNotificationOperations}
+      />
       <main id="main-content" tabIndex={-1} className="flex-1">
         {children}
       </main>
