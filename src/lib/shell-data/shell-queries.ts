@@ -170,7 +170,16 @@ export async function getOperatorShellData(
       return { agendaItems: [] };
     }
 
-    return { agendaItems: data };
+    const seenTaskIds = new Set<string>();
+    const uniqueItems: OperatorShellData["agendaItems"] = [];
+    for (const item of data) {
+      if (item.task_id && !seenTaskIds.has(item.task_id)) {
+        seenTaskIds.add(item.task_id);
+        uniqueItems.push(item);
+      }
+    }
+
+    return { agendaItems: uniqueItems };
   } catch (err) {
     logger.debug("Failed to get operator shell data", { err });
     return { agendaItems: [] };

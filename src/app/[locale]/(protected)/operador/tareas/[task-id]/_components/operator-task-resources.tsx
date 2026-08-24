@@ -6,7 +6,7 @@ interface OperatorTaskResourcesProps {
   translations: {
     resourcesTitle: string;
     noResources: string;
-    externalResourceAria: (name: string) => string;
+    externalResourceAria: ((name: string) => string) | string;
   };
 }
 
@@ -14,6 +14,12 @@ export function OperatorTaskResources({
   resources,
   translations,
 }: OperatorTaskResourcesProps) {
+  const getAriaLabel = (name: string) => {
+    if (typeof translations.externalResourceAria === "function") {
+      return translations.externalResourceAria(name);
+    }
+    return translations.externalResourceAria.replace("{name}", name);
+  };
   return (
     <section
       data-testid="operator-task-resources"
@@ -48,7 +54,7 @@ export function OperatorTaskResources({
                 href={resource.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={translations.externalResourceAria(resource.name)}
+                aria-label={getAriaLabel(resource.name)}
                 className="group inline-flex items-center gap-2 text-xs font-medium text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
               >
                 <span className="underline-offset-4 group-hover:underline break-all">

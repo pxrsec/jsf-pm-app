@@ -72,7 +72,10 @@
       "inProgress": "En progreso",
       "paused": "Pausado",
       "completed": "Completado",
-      "cancelled": "Cancelado"
+      "cancelled": "Cancelado",
+      "pending": "Pendiente",
+      "inReview": "En revisión",
+      "blocked": "Bloqueado"
     },
     "priority": {
       "low": "Baja",
@@ -594,6 +597,17 @@
         "activeCycleBadge": "Ciclo activo"
       }
     },
+    "roster": {
+      "capacities": {
+        "pmLead": "PM Lead",
+        "pm_lead": "PM Lead",
+        "pmLeadPrimary": "PM Lead (Principal)",
+        "pmWatcher": "PM Observador",
+        "pm_watcher": "PM Observador",
+        "operator": "Operador",
+        "client": "Cliente"
+      }
+    },
     "members": {
       "title": "Equipo del Proyecto",
       "subtitle": "Gestiona los miembros asignados y sus capacidades operativas",
@@ -621,8 +635,10 @@
       },
       "capacities": {
         "pmLead": "PM Lead",
+        "pm_lead": "PM Lead",
         "pmLeadPrimary": "PM Lead (Principal)",
         "pmWatcher": "PM Observador",
+        "pm_watcher": "PM Observador",
         "operator": "Operador",
         "client": "Cliente"
       },
@@ -1906,7 +1922,20 @@
         "entity_restored": "Registro restaurado",
         "invite_accepted": "Invitación aceptada",
         "invite_created": "Invitación creada",
-        "invite_revoked": "Invitación revocada"
+        "invite_revoked": "Invitación revocada",
+        "client_review_approved": "Revisión de cliente aprobada",
+        "client_review_rejected": "Revisión de cliente rechazada",
+        "internal_review_approved": "Revisión interna aprobada",
+        "internal_review_rejected": "Revisión interna rechazada",
+        "deliverable_version_submitted": "Versión de entregable enviada",
+        "task_created": "Tarea creada",
+        "task_status_changed": "Estado de tarea actualizado",
+        "deliverable_reopened": "Entregable reabierto",
+        "task_reopened": "Tarea reabierta",
+        "client_submission_reopened": "Entrega de cliente reabierta",
+        "calendar_event_created": "Evento de calendario creado",
+        "calendar_event_updated": "Evento de calendario actualizado",
+        "calendar_event_deleted": "Evento de calendario eliminado"
       },
       "entityTypes": {
         "profile": "Perfil",

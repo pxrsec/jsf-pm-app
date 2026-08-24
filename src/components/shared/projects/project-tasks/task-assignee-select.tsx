@@ -37,7 +37,7 @@ export function TaskAssigneeSelect({
 }: TaskAssigneeSelectProps) {
   const [open, setOpen] = useState(false);
   const t = useTranslations("projects.tasks.create");
-  const tProjects = useTranslations("projects.roster.capacities");
+  const tProjects = useTranslations("projects.members.capacities");
 
   // Filter only active members with profile
   const activeMembers = members.filter(

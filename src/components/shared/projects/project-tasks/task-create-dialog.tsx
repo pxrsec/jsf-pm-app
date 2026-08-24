@@ -36,6 +36,16 @@ import { CreateTaskSchema, type CreateTaskInput } from "@/lib/projects/schemas";
 import { createTaskAction } from "@/lib/projects/task-actions";
 import type { ProjectDetail, TaskPriority } from "@/lib/projects/queries";
 
+function formatDateForInput(dateStr?: string | null): string {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 16);
+  } catch {
+    return "";
+  }
+}
+
 interface TaskCreateDialogProps {
   project: ProjectDetail;
   isOpen: boolean;
@@ -249,11 +259,24 @@ export function TaskCreateDialog({
             {/* Deadline */}
             <div className="space-y-1.5">
               <Label htmlFor="create-task-deadline">{t("deadlineLabel")}</Label>
-              <Input
-                id="create-task-deadline"
-                type="datetime-local"
-                disabled={isSubmitting}
-                {...register("deadline_at")}
+              <Controller
+                control={control}
+                name="deadline_at"
+                render={({ field }) => (
+                  <Input
+                    id="create-task-deadline"
+                    type="datetime-local"
+                    disabled={isSubmitting}
+                    value={field.value ? formatDateForInput(field.value) : ""}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value
+                          ? new Date(e.target.value).toISOString()
+                          : "",
+                      )
+                    }
+                  />
+                )}
               />
               {errors.deadline_at && (
                 <p className="text-xs text-destructive">

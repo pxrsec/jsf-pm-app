@@ -68,28 +68,25 @@ export function AuditHistorySection({
   }, [currentQuery, isPending, nextCursor, t]);
 
   const getActionLabel = (action: string): string => {
-    try {
+    if (t.has(`actions.${action}`)) {
       return t(`actions.${action}`);
-    } catch {
-      return t("actions.generic");
     }
+    return t("actions.generic");
   };
 
   const getEntityTypeLabel = (entityType: string): string => {
-    try {
+    if (t.has(`entityTypes.${entityType}`)) {
       return t(`entityTypes.${entityType}`);
-    } catch {
-      return entityType;
     }
+    return entityType;
   };
 
   const getRoleLabel = (role: string | null): string => {
     if (!role) return "—";
-    try {
+    if (t.has(`roles.${role}`)) {
       return t(`roles.${role}`);
-    } catch {
-      return role;
     }
+    return role;
   };
 
   return (

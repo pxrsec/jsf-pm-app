@@ -78,7 +78,9 @@ export function TaskEditDialog({
       description: task?.description ?? "",
       priority: task?.priority ?? "medium",
       assignee_id: task?.assignee_id ?? "",
-      deadline_at: formatDateForInput(task?.deadline_at),
+      deadline_at: task?.deadline_at
+        ? new Date(task.deadline_at).toISOString()
+        : undefined,
     },
   });
 
@@ -89,7 +91,9 @@ export function TaskEditDialog({
         description: task.description,
         priority: task.priority,
         assignee_id: task.assignee_id,
-        deadline_at: formatDateForInput(task.deadline_at),
+        deadline_at: task.deadline_at
+          ? new Date(task.deadline_at).toISOString()
+          : undefined,
       });
     }
   }, [task, reset]);
@@ -221,11 +225,24 @@ export function TaskEditDialog({
             {/* Deadline */}
             <div className="space-y-1.5">
               <Label htmlFor="edit-task-deadline">{t("deadlineLabel")}</Label>
-              <Input
-                id="edit-task-deadline"
-                type="datetime-local"
-                disabled={isSubmitting}
-                {...register("deadline_at")}
+              <Controller
+                control={control}
+                name="deadline_at"
+                render={({ field }) => (
+                  <Input
+                    id="edit-task-deadline"
+                    type="datetime-local"
+                    disabled={isSubmitting}
+                    value={field.value ? formatDateForInput(field.value) : ""}
+                    onChange={(e) => {
+                      field.onChange(
+                        e.target.value
+                          ? new Date(e.target.value).toISOString()
+                          : undefined,
+                      );
+                    }}
+                  />
+                )}
               />
               {errors.deadline_at && (
                 <p className="text-xs text-destructive">

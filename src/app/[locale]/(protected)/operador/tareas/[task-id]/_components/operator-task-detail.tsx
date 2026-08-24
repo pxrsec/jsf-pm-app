@@ -279,8 +279,9 @@ export async function OperatorTaskDetailView({
         translations={{
           resourcesTitle: tTask("resourcesTitle"),
           noResources: tTask("noResources"),
-          externalResourceAria: (name: string) =>
-            tTask("externalResourceAria", { name }),
+          externalResourceAria: tTask("externalResourceAria", {
+            name: "{name}",
+          }),
         }}
       />
 
@@ -330,12 +331,15 @@ export async function OperatorTaskDetailView({
                     statusLabel: deliverableStatusLabel,
                     specificationsTitle: tTask("specificationsTitle"),
                     noSpecifications: tTask("noSpecifications"),
-                    submissionDeadline: (date: string) =>
-                      tTask("submissionDeadline", { date }),
-                    internalReviewDeadline: (date: string) =>
-                      tTask("internalReviewDeadline", { date }),
-                    clientDeliveryDeadline: (date: string) =>
-                      tTask("clientDeliveryDeadline", { date }),
+                    submissionDeadline: tTask("submissionDeadline", {
+                      date: "{date}",
+                    }),
+                    internalReviewDeadline: tTask("internalReviewDeadline", {
+                      date: "{date}",
+                    }),
+                    clientDeliveryDeadline: tTask("clientDeliveryDeadline", {
+                      date: "{date}",
+                    }),
                     awaitingInternalReviewNotice: tTask(
                       "awaitingInternalReviewNotice",
                     ),
@@ -350,8 +354,9 @@ export async function OperatorTaskDetailView({
                       dialogTitleRevision: tSubmission("dialogTitleRevision"),
                       dialogDescription: tSubmission("dialogDescription"),
                       truthfulnessNotice: tSubmission("truthfulnessNotice"),
-                      revisionNotice: (nextVersion: string) =>
-                        tSubmission("revisionNotice", { nextVersion }),
+                      revisionNotice: tSubmission("revisionNotice", {
+                        nextVersion: "{nextVersion}",
+                      }),
                       urlLabel: tSubmission("urlLabel"),
                       urlPlaceholder: tSubmission("urlPlaceholder"),
                       urlHelp: tSubmission("urlHelp"),
@@ -359,13 +364,15 @@ export async function OperatorTaskDetailView({
                       noteLabel: tSubmission("noteLabel"),
                       notePlaceholder: tSubmission("notePlaceholder"),
                       noteHelp: tSubmission("noteHelp"),
-                      charCount: (count: string) =>
-                        tSubmission("charCount", { count }),
+                      charCount: tSubmission("charCount", {
+                        count: "{count}",
+                      }),
                       cancelAction: tSubmission("cancelAction"),
                       submitAction: tSubmission("submitAction"),
                       submitting: tSubmission("submitting"),
-                      successToast: (version: string) =>
-                        tSubmission("successToast", { version }),
+                      successToast: tSubmission("successToast", {
+                        version: "{version}",
+                      }),
                       submitCta: tTask("submitCta"),
                       resubmitCta: tTask("resubmitCta"),
                       errors: {

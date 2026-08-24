@@ -1,5 +1,24 @@
 # JSF PM App Development Changelog
 
+## [2026-08-24 @ 15:44]
+
+**🐛 Hotfixes: Multi-Role Localhost Bug Fixes (i18n Catalogs, RSC Function Closures, Duplicate Keys, and Task Datetime Format)**
+
+- **Audit Action & Capacity Catalog Keys (`messages/es-MX.json`, `messages/en-US.json`, `audit-history-section.tsx`, `task-kanban-card.tsx`, `task-assignee-select.tsx`):**
+  - Added missing audit action translations (`client_review_approved`, `client_review_rejected`, `internal_review_approved`, `internal_review_rejected`, `deliverable_version_submitted`, `task_created`, `task_status_changed`, `deliverable_reopened`, `task_reopened`, `client_submission_reopened`, `calendar_event_created`, `calendar_event_updated`, `calendar_event_deleted`) and shell task statuses (`pending`, `inReview`, `blocked`).
+  - Added snake_case capacity aliases (`pm_lead`, `pm_watcher`) under `projects.members.capacities` and updated Kanban card and assignee select components to use the standard namespace.
+  - Hardened audit history label formatters with `t.has(...)` checks to prevent unhandled missing message crashes.
+- **Client Direct Requests Translation Key Prefixes (`src/app/[locale]/(protected)/cliente/proyectos/_components/client-project-detail.tsx`):**
+  - Stripped redundant `priority.` and `taskStatus.` prefixes from `priorityCfg.labelKey` and `statusCfg.labelKey` when querying `projects.clientRequests` namespace to avoid `priority.priority.medium` / `status.taskStatus.inProgress` lookups.
+- **Operator Shell Duplicate Key Fix (`src/lib/shell-data/shell-queries.ts`, `src/app/[locale]/(protected)/operador/_components/operator-shell.tsx`):**
+  - Deduplicated `operator_agenda_view` query results by `task_id` in `getOperatorShellData` and indexed keys in `operator-shell.tsx` to prevent React key collision warnings when tasks contain multiple deliverables.
+- **RSC to Client Component Boundary Serializability (`operator-task-detail.tsx`, `operator-deliverable-card.tsx`, `operator-submission-dialog.tsx`, `operator-task-resources.tsx`):**
+  - Eliminated function closures passed across the Server Component -> Client Component boundary by passing serializable string templates (`{date}`, `{nextVersion}`, `{count}`, `{version}`, `{name}`) with automatic template resolution and test function fallback support.
+- **Task Creation & Editing ISO Datetime Format Handling (`task-create-dialog.tsx`, `task-edit-dialog.tsx`):**
+  - Updated `datetime-local` input `onChange` handlers to store standard offset-bearing ISO strings (`new Date(val).toISOString()`) in form state via `setValue(..., { shouldValidate: true })`, eliminating "Valid ISO datetime required" schema validation errors on task creation/edit.
+- **Verification:**
+  - Full Test Suite (`npm test`): PASSED (80 suites passed, 730 tests passed, 0 failures).
+
 ## [2026-08-24 @ 13:25]
 
 **🐛 Hotfixes: Clean Up Unused Notification Import**

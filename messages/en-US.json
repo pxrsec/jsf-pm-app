@@ -72,7 +72,10 @@
       "inProgress": "In progress",
       "paused": "Paused",
       "completed": "Completed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "pending": "Pending",
+      "inReview": "In Review",
+      "blocked": "Blocked"
     },
     "priority": {
       "low": "Low",
@@ -594,6 +597,17 @@
         "activeCycleBadge": "Active cycle"
       }
     },
+    "roster": {
+      "capacities": {
+        "pmLead": "PM Lead",
+        "pm_lead": "PM Lead",
+        "pmLeadPrimary": "PM Lead (Primary)",
+        "pmWatcher": "PM Watcher",
+        "pm_watcher": "PM Watcher",
+        "operator": "Operator",
+        "client": "Client"
+      }
+    },
     "members": {
       "title": "Project Team",
       "subtitle": "Manage assigned members and operational capacities",
@@ -621,8 +635,10 @@
       },
       "capacities": {
         "pmLead": "PM Lead",
+        "pm_lead": "PM Lead",
         "pmLeadPrimary": "PM Lead (Primary)",
         "pmWatcher": "PM Watcher",
+        "pm_watcher": "PM Watcher",
         "operator": "Operator",
         "client": "Client"
       },
@@ -1906,7 +1922,20 @@
         "entity_restored": "Record restored",
         "invite_accepted": "Invitation accepted",
         "invite_created": "Invitation created",
-        "invite_revoked": "Invitation revoked"
+        "invite_revoked": "Invitation revoked",
+        "client_review_approved": "Client review approved",
+        "client_review_rejected": "Client review rejected",
+        "internal_review_approved": "Internal review approved",
+        "internal_review_rejected": "Internal review rejected",
+        "deliverable_version_submitted": "Deliverable version submitted",
+        "task_created": "Task created",
+        "task_status_changed": "Task status changed",
+        "deliverable_reopened": "Deliverable reopened",
+        "task_reopened": "Task reopened",
+        "client_submission_reopened": "Client submission reopened",
+        "calendar_event_created": "Calendar event created",
+        "calendar_event_updated": "Calendar event updated",
+        "calendar_event_deleted": "Calendar event deleted"
       },
       "entityTypes": {
         "profile": "Profile",

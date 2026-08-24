@@ -25,7 +25,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-interface OperatorSubmissionDialogProps {
+export interface OperatorSubmissionDialogProps {
   deliverableId: string;
   deliverableTitle: string;
   currentVersionNumber: number | null;
@@ -35,7 +35,7 @@ interface OperatorSubmissionDialogProps {
     dialogTitleRevision: string;
     dialogDescription: string;
     truthfulnessNotice: string;
-    revisionNotice: (nextVersion: string) => string;
+    revisionNotice: ((nextVersion: string) => string) | string;
     urlLabel: string;
     urlPlaceholder: string;
     urlHelp: string;
@@ -43,11 +43,11 @@ interface OperatorSubmissionDialogProps {
     noteLabel: string;
     notePlaceholder: string;
     noteHelp: string;
-    charCount: (count: string) => string;
+    charCount: ((count: string) => string) | string;
     cancelAction: string;
     submitAction: string;
     submitting: string;
-    successToast: (version: string) => string;
+    successToast: ((version: string) => string) | string;
     submitCta: string;
     resubmitCta: string;
     errors: {
@@ -82,6 +82,40 @@ export function OperatorSubmissionDialog({
   const nextVersionNum = (currentVersionNumber ?? 0) + 1;
   const isUrlValid = isValidGoogleDriveUrl(url);
   const showUrlError = urlTouched && url.length > 0 && !isUrlValid;
+
+  const {
+    dialogTitle,
+    dialogTitleRevision,
+    dialogDescription,
+    truthfulnessNotice,
+    urlLabel,
+    urlPlaceholder,
+    urlHelp,
+    urlError,
+    noteLabel,
+    notePlaceholder,
+    noteHelp,
+    cancelAction,
+    submitAction,
+    submitting,
+    submitCta,
+    resubmitCta,
+  } = translations;
+
+  const getRevisionNotice = (nextVersion: string) =>
+    typeof translations.revisionNotice === "function"
+      ? translations.revisionNotice(nextVersion)
+      : translations.revisionNotice.replace("{nextVersion}", nextVersion);
+
+  const getCharCount = (count: string) =>
+    typeof translations.charCount === "function"
+      ? translations.charCount(count)
+      : translations.charCount.replace("{count}", count);
+
+  const getSuccessToast = (version: string) =>
+    typeof translations.successToast === "function"
+      ? translations.successToast(version)
+      : translations.successToast.replace("{version}", version);
 
   function resetForm() {
     setUrl("");
@@ -149,7 +183,7 @@ export function OperatorSubmissionDialog({
           return;
         }
 
-        const successText = translations.successToast(
+        const successText = getSuccessToast(
           result.data.version_number.toString(),
         );
         setSuccessMessage(successText);
@@ -157,7 +191,7 @@ export function OperatorSubmissionDialog({
         setOpen(false);
         router.refresh();
       } catch {
-        setServerError(translations.errors.generic);
+        setServerError(getErrorMessage("generic"));
       }
     });
   }
@@ -187,9 +221,7 @@ export function OperatorSubmissionDialog({
         ) : (
           <Upload className="size-4 shrink-0" aria-hidden="true" />
         )}
-        <span>
-          {isRevision ? translations.resubmitCta : translations.submitCta}
-        </span>
+        <span>{isRevision ? resubmitCta : submitCta}</span>
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -199,12 +231,10 @@ export function OperatorSubmissionDialog({
         >
           <DialogHeader>
             <DialogTitle className="text-base sm:text-lg font-bold tracking-tight">
-              {isRevision
-                ? translations.dialogTitleRevision
-                : translations.dialogTitle}
+              {isRevision ? dialogTitleRevision : dialogTitle}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              {translations.dialogDescription} ({deliverableTitle})
+              {dialogDescription} ({deliverableTitle})
             </DialogDescription>
           </DialogHeader>
 
@@ -213,15 +243,13 @@ export function OperatorSubmissionDialog({
             {isRevision && (
               <div className="flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 dark:border-blue-900/60 dark:bg-blue-950/40 p-3 text-xs text-blue-800 dark:text-blue-200">
                 <Info className="size-4 shrink-0 text-blue-600 dark:text-blue-400 mt-0.5" />
-                <span>
-                  {translations.revisionNotice(nextVersionNum.toString())}
-                </span>
+                <span>{getRevisionNotice(nextVersionNum.toString())}</span>
               </div>
             )}
 
             <div className="flex items-start gap-2 rounded-md border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50 p-2.5 text-xs text-muted-foreground">
               <Info className="size-3.5 shrink-0 mt-0.5" />
-              <span>{translations.truthfulnessNotice}</span>
+              <span>{truthfulnessNotice}</span>
             </div>
           </div>
 
@@ -244,8 +272,7 @@ export function OperatorSubmissionDialog({
                 htmlFor={`submission-url-${deliverableId}`}
                 className="text-xs font-semibold"
               >
-                {translations.urlLabel}{" "}
-                <span className="text-destructive">*</span>
+                {urlLabel} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id={`submission-url-${deliverableId}`}
@@ -255,7 +282,7 @@ export function OperatorSubmissionDialog({
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onBlur={() => setUrlTouched(true)}
-                placeholder={translations.urlPlaceholder}
+                placeholder={urlPlaceholder}
                 aria-invalid={showUrlError}
                 aria-describedby={
                   showUrlError
@@ -272,14 +299,14 @@ export function OperatorSubmissionDialog({
                   className="text-xs font-medium text-destructive flex items-center gap-1 mt-1"
                 >
                   <AlertCircle className="size-3.5 shrink-0" />
-                  <span>{translations.urlError}</span>
+                  <span>{urlError}</span>
                 </p>
               ) : (
                 <p
                   id={`url-help-${deliverableId}`}
                   className="text-[11px] text-muted-foreground"
                 >
-                  {translations.urlHelp}
+                  {urlHelp}
                 </p>
               )}
             </div>
@@ -291,10 +318,10 @@ export function OperatorSubmissionDialog({
                   htmlFor={`submission-note-${deliverableId}`}
                   className="text-xs font-semibold"
                 >
-                  {translations.noteLabel}
+                  {noteLabel}
                 </Label>
                 <span className="text-[11px] text-muted-foreground">
-                  {translations.charCount(note.length.toString())}
+                  {getCharCount(note.length.toString())}
                 </span>
               </div>
               <Textarea
@@ -304,12 +331,10 @@ export function OperatorSubmissionDialog({
                 rows={3}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder={translations.notePlaceholder}
+                placeholder={notePlaceholder}
                 className="text-xs resize-none"
               />
-              <p className="text-[11px] text-muted-foreground">
-                {translations.noteHelp}
-              </p>
+              <p className="text-[11px] text-muted-foreground">{noteHelp}</p>
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0 pt-2">
@@ -320,7 +345,7 @@ export function OperatorSubmissionDialog({
                 onClick={() => handleOpenChange(false)}
                 className="min-h-[44px] min-w-[44px]"
               >
-                {translations.cancelAction}
+                {cancelAction}
               </Button>
               <Button
                 type="submit"
@@ -334,10 +359,10 @@ export function OperatorSubmissionDialog({
                       className="size-4 animate-spin shrink-0"
                       aria-hidden="true"
                     />
-                    <span>{translations.submitting}</span>
+                    <span>{submitting}</span>
                   </>
                 ) : (
-                  <span>{translations.submitAction}</span>
+                  <span>{submitAction}</span>
                 )}
               </Button>
             </DialogFooter>

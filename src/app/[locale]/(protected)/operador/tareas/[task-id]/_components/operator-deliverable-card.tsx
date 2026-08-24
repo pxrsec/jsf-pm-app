@@ -3,7 +3,10 @@ import {
   DELIVERABLE_STATUS_MAP,
   type DeliverableStatus,
 } from "@/lib/status-maps";
-import { OperatorSubmissionDialog } from "./operator-submission-dialog";
+import {
+  OperatorSubmissionDialog,
+  type OperatorSubmissionDialogProps,
+} from "./operator-submission-dialog";
 import { cn } from "@/lib/utils";
 import {
   Package,
@@ -15,7 +18,6 @@ import {
   Truck,
   RotateCcw,
   CircleDot,
-  FileText,
 } from "lucide-react";
 
 interface OperatorDeliverableCardProps {
@@ -25,44 +27,15 @@ interface OperatorDeliverableCardProps {
     statusLabel: string;
     specificationsTitle: string;
     noSpecifications: string;
-    submissionDeadline: (date: string) => string;
-    internalReviewDeadline: (date: string) => string;
-    clientDeliveryDeadline: (date: string) => string;
+    submissionDeadline: ((date: string) => string) | string;
+    internalReviewDeadline: ((date: string) => string) | string;
+    clientDeliveryDeadline: ((date: string) => string) | string;
     awaitingInternalReviewNotice: string;
     awaitingClientReviewNotice: string;
     approvedNotice: string;
     deliveredNotice: string;
     changesRequestedNotice: string;
-    submission: {
-      dialogTitle: string;
-      dialogTitleRevision: string;
-      dialogDescription: string;
-      truthfulnessNotice: string;
-      revisionNotice: (nextVersion: string) => string;
-      urlLabel: string;
-      urlPlaceholder: string;
-      urlHelp: string;
-      urlError: string;
-      noteLabel: string;
-      notePlaceholder: string;
-      noteHelp: string;
-      charCount: (count: string) => string;
-      cancelAction: string;
-      submitAction: string;
-      submitting: string;
-      successToast: (version: string) => string;
-      submitCta: string;
-      resubmitCta: string;
-      errors: {
-        validationFailed: string;
-        unauthorized: string;
-        notFound: string;
-        invalidTransition: string;
-        conflict: string;
-        invariantViolation: string;
-        generic: string;
-      };
-    };
+    submission: OperatorSubmissionDialogProps["translations"];
   };
 }
 
@@ -82,6 +55,14 @@ function formatDate(dateStr: string | null, locale: string): string {
   } catch {
     return dateStr;
   }
+}
+
+function formatDeadline(
+  val: ((date: string) => string) | string,
+  date: string,
+): string {
+  if (typeof val === "function") return val(date);
+  return val.replace("{date}", date);
 }
 
 export function OperatorDeliverableCard({
@@ -118,54 +99,60 @@ export function OperatorDeliverableCard({
     >
       {/* Header: Title, Status Badge, Version */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
-        <div className="flex items-center gap-2">
-          <Package
-            className="size-4 shrink-0 text-primary"
-            aria-hidden="true"
-          />
-          <h3 className="text-base font-semibold text-foreground tracking-tight">
-            {deliverable.deliverableTitle}
-          </h3>
-          {deliverable.currentVersionNumber !== null &&
-            deliverable.currentVersionNumber > 0 && (
-              <span
-                data-testid="deliverable-version-badge"
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground"
-              >
-                v{deliverable.currentVersionNumber}
-              </span>
-            )}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Package
+              className="size-4 shrink-0 text-primary"
+              aria-hidden="true"
+            />
+            <h3 className="text-base font-semibold text-foreground tracking-tight">
+              {deliverable.deliverableTitle}
+            </h3>
+            {deliverable.currentVersionNumber !== null &&
+              deliverable.currentVersionNumber > 0 && (
+                <span
+                  data-testid="deliverable-version-badge"
+                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground"
+                >
+                  v{deliverable.currentVersionNumber}
+                </span>
+              )}
+          </div>
+          {deliverable.deliverableWorkflowType && (
+            <p className="text-xs text-muted-foreground uppercase tracking-wider font-mono">
+              {deliverable.deliverableWorkflowType}
+            </p>
+          )}
         </div>
 
         {statusConfig && (
           <span
-            data-testid="deliverable-status-badge"
             className={cn(
-              "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 self-start sm:self-auto",
+              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold self-start sm:self-auto",
               statusConfig.badgeBg,
               statusConfig.badgeFg,
             )}
-            role="status"
           >
-            <StatusIcon className="size-3.5 shrink-0" aria-hidden="true" />
+            <StatusIcon className="size-3.5" aria-hidden="true" />
             <span>{translations.statusLabel}</span>
           </span>
         )}
       </div>
 
       {/* Specifications */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-          <FileText className="size-3.5 shrink-0" aria-hidden="true" />
-          <span>{translations.specificationsTitle}</span>
-        </div>
-        <p className="text-xs text-foreground/90 whitespace-pre-line leading-relaxed pl-5">
-          {deliverable.deliverableSpecifications || (
-            <span className="italic text-muted-foreground">
-              {translations.noSpecifications}
-            </span>
-          )}
-        </p>
+      <div className="space-y-1 rounded-lg border border-border/50 bg-muted/30 p-3 text-xs">
+        <h4 className="font-semibold text-foreground">
+          {translations.specificationsTitle}
+        </h4>
+        {deliverable.deliverableSpecifications ? (
+          <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
+            {deliverable.deliverableSpecifications}
+          </p>
+        ) : (
+          <p className="text-muted-foreground italic">
+            {translations.noSpecifications}
+          </p>
+        )}
       </div>
 
       {/* Deadlines */}
@@ -180,7 +167,10 @@ export function OperatorDeliverableCard({
                 aria-hidden="true"
               />
               <span>
-                {translations.submissionDeadline(formattedSubmissionDeadline)}
+                {formatDeadline(
+                  translations.submissionDeadline,
+                  formattedSubmissionDeadline,
+                )}
               </span>
             </div>
           )}
@@ -191,7 +181,8 @@ export function OperatorDeliverableCard({
                 aria-hidden="true"
               />
               <span>
-                {translations.internalReviewDeadline(
+                {formatDeadline(
+                  translations.internalReviewDeadline,
                   formattedInternalReviewDeadline,
                 )}
               </span>
@@ -204,7 +195,8 @@ export function OperatorDeliverableCard({
                 aria-hidden="true"
               />
               <span>
-                {translations.clientDeliveryDeadline(
+                {formatDeadline(
+                  translations.clientDeliveryDeadline,
                   formattedClientDeliveryDeadline,
                 )}
               </span>
