@@ -2,14 +2,14 @@
 
 > **Epic 09: Visibility, Reporting, and Operational Administration**  
 > **Repository**: `pxrsec/jsf-pm-app`  
-> **Status**: Implementation verification complete; factual closeout pending J-01–J-10 evidence and Project Owner sign-off  
+> **Status**: Closed — Project Owner localhost evidence complete; final integrated gate passed; sign-off recorded by requested PR creation
 > **Date**: August 24, 2026
 
 ---
 
 ## 1. Executive Summary
 
-Sprint 07 implementation delivers the Epic 09 visibility, reporting, and operational administration capabilities across five major milestones. The automated evidence below is recorded; final sprint closeout remains pending Project Owner bootstrap/walkthrough evidence for J-01 through J-10 and explicit sign-off:
+Sprint 07 implementation delivers the Epic 09 visibility, reporting, and operational administration capabilities across five major milestones. Project Owner localhost evidence for J-01 through J-10 is recorded in the stakeholder runbook, bounded read-only data-plane confirmation resolves its documented date-range limitation, and the final integrated gate passed in a clean test environment:
 - **M1 / M1-R**: Multi-view localized calendar feed with task-scoped and project-scoped milestones, and role-filtered operator visibility.
 - **M2**: Finalized deliverables archive with 90-day windowing, status filtering, copy/open outbound link actions, and authenticated link incident reporting.
 - **M3**: Operational metrics dashboard featuring 90-day deliverable cycle analysis derived authoritatively from canonical audit trails and project completion/reopen cycles.
@@ -21,10 +21,11 @@ Sprint 07 implementation delivers the Epic 09 visibility, reporting, and operati
 
 ## 2. Automated Verification & Integrated Gate Results
 
-The integrated repository verification suite was executed with zero errors and zero warnings:
+The final integrated repository verification suite was executed after clearing an inherited `NODE_ENV=production` shell variable. That inherited variable caused React test utilities to load the production build and is not a repository defect; the clean command below passed with zero errors or warnings:
 
 | Verification Gate | Command | Outcome | Factual Details |
 |---|---|---|---|
+| **Final Integrated Gate** | `env -u NODE_ENV npm run verify` | **PASSED** | Format, lint, typecheck, build, tests, coverage, and production dependency audit completed successfully. |
 | **Code Formatting** | `npm run format:check` | **PASSED** | 100% compliant with repository Prettier configuration. |
 | **Static Analysis** | `npm run lint` | **PASSED** | Zero ESLint errors or warnings across entire codebase. |
 | **Strict Typecheck** | `npm run typecheck` | **PASSED** | Zero TypeScript compilation errors (`tsc --noEmit`). |
@@ -82,12 +83,26 @@ The dev/demo data bootstrap script (`scripts/bootstrap-dev-demo-data.ts`) was re
 
 ---
 
-## 6. Manual Localhost Evidence Status
+## 6. Manual Localhost Evidence and Closeout Decision
 
-The detailed execution steps and blank evidence tracker are maintained in `dev-docs/documentation/s07-localhost-stakeholder-demo-runbook.md` §5. The bootstrap evidence above is complete. No J-01–J-10 journey is claimed as complete until Project Owner records an observed result and verdict in that tracker.
+The detailed Project Owner observations are retained in `dev-docs/documentation/s07-localhost-stakeholder-demo-runbook.md` §5. The table below is a factual closeout index, not a substitute for those observations.
 
-| Journey range | Status | Required evidence source |
+| Journey | Outcome | Evidence / limitation |
 | --- | --- | --- |
-| Bootstrap reconciliation | **Complete** | Project Owner `npm run db:bootstrap` output ending in `🎉 Demo Bootstrap Complete!` |
-| J-01–J-10 | **Pending** | Actual localhost observations in the runbook tracker |
-| Sprint closeout | **Blocked** | Completion of every required journey, disposition of any defects, and Project Owner sign-off |
+| Bootstrap reconciliation | **Pass** | Project Owner `npm run db:bootstrap` ended in `🎉 Demo Bootstrap Complete!` with no integrity error. |
+| J-01 | **Pass** | Admin destinations and safe diagnostics posture observed. |
+| J-02 | **Pass** | PM Lead Sandbox milestone management and scoped destinations observed. |
+| J-03 | **Pass** | PM Watcher scoped access and notification-operation denial/redirect observed. |
+| J-04 | **Pass with documented date-range limitation** | Initial calendar view did not include the future-dated fixtures. Read-only `jsf-pm-dev` data confirmed both fixtures exist; the task-scoped fixture is attached to Operator A's direct task, and the role-safe calendar function permits only that task-scoped fixture to Operators. No database mutation was made. |
+| J-05 | **Pass** | Client context and route scoping observed. |
+| J-06 | **Pass** | Archive production rows, rollover deliverable, stored-link behavior, and read-only incident observed. |
+| J-07 | **Pass** | Read/unread filtering and mark-read action observed. One current standard read and unread fixture were confirmed before the user action; the user action truthfully changed the unread fixture to read. |
+| J-08 | **Pass** | Scoped and global metrics were manually observed as consistent. |
+| J-09 | **Pass after remediation** | Keyboard navigation and theme behavior observed after Antigravity's localization/RSC/ISO/agenda remediation. |
+| J-10 | **Pass** | Unauthorized direct-route redirects observed before protected content exposure. |
+
+### Closeout decision
+
+Sprint 07 is closed for the localhost `jsf-pm-dev` demonstration scope. This conclusion does not claim provider delivery, hosted-environment verification, external URL reachability, production readiness, or formal accessibility certification.
+
+The requested PR is the Project Owner's approved handoff for merge into `dev`; CI is intentionally not watched in this workflow.
