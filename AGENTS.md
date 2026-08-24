@@ -47,8 +47,6 @@ Inspect `package.json` for current scripts and dependencies. Consult installed p
 ## Data, API, and security boundaries
 
 - Use `@supabase/ssr` for runtime browser and server access under RLS. Supabase migrations under `supabase/migrations/` are the sole versioned schema source; do not introduce Prisma or another parallel schema/migration system.
-- Only architect, on an explicitly authorized P1D card after reviewed G1-S, may apply the exact committed migration to `jsf-pm-dev` through Supabase MCP and generate the resulting types through MCP. No other role, including fullstack-dispatcher and Antigravity, may use Supabase MCP, direct DDL, dashboard edits, `supabase db push`, destructive resets, or type generation.
-- Migration SQL is reviewed, committed source—not a vault-only command. The architect makes G1-S before remote application and G1-T after writing the untouched MCP-generated output to `src/lib/database.types.ts`.
 - Keep privileged Supabase access narrowly isolated in server-only code. Secrets must never reach a client bundle, shared module, log, error response, test fixture, committed file, or external telemetry payload.
 - Only explicitly `NEXT_PUBLIC_*` configuration may be browser-visible. Treat `.env.example` as a variable-name template; never add, read, print, or commit real environment values or credentials.
 - Application API behavior is same-origin. Do not add broad CORS. Apply Origin/Host validation through the shared security boundary for unsafe cookie-authenticated routes.
@@ -56,11 +54,6 @@ Inspect `package.json` for current scripts and dependencies. Consult installed p
 - Preserve RLS, server-side authorization, immutable audit evidence, idempotency requirements, and role-safe response shapes. A passing client test is not proof that an authorization rule is correct.
 - External URLs must remain public HTTPS URLs and must not be server-dereferenced unless an accepted decision changes that boundary.
 
-## Hybrid VSDD/TDD traceability
-
-- Follow the task's assigned test/implementation ownership. The Hermes `test-engineer` establishes the test-first behavioral contract; an implementation worker must not weaken, delete, skip, or rewrite that contract to make a failing test pass without explicit authority from its controlling Hermes agent.
-- When a controlling specification or test provides a VC identifier, preserve it in the relevant test. Use `VC-<identifier>: <concise rationale>` in implementation comments only when the link or constraint is non-obvious.
-- Do not create VC identifiers ad hoc. Do not add boilerplate comments to obvious code. Executable tests and explicit task evidence remain the primary traceability record.
 
 ## Change discipline
 

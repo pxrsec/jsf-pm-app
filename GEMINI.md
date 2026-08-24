@@ -49,7 +49,6 @@ If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is 
 ## Data and security boundaries
 
 - Use `@supabase/ssr` for runtime browser and server access under RLS. Prisma is prohibited; do not add a parallel ORM/schema-migration system.
-- Do not create, modify, apply, run, reset, or otherwise act on Supabase migration SQL; do not generate or modify `src/lib/database.types.ts`; and do not access Supabase MCP, dashboards, CLI database commands, direct database connections, credentials, or remote state.
 - Keep privileged Supabase access in server-only code. Never expose secrets through client/shared code, logs, responses, fixtures, committed files, or telemetry.
 - Only explicitly `NEXT_PUBLIC_*` configuration may be browser-visible. `.env.example` contains variable names or placeholders only; do not read or modify real environment files.
 - Keep application APIs same-origin. Do not add broad CORS. Validate untrusted input at server boundaries and return safe errors without stacks, secrets, provider payloads, or authorization internals.
@@ -66,7 +65,7 @@ If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is 
 
 ## CHANGELOG.md maintenance
 
-- Every time you finish a set of coding tasks, invoke and execute your /update-changelog skill.
+- Every time you finish a set of coding tasks, invoke and execute your /update-changelog workflow.
 - Updating the CHANGELOG.md file should be the last step in your execution.
 - Executing your /update-changelog skill SHOULD NOT modify any other files.
 

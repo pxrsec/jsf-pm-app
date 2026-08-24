@@ -1929,6 +1929,17 @@ export type Database = {
           resolved_at: string
         }[]
       }
+      list_scoped_operations_metric_trend: {
+        Args: { p_from?: string; p_project_id?: string; p_to?: string }
+        Returns: {
+          client_review_cycle_count: number
+          completion_cycle_count: number
+          finalized_deliverable_count: number
+          period_end: string
+          period_start: string
+          reopening_cycle_count: number
+        }[]
+      }
       list_suppressed_notification_operations: {
         Args: {
           p_before_channel?: Database["public"]["Enums"]["notification_channel"]

@@ -1,5 +1,15 @@
 # JSF PM App Development Changelog
 
+## [2026-08-24 @ 10:05]
+
+**🛠 Database Migration: S07 E09 M5 Scoped Operations Metrics Trend Projection**
+
+- **Database Migration (`supabase/migrations/20260824110000_s07_e09_scoped-operations-metrics-trend-projection.sql`):**
+  - Applied migration `20260824110000_s07_e09_scoped_operations_metrics_trend_projection` cleanly via Supabase MCP.
+  - Added authenticated, read-only `SECURITY DEFINER` RPC `public.list_scoped_operations_metric_trend(uuid, timestamptz, timestamptz)` returning weekly bounded operational metric trends (finalized deliverables, review cycles, completions, and reopenings).
+- **TypeScript Types (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript types via Supabase MCP `generate_typescript_types` to reflect `list_scoped_operations_metric_trend`.
+
 ## [2026-08-24 @ 09:13]
 
 **🐛 Hotfixes: Fix NotificationInbox Component Test Type Signature**
