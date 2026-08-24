@@ -59,7 +59,7 @@ This is deliberately not a blanket index sweep. Add or remove performance indexe
 
 ### 3.1 In scope: E09 application capability
 
-1. **Role-safe calendar.** Calendar/feed routes for all roles using only authorized events: project/task/deliverable deadlines plus manual milestones. Admin/PM Lead can create, edit, and soft-delete manual milestones only in projects they may administer; PM Watcher is read-only; Operator/Client receive only their safe, role-permitted feed and no project-wide internal context.
+1. **Role-safe calendar.** Calendar/feed routes use only authoritative project/task/deliverable deadlines plus manual milestones. Admin and every active PM user, including PM Lead and PM Watcher, may read the calendar across all projects and create, edit, and soft-delete milestones through the calendar command boundary. Operators receive own-work deadlines plus only milestones explicitly scoped to a task assigned directly to them. Clients retain the established safe read-only deadline calendar and never receive manual milestones. This calendar-specific PM authority does not broaden non-calendar project/workspace, archive, metrics, queue, membership, or administration authority.
 2. **Finalized production archive.** Project-level and PM/global archive routes limited to production deliverables with status `approved` or `delivered`, preserving the explicit distinction from `client_submission`. The archive exposes only fields authorized for the viewer, deliberate external Drive-folder/open/copy behavior, bounded filters, and no server dereference.
 3. **Notification history completion.** Refine the S06 recipient inbox as the E09 history surface: user-scoped, keyset-paginated, read/read-all capable, with a default 90-day visible window and explicit older-history behavior only if the server contract supports it. Ordinary users never see queue/provider data.
 4. **Metrics.** Admin-wide and PM-project-scoped operational metrics based only on authoritative current state, `deliverable_cycle_metrics_view`, and `project_completion_cycles_view`/audit-derived facts. Deliver status/deadline/review/completion-cycle summaries and accessible tabular equivalents to every Recharts visualization. No timer service, browser-derived metric authority, unapproved cache, or materialized metric store.
@@ -85,24 +85,24 @@ S07 requires reviewed, committed, append-only migrations because the current sch
 
 The architect must first reconcile each proposed identifier against the current migration chain and generated types. If a name/field already exists with equivalent secure semantics, consume it rather than duplicate it. If the reconciliation changes the contract below, the updated specification requires review before implementation.
 
-### S07-M1 — Calendar feed and milestone command boundary
+### S07-M1 / M1-R — Calendar feed and milestone command boundary
 
-**Candidate source authored 2026-08-23; not applied:** `supabase/migrations/20260823140000_s07_e09_calendar-role-safe-feed-and-milestones.sql`
+**Applied original source:** `supabase/migrations/20260823140000_s07_e09_calendar-role-safe-feed-and-milestones.sql`.
+
+**Required forward reconciliation before S07-02 application implementation:** `supabase/migrations/20260823144000_s07_e09_calendar-task-scoped-milestones-and-pm-authority.sql`. It must be reviewed, committed, applied to `jsf-pm-dev`, and followed by unchanged MCP-generated types before Antigravity plans or implements S07-02.
 
 1. Keep `public.calendar_events` as manual-milestone storage. Do not create a second event table or copy task/deliverable deadlines into it.
-2. Replace or supplement the generic `calendar_feed_view` with role-safe, bounded projections or constrained read functions that expose only: `entity_id`, `project_id` only where the caller is authorized to navigate to that project, safe title, `event_type`, `starts_at`, `ends_at`, `is_all_day`, and permitted `color_override`.
+2. Use the role-safe bounded RPC only; do not consume `calendar_feed_view`. M1-R returns only `entity_id`, nullable route-candidate `project_id`, nullable human-readable `project_name`, nullable `task_id`, safe title, event type, timestamps, all-day state, and permitted color token.
 3. The feed must merge existing project deadlines, task deadlines, production review/client-delivery deadlines, client-submission deadlines, and non-deleted manual milestones exactly once. Exclude deleted rows and records outside the caller’s permitted project/direct-work scope.
 4. Enforce server/database authorization by authenticated identity:
-   - Admin: all permitted non-deleted project events.
-   - PM Lead: only projects where active PM-lead authority exists.
-   - PM Watcher: read-only only for active watcher/lead project memberships; no milestone mutation.
-   - Operator: only deadline context for their own operator-safe assigned work; no project-wide feed/membership data or manual-milestone administration.
-   - Client: only client-safe project/deadline/review/submission context already visible to that client; never another client’s direct work or internal review context.
+   - Admin and every active PM profile: all permitted non-deleted calendar events and manual milestone management across all projects.
+   - Operator: only direct assigned task/production-deliverable deadlines plus task-scoped milestones attached to directly assigned tasks; never project-scoped milestones or another assignee’s task-scoped milestone.
+   - Client: existing client-safe project/deadline/review/submission context only; never internal review or any manual milestone.
 5. Define a bounded date-range input (`from`, `to`, maximum 93 days) and deterministic sort (`starts_at`, `event_type`, `entity_id`). Reject inverted, malformed, or oversized ranges. No unbounded history query.
-6. Add constrained milestone create/update/delete commands or RLS-backed mutation policy that derive actor identity, require Admin or active PM Lead on the target project, validate title 1–160 trimmed chars, optional description ≤2000 chars, `starts_at`, optional `ends_at >= starts_at`, `is_all_day`, and a finite accepted color token/nullable override. PM Watcher/Operator/Client must be denied at the authoritative boundary.
+6. M1-R adds nullable `calendar_events.task_id` with a database-enforced active same-project task invariant. Its constrained milestone commands derive actor identity; authorize active Admin/PM users only; accept project-scoped/null-task or task-scoped milestones; validate title 1–160 trimmed chars, optional description ≤2000 chars, timestamps, all-day state, and finite color token/null; and deny Operator/Client at the authoritative boundary.
 7. Write audit rows for milestone create/update/delete with safe changed-field facts; do not emit provider-facing behavior beyond the existing notification model unless an accepted trigger already applies.
 8. Add only query-supported indexes, at minimum a partial `(project_id, starts_at)` index for non-deleted manual milestones if no equivalent index covers the safe range query. Do not add redundant indexes.
-9. Preserve RLS on `calendar_events`, `security_invoker` semantics for views, least-privilege grants, and no new Realtime publication.
+9. Preserve RLS and least-privilege grants. M1-R revokes direct authenticated `calendar_events` SELECT and removes its select policy; authenticated calendar reads use purpose-limited RPCs only. No new Realtime publication is added.
 
 ### S07-M2 — Finalized production archive and incident projections
 
@@ -154,12 +154,12 @@ Before any application code consumes a new S07 source: review exact SQL, apply i
 
 **Objective:** expose one accurate, role-safe operational timeline without expanding visibility.
 
-1. Implement M1 through the selected later manual workflow; consume its generated types only after provenance is complete.
-2. Create localized canonical calendar routes: a shared role-aware entry plus project-scoped context where authorized. Navigation must show only real destinations.
-3. Render range-bounded agenda/month/week presentation from the safe feed, with text/list alternative, no color-only semantics, keyboard navigability, 375px behavior, loading/empty/error/retry states, and concrete safe deep links only where destination authorization independently succeeds.
-4. Add Admin/PM Lead milestone create/edit/delete dialogs with confirmation, validation, focus handling, pending state, and authoritative refresh. PM Watcher is visibly read-only; Operator/Client never receive management controls.
+1. Apply M1-R only through the selected reviewed `jsf-pm-dev` workflow; regenerate types unchanged and record provenance before implementation.
+2. Create localized canonical shared calendar route plus optional server-fed Admin/PM workspace context. Navigation shows real authorized destinations only; `/calendario` is protected/shared-authenticated but not auth-redirect-allowlisted.
+3. Render range-bounded month/week/agenda/list presentations from the safe feed. URL search state is canonical; all views preserve feed ordering, provide a semantic list equivalent, use project names rather than UUID labels, and expose only independently authorized deep links.
+4. Add Admin/PM milestone create/edit/delete dialogs supporting project-scoped and task-scoped milestones. Use manager-only target and edit-detail RPCs; PM Watcher is mutation-capable for calendar only. Operator/Client receive no management controls. Operator sees only directly assigned task-scoped milestones; Client receives no manual milestone.
 
-**Exit:** each role sees only its permitted events; a forged project/event action cannot read or mutate another role’s data; no deadline is duplicated into manual storage.
+**Exit:** Admin/PM users manage calendar milestones across all projects; Operator sees only direct-work/task-scoped milestone context; Client is deadline-only; a forged command cannot broaden role data/mutation authority; no deadline is duplicated into manual storage.
 
 ### S07-03 — Finalized production archive and broken-link operations
 
@@ -228,8 +228,8 @@ Use the repository Vitest/RTL/MSW/database-contract conventions. Do not add Play
 
 | Area | Required proof |
 | --- | --- |
-| Calendar feed | Safe role projection; Admin/PM Lead/Watcher scope; Operator/Client isolation; bounded range; deterministic ordering; no duplicate events; no deleted rows. |
-| Milestones | Only Admin/active PM Lead can create/update/delete authorized-project milestones; validation, audit, denied roles, forged IDs, and refresh behavior. |
+| Calendar feed | Safe role projection; calendar-wide Admin/PM scope; Operator direct-task milestone isolation; Client deadline-only isolation; bounded range; deterministic ordering; no duplicate/deleted rows; project-name safe display. |
+| Milestones | Active Admin/PM users create/update/delete project- or task-scoped milestones; database task/project invariant, validation, audit, denied Operator/Client roles, forged IDs, and refresh behavior. |
 | Archive | Production-only + `approved`/`delivered` inclusion; explicit `client_submission` exclusion; keyset/filter bounds; Client isolation; unresolved-link queue denial outside Admin/authorized PM. |
 | Notification history | Self-only 90-day default; keyset/read actions; no external channel, suppression, provider, or operations data leakage. |
 | Metrics | Admin global versus PM scope; watcher read-only behavior; Client/Operator denial; accurate null/no-data states; accessible table equivalent for each chart. |
@@ -242,10 +242,9 @@ Use the repository Vitest/RTL/MSW/database-contract conventions. Do not add Play
 After focused automation is green, use only `Acme Sandbox Campaign` for mutation:
 
 1. **Admin overview:** sign in as Demo Admin; show global calendar, milestones, metrics, terminal notification operations, link incidents, safe user/invitation state, and inactive configuration summary. Confirm no secret/provider values appear.
-2. **PM Lead:** open a managed project calendar, create/edit/delete a milestone, inspect project metrics/archive/operations, and verify project scope.
-3. **PM Watcher:** show the same permitted read context with no milestone/user/operations mutations.
-4. **Operator:** show own agenda/calendar context and any explicitly accepted own-work archive visibility; attempt a foreign project/event deep link and confirm controlled denial/no disclosure.
-5. **Client:** show only client-safe project timeline/finalized production archive/history; verify another client’s direct-work context and internal operations do not appear.
+2. **PM Lead and PM Watcher:** each use the global calendar, create/edit/delete project- and task-scoped milestones, and confirm that calendar authority does not grant unrelated operations mutations.
+3. **Operator:** show own agenda/calendar context; verify a directly assigned task-scoped milestone is visible while project-scoped and foreign-task milestones remain absent; attempt a foreign deep link and confirm controlled denial/no disclosure.
+4. **Client:** show the client-safe deadline calendar with no manual milestones, plus only its authorized project/archive/history context; verify another client’s direct-work context and internal operations do not appear.
 6. **Archive and links:** open/copy a stored finalized production URL deliberately; show that no preview/reachability check occurs. Inspect an unresolved broken-link incident as authorized internal user only.
 7. **Notification truthfulness:** use inbox history/read behavior and, if shown, operations queue wording proving external delivery was suppressed—not sent or pending replay.
 8. **Metrics truthfulness:** demonstrate a completion/reopen cycle, a no-data state, and an authorized chart/table equivalent; confirm exact project scope.

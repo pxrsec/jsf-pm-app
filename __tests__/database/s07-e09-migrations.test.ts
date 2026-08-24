@@ -16,9 +16,12 @@ describe("S07 E09 candidate migration source contracts", () => {
   const m3 = readMigration(
     "20260823142000_s07_e09_scoped-operations-metrics-and-admin-projections.sql",
   );
+  const m1r = readMigration(
+    "20260823144000_s07_e09_calendar-task-scoped-milestones-and-pm-authority.sql",
+  );
 
   it("uses append-only transactional sources", () => {
-    for (const source of [m1, m2, m3]) {
+    for (const source of [m1, m2, m3, m1r]) {
       expect(source).toMatch(/^\s*begin\s*;/im);
       expect(source).toMatch(/commit\s*;\s*$/im);
       expect(source).not.toMatch(/drop\s+table|truncate\s+table/i);
@@ -63,6 +66,45 @@ describe("S07 E09 candidate migration source contracts", () => {
     ]) {
       expect(m1).toContain(`'${token}'`);
     }
+  });
+
+  it("M1-R reconciles task-scoped milestones and all-PM calendar authority", () => {
+    expect(m1r).toContain(
+      "add column task_id uuid references public.tasks(id)",
+    );
+    expect(m1r).toContain("calendar_events_task_scope_trg");
+    expect(m1r).toContain(
+      "Calendar milestone task must belong to the milestone project",
+    );
+    expect(m1r).toContain(
+      "revoke select on table public.calendar_events from authenticated",
+    );
+    expect(m1r).toContain(
+      "drop policy if exists calendar_events_select_policy",
+    );
+    expect(m1r).toContain("v_is_manager := v_role in ('admin', 'pm')");
+    expect(m1r).toContain("and ce.task_id is not null");
+    expect(m1r).toContain("and t.assignee_id = v_user_id");
+
+    for (const fn of [
+      "list_role_safe_calendar_events",
+      "list_calendar_milestone_targets",
+      "get_calendar_milestone_for_edit",
+      "create_calendar_milestone",
+      "update_calendar_milestone",
+      "soft_delete_calendar_milestone",
+    ]) {
+      expect(m1r).toMatch(
+        new RegExp(`create\\s+function\\s+public\\.${fn}`, "i"),
+      );
+      expect(m1r).toMatch(
+        new RegExp(`grant\\s+execute\\s+on\\s+function\\s+public\\.${fn}`, "i"),
+      );
+    }
+
+    expect(m1r).toContain("project_name text");
+    expect(m1r).toContain("Descriptions are deliberately absent from all feed");
+    expect(m1r).not.toMatch(/create\s+index/i);
   });
 
   it("M2 confines archive and link incidents to purpose-limited read functions", () => {

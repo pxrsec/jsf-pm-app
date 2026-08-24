@@ -1,5 +1,21 @@
 # JSF PM App Development Changelog
 
+## [2026-08-24 @ 05:33]
+
+**S07-E09-M1R: Calendar Task-Scoped Milestones and PM Authority Migration Applied**
+
+- Applied migration `20260823144000_s07_e09_calendar-task-scoped-milestones-and-pm-authority.sql` (`20260823144000_s07_e09_calendar_task_scoped_milestones_and_pm_authority`) to remote database via Supabase MCP `apply_migration`.
+- Schema enhancements:
+  - Added `task_id` (`uuid references public.tasks(id) on delete restrict`) column to `public.calendar_events`.
+  - Added validation trigger `calendar_events_task_scope_trg` and function `private.validate_calendar_event_task_scope()` to enforce that task-scoped milestones reference existing active tasks within the same project.
+  - Revoked `SELECT` on `public.calendar_events` from `authenticated` and dropped `calendar_events_select_policy` to route all authenticated reads through hardened `SECURITY DEFINER` functions.
+  - Replaced `public.list_role_safe_calendar_events(timestamptz, timestamptz, uuid)` to include `project_name` and `task_id`, providing all-PM calendar authority and filtering task-scoped milestones for direct operator assignees.
+  - Created manager-only functions `public.list_calendar_milestone_targets()` and `public.get_calendar_milestone_for_edit(uuid)`.
+  - Replaced command functions `public.create_calendar_milestone`, `public.update_calendar_milestone`, and `public.soft_delete_calendar_milestone` to support `p_task_id`, maintain structured audit logs, and enforce manager permissions.
+- Regenerated TypeScript types via Supabase MCP `generate_typescript_types` and updated [database.types.ts](file:///c:/Users/ruben/Desktop/jsf-app-dev-project/jsf-pm-app/src/lib/database.types.ts).
+- Verified with focused test suite: `npx vitest run __tests__/database/s07-e09-migrations.test.ts` (5/5 tests passing).
+
+
 ## [2026-08-23 @ 17:19]
 
 **🐛 Hotfixes / 🛠 Architecture: ESLint Boundary Override & Server-Only Guard for Alert Evaluator Action**
