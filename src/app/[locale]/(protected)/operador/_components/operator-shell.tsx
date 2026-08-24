@@ -52,7 +52,7 @@ export async function OperatorShell({ profile, data }: OperatorShellProps) {
 
               return (
                 <div
-                  key={item.task_id ?? idx}
+                  key={item.task_id ? `${item.task_id}-${idx}` : idx}
                   className="rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md text-card-foreground flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
                 >
                   <div className="space-y-1">

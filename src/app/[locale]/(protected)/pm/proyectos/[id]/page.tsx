@@ -13,11 +13,35 @@ import {
 } from "@/lib/projects/queries";
 import { listProjectDeliverables } from "@/lib/deliverables/queries";
 import { listActiveClients } from "@/lib/clients/queries";
+import {
+  fetchCalendarFeed,
+  fetchCalendarMilestoneTargets,
+} from "@/lib/calendar/queries";
+import { normalizeCalendarRange } from "@/lib/calendar/date-utils";
+import type {
+  CalendarEventDto,
+  CalendarMilestoneTargetDto,
+  CalendarRangeState,
+} from "@/lib/calendar/types";
+import { fetchFinalizedArchivePage } from "@/lib/archive/queries";
+import { normalizeArchiveSearchState } from "@/lib/archive/date-utils";
+import type {
+  FinalizedArchivePage,
+  FinalizedArchiveQuery,
+} from "@/lib/archive/types";
 import { ProjectWorkspaceShell } from "@/components/shared/projects/project-workspace/project-workspace-shell";
 
 interface PmProjectDetailPageProps {
   params: Promise<{ id: string; locale: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{
+    tab?: string;
+    calendarView?: string;
+    calendarFrom?: string;
+    calendarTo?: string;
+    archiveFrom?: string;
+    archiveTo?: string;
+    archiveStatus?: string;
+  }>;
 }
 
 export default async function PmProjectDetailPage({
@@ -25,7 +49,8 @@ export default async function PmProjectDetailPage({
   searchParams,
 }: PmProjectDetailPageProps) {
   const { id, locale } = await params;
-  const { tab } = await searchParams;
+  const resolvedSearchParams = await searchParams;
+  const { tab } = resolvedSearchParams;
 
   const cookieStore = await cookies();
   const session = await requireSession(cookieStore);
@@ -53,6 +78,21 @@ export default async function PmProjectDetailPage({
   const effectiveCapacity =
     userMembership.member_type === "pm_watcher" ? "pm_watcher" : "pm_lead";
 
+  const isCalendarTab = tab === "calendar";
+  const calendarRange: CalendarRangeState | undefined = isCalendarTab
+    ? normalizeCalendarRange(resolvedSearchParams, undefined, {
+        keyPrefix: "calendar",
+      })
+    : undefined;
+
+  const isArchiveTab = tab === "archive";
+  const archiveQuery: FinalizedArchiveQuery | undefined = isArchiveTab
+    ? normalizeArchiveSearchState(resolvedSearchParams, {
+        keyPrefix: "archive",
+        fixedProjectId: id,
+      })
+    : undefined;
+
   const [
     clients,
     cycles,
@@ -61,6 +101,9 @@ export default async function PmProjectDetailPage({
     eligibleClients,
     initialTasks,
     initialDeliverables,
+    initialCalendarEvents,
+    milestoneTargets,
+    initialArchivePage,
   ] = await Promise.all([
     listActiveClients(supabase),
     getCompletionCycles(supabase, id),
@@ -69,6 +112,19 @@ export default async function PmProjectDetailPage({
     listEligibleClientMembers(supabase, project.client_id),
     listProjectTasks(supabase, id),
     listProjectDeliverables(supabase, id),
+    isCalendarTab && calendarRange
+      ? fetchCalendarFeed(supabase, {
+          from: calendarRange.from,
+          to: calendarRange.to,
+          projectId: id,
+        })
+      : Promise.resolve<CalendarEventDto[] | undefined>(undefined),
+    isCalendarTab
+      ? fetchCalendarMilestoneTargets(supabase)
+      : Promise.resolve<CalendarMilestoneTargetDto[] | undefined>(undefined),
+    isArchiveTab && archiveQuery
+      ? fetchFinalizedArchivePage(supabase, archiveQuery, null, "pm")
+      : Promise.resolve<FinalizedArchivePage | undefined>(undefined),
   ]);
 
   return (
@@ -84,6 +140,11 @@ export default async function PmProjectDetailPage({
       currentUserId={session.user.id}
       initialTasks={initialTasks}
       initialDeliverables={initialDeliverables}
+      initialCalendarEvents={initialCalendarEvents}
+      milestoneTargets={milestoneTargets}
+      calendarRange={calendarRange}
+      initialArchivePage={initialArchivePage}
+      archiveQuery={archiveQuery}
       locale={locale}
       initialTab={tab}
     />

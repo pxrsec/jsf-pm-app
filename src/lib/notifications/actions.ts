@@ -121,7 +121,11 @@ export async function loadRecipientInboxPageAction(
 
   const supabase = createClient(cookieStore);
   try {
-    const page = await listRecipientInboxPage(supabase, parsed.data);
+    const page = await listRecipientInboxPage(
+      supabase,
+      parsed.data.query,
+      parsed.data.cursor,
+    );
     return { ok: true, data: page };
   } catch {
     return { ok: false, error: { code: "UNAVAILABLE" } };

@@ -28,6 +28,11 @@
         "home": "Inicio",
         "projects": "Proyectos",
         "agenda": "Mi Agenda",
+        "calendar": "Calendario",
+        "archive": "Archivo",
+        "linkIncidents": "Incidentes de Enlaces",
+        "metrics": "Métricas",
+        "operations": "Operaciones",
         "notifications": "Notificaciones",
         "notificationOperations": "Operaciones de Notificaciones"
       },
@@ -67,7 +72,10 @@
       "inProgress": "En progreso",
       "paused": "Pausado",
       "completed": "Completado",
-      "cancelled": "Cancelado"
+      "cancelled": "Cancelado",
+      "pending": "Pendiente",
+      "inReview": "En revisión",
+      "blocked": "Bloqueado"
     },
     "priority": {
       "low": "Baja",
@@ -286,7 +294,9 @@
         "tasks": "Tareas",
         "deliverables": "Entregables",
         "members": "Equipo",
-        "activity": "Actividad"
+        "activity": "Actividad",
+        "calendar": "Calendario",
+        "archive": "Archivo"
       },
       "clientSetupBanner": {
         "title": "Configuración de cliente pendiente",
@@ -587,6 +597,17 @@
         "activeCycleBadge": "Ciclo activo"
       }
     },
+    "roster": {
+      "capacities": {
+        "pmLead": "PM Lead",
+        "pm_lead": "PM Lead",
+        "pmLeadPrimary": "PM Lead (Principal)",
+        "pmWatcher": "PM Observador",
+        "pm_watcher": "PM Observador",
+        "operator": "Operador",
+        "client": "Cliente"
+      }
+    },
     "members": {
       "title": "Equipo del Proyecto",
       "subtitle": "Gestiona los miembros asignados y sus capacidades operativas",
@@ -614,8 +635,10 @@
       },
       "capacities": {
         "pmLead": "PM Lead",
+        "pm_lead": "PM Lead",
         "pmLeadPrimary": "PM Lead (Principal)",
         "pmWatcher": "PM Observador",
+        "pm_watcher": "PM Observador",
         "operator": "Operador",
         "client": "Cliente"
       },
@@ -1294,6 +1317,8 @@
   "notifications": {
     "title": "Notificaciones",
     "description": "Historial de notificaciones en la aplicación.",
+    "historyNoticeDefault": "Mostrando notificaciones de los últimos 90 días.",
+    "historyNoticeCustom": "Mostrando notificaciones del período histórico seleccionado.",
     "listLabel": "Lista de notificaciones",
     "unreadState": "No leída",
     "readState": "Leída",
@@ -1308,9 +1333,23 @@
     "loadMore": "Cargar más",
     "loadMoreAria": "Cargar más notificaciones",
     "loading": "Cargando notificaciones...",
+    "filters": {
+      "all": "Todas",
+      "unread": "No leídas",
+      "read": "Leídas",
+      "presetLast90": "Últimos 90 días",
+      "presetPrevious90": "Días 91-180",
+      "filtering": "Filtrando notificaciones..."
+    },
     "empty": {
       "title": "Bandeja vacía",
-      "description": "No tienes notificaciones en la aplicación."
+      "description": "No tienes notificaciones en la aplicación.",
+      "unreadTitle": "No hay notificaciones no leídas",
+      "unreadDescription": "Todas tus notificaciones están al día.",
+      "readTitle": "No hay notificaciones leídas",
+      "readDescription": "No tienes notificaciones leídas en este período.",
+      "customRangeTitle": "Sin notificaciones en el período",
+      "customRangeDescription": "No se encontraron notificaciones en el rango de fechas seleccionado."
     },
     "error": {
       "title": "Error al cargar notificaciones",
@@ -1444,6 +1483,524 @@
         "unauthorized": "No tienes autorización para ejecutar esta evaluación de alertas.",
         "unavailable": "El servicio de evaluación no está disponible en este momento."
       }
+    }
+  },
+  "calendar": {
+    "title": "Calendario Operativo",
+    "description": "Visualiza y gestiona las fechas límites y los hitos operativos del proyecto.",
+    "views": {
+      "month": "Mes",
+      "week": "Semana",
+      "agenda": "Agenda",
+      "list": "Lista"
+    },
+    "nav": {
+      "today": "Hoy",
+      "prev": "Anterior",
+      "next": "Siguiente",
+      "range": "Rango actual",
+      "prevMonth": "Mes anterior",
+      "nextMonth": "Mes siguiente",
+      "prevWeek": "Semana anterior",
+      "nextWeek": "Semana siguiente"
+    },
+    "eventTypes": {
+      "project_deadline": "Entrega de Proyecto",
+      "task_deadline": "Fecha Límite de Tarea",
+      "internal_review_deadline": "Revisión Interna",
+      "client_delivery_deadline": "Entrega al Cliente",
+      "milestone": "Hito Manual"
+    },
+    "scope": {
+      "allProjects": "Todos los proyectos",
+      "projectScope": "Nivel de Proyecto",
+      "taskScope": "Nivel de Tarea",
+      "noTask": "Sin tarea (A nivel de proyecto)",
+      "projectFilterLabel": "Filtrar por proyecto",
+      "allProjectsFilter": "Todos los proyectos"
+    },
+    "actions": {
+      "createMilestone": "Nuevo Hito",
+      "editMilestone": "Editar Hito",
+      "deleteMilestone": "Eliminar Hito",
+      "confirmDelete": "¿Estás seguro de eliminar este hito?",
+      "confirmDeleteDesc": "Esta acción ocultará el hito del calendario. Puedes crear un nuevo hito si es necesario.",
+      "saving": "Guardando...",
+      "deleting": "Eliminando...",
+      "cancel": "Cancelar",
+      "save": "Guardar Hito",
+      "saveChanges": "Guardar Cambios",
+      "close": "Cerrar",
+      "retry": "Reintentar"
+    },
+    "form": {
+      "createTitle": "Crear Hito de Calendario",
+      "editTitle": "Editar Hito de Calendario",
+      "dialogDescription": "Configura los detalles del hito manual para el calendario.",
+      "titleLabel": "Título del Hito",
+      "titlePlaceholder": "Ej. Grabación en locación principal",
+      "projectLabel": "Proyecto",
+      "projectPlaceholder": "Selecciona un proyecto...",
+      "taskLabel": "Tarea Vinculada (Opcional)",
+      "taskPlaceholder": "A nivel de proyecto (sin tarea específica)",
+      "descriptionLabel": "Descripción (Solo Administradores y PMs)",
+      "descriptionPlaceholder": "Detalles adicionales, notas de producción o recordatorios internos...",
+      "startsAtLabel": "Fecha y Hora de Inicio",
+      "startDateLabel": "Fecha de Inicio",
+      "endsAtLabel": "Fecha y Hora de Fin (Opcional)",
+      "endDateLabel": "Fecha de Fin (Opcional)",
+      "isAllDayLabel": "Evento de todo el día",
+      "colorLabel": "Color del Hito",
+      "defaultColor": "Predeterminado (Tema)",
+      "validation": {
+        "titleRequired": "El título es obligatorio.",
+        "titleLength": "El título debe tener entre 1 y 160 caracteres.",
+        "projectRequired": "Debes seleccionar un proyecto.",
+        "descriptionTooLong": "La descripción no puede exceder 2000 caracteres.",
+        "startsAtRequired": "La fecha de inicio es obligatoria.",
+        "endBeforeStart": "La fecha de fin no puede ser anterior a la de inicio."
+      }
+    },
+    "colors": {
+      "chart-1": "Color 1 (Azul)",
+      "chart-2": "Color 2 (Verde)",
+      "chart-3": "Color 3 (Naranja)",
+      "chart-4": "Color 4 (Púrpura)",
+      "chart-5": "Color 5 (Rojo)"
+    },
+    "states": {
+      "loading": "Cargando calendario...",
+      "loadingDetail": "Cargando detalles del hito...",
+      "empty": "No hay eventos programados en este período.",
+      "emptyFiltered": "No se encontraron eventos para el filtro seleccionado.",
+      "error": "Ocurrió un error al cargar el calendario.",
+      "unauthorized": "No tienes permisos para realizar esta acción.",
+      "notFound": "El hito solicitado no fue encontrado.",
+      "successCreate": "Hito creado exitosamente.",
+      "successUpdate": "Hito actualizado exitosamente.",
+      "successDelete": "Hito eliminado exitosamente."
+    },
+    "table": {
+      "date": "Fecha",
+      "time": "Horario",
+      "event": "Evento",
+      "project": "Proyecto",
+      "type": "Tipo de Evento",
+      "actions": "Acciones",
+      "allDay": "Todo el día"
+    },
+    "aria": {
+      "grid": "Cuadrícula de eventos del mes",
+      "list": "Lista accesible de eventos del calendario",
+      "milestoneDialog": "Diálogo para gestión de hitos",
+      "deleteDialog": "Confirmación de eliminación de hito",
+      "viewToggle": "Cambiar vista del calendario",
+      "prevPeriod": "Ir al período anterior",
+      "nextPeriod": "Ir al período siguiente",
+      "todayButton": "Ir a la fecha actual"
+    }
+  },
+  "archive": {
+    "title": "Archivo de Producción Finalizada",
+    "description": "Consulta el historial inmutable de entregables de producción aprobados y entregados.",
+    "statuses": {
+      "approved": "Aprobado",
+      "delivered": "Entregado"
+    },
+    "filters": {
+      "allStatuses": "Todos los estados",
+      "statusApproved": "Aprobados",
+      "statusDelivered": "Entregados",
+      "statusAria": "Filtrar por estado final",
+      "allProjects": "Todos los proyectos",
+      "projectAria": "Filtrar por proyecto",
+      "presetLast90": "Últimos 90 días",
+      "presetPrevious90": "Días 91-180",
+      "filtering": "Filtrando archivo..."
+    },
+    "table": {
+      "deliverable": "Entregable",
+      "status": "Estado",
+      "version": "Versión",
+      "finalizedAt": "Fecha de Finalización",
+      "project": "Proyecto",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "openSubmission": "Abrir entrega",
+      "copySubmission": "Copiar enlace de entrega",
+      "openDriveFolder": "Abrir carpeta Drive",
+      "copyDriveFolder": "Copiar enlace de carpeta",
+      "opensInNewTab": "Abre en una nueva pestaña",
+      "externalNotice": "Enlace externo almacenado. La aplicación no verifica su disponibilidad.",
+      "copySuccess": "Enlace copiado al portapapeles.",
+      "copyError": "No se pudo copiar el enlace al portapapeles.",
+      "loadMore": "Cargar más entregables",
+      "retry": "Reintentar carga"
+    },
+    "empty": {
+      "title": "No hay entregables finalizados",
+      "description": "No se encontraron entregables de producción finalizados en este período.",
+      "filteredTitle": "Sin resultados para el filtro",
+      "filteredDescription": "No hay entregables que coincidan con los criterios de filtro seleccionados."
+    },
+    "errors": {
+      "validation": "Los parámetros de consulta del archivo no son válidos.",
+      "unauthenticated": "Sesión no válida o expirada.",
+      "unavailable": "El servicio de archivo de producción no está disponible en este momento."
+    }
+  },
+  "linkIncidents": {
+    "title": "Incidentes de Enlaces",
+    "description": "Registro operacional interno de problemas reportados en enlaces de entregables.",
+    "statuses": {
+      "open": "Abierto",
+      "resolved": "Resuelto",
+      "dismissed": "Desestimado"
+    },
+    "filters": {
+      "allStatuses": "Todos los estados",
+      "statusOpen": "Abiertos",
+      "statusResolved": "Resueltos",
+      "statusDismissed": "Desestimados",
+      "statusAria": "Filtrar por estado de incidente",
+      "allProjects": "Todos los proyectos",
+      "projectAria": "Filtrar por proyecto",
+      "presetLast90": "Últimos 90 días",
+      "presetPrevious90": "Días 91-180",
+      "filtering": "Filtrando incidentes..."
+    },
+    "table": {
+      "deliverable": "Entregable",
+      "project": "Proyecto",
+      "status": "Estado",
+      "reportedAt": "Fecha de Reporte",
+      "resolvedAt": "Fecha de Resolución",
+      "reason": "Motivo",
+      "resolutionNote": "Nota de Resolución",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "loadMore": "Cargar más incidentes",
+      "retry": "Reintentar carga"
+    },
+    "empty": {
+      "title": "No hay incidentes de enlaces",
+      "description": "No se han registrado reportes de problemas con enlaces en este período.",
+      "filteredTitle": "Sin resultados para el filtro",
+      "filteredDescription": "No hay incidentes que coincidan con los filtros seleccionados."
+    },
+    "errors": {
+      "validation": "Los parámetros de consulta de incidentes no son válidos.",
+      "unauthenticated": "Sesión no válida o expirada.",
+      "unavailable": "El servicio de consulta de incidentes no está disponible en este momento."
+    }
+  },
+  "metrics": {
+    "adminTitle": "Métricas Operativas",
+    "adminDescription": "Resumen global de actividad operativa, atención de tareas, entregables y ciclos de proyectos.",
+    "pmTitle": "Métricas del Proyecto",
+    "pmDescription": "Resumen operativo y tendencias del proyecto seleccionado dentro de tu alcance autorizado.",
+    "globalScopeBadge": "Alcance global (todos los proyectos)",
+    "noAuthorizedProjectsTitle": "Sin proyectos autorizados",
+    "noAuthorizedProjectsDescription": "No tienes proyectos asignados actualmente para visualizar métricas operativas.",
+    "viewPmArchive": "Ver archivo del proyecto",
+    "viewPmLinkIncidents": "Ver incidentes de enlaces",
+    "filters": {
+      "rangeLabel": "Rango",
+      "preset30Days": "Últimos 30 días",
+      "preset90Days": "Últimos 90 días",
+      "projectLabel": "Proyecto",
+      "projectSelectAria": "Seleccionar proyecto para métricas",
+      "selectProjectPlaceholder": "Seleccionar proyecto...",
+      "customRangeLabel": "Rango personalizado",
+      "startDateAria": "Fecha inicial",
+      "endDateAria": "Fecha final",
+      "applyCustomDates": "Aplicar",
+      "errorIncompleteDates": "Por favor selecciona ambas fechas.",
+      "errorInvalidRange": "Rango inválido. La fecha inicial debe ser anterior a la final (máximo 93 días).",
+      "updating": "Actualizando métricas..."
+    },
+    "cards": {
+      "activeTasks": {
+        "title": "Tareas Activas",
+        "description": "Tareas no completadas en el alcance actual."
+      },
+      "overdueTasks": {
+        "title": "Tareas Vencidas",
+        "description": "Tareas no completadas cuya fecha límite ya venció."
+      },
+      "deadlinesInRange": {
+        "title": "Límites en Período",
+        "description": "Fechas límite de tareas dentro del rango seleccionado."
+      },
+      "finalizedDeliverables": {
+        "title": "Entregables Finalizados",
+        "description": "Entregables de producción aprobados o entregados en el período."
+      },
+      "unresolvedLinkIncidents": {
+        "title": "Incidentes de Enlaces",
+        "description": "Reportes de enlaces rotos actualmente abiertos."
+      },
+      "completedCycles": {
+        "title": "Ciclos Completados",
+        "description": "Proyectos completados durante el rango seleccionado."
+      },
+      "reopenedCycles": {
+        "title": "Ciclos Reabiertos",
+        "description": "Proyectos completados en el rango que fueron reabiertos posteriormente."
+      },
+      "suppressedExternal": {
+        "title": "Supresiones Externas",
+        "description": "Notificaciones externas no enviadas por proveedores inactivos."
+      },
+      "authorityLimited": "No disponible para este nivel de acceso"
+    },
+    "distributions": {
+      "projects": {
+        "title": "Distribución de Proyectos por Estado",
+        "description": "Total de {total} proyectos no eliminados en el alcance actual.",
+        "tableCaption": "Distribución actual de proyectos por estado"
+      },
+      "deliverables": {
+        "title": "Distribución de Entregables de Producción",
+        "description": "Total de {total} entregables de producción en el alcance actual.",
+        "tableCaption": "Distribución actual de entregables de producción por estado"
+      },
+      "table": {
+        "status": "Estado",
+        "count": "Cantidad",
+        "percentage": "Porcentaje"
+      },
+      "noRecords": "No hay registros en el estado actual."
+    },
+    "projectStatus": {
+      "planning": "Planificación",
+      "in_progress": "En progreso",
+      "paused": "Pausado",
+      "completed": "Completado",
+      "cancelled": "Cancelado"
+    },
+    "deliverableStatus": {
+      "pending": "Pendiente",
+      "awaiting_internal_review": "En revisión interna",
+      "awaiting_client_review": "En revisión del cliente",
+      "approved": "Aprobado",
+      "changes_requested": "Cambios solicitados",
+      "delivered": "Entregado",
+      "submitted": "Enviado"
+    },
+    "trend": {
+      "title": "Actividad Operativa por Período de 7 Días",
+      "description": "Tendencia de entregables finalizados, revisiones del cliente y ciclos de proyecto.",
+      "tableCaption": "Períodos de 7 días semiabiertos en zona horaria Ciudad de México",
+      "noActivity": "No se registró actividad en los períodos del rango seleccionado.",
+      "series": {
+        "finalized": "Entregables finalizados",
+        "reviewCycles": "Revisiones de cliente",
+        "completionCycles": "Ciclos completados",
+        "reopenedCycles": "Ciclos reabiertos"
+      },
+      "columns": {
+        "period": "Período (7 días)",
+        "finalized": "Entregables finalizados",
+        "reviewCycles": "Revisiones cliente",
+        "completionCycles": "Ciclos completados",
+        "reopenedCycles": "Ciclos reabiertos"
+      }
+    },
+    "cycles": {
+      "title": "Resumen de Duración de Ciclos",
+      "description": "Promedios y conteos de ciclos de revisión de cliente y conclusión de proyectos.",
+      "hoursUnit": "horas",
+      "daysUnit": "días",
+      "noData": "Sin datos medidos",
+      "clientReview": {
+        "heading": "Ciclo de Revisión de Cliente",
+        "count": "Revisiones medidas",
+        "average": "Duración promedio",
+        "note": "Basado en revisiones de entregables de producción con acción de cliente en el rango."
+      },
+      "projectCompletion": {
+        "heading": "Ciclo de Conclusión de Proyectos",
+        "count": "Conclusiones medidas",
+        "average": "Duración promedio",
+        "reopened": "Reabiertos",
+        "note": "Basado en proyectos completados en el rango seleccionado."
+      }
+    },
+    "errors": {
+      "summaryUnavailable": "No fue posible cargar el resumen de métricas en este momento.",
+      "trendUnavailable": "No fue posible cargar la tendencia operativa en este momento."
+    }
+  },
+  "adminOperations": {
+    "title": "Consola de Operaciones",
+    "description": "Panel de stewardship operativo: atención inmediata, accesos rápidos, postura del sistema, auditoría y usuarios.",
+    "readOnlyConsoleBadge": "Consola de solo lectura",
+    "attention": {
+      "title": "Atención Operativa Inmediata",
+      "description": "Métricas clave de atención para la supervisión continua del sistema.",
+      "overdueTasks": "Tareas Vencidas",
+      "deadlinesInRange": "Límites en Período",
+      "unresolvedLinkIncidents": "Enlaces Rotos",
+      "finalizedDeliverables": "Entregables Finalizados",
+      "suppressionNoticeTitle": "{count} notificaciones externas suprimidas",
+      "suppressionNoticeBody": "La entrega externa fue suprimida porque los proveedores están inactivos en esta demostración local. No fue enviada, no está pendiente y no se reintentará automáticamente."
+    },
+    "destinations": {
+      "title": "Destinos Operativos Especializados",
+      "description": "Acceso directo a las consolas y registros especializados del sistema.",
+      "viewDestination": "Abrir sección",
+      "metrics": {
+        "title": "Métricas Operativas",
+        "description": "Tablero analítico global de estados, entregas y tiempos de ciclo."
+      },
+      "archive": {
+        "title": "Archivo de Producción",
+        "description": "Repositorio de entregables finalizados y aprobados."
+      },
+      "linkIncidents": {
+        "title": "Incidentes de Enlaces",
+        "description": "Gestión y resolución de reportes de enlaces caídos."
+      },
+      "notifications": {
+        "title": "Cola de Notificaciones",
+        "description": "Historial de entregas internas y supresiones de proveedores."
+      }
+    },
+    "diagnostics": {
+      "title": "Postura de Capacidades del Sistema",
+      "description": "Estado de configuración y preparación de servicios en este entorno.",
+      "tableCaption": "Capacidades de integración del sistema",
+      "columns": {
+        "capability": "Capacidad",
+        "state": "Estado seguro",
+        "meaning": "Significado operativo"
+      },
+      "capabilities": {
+        "localDemoPosture": "Postura de Demostración Local",
+        "externalDelivery": "Entrega Externa (Email / WhatsApp)"
+      },
+      "states": {
+        "local_demo": "Demostración Local",
+        "inactive": "Inactivo",
+        "activation_prerequisites_incomplete": "Prerrequisitos Incompletos",
+        "configuration_requires_review": "Requiere Revisión"
+      },
+      "meanings": {
+        "local_demo": "Esta aplicación opera en postura de demostración local; no representa una declaración de despliegue productivo.",
+        "inactive": "Los proveedores externos están inactivos; las entregas externas no son despachadas ni puestas en cola de reintento.",
+        "activation_prerequisites_incomplete": "La postura local no cumple con la configuración para activación; se requiere trabajo de integración aprobado por separado.",
+        "configuration_requires_review": "Se requiere una revisión aprobada independiente antes de cualquier activación; no constituye una confirmación de entrega en vivo."
+      }
+    },
+    "audit": {
+      "title": "Historial Reciente de Auditoría",
+      "description": "Registro cronológico acotado de eventos y cambios de estado en el sistema.",
+      "tableCaption": "Eventos de auditoría registrados",
+      "loadMore": "Cargar más eventos",
+      "loadingMore": "Cargando eventos...",
+      "loadMoreError": "No fue posible cargar más eventos de auditoría.",
+      "retry": "Reintentar",
+      "noRecords": "No hay eventos de auditoría registrados en este período.",
+      "columns": {
+        "when": "Fecha / Hora",
+        "action": "Acción",
+        "entityType": "Entidad",
+        "project": "Proyecto",
+        "role": "Rol",
+        "statusChange": "Cambio de Estado",
+        "summary": "Resumen"
+      },
+      "actions": {
+        "generic": "Evento operativo registrado",
+        "project_completed": "Proyecto completado",
+        "project_reopened": "Proyecto reabierto",
+        "project_status_recovered": "Estado de proyecto recuperado",
+        "entity_soft_deleted": "Registro eliminado suavemente",
+        "entity_restored": "Registro restaurado",
+        "invite_accepted": "Invitación aceptada",
+        "invite_created": "Invitación creada",
+        "invite_revoked": "Invitación revocada",
+        "client_review_approved": "Revisión de cliente aprobada",
+        "client_review_rejected": "Revisión de cliente rechazada",
+        "internal_review_approved": "Revisión interna aprobada",
+        "internal_review_rejected": "Revisión interna rechazada",
+        "deliverable_version_submitted": "Versión de entregable enviada",
+        "task_created": "Tarea creada",
+        "task_status_changed": "Estado de tarea actualizado",
+        "deliverable_reopened": "Entregable reabierto",
+        "task_reopened": "Tarea reabierta",
+        "client_submission_reopened": "Entrega de cliente reabierta",
+        "calendar_event_created": "Evento de calendario creado",
+        "calendar_event_updated": "Evento de calendario actualizado",
+        "calendar_event_deleted": "Evento de calendario eliminado"
+      },
+      "entityTypes": {
+        "profile": "Perfil",
+        "client": "Cliente",
+        "project": "Proyecto",
+        "project_member": "Miembro de proyecto",
+        "task": "Tarea",
+        "deliverable": "Entregable",
+        "deliverable_version": "Versión de entregable",
+        "feedback": "Retroalimentación",
+        "calendar_event": "Evento de calendario",
+        "notification": "Notificación",
+        "invite_token": "Token de invitación",
+        "collaboration_comment": "Comentario",
+        "link_report": "Reporte de enlace"
+      },
+      "roles": {
+        "admin": "Administrador",
+        "pm": "Project Manager",
+        "operator": "Operador",
+        "client": "Cliente"
+      }
+    },
+    "userInvitation": {
+      "title": "Estado Operativo de Usuarios e Invitaciones",
+      "description": "Visibilidad del estado de cuentas activas e invitaciones emitidas.",
+      "boundaryNotice": "Solo visibilidad; la gestión de usuarios no está disponible en esta consola.",
+      "tableCaption": "Cuentas de usuario e invitaciones emitidas",
+      "loadMore": "Cargar más registros",
+      "loadingMore": "Cargando registros...",
+      "loadMoreError": "No fue posible cargar más registros de usuarios/invitaciones.",
+      "retry": "Reintentar",
+      "noRecords": "No hay registros de usuarios o invitaciones disponibles.",
+      "emailPreference": "Notificaciones por correo electrónico",
+      "whatsappPreference": "Notificaciones por WhatsApp",
+      "globalInvitation": "Invitación general",
+      "project": "Proyecto",
+      "expires": "Expira",
+      "kinds": {
+        "profile": "Perfil",
+        "invitation": "Invitación"
+      },
+      "activeState": {
+        "active": "Activo",
+        "inactive": "Inactivo"
+      },
+      "invitationStatus": {
+        "pending": "Pendiente",
+        "accepted": "Aceptada",
+        "expired": "Expirada",
+        "revoked": "Revocada"
+      },
+      "columns": {
+        "kind": "Tipo",
+        "identity": "Identidad / Destino",
+        "role": "Rol",
+        "status": "Estado",
+        "preferences": "Preferencias",
+        "activity": "Última Actividad / Expiración"
+      }
+    },
+    "errors": {
+      "attentionUnavailable": "No fue posible cargar el resumen de atención operativa.",
+      "auditUnavailable": "No fue posible cargar el historial de auditoría.",
+      "userStateUnavailable": "No fue posible cargar el estado de usuarios e invitaciones."
     }
   }
 }

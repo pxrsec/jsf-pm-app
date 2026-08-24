@@ -178,6 +178,9 @@ export async function ClientProjectDetailView({
               const priorityCfg =
                 TASK_PRIORITY_MAP[req.priority] ?? TASK_PRIORITY_MAP.medium;
 
+              const priorityKey = priorityCfg.labelKey.replace("priority.", "");
+              const statusKey = statusCfg.labelKey.replace("taskStatus.", "");
+
               return (
                 <article
                   key={req.id}
@@ -196,7 +199,13 @@ export async function ClientProjectDetailView({
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${priorityCfg.badgeBg} ${priorityCfg.badgeFg}`}
                         >
-                          {reqT(`priority.${priorityCfg.labelKey}` as const)}
+                          {reqT(
+                            `priority.${priorityKey}` as
+                              | "priority.low"
+                              | "priority.medium"
+                              | "priority.high"
+                              | "priority.blocking",
+                          )}
                         </span>
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${statusCfg.badgeBg} ${statusCfg.badgeFg}`}
@@ -205,7 +214,14 @@ export async function ClientProjectDetailView({
                             className="h-3 w-3"
                             aria-hidden="true"
                           />
-                          {reqT(`status.${statusCfg.labelKey}` as const)}
+                          {reqT(
+                            `status.${statusKey}` as
+                              | "status.pending"
+                              | "status.inProgress"
+                              | "status.inReview"
+                              | "status.completed"
+                              | "status.blocked",
+                          )}
                         </span>
                       </div>
                     </div>

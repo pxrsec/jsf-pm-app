@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { CheckCheck, Loader2, RefreshCw } from "lucide-react";
@@ -9,6 +9,7 @@ import type {
   RecipientInboxPage,
   RecipientInboxNotification,
   RecipientInboxCursor,
+  RecipientInboxQuery,
 } from "@/lib/notifications/inbox-contracts";
 import {
   markNotificationReadAction,
@@ -18,12 +19,18 @@ import {
 } from "@/lib/notifications/actions";
 import { NotificationEmptyState } from "./notification-empty-state";
 import { NotificationInboxItem } from "./notification-inbox-item";
+import { NotificationInboxFilters } from "./notification-inbox-filters";
+import { isDefaultNotificationRange } from "@/lib/notifications/date-utils";
 
 interface NotificationInboxProps {
   initialPage: RecipientInboxPage;
+  currentQuery: RecipientInboxQuery;
 }
 
-export function NotificationInbox({ initialPage }: NotificationInboxProps) {
+export function NotificationInbox({
+  initialPage,
+  currentQuery,
+}: NotificationInboxProps) {
   const t = useTranslations("notifications");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -43,6 +50,7 @@ export function NotificationInbox({ initialPage }: NotificationInboxProps) {
   const statusRef = useRef<HTMLDivElement>(null);
   const lastActiveElementRef = useRef<HTMLElement | null>(null);
 
+  // Keyset state reset whenever RSC filter props change
   const [prevInitialPage, setPrevInitialPage] = useState(initialPage);
   if (initialPage !== prevInitialPage) {
     setPrevInitialPage(initialPage);
@@ -50,6 +58,8 @@ export function NotificationInbox({ initialPage }: NotificationInboxProps) {
     setNextCursor(initialPage.nextCursor);
     setHasMore(initialPage.hasMore);
     setLoadMoreError(false);
+    setStatusMessage(null);
+    setErrorMessage(null);
   }
 
   // Focus restoration: if previously focused element was removed, move focus to status region
@@ -130,7 +140,10 @@ export function NotificationInbox({ initialPage }: NotificationInboxProps) {
     setLoadMoreError(false);
 
     startTransition(async () => {
-      const result = await loadRecipientInboxPageAction(nextCursor);
+      const result = await loadRecipientInboxPageAction({
+        query: currentQuery,
+        cursor: nextCursor,
+      });
 
       if (!result.ok) {
         setLoadMoreError(true);
@@ -142,16 +155,24 @@ export function NotificationInbox({ initialPage }: NotificationInboxProps) {
       setNextCursor(result.data.nextCursor);
       setHasMore(result.data.hasMore);
     });
-  }, [isPending, mapErrorCodeToMessage, nextCursor]);
+  }, [currentQuery, isPending, mapErrorCodeToMessage, nextCursor]);
 
   const hasUnread = notifications.some((n) => n.readAt === null);
 
-  if (notifications.length === 0) {
-    return <NotificationEmptyState />;
-  }
+  const isCustomDateRange = !isDefaultNotificationRange(
+    currentQuery.from,
+    currentQuery.to,
+  );
 
   return (
     <div className="space-y-6">
+      {/* 90-Day Range Notice & Filter Controls */}
+      <NotificationInboxFilters
+        currentReadFilter={currentQuery.readFilter}
+        currentFrom={currentQuery.from}
+        currentTo={currentQuery.to}
+      />
+
       {/* Live status announcements for screen readers & inline feedback */}
       <div
         ref={statusRef}
@@ -201,17 +222,24 @@ export function NotificationInbox({ initialPage }: NotificationInboxProps) {
         </Button>
       </div>
 
-      {/* Keyset-ordered notification list */}
-      <ol aria-label={t("listLabel")} className="space-y-3">
-        {notifications.map((notification) => (
-          <NotificationInboxItem
-            key={notification.recipientId}
-            notification={notification}
-            onMarkRead={handleMarkRead}
-            isPending={isPending}
-          />
-        ))}
-      </ol>
+      {/* Keyset-ordered notification list or Contextual Empty State */}
+      {notifications.length === 0 ? (
+        <NotificationEmptyState
+          readFilter={currentQuery.readFilter}
+          isCustomDateRange={isCustomDateRange}
+        />
+      ) : (
+        <ol aria-label={t("listLabel")} className="space-y-3">
+          {notifications.map((notification) => (
+            <NotificationInboxItem
+              key={notification.recipientId}
+              notification={notification}
+              onMarkRead={handleMarkRead}
+              isPending={isPending}
+            />
+          ))}
+        </ol>
+      )}
 
       {/* Keyset pagination / Load more controls */}
       {hasMore && (

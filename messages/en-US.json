@@ -28,6 +28,11 @@
         "home": "Home",
         "projects": "Projects",
         "agenda": "My Agenda",
+        "calendar": "Calendar",
+        "archive": "Archive",
+        "linkIncidents": "Link Incidents",
+        "metrics": "Metrics",
+        "operations": "Operations",
         "notifications": "Notifications",
         "notificationOperations": "Notification Operations"
       },
@@ -67,7 +72,10 @@
       "inProgress": "In progress",
       "paused": "Paused",
       "completed": "Completed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "pending": "Pending",
+      "inReview": "In Review",
+      "blocked": "Blocked"
     },
     "priority": {
       "low": "Low",
@@ -286,7 +294,9 @@
         "tasks": "Tasks",
         "deliverables": "Deliverables",
         "members": "Team",
-        "activity": "Activity"
+        "activity": "Activity",
+        "calendar": "Calendar",
+        "archive": "Archive"
       },
       "clientSetupBanner": {
         "title": "Client setup pending",
@@ -587,6 +597,17 @@
         "activeCycleBadge": "Active cycle"
       }
     },
+    "roster": {
+      "capacities": {
+        "pmLead": "PM Lead",
+        "pm_lead": "PM Lead",
+        "pmLeadPrimary": "PM Lead (Primary)",
+        "pmWatcher": "PM Watcher",
+        "pm_watcher": "PM Watcher",
+        "operator": "Operator",
+        "client": "Client"
+      }
+    },
     "members": {
       "title": "Project Team",
       "subtitle": "Manage assigned members and operational capacities",
@@ -614,8 +635,10 @@
       },
       "capacities": {
         "pmLead": "PM Lead",
+        "pm_lead": "PM Lead",
         "pmLeadPrimary": "PM Lead (Primary)",
         "pmWatcher": "PM Watcher",
+        "pm_watcher": "PM Watcher",
         "operator": "Operator",
         "client": "Client"
       },
@@ -1294,6 +1317,8 @@
   "notifications": {
     "title": "Notifications",
     "description": "In-app notification history.",
+    "historyNoticeDefault": "Showing notifications from the past 90 days.",
+    "historyNoticeCustom": "Showing notifications from the selected historical period.",
     "listLabel": "Notification list",
     "unreadState": "Unread",
     "readState": "Read",
@@ -1308,9 +1333,23 @@
     "loadMore": "Load more",
     "loadMoreAria": "Load more notifications",
     "loading": "Loading notifications...",
+    "filters": {
+      "all": "All",
+      "unread": "Unread",
+      "read": "Read",
+      "presetLast90": "Last 90 days",
+      "presetPrevious90": "Days 91-180",
+      "filtering": "Filtering notifications..."
+    },
     "empty": {
       "title": "Inbox is empty",
-      "description": "You have no in-app notifications."
+      "description": "You have no in-app notifications.",
+      "unreadTitle": "No unread notifications",
+      "unreadDescription": "All your notifications are up to date.",
+      "readTitle": "No read notifications",
+      "readDescription": "You have no read notifications in this period.",
+      "customRangeTitle": "No notifications in period",
+      "customRangeDescription": "No notifications were found in the selected date range."
     },
     "error": {
       "title": "Error loading notifications",
@@ -1444,6 +1483,524 @@
         "unauthorized": "You are not authorized to run this alert evaluation.",
         "unavailable": "The evaluation service is currently unavailable."
       }
+    }
+  },
+  "calendar": {
+    "title": "Operational Calendar",
+    "description": "View and manage project deadlines and operational milestones.",
+    "views": {
+      "month": "Month",
+      "week": "Week",
+      "agenda": "Agenda",
+      "list": "List"
+    },
+    "nav": {
+      "today": "Today",
+      "prev": "Previous",
+      "next": "Next",
+      "range": "Current range",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "prevWeek": "Previous week",
+      "nextWeek": "Next week"
+    },
+    "eventTypes": {
+      "project_deadline": "Project Deadline",
+      "task_deadline": "Task Deadline",
+      "internal_review_deadline": "Internal Review",
+      "client_delivery_deadline": "Client Delivery",
+      "milestone": "Manual Milestone"
+    },
+    "scope": {
+      "allProjects": "All projects",
+      "projectScope": "Project Scope",
+      "taskScope": "Task Scope",
+      "noTask": "No task (Project-scoped)",
+      "projectFilterLabel": "Filter by project",
+      "allProjectsFilter": "All projects"
+    },
+    "actions": {
+      "createMilestone": "New Milestone",
+      "editMilestone": "Edit Milestone",
+      "deleteMilestone": "Delete Milestone",
+      "confirmDelete": "Are you sure you want to delete this milestone?",
+      "confirmDeleteDesc": "This action will remove the milestone from the calendar. You can create a new milestone if needed.",
+      "saving": "Saving...",
+      "deleting": "Deleting...",
+      "cancel": "Cancel",
+      "save": "Save Milestone",
+      "saveChanges": "Save Changes",
+      "close": "Close",
+      "retry": "Retry"
+    },
+    "form": {
+      "createTitle": "Create Calendar Milestone",
+      "editTitle": "Edit Calendar Milestone",
+      "dialogDescription": "Configure the manual milestone details for the calendar.",
+      "titleLabel": "Milestone Title",
+      "titlePlaceholder": "e.g. Principal location shooting",
+      "projectLabel": "Project",
+      "projectPlaceholder": "Select a project...",
+      "taskLabel": "Linked Task (Optional)",
+      "taskPlaceholder": "Project level (no specific task)",
+      "descriptionLabel": "Description (Admins and PMs only)",
+      "descriptionPlaceholder": "Additional details, production notes, or internal reminders...",
+      "startsAtLabel": "Start Date and Time",
+      "startDateLabel": "Start Date",
+      "endsAtLabel": "End Date and Time (Optional)",
+      "endDateLabel": "End Date (Optional)",
+      "isAllDayLabel": "All-day event",
+      "colorLabel": "Milestone Color",
+      "defaultColor": "Default (Theme)",
+      "validation": {
+        "titleRequired": "Title is required.",
+        "titleLength": "Title must be between 1 and 160 characters.",
+        "projectRequired": "You must select a project.",
+        "descriptionTooLong": "Description cannot exceed 2000 characters.",
+        "startsAtRequired": "Start date is required.",
+        "endBeforeStart": "End date cannot be before start date."
+      }
+    },
+    "colors": {
+      "chart-1": "Color 1 (Blue)",
+      "chart-2": "Color 2 (Green)",
+      "chart-3": "Color 3 (Orange)",
+      "chart-4": "Color 4 (Purple)",
+      "chart-5": "Color 5 (Red)"
+    },
+    "states": {
+      "loading": "Loading calendar...",
+      "loadingDetail": "Loading milestone details...",
+      "empty": "No events scheduled in this period.",
+      "emptyFiltered": "No events found for the selected filter.",
+      "error": "An error occurred while loading the calendar.",
+      "unauthorized": "You do not have permission to perform this action.",
+      "notFound": "The requested milestone was not found.",
+      "successCreate": "Milestone created successfully.",
+      "successUpdate": "Milestone updated successfully.",
+      "successDelete": "Milestone deleted successfully."
+    },
+    "table": {
+      "date": "Date",
+      "time": "Time",
+      "event": "Event",
+      "project": "Project",
+      "type": "Event Type",
+      "actions": "Actions",
+      "allDay": "All day"
+    },
+    "aria": {
+      "grid": "Month event grid",
+      "list": "Accessible calendar event list",
+      "milestoneDialog": "Milestone management dialog",
+      "deleteDialog": "Milestone deletion confirmation",
+      "viewToggle": "Change calendar view",
+      "prevPeriod": "Go to previous period",
+      "nextPeriod": "Go to next period",
+      "todayButton": "Go to current date"
+    }
+  },
+  "archive": {
+    "title": "Finalized Production Archive",
+    "description": "Browse the immutable history of approved and delivered production deliverables.",
+    "statuses": {
+      "approved": "Approved",
+      "delivered": "Delivered"
+    },
+    "filters": {
+      "allStatuses": "All statuses",
+      "statusApproved": "Approved",
+      "statusDelivered": "Delivered",
+      "statusAria": "Filter by final status",
+      "allProjects": "All projects",
+      "projectAria": "Filter by project",
+      "presetLast90": "Last 90 days",
+      "presetPrevious90": "Days 91-180",
+      "filtering": "Filtering archive..."
+    },
+    "table": {
+      "deliverable": "Deliverable",
+      "status": "Status",
+      "version": "Version",
+      "finalizedAt": "Finalized Date",
+      "project": "Project",
+      "actions": "Actions"
+    },
+    "actions": {
+      "openSubmission": "Open submission",
+      "copySubmission": "Copy submission link",
+      "openDriveFolder": "Open Drive folder",
+      "copyDriveFolder": "Copy folder link",
+      "opensInNewTab": "Opens in a new tab",
+      "externalNotice": "Stored external link. The application does not verify availability.",
+      "copySuccess": "Link copied to clipboard.",
+      "copyError": "Could not copy link to clipboard.",
+      "loadMore": "Load more deliverables",
+      "retry": "Retry loading"
+    },
+    "empty": {
+      "title": "No finalized deliverables",
+      "description": "No finalized production deliverables were found in this period.",
+      "filteredTitle": "No results for filter",
+      "filteredDescription": "No deliverables match the selected filter criteria."
+    },
+    "errors": {
+      "validation": "Invalid archive query parameters.",
+      "unauthenticated": "Invalid or expired session.",
+      "unavailable": "The production archive service is currently unavailable."
+    }
+  },
+  "linkIncidents": {
+    "title": "Link Incidents",
+    "description": "Internal operational registry of reported deliverable link issues.",
+    "statuses": {
+      "open": "Open",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed"
+    },
+    "filters": {
+      "allStatuses": "All statuses",
+      "statusOpen": "Open",
+      "statusResolved": "Resolved",
+      "statusDismissed": "Dismissed",
+      "statusAria": "Filter by incident status",
+      "allProjects": "All projects",
+      "projectAria": "Filter by project",
+      "presetLast90": "Last 90 days",
+      "presetPrevious90": "Days 91-180",
+      "filtering": "Filtering incidents..."
+    },
+    "table": {
+      "deliverable": "Deliverable",
+      "project": "Project",
+      "status": "Status",
+      "reportedAt": "Reported Date",
+      "resolvedAt": "Resolved Date",
+      "reason": "Reason",
+      "resolutionNote": "Resolution Note",
+      "actions": "Actions"
+    },
+    "actions": {
+      "loadMore": "Load more incidents",
+      "retry": "Retry loading"
+    },
+    "empty": {
+      "title": "No link incidents",
+      "description": "No link issue reports have been logged in this period.",
+      "filteredTitle": "No results for filter",
+      "filteredDescription": "No incidents match the selected filters."
+    },
+    "errors": {
+      "validation": "Invalid incident query parameters.",
+      "unauthenticated": "Invalid or expired session.",
+      "unavailable": "The link incidents service is currently unavailable."
+    }
+  },
+  "metrics": {
+    "adminTitle": "Operational Metrics",
+    "adminDescription": "Global overview of operational activity, task attention, deliverable status, and project cycles.",
+    "pmTitle": "Project Metrics",
+    "pmDescription": "Operational overview and trends for the selected project within your authorized scope.",
+    "globalScopeBadge": "Global scope (all projects)",
+    "noAuthorizedProjectsTitle": "No authorized projects",
+    "noAuthorizedProjectsDescription": "You currently have no assigned projects to display operational metrics.",
+    "viewPmArchive": "View project archive",
+    "viewPmLinkIncidents": "View link incidents",
+    "filters": {
+      "rangeLabel": "Range",
+      "preset30Days": "Last 30 days",
+      "preset90Days": "Last 90 days",
+      "projectLabel": "Project",
+      "projectSelectAria": "Select project for metrics",
+      "selectProjectPlaceholder": "Select project...",
+      "customRangeLabel": "Custom range",
+      "startDateAria": "Start date",
+      "endDateAria": "End date",
+      "applyCustomDates": "Apply",
+      "errorIncompleteDates": "Please select both dates.",
+      "errorInvalidRange": "Invalid range. Start date must precede end date (max 93 days).",
+      "updating": "Updating metrics..."
+    },
+    "cards": {
+      "activeTasks": {
+        "title": "Active Tasks",
+        "description": "Non-completed tasks in current scope."
+      },
+      "overdueTasks": {
+        "title": "Overdue Tasks",
+        "description": "Non-completed tasks whose deadline has passed."
+      },
+      "deadlinesInRange": {
+        "title": "Deadlines in Range",
+        "description": "Task deadlines within the selected date range."
+      },
+      "finalizedDeliverables": {
+        "title": "Finalized Deliverables",
+        "description": "Production deliverables approved or delivered in the range."
+      },
+      "unresolvedLinkIncidents": {
+        "title": "Link Incidents",
+        "description": "Currently open broken link reports."
+      },
+      "completedCycles": {
+        "title": "Completed Cycles",
+        "description": "Projects completed during the selected range."
+      },
+      "reopenedCycles": {
+        "title": "Reopened Cycles",
+        "description": "Projects completed in range that were subsequently reopened."
+      },
+      "suppressedExternal": {
+        "title": "External Suppressions",
+        "description": "External notifications not dispatched due to inactive providers."
+      },
+      "authorityLimited": "Not available for this access level"
+    },
+    "distributions": {
+      "projects": {
+        "title": "Project Distribution by Status",
+        "description": "Total of {total} non-deleted projects in current scope.",
+        "tableCaption": "Current project distribution by status"
+      },
+      "deliverables": {
+        "title": "Production Deliverable Distribution",
+        "description": "Total of {total} production deliverables in current scope.",
+        "tableCaption": "Current production deliverable distribution by status"
+      },
+      "table": {
+        "status": "Status",
+        "count": "Count",
+        "percentage": "Percentage"
+      },
+      "noRecords": "No records in the current status."
+    },
+    "projectStatus": {
+      "planning": "Planning",
+      "in_progress": "In Progress",
+      "paused": "Paused",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "deliverableStatus": {
+      "pending": "Pending",
+      "awaiting_internal_review": "In Internal Review",
+      "awaiting_client_review": "In Client Review",
+      "approved": "Approved",
+      "changes_requested": "Changes Requested",
+      "delivered": "Delivered",
+      "submitted": "Submitted"
+    },
+    "trend": {
+      "title": "Operational Activity by 7-Day Period",
+      "description": "Trend of finalized deliverables, client reviews, and project cycles.",
+      "tableCaption": "7-day half-open intervals in Mexico City time zone",
+      "noActivity": "No activity recorded in the periods for the selected range.",
+      "series": {
+        "finalized": "Finalized deliverables",
+        "reviewCycles": "Client review cycles",
+        "completionCycles": "Completed cycles",
+        "reopenedCycles": "Reopened cycles"
+      },
+      "columns": {
+        "period": "Period (7 days)",
+        "finalized": "Finalized deliverables",
+        "reviewCycles": "Client reviews",
+        "completionCycles": "Completed cycles",
+        "reopenedCycles": "Reopened cycles"
+      }
+    },
+    "cycles": {
+      "title": "Cycle Duration Summary",
+      "description": "Averages and counts for client review cycles and project completion cycles.",
+      "hoursUnit": "hours",
+      "daysUnit": "days",
+      "noData": "No measured data",
+      "clientReview": {
+        "heading": "Client Review Cycle",
+        "count": "Measured reviews",
+        "average": "Average duration",
+        "note": "Based on production deliverable reviews with client action in the range."
+      },
+      "projectCompletion": {
+        "heading": "Project Completion Cycle",
+        "count": "Measured completions",
+        "average": "Average duration",
+        "reopened": "Reopened",
+        "note": "Based on projects completed in the selected date range."
+      }
+    },
+    "errors": {
+      "summaryUnavailable": "Unable to load the metrics summary at this time.",
+      "trendUnavailable": "Unable to load the operational trend at this time."
+    }
+  },
+  "adminOperations": {
+    "title": "Operations Console",
+    "description": "Operational stewardship console: immediate attention, quick destinations, system posture, audit history, and user state.",
+    "readOnlyConsoleBadge": "Read-only console",
+    "attention": {
+      "title": "Immediate Operational Attention",
+      "description": "Key attention metrics for ongoing system supervision.",
+      "overdueTasks": "Overdue Tasks",
+      "deadlinesInRange": "Deadlines in Range",
+      "unresolvedLinkIncidents": "Broken Links",
+      "finalizedDeliverables": "Finalized Deliverables",
+      "suppressionNoticeTitle": "{count} external notifications suppressed",
+      "suppressionNoticeBody": "External delivery was suppressed because providers are inactive in this local demo. It was not sent, is not pending, and will not retry automatically."
+    },
+    "destinations": {
+      "title": "Specialized Operational Destinations",
+      "description": "Direct access to specialized consoles and system logs.",
+      "viewDestination": "Open section",
+      "metrics": {
+        "title": "Operational Metrics",
+        "description": "Global analytical dashboard of statuses, deliveries, and cycle durations."
+      },
+      "archive": {
+        "title": "Production Archive",
+        "description": "Repository of finalized and approved deliverables."
+      },
+      "linkIncidents": {
+        "title": "Link Incidents",
+        "description": "Management and resolution of broken link reports."
+      },
+      "notifications": {
+        "title": "Notification Queue",
+        "description": "Internal delivery history and provider suppressions."
+      }
+    },
+    "diagnostics": {
+      "title": "System Capability Posture",
+      "description": "Configuration status and readiness of services in this environment.",
+      "tableCaption": "System integration capabilities",
+      "columns": {
+        "capability": "Capability",
+        "state": "Safe state",
+        "meaning": "Operational meaning"
+      },
+      "capabilities": {
+        "localDemoPosture": "Local Demo Posture",
+        "externalDelivery": "External Delivery (Email / WhatsApp)"
+      },
+      "states": {
+        "local_demo": "Local Demo",
+        "inactive": "Inactive",
+        "activation_prerequisites_incomplete": "Prerequisites Incomplete",
+        "configuration_requires_review": "Requires Review"
+      },
+      "meanings": {
+        "local_demo": "This application operates in local demo posture; it does not represent a production deployment claim.",
+        "inactive": "External providers are inactive; external notifications are neither dispatched nor queued for retry.",
+        "activation_prerequisites_incomplete": "Local posture does not meet activation prerequisites; separate approved integration work is required.",
+        "configuration_requires_review": "Independent approved review is required before any activation; does not constitute live delivery confirmation."
+      }
+    },
+    "audit": {
+      "title": "Recent Audit History",
+      "description": "Bounded chronological log of events and status transitions across the system.",
+      "tableCaption": "Logged audit events",
+      "loadMore": "Load more events",
+      "loadingMore": "Loading events...",
+      "loadMoreError": "Unable to load additional audit events.",
+      "retry": "Retry",
+      "noRecords": "No audit events recorded in this period.",
+      "columns": {
+        "when": "Date / Time",
+        "action": "Action",
+        "entityType": "Entity",
+        "project": "Project",
+        "role": "Role",
+        "statusChange": "Status Change",
+        "summary": "Summary"
+      },
+      "actions": {
+        "generic": "Operational event recorded",
+        "project_completed": "Project completed",
+        "project_reopened": "Project reopened",
+        "project_status_recovered": "Project status recovered",
+        "entity_soft_deleted": "Record soft-deleted",
+        "entity_restored": "Record restored",
+        "invite_accepted": "Invitation accepted",
+        "invite_created": "Invitation created",
+        "invite_revoked": "Invitation revoked",
+        "client_review_approved": "Client review approved",
+        "client_review_rejected": "Client review rejected",
+        "internal_review_approved": "Internal review approved",
+        "internal_review_rejected": "Internal review rejected",
+        "deliverable_version_submitted": "Deliverable version submitted",
+        "task_created": "Task created",
+        "task_status_changed": "Task status changed",
+        "deliverable_reopened": "Deliverable reopened",
+        "task_reopened": "Task reopened",
+        "client_submission_reopened": "Client submission reopened",
+        "calendar_event_created": "Calendar event created",
+        "calendar_event_updated": "Calendar event updated",
+        "calendar_event_deleted": "Calendar event deleted"
+      },
+      "entityTypes": {
+        "profile": "Profile",
+        "client": "Client",
+        "project": "Project",
+        "project_member": "Project member",
+        "task": "Task",
+        "deliverable": "Deliverable",
+        "deliverable_version": "Deliverable version",
+        "feedback": "Feedback",
+        "calendar_event": "Calendar event",
+        "notification": "Notification",
+        "invite_token": "Invite token",
+        "collaboration_comment": "Comment",
+        "link_report": "Link report"
+      },
+      "roles": {
+        "admin": "Administrator",
+        "pm": "Project Manager",
+        "operator": "Operator",
+        "client": "Client"
+      }
+    },
+    "userInvitation": {
+      "title": "User & Invitation Operational State",
+      "description": "Visibility of active accounts and issued invitations.",
+      "boundaryNotice": "Visibility only; user management is not available in this console.",
+      "tableCaption": "User accounts and issued invitations",
+      "loadMore": "Load more records",
+      "loadingMore": "Loading records...",
+      "loadMoreError": "Unable to load additional user/invitation records.",
+      "retry": "Retry",
+      "noRecords": "No user or invitation records available.",
+      "emailPreference": "Email notifications",
+      "whatsappPreference": "WhatsApp notifications",
+      "globalInvitation": "General invitation",
+      "project": "Project",
+      "expires": "Expires",
+      "kinds": {
+        "profile": "Profile",
+        "invitation": "Invitation"
+      },
+      "activeState": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "invitationStatus": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "expired": "Expired",
+        "revoked": "Revoked"
+      },
+      "columns": {
+        "kind": "Kind",
+        "identity": "Identity / Target",
+        "role": "Role",
+        "status": "Status",
+        "preferences": "Preferences",
+        "activity": "Last Activity / Expiration"
+      }
+    },
+    "errors": {
+      "attentionUnavailable": "Unable to load operational attention summary.",
+      "auditUnavailable": "Unable to load audit history.",
+      "userStateUnavailable": "Unable to load user and invitation state."
     }
   }
 }

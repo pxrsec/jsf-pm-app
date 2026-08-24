@@ -100,6 +100,7 @@ export type Database = {
           is_all_day: boolean
           project_id: string
           starts_at: string
+          task_id: string | null
           title: string
           updated_at: string
           updated_by: string | null
@@ -116,6 +117,7 @@ export type Database = {
           is_all_day?: boolean
           project_id: string
           starts_at: string
+          task_id?: string | null
           title: string
           updated_at?: string
           updated_by?: string | null
@@ -132,6 +134,7 @@ export type Database = {
           is_all_day?: boolean
           project_id?: string
           starts_at?: string
+          task_id?: string | null
           title?: string
           updated_at?: string
           updated_by?: string | null
@@ -156,6 +159,27 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "client_task_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "operator_agenda_view"
+            referencedColumns: ["task_id"]
+          },
+          {
+            foreignKeyName: "calendar_events_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
         ]
@@ -1695,13 +1719,14 @@ export type Database = {
       accept_invite: { Args: { p_token_hash: string }; Returns: Json }
       create_calendar_milestone: {
         Args: {
-          p_color_override: string
-          p_description: string
-          p_ends_at: string
-          p_is_all_day: boolean
+          p_color_override?: string
+          p_description?: string
+          p_ends_at?: string
+          p_is_all_day?: boolean
           p_project_id: string
-          p_starts_at: string
-          p_title: string
+          p_starts_at?: string
+          p_task_id?: string
+          p_title?: string
         }
         Returns: {
           color_override: string
@@ -1710,7 +1735,9 @@ export type Database = {
           event_type: Database["public"]["Enums"]["calendar_event_type"]
           is_all_day: boolean
           project_id: string
+          project_name: string
           starts_at: string
+          task_id: string
           title: string
         }[]
       }
@@ -1726,6 +1753,21 @@ export type Database = {
       evaluate_notification_alerts: {
         Args: { p_project_id?: string }
         Returns: Json
+      }
+      get_calendar_milestone_for_edit: {
+        Args: { p_event_id: string }
+        Returns: {
+          color_override: string
+          description: string
+          ends_at: string
+          entity_id: string
+          is_all_day: boolean
+          project_id: string
+          project_name: string
+          starts_at: string
+          task_id: string
+          title: string
+        }[]
       }
       get_project_completion_readiness: {
         Args: { p_project_id: string }
@@ -1801,6 +1843,15 @@ export type Database = {
           whatsapp_opt_in: boolean
         }[]
       }
+      list_calendar_milestone_targets: {
+        Args: never
+        Returns: {
+          project_id: string
+          project_name: string
+          task_id: string
+          task_title: string
+        }[]
+      }
       list_finalized_production_archive: {
         Args: {
           p_before_deliverable_id?: string
@@ -1827,16 +1878,14 @@ export type Database = {
         Args: {
           p_before_created_at?: string
           p_before_recipient_id?: string
+          p_from?: string
           p_limit?: number
+          p_read_state?: boolean
+          p_to?: string
         }
         Returns: {
           created_at: string
-          delivery_status: Database["public"]["Enums"]["notification_delivery_status"]
-          entity_id: string
-          entity_type: Database["public"]["Enums"]["entity_type"]
-          event_id: string
           occurred_at: string
-          project_id: string
           read_at: string
           recipient_id: string
           trigger: Database["public"]["Enums"]["notification_trigger"]
@@ -1851,7 +1900,9 @@ export type Database = {
           event_type: Database["public"]["Enums"]["calendar_event_type"]
           is_all_day: boolean
           project_id: string
+          project_name: string
           starts_at: string
+          task_id: string
           title: string
         }[]
       }
@@ -1876,6 +1927,17 @@ export type Database = {
           reported_at: string
           resolution_note: string
           resolved_at: string
+        }[]
+      }
+      list_scoped_operations_metric_trend: {
+        Args: { p_from?: string; p_project_id?: string; p_to?: string }
+        Returns: {
+          client_review_cycle_count: number
+          completion_cycle_count: number
+          finalized_deliverable_count: number
+          period_end: string
+          period_start: string
+          reopening_cycle_count: number
         }[]
       }
       list_suppressed_notification_operations: {
@@ -1991,13 +2053,15 @@ export type Database = {
       }
       update_calendar_milestone: {
         Args: {
-          p_color_override: string
-          p_description: string
-          p_ends_at: string
+          p_color_override?: string
+          p_description?: string
+          p_ends_at?: string
           p_event_id: string
-          p_is_all_day: boolean
-          p_starts_at: string
-          p_title: string
+          p_is_all_day?: boolean
+          p_project_id: string
+          p_starts_at?: string
+          p_task_id?: string
+          p_title?: string
         }
         Returns: {
           color_override: string
@@ -2006,7 +2070,9 @@ export type Database = {
           event_type: Database["public"]["Enums"]["calendar_event_type"]
           is_all_day: boolean
           project_id: string
+          project_name: string
           starts_at: string
+          task_id: string
           title: string
         }[]
       }

@@ -63,12 +63,37 @@ export function MobileNavToggle({
           ? { href: "/operador/agenda", label: t("links.agenda") }
           : { href: "/cliente/proyectos", label: t("links.projects") };
 
+  const archiveHref =
+    role === "admin"
+      ? "/admin/archivo"
+      : role === "pm"
+        ? "/pm/archivo"
+        : role === "operator"
+          ? "/operador/archivo"
+          : "/cliente/archivo";
+
+  const linkIncidentsHref =
+    role === "admin"
+      ? "/admin/incidentes-enlaces"
+      : role === "pm"
+        ? "/pm/incidentes-enlaces"
+        : null;
+
+  const metricsHref =
+    role === "admin"
+      ? "/admin/metricas"
+      : role === "pm"
+        ? "/pm/metricas"
+        : null;
+
+  const adminOperationsHref = role === "admin" ? "/admin/operaciones" : null;
+
   const inboxAriaLabel =
     unreadCount > 0
       ? t("notifications.inboxLinkAriaWithCount", { count: unreadCount })
       : t("notifications.inboxLinkAria");
 
-  const operationsHref =
+  const notificationOperationsHref =
     canAccessNotificationOperations && (role === "admin" || role === "pm")
       ? role === "admin"
         ? "/admin/notificaciones"
@@ -134,6 +159,52 @@ export function MobileNavToggle({
             </Link>
 
             <Link
+              href="/calendario"
+              onClick={() => setIsOpen(false)}
+              className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              {t("links.calendar")}
+            </Link>
+
+            <Link
+              href={archiveHref}
+              onClick={() => setIsOpen(false)}
+              className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              {t("links.archive")}
+            </Link>
+
+            {linkIncidentsHref && (
+              <Link
+                href={linkIncidentsHref}
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {t("links.linkIncidents")}
+              </Link>
+            )}
+
+            {metricsHref && (
+              <Link
+                href={metricsHref}
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {t("links.metrics")}
+              </Link>
+            )}
+
+            {adminOperationsHref && (
+              <Link
+                href={adminOperationsHref}
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {t("links.operations")}
+              </Link>
+            )}
+
+            <Link
               href="/notificaciones"
               onClick={() => setIsOpen(false)}
               aria-label={inboxAriaLabel}
@@ -147,9 +218,9 @@ export function MobileNavToggle({
               {`${t("notifications.badgeLabel")}: ${unreadCount}`}
             </span>
 
-            {operationsHref && (
+            {notificationOperationsHref && (
               <Link
-                href={operationsHref}
+                href={notificationOperationsHref}
                 onClick={() => setIsOpen(false)}
                 className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >

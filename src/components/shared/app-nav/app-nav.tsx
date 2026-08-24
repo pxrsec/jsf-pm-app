@@ -41,12 +41,37 @@ export async function AppNav({
           ? { href: "/operador/agenda", label: t("links.agenda") }
           : { href: "/cliente/proyectos", label: t("links.projects") };
 
+  const archiveHref =
+    role === "admin"
+      ? "/admin/archivo"
+      : role === "pm"
+        ? "/pm/archivo"
+        : role === "operator"
+          ? "/operador/archivo"
+          : "/cliente/archivo";
+
+  const linkIncidentsHref =
+    role === "admin"
+      ? "/admin/incidentes-enlaces"
+      : role === "pm"
+        ? "/pm/incidentes-enlaces"
+        : null;
+
+  const metricsHref =
+    role === "admin"
+      ? "/admin/metricas"
+      : role === "pm"
+        ? "/pm/metricas"
+        : null;
+
+  const adminOperationsHref = role === "admin" ? "/admin/operaciones" : null;
+
   const inboxAriaLabel =
     unreadCount > 0
       ? t("notifications.inboxLinkAriaWithCount", { count: unreadCount })
       : t("notifications.inboxLinkAria");
 
-  const operationsHref =
+  const notificationOperationsHref =
     canAccessNotificationOperations && (role === "admin" || role === "pm")
       ? role === "admin"
         ? "/admin/notificaciones"
@@ -90,6 +115,47 @@ export async function AppNav({
             </Link>
 
             <Link
+              href="/calendario"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("links.calendar")}
+            </Link>
+
+            <Link
+              href={archiveHref}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("links.archive")}
+            </Link>
+
+            {linkIncidentsHref && (
+              <Link
+                href={linkIncidentsHref}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("links.linkIncidents")}
+              </Link>
+            )}
+
+            {metricsHref && (
+              <Link
+                href={metricsHref}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("links.metrics")}
+              </Link>
+            )}
+
+            {adminOperationsHref && (
+              <Link
+                href={adminOperationsHref}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("links.operations")}
+              </Link>
+            )}
+
+            <Link
               href="/notificaciones"
               aria-label={inboxAriaLabel}
               className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -102,9 +168,9 @@ export async function AppNav({
               {`${t("notifications.badgeLabel")}: ${unreadCount}`}
             </span>
 
-            {operationsHref && (
+            {notificationOperationsHref && (
               <Link
-                href={operationsHref}
+                href={notificationOperationsHref}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("links.notificationOperations")}

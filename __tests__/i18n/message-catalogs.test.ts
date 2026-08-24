@@ -40,10 +40,14 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
     expect(esCatalog).toHaveProperty("privacy");
     expect(esCatalog).toHaveProperty("notifications");
     expect(esCatalog).toHaveProperty("notificationOperations");
+    expect(esCatalog).toHaveProperty("archive");
+    expect(esCatalog).toHaveProperty("linkIncidents");
     expect(enCatalog).toHaveProperty("shell");
     expect(enCatalog).toHaveProperty("privacy");
     expect(enCatalog).toHaveProperty("notifications");
     expect(enCatalog).toHaveProperty("notificationOperations");
+    expect(enCatalog).toHaveProperty("archive");
+    expect(enCatalog).toHaveProperty("linkIncidents");
   });
 
   it("both catalogs contain active shell.nav.links.notifications, notificationOperations, and inbox aria keys", () => {
@@ -164,7 +168,49 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
     ).sort();
 
     expect(esNotificationKeys).toEqual(enNotificationKeys);
-    expect(esNotificationKeys).toHaveLength(54);
+    expect(esNotificationKeys).toHaveLength(68);
+  });
+
+  it("all keys under archive namespace are identical between catalogs", () => {
+    function collectKeys(obj: Record<string, unknown>, prefix = ""): string[] {
+      return Object.entries(obj).flatMap(([k, v]) => {
+        const fullKey = prefix ? `${prefix}.${k}` : k;
+        if (typeof v === "object" && v !== null && !Array.isArray(v)) {
+          return collectKeys(v as Record<string, unknown>, fullKey);
+        }
+        return [fullKey];
+      });
+    }
+
+    const esArchiveKeys = collectKeys(
+      esCatalog.archive as Record<string, unknown>,
+    ).sort();
+    const enArchiveKeys = collectKeys(
+      enCatalog.archive as Record<string, unknown>,
+    ).sort();
+
+    expect(esArchiveKeys).toEqual(enArchiveKeys);
+  });
+
+  it("all keys under linkIncidents namespace are identical between catalogs", () => {
+    function collectKeys(obj: Record<string, unknown>, prefix = ""): string[] {
+      return Object.entries(obj).flatMap(([k, v]) => {
+        const fullKey = prefix ? `${prefix}.${k}` : k;
+        if (typeof v === "object" && v !== null && !Array.isArray(v)) {
+          return collectKeys(v as Record<string, unknown>, fullKey);
+        }
+        return [fullKey];
+      });
+    }
+
+    const esIncidentKeys = collectKeys(
+      esCatalog.linkIncidents as Record<string, unknown>,
+    ).sort();
+    const enIncidentKeys = collectKeys(
+      enCatalog.linkIncidents as Record<string, unknown>,
+    ).sort();
+
+    expect(esIncidentKeys).toEqual(enIncidentKeys);
   });
 
   it("all 43 required leaf keys exist under notificationOperations in both catalogs with identical structure", () => {

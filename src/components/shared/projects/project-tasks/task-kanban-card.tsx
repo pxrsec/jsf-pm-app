@@ -30,7 +30,7 @@ export function TaskKanbanCard({
 }: TaskKanbanCardProps) {
   const t = useTranslations("projects.tasks");
   const tType = useTranslations("projects.tasks.taskType");
-  const tProjects = useTranslations("projects.roster.capacities");
+  const tProjects = useTranslations("projects.members.capacities");
 
   const deadlineDate = task.deadline_at ? new Date(task.deadline_at) : null;
   const isOverdue =

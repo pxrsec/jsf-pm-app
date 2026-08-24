@@ -1,5 +1,243 @@
 # JSF PM App Development Changelog
 
+## [2026-08-24 @ 15:44]
+
+**🐛 Hotfixes: Multi-Role Localhost Bug Fixes (i18n Catalogs, RSC Function Closures, Duplicate Keys, and Task Datetime Format)**
+
+- **Audit Action & Capacity Catalog Keys (`messages/es-MX.json`, `messages/en-US.json`, `audit-history-section.tsx`, `task-kanban-card.tsx`, `task-assignee-select.tsx`):**
+  - Added missing audit action translations (`client_review_approved`, `client_review_rejected`, `internal_review_approved`, `internal_review_rejected`, `deliverable_version_submitted`, `task_created`, `task_status_changed`, `deliverable_reopened`, `task_reopened`, `client_submission_reopened`, `calendar_event_created`, `calendar_event_updated`, `calendar_event_deleted`) and shell task statuses (`pending`, `inReview`, `blocked`).
+  - Added snake_case capacity aliases (`pm_lead`, `pm_watcher`) under `projects.members.capacities` and updated Kanban card and assignee select components to use the standard namespace.
+  - Hardened audit history label formatters with `t.has(...)` checks to prevent unhandled missing message crashes.
+- **Client Direct Requests Translation Key Prefixes (`src/app/[locale]/(protected)/cliente/proyectos/_components/client-project-detail.tsx`):**
+  - Stripped redundant `priority.` and `taskStatus.` prefixes from `priorityCfg.labelKey` and `statusCfg.labelKey` when querying `projects.clientRequests` namespace to avoid `priority.priority.medium` / `status.taskStatus.inProgress` lookups.
+- **Operator Shell Duplicate Key Fix (`src/lib/shell-data/shell-queries.ts`, `src/app/[locale]/(protected)/operador/_components/operator-shell.tsx`):**
+  - Deduplicated `operator_agenda_view` query results by `task_id` in `getOperatorShellData` and indexed keys in `operator-shell.tsx` to prevent React key collision warnings when tasks contain multiple deliverables.
+- **RSC to Client Component Boundary Serializability (`operator-task-detail.tsx`, `operator-deliverable-card.tsx`, `operator-submission-dialog.tsx`, `operator-task-resources.tsx`):**
+  - Eliminated function closures passed across the Server Component -> Client Component boundary by passing serializable string templates (`{date}`, `{nextVersion}`, `{count}`, `{version}`, `{name}`) with automatic template resolution and test function fallback support.
+- **Task Creation & Editing ISO Datetime Format Handling (`task-create-dialog.tsx`, `task-edit-dialog.tsx`):**
+  - Updated `datetime-local` input `onChange` handlers to store standard offset-bearing ISO strings (`new Date(val).toISOString()`) in form state via `setValue(..., { shouldValidate: true })`, eliminating "Valid ISO datetime required" schema validation errors on task creation/edit.
+- **Verification:**
+  - Full Test Suite (`npm test`): PASSED (80 suites passed, 730 tests passed, 0 failures).
+
+## [2026-08-24 @ 13:25]
+
+**🐛 Hotfixes: Clean Up Unused Notification Import**
+
+- **Notification Inbox (`src/app/[locale]/(protected)/notificaciones/_components/notification-inbox.tsx`):**
+  - Removed unused `getDefaultNotificationRange` import from `@/lib/notifications/date-utils`, resolving ESLint `@typescript-eslint/no-unused-vars` warning while preserving `isDefaultNotificationRange` functionality.
+- **Verification:**
+  - ESLint (`npm run lint`): PASSED (0 errors, 0 warnings).
+
+## [2026-08-24 @ 13:14]
+
+**🛠 Architecture & 🐛 Hotfixes: S07-07 Immutable Rollover Refinement (Duplicate Request-ID Guard & Generation-Scoped Deliverables)**
+
+- **Audit Duplicate Request-ID Validation (`scripts/bootstrap-dev-demo-data.ts`):**
+  - Added raw query row cardinality grouping and verification across candidate request UUIDs before Map construction, throwing a descriptive integrity error if any candidate request ID has $> 1$ occurrences to prevent Map overwrite concealment.
+- **Generation-Scoped Deliverables for Client Review Rollover (`scripts/bootstrap-dev-demo-data.ts`):**
+  - Retained fixed legacy deliverable (`dApprovedId`) for the initial valid period.
+  - Implemented automatic generation-scoped deliverable (`Sandbox Metrics Review Cycle — Epoch ${currentBucketEpoch}`) and version 1 reconciliation for future rollover epochs when prior cohorts age past 90 days, enabling `deliverable_cycle_metrics_view` to derive fresh `client_acted_at` timestamps without modifying older deliverable history.
+  - Updated candidate generation audit validation to dynamically verify provenance-marked generation deliverables against expected project, title, specifications, and Operator A ownership.
+- **Verification:**
+  - TypeScript Typecheck (`npm run typecheck`): PASSED (0 errors).
+
+## [2026-08-24 @ 13:08]
+
+**🛠 Architecture & 🐛 Hotfixes: S07-07 Immutable Fixture Rollover Correction & Amendment 01**
+
+- **Deterministic Fixture Reuse Before Rollover (`scripts/bootstrap-dev-demo-data.ts`):**
+  - **Metric Audit Log Generations**: Replaced unconditional 30-day epoch insertion with candidate discovery across 4 epochs (`currentBucketEpoch` down to `currentBucketEpoch - 3`). Implemented exact 5-UUID verification, entity relationship integrity checks, action/actor/status transition validation, chronological timestamp ordering, and 90-day presentation usability filtering before reuse.
+  - **Standard In-App Notification Pair**: Replaced bucketed insertions with candidate discovery across 4 epochs (`b0` to `b-3`), validating exact unread `task_assigned` and read `deliverable_submitted` pairs with single `opAId` in-app recipient topology and fail-closed error handling on partial generations.
+  - **1-Day Epoch Historic Notification**: Replaced 2-day epoch with 1-day epoch (`Math.floor(now.getTime() / ONE_DAY_MS)`) with prefix discovery (`sandbox_historical_event_92d:`) and exact-key corruption handling to prevent demonstration gaps when rows age past 93 days.
+  - **Singular External Suppression Fixture**: Ensured existing suppression event is preserved indefinitely. Validates single recipient cardinality on `opAId` + `email` with full terminal suppression contract before safely updating mutable `suppressed_at`.
+- **Verification:**
+  - TypeScript Typecheck (`npm run typecheck`): PASSED (0 errors).
+
+## [2026-08-24 @ 12:37]
+
+**🚀 Features & ♿ Accessibility: S07-07 (Localhost Demonstration Corpus, Accessibility Remediations & Sprint Closeout)**
+
+- **Demonstration Corpus & Seed Data Reconciliation (`scripts/bootstrap-dev-demo-data.ts`):**
+  - Added deterministic 30-day epoch bucketing and valid UUID generation (`deterministicFixtureUuid`) for canonical audit logs (`audit_logs.request_id`).
+  - Added deterministic Sandbox tasks, deliverables (with strict workflow deadline rules), insert-only deliverable versions (v1), and an open link incident on the delivered teaser.
+  - Implemented token-hash-first lookup for demo invitation (`sandbox-invitee@demo.jsf.internal`) formatted with `\x${tokenHashHex}` bytea representation.
+  - Implemented deterministic insert-only notification events (read, unread, 92-day historical record, and email suppression with complete constraint fields).
+  - Seeded task-scoped milestone (Operator A visible) and project-scoped milestone (Admin/PM visible).
+- **Accessibility Remediations ($\ge 44\text{px} \times 44\text{px}$ Touch Targets):**
+  - Updated external link anchor and copy URL button in `src/components/shared/archive/external-link-button.tsx` to `min-h-[44px] min-w-[44px]`.
+  - Updated status select, project select, and date preset buttons in `src/components/shared/archive/archive-filter-bar.tsx` to `min-h-[44px]`.
+  - Updated read/unread filter tabs and preset buttons in `src/app/[locale]/(protected)/notificaciones/_components/notification-inbox-filters.tsx` to `min-h-[44px]`.
+  - Updated view switchers, navigation chevrons, project select, and New Milestone button in `src/app/[locale]/(protected)/calendario/_components/calendar-header.tsx` to `min-h-[44px]`.
+  - Updated compact milestone trigger in `src/app/[locale]/(protected)/calendario/_components/event-badge.tsx` to remain touch-visible on mobile (`opacity-100 sm:opacity-0 sm:group-hover:opacity-100`) and sized to `44px x 44px`.
+  - Updated table row Edit and Delete milestone action buttons in `src/app/[locale]/(protected)/calendario/_components/views/calendar-list-view.tsx` to `min-h-[44px] min-w-[44px] h-11 w-11`.
+- **Localization Adaptation (`useLocale()`):**
+  - Removed all hardcoded `"es-MX"` calls across `calendar-header.tsx`, `event-badge.tsx`, `calendar-month-view.tsx`, `calendar-week-view.tsx`, `calendar-agenda-view.tsx`, and `calendar-list-view.tsx`, dynamically deriving active locale via `useLocale()`.
+  - Added unit test suite asserting English vs Spanish localized weekday and month name rendering in `calendar-views.test.tsx`.
+- **Documentation & Sprint Closeout Deliverables:**
+  - Authored comprehensive localhost stakeholder demonstration runbook: `dev-docs/documentation/s07-localhost-stakeholder-demo-runbook.md`.
+  - Updated development persona access guide: `dev-docs/documentation/s03-e03-03-dev-persona-access.md`.
+  - Authored Sprint 07 closeout verification and factual evidence record: `dev-docs/specs/s07/s07-sprint-07-closeout-verification.md`.
+- **Verification:**
+  - Integrated verification gate (`npm run verify`): PASSED (format:check, lint, typecheck, build, 84 test suites / 730 tests, test:coverage, audit:prod with 0 vulnerabilities).
+
+## [2026-08-24 @ 11:03]
+
+**🐛 Hotfixes: Clean ESLint Warnings & Type Strictness in S07-05 / S07-06 Modules**
+
+- **ESLint & TypeScript Cleanup:**
+  - Removed unused icon imports (`ShieldCheck`, `Mail`, `Phone`, `ShieldAlert`, `ExternalLink`, `Inbox`, `RotateCcw`) across `DiagnosticsCard`, `UserInvitationStateSection`, `PmMetricsPage`, `MetricCardsGrid`, and `MetricsFilterBar`.
+  - Removed unused `role` prop from `MetricCardsGrid` and unused `xAxisLabel` prop from `StatusDistributionChart`.
+  - Replaced all explicit `any` casting in `src/lib/operations-metrics/__tests__/s07-05-s07-06-adapters.test.ts` with strict typed record and cursor structures.
+  - Added direct unit test assertions for `validateDeliverableStatusDistribution`.
+- **Verification:**
+  - `npm run lint`: 0 errors, 0 warnings.
+  - `npm run typecheck`: 0 errors.
+  - `npx vitest run src/lib/operations-metrics/__tests__/s07-05-s07-06-adapters.test.ts`: 10/10 tests passed.
+
+## [2026-08-24 @ 10:48]
+
+**🚀 Features & 🛠 Architecture: S07-05 (Scoped Operations Metrics Dashboards) & S07-06 (Admin Operations Console)**
+
+- **Operations Metrics Domain Layer (`src/lib/operations-metrics/`):**
+  - Defined explicit DTOs (`OperationsMetricsSummaryDto`, `OperationsMetricTrendPointDto`, `ProjectStatusDistribution`, `DeliverableStatusDistribution`) and finite section result types (`{ status: "available", data: T } | { status: "unavailable", code: "UNAVAILABLE" }`).
+  - Added strict Zod schemas for date ranges (ISO offset-bearing timestamps in `America/Mexico_City`, `<= 93` days) and role-specific query shapes (Admin global omitting project vs PM single required project).
+  - Built Mexico City timezone conversion utilities (`convertLocalDateToMexicoCityRange`, `getDefaultMetricsRange`, `normalizeMetricsSearchState`) with exclusive next-day start-of-day serialization via `formatIsoWithOffset`.
+  - Implemented server queries calling M3 (`get_scoped_operations_metrics`) and M5 (`list_scoped_operations_metric_trend`) with runtime response validation, closed-set status distribution projection (missing keys default to 0, unknown keys fail closed), and semantic epoch instant comparisons.
+- **Admin Operations Domain Layer (`src/lib/admin-operations/`):**
+  - Created presentation DTOs stripping raw internal identifiers (`audit_id`, `entity_id`, `profile_id`, `record_id`, `project_id`) prior to client exposure.
+  - Implemented safe development capability diagnostics mapper (`getAdminCapabilityDiagnostics`) translating posture to closed safe tokens (`local_demo`, `inactive`, `activation_prerequisites_incomplete`, `configuration_requires_review`) without sensitive data exposure.
+  - Built keyset-paginated server queries and continuation server actions (`fetchAdminAuditPage`, `fetchAdminUserInvitationStatePage`, `loadAdminAuditPageAction`, `loadAdminUserInvitationStatePageAction`).
+- **Shared Metrics Presentation Components (`src/components/shared/metrics/`):**
+  - Implemented `MetricsFilterBar` with 30-day and 90-day preset buttons, custom Mexico City date pickers, and PM project selector.
+  - Built `MetricCardsGrid` displaying 8 distinct operational attention metrics with truthful null-handling for PM Watcher queue counts.
+  - Created `StatusDistributionSection` with Recharts bar chart and always-visible accessible semantic HTML tables for project and deliverable statuses.
+  - Built `TrendChartSection` visualizing 7-day half-open interval operational trends across 4 distinct metric series with accessible data tables.
+  - Built `CycleDurationSummary` presenting client review and project completion cycle duration metrics with unit formatting.
+- **Admin Operations Console (`src/app/[locale]/(protected)/admin/operaciones/`):**
+  - Created `OperationalAttentionSection` with summary cards, suppression notice, and direct navigation links to specialized consoles.
+  - Created `DiagnosticsCard` presenting local demo integration posture and external delivery status.
+  - Created `AuditHistorySection` and `UserInvitationStateSection` with desktop table and mobile card views, keyset pagination, and screen-reader live regions.
+- **RSC Route Pages & Navigation (`src/app/[locale]/(protected)/`, `src/components/shared/app-nav/`):**
+  - Implemented `/admin/metricas`, `/pm/metricas`, and `/admin/operaciones` with independent section-level failure isolation (`Promise.allSettled`).
+  - Updated AppNav and MobileNavToggle to expose `/admin/metricas`, `/admin/operaciones`, and `/pm/metricas` based on role permissions.
+- **Localization & Tests:**
+  - Added complete bilingual translations in `messages/es-MX.json` and `messages/en-US.json` under `metrics` and `adminOperations` namespaces.
+  - Created single focused server-adapter test suite `src/lib/operations-metrics/__tests__/s07-05-s07-06-adapters.test.ts` (10/10 tests passed).
+  - Updated database migration contract tests in `__tests__/database/s07-e09-migrations.test.ts` (7/7 tests passed).
+  - Updated app shell navigation tests in `__tests__/app-shell/navigation.test.ts` (19/19 tests passed).
+  - Full test suite verification: 80 test files passed (729 tests passed, 0 failures).
+
+## [2026-08-24 @ 10:05]
+
+**🛠 Database Migration: S07 E09 M5 Scoped Operations Metrics Trend Projection**
+
+- **Database Migration (`supabase/migrations/20260824110000_s07_e09_scoped-operations-metrics-trend-projection.sql`):**
+  - Applied migration `20260824110000_s07_e09_scoped_operations_metrics_trend_projection` cleanly via Supabase MCP.
+  - Added authenticated, read-only `SECURITY DEFINER` RPC `public.list_scoped_operations_metric_trend(uuid, timestamptz, timestamptz)` returning weekly bounded operational metric trends (finalized deliverables, review cycles, completions, and reopenings).
+- **TypeScript Types (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript types via Supabase MCP `generate_typescript_types` to reflect `list_scoped_operations_metric_trend`.
+
+## [2026-08-24 @ 09:13]
+
+**🐛 Hotfixes: Fix NotificationInbox Component Test Type Signature**
+
+- **Notification Inbox Unit Tests (`src/app/[locale]/(protected)/notificaciones/_components/notification-inbox.test.tsx`):**
+  - Updated all test renders to supply the required `currentQuery` prop matching `NotificationInboxProps` contract (`RecipientInboxQuery`).
+  - Added routing mocks for `@/i18n/routing` (`useRouter`, `usePathname`, `Link`) and updated `next/navigation` mock (`useSearchParams`).
+- **Verification:**
+  - `npm run typecheck`: 0 errors.
+  - `npm run test`: 18/18 test suites passed (107/107 tests).
+  - `npm run build`: Production build completed successfully.
+  - `npm run lint`: 0 errors, 0 warnings.
+
+## [2026-08-24 @ 08:41]
+
+**🚀 Features & 🛠 Architecture: S07-03 (Finalized Production Archive & Link Incident Visibility) & S07-04 (Bounded Notification History & In-App Filters)**
+
+- **Archive & Link Incidents Core Layer (`src/lib/archive/`):**
+  - Implemented narrow purpose-limited DTOs (`FinalizedArchiveItem`, `FinalizedArchivePage`, `LinkIncidentItem`, `LinkIncidentPage`, `ArchiveProjectFilterOption`).
+  - Added strict lexical URL sanitizers for Google Drive deliverables (`sanitizeSubmissionUrl`) and Drive folder links (`sanitizeDriveFolderUrl`), failing closed to `null` without dereferencing or server-side probing.
+  - Implemented server-derived `projectHref` routing (Admin `/admin/proyectos/[id]`, PM `/pm/proyectos/[id]`, Client `/cliente/proyectos/[id]`, Operator `null`).
+  - Built server-only queries calling M2 `list_finalized_production_archive` and `list_role_safe_link_incidents` RPCs with composite keyset pagination (`[finalized_at, deliverable_id]` and `[reported_at, incident_id]`).
+  - Implemented purpose-limited project selector queries (`fetchArchiveProjectFilterOptionsForAdmin`, `fetchArchiveProjectFilterOptionsForPm`) returning non-deleted projects including completed/archived projects.
+  - Created server actions `loadFinalizedArchivePageAction` and `loadLinkIncidentPageAction` with strict Zod validation.
+- **Notification History Adapters (`src/lib/notifications/`):**
+  - Updated `listRecipientInboxPage` and `loadRecipientInboxPageAction` to support M4 6-argument RPC contract with default 90-day window, bounded date ranges (<= 93 days), read-state filtering (`all`, `unread`, `read`), and paired composite keyset continuation.
+  - Reused `CALENDAR_TIME_ZONE` (`America/Mexico_City`) and `formatIsoWithOffset` from date utilities.
+- **Shared Presentation Components (`src/components/shared/archive/`, `src/components/shared/incidents/`):**
+  - Built `ExternalLinkButton` with accessible copy-to-clipboard (polite live region announcement) and outbound anchor (`target="_blank" rel="noopener noreferrer"`).
+  - Created `ArchiveFilterBar` and `IncidentFilterBar` with status filters, 90-day preset range shortcuts, and purpose-limited project selectors.
+  - Created `ArchiveListView` and `IncidentListView` with semantic desktop table, mobile cards, and deterministic keyset state reset on RSC filter changes.
+- **Notification Inbox Refactor (`src/app/[locale]/(protected)/notificaciones/`):**
+  - Extracted `NotificationInboxFilters` child component with 90-day window notice, all/unread/read filter buttons, and date presets.
+  - Updated `NotificationInbox` with contextual empty states (`NotificationEmptyState`) and keyset state resets.
+- **Role Routes & Project Workspace Tab:**
+  - Added role RSC pages: `/admin/archivo`, `/pm/archivo`, `/cliente/archivo`, `/operador/archivo`, `/admin/incidentes-enlaces`, `/pm/incidentes-enlaces`.
+  - Added `ProjectArchiveTab` to `ProjectWorkspaceShell` under `tab=archive` with dedicated query parameter namespacing (`archiveFrom`, `archiveTo`, `archiveStatus`).
+  - Added Archive and Link Incidents links in `AppNav` and `MobileNavToggle`.
+  - Full bilingual localization parity added in `messages/es-MX.json` and `messages/en-US.json`.
+- **Verification:**
+  - Migration tests: `__tests__/database/s07-e09-migrations.test.ts` (6/6 passed).
+  - Notification tests: `src/lib/notifications/__tests__/` (91/91 passed).
+  - Archive tests: `src/lib/archive/__tests__/` (10/10 passed).
+  - App shell navigation tests: `__tests__/app-shell/navigation.test.ts` (19/19 passed).
+  - i18n parity tests: `__tests__/i18n/` (23/23 passed).
+  - `npm run lint`: 0 errors, 0 warnings.
+  - All source files strictly <= 400 lines.
+
+## [2026-08-24 @ 07:53]
+
+**🛠 Database & Architecture: S07 E09 M4 Notification History Window and Filters Migration Applied**
+
+- Applied migration `20260824080000_s07_e09_notification_history_window_and_filters.sql` (`20260824080000_s07_e09_notification_history_window_and_filters`) cleanly to remote database via Supabase MCP `apply_migration`.
+- Schema and RPC updates:
+  - Replaced superseded 3-argument overload with updated 6-argument `public.list_my_in_app_notifications(p_limit, p_from, p_to, p_read_state, p_before_created_at, p_before_recipient_id)`.
+  - Implemented purpose-limited read contract enforcing default 90-day visibility window (when dates are omitted), mandatory bounded date ranges (<= 93 days), optional read-state boolean filtering, and composite keyset continuation (`p_before_created_at`, `p_before_recipient_id`).
+  - Added partial index `notification_recipients_in_app_history_keyset_idx` on `public.notification_recipients (user_id, created_at desc, id desc) where channel = 'in_app'`.
+- Regenerated TypeScript definitions in `src/lib/database.types.ts` via Supabase MCP `generate_typescript_types`.
+- Verification: Vitest database suite passed 27/27 tests across all migration contract checks.
+
+## [2026-08-24 @ 07:25]
+
+**🚀 Features & 🛠 Architecture: S07-02 Calendar & Manual Milestones Full Implementation**
+
+- **Timezone Domain Core (`@date-fns/tz` & `src/lib/calendar/`):**
+  - Configured `@date-fns/tz` with `CALENDAR_TIME_ZONE = "America/Mexico_City"` across all calendar arithmetic, preventing wall-clock drift and ensuring exact exclusive half-open range queries `[from, to)`.
+  - Implemented inclusive-end parsing: all-day UI milestones store `ends_at` as the next calendar day's 00:00:00 Mexico City wall-clock instant, displaying identically and unambiguously in the UI.
+  - Implemented strict Zod schemas with inheritance for create/update milestone commands, ensuring 160-char title limits, 2000-char description limits, and non-empty ISO validations.
+- **Data & Server Actions (`src/lib/calendar/`):**
+  - Routed all calendar data queries (`list_role_safe_calendar_events`, `list_calendar_milestone_targets`, `get_calendar_milestone_for_edit`) exclusively through `SECURITY DEFINER` RPCs.
+  - Implemented role-gated server actions (`createCalendarMilestoneAction`, `updateCalendarMilestoneAction`, `softDeleteCalendarMilestoneAction`, `getCalendarMilestoneForEditAction`) with server-side authorization check (`admin` and `pm`) and precise path revalidation (`/[locale]/(protected)/calendario` and concrete project paths).
+- **Navigation & Presentation Views (`src/app/[locale]/(protected)/calendario/`):**
+  - Added `/calendario` to route guards and navigation bars (`AppNav`, `MobileNavToggle`) for all authenticated roles.
+  - Built 4 responsive calendar views (`MonthView`, `WeekView`, `AgendaView`, `ListView`) with color tokens (`chart-1` through `chart-5`), deep links for Admin, PM, and Client project pages, and non-interactive text for Operator events.
+  - Created `MilestoneDialog` and `DeleteMilestoneDialog` with on-demand description fetching and target project/task pickers.
+- **Project Workspace Integration (`ProjectWorkspaceShell` & `ProjectCalendarTab`):**
+  - Added URL query-driven `tab=calendar` activation with view (`calendarView`) and date window (`calendarFrom`, `calendarTo`) persistence.
+  - Wired role- and capacity-aware milestone management (`canManageMilestones`), ensuring PM Watchers and terminal projects receive clean read-only calendar views.
+- **Verification & Compliance:**
+  - `npx vitest run ...`: 11 test suites / 114 tests passed (100%).
+  - `npm run typecheck`: 0 errors.
+  - `npm run lint`: 0 errors, 0 warnings.
+  - `npm run build`: Clean production compilation and dynamic route generation.
+  - All source files strictly <= 400 lines.
+
+## [2026-08-24 @ 05:33]
+
+**S07-E09-M1R: Calendar Task-Scoped Milestones and PM Authority Migration Applied**
+
+- Applied migration `20260823144000_s07_e09_calendar-task-scoped-milestones-and-pm-authority.sql` (`20260823144000_s07_e09_calendar_task_scoped_milestones_and_pm_authority`) to remote database via Supabase MCP `apply_migration`.
+- Schema enhancements:
+  - Added `task_id` (`uuid references public.tasks(id) on delete restrict`) column to `public.calendar_events`.
+  - Added validation trigger `calendar_events_task_scope_trg` and function `private.validate_calendar_event_task_scope()` to enforce that task-scoped milestones reference existing active tasks within the same project.
+  - Revoked `SELECT` on `public.calendar_events` from `authenticated` and dropped `calendar_events_select_policy` to route all authenticated reads through hardened `SECURITY DEFINER` functions.
+  - Replaced `public.list_role_safe_calendar_events(timestamptz, timestamptz, uuid)` to include `project_name` and `task_id`, providing all-PM calendar authority and filtering task-scoped milestones for direct operator assignees.
+  - Created manager-only functions `public.list_calendar_milestone_targets()` and `public.get_calendar_milestone_for_edit(uuid)`.
+  - Replaced command functions `public.create_calendar_milestone`, `public.update_calendar_milestone`, and `public.soft_delete_calendar_milestone` to support `p_task_id`, maintain structured audit logs, and enforce manager permissions.
+- Regenerated TypeScript types via Supabase MCP `generate_typescript_types` and updated [database.types.ts](file:///c:/Users/ruben/Desktop/jsf-app-dev-project/jsf-pm-app/src/lib/database.types.ts).
+- Verified with focused test suite: `npx vitest run __tests__/database/s07-e09-migrations.test.ts` (5/5 tests passing).
+
+
 ## [2026-08-23 @ 17:19]
 
 **🐛 Hotfixes / 🛠 Architecture: ESLint Boundary Override & Server-Only Guard for Alert Evaluator Action**
