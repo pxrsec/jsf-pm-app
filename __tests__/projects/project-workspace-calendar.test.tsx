@@ -104,6 +104,7 @@ import { ProjectWorkspaceShell } from "@/components/shared/projects/project-work
 const mockPush = vi.fn();
 
 vi.mock("next-intl", () => ({
+  useLocale: () => "es-MX",
   useTranslations: () => (key: string) => {
     const map: Record<string, string> = {
       overview: "Resumen",

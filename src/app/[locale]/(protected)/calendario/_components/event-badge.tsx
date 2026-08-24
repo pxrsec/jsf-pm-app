@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/routing";
 import {
   MoreHorizontal,
@@ -42,6 +42,7 @@ export function EventBadge({
   onDelete,
 }: EventBadgeProps) {
   const t = useTranslations("calendar");
+  const locale = useLocale();
 
   const colorStyles = event.color_override
     ? CALENDAR_COLOR_CLASSES[event.color_override]
@@ -101,10 +102,10 @@ export function EventBadge({
           <div className="shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger
-                className="h-5 w-5 inline-flex items-center justify-center rounded-md p-0 opacity-0 group-hover:opacity-100 focus:opacity-100 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-opacity"
+                className="h-11 w-11 min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-md p-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-opacity"
                 aria-label={`${t("actions.editMilestone")}: ${event.title}`}
               >
-                <MoreHorizontal className="h-3 w-3" />
+                <MoreHorizontal className="h-4 w-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-36">
                 {onEdit && (
@@ -173,7 +174,7 @@ export function EventBadge({
           <span>
             {event.is_all_day
               ? t("table.allDay")
-              : formatCalendarDate(event.starts_at, "es-MX", {
+              : formatCalendarDate(event.starts_at, locale, {
                   hour: "2-digit",
                   minute: "2-digit",
                   hour12: true,
@@ -189,7 +190,7 @@ export function EventBadge({
               variant="ghost"
               size="sm"
               onClick={() => onEdit(event.entity_id)}
-              className="h-8 w-8 p-0"
+              className="h-11 w-11 p-0 min-h-[44px] min-w-[44px]"
               aria-label={`${t("actions.editMilestone")}: ${event.title}`}
             >
               <Pencil className="h-4 w-4" />
@@ -200,7 +201,7 @@ export function EventBadge({
               variant="ghost"
               size="sm"
               onClick={() => onDelete(event.entity_id, event.title)}
-              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+              className="h-11 w-11 p-0 min-h-[44px] min-w-[44px] text-destructive hover:text-destructive"
               aria-label={`${t("actions.deleteMilestone")}: ${event.title}`}
             >
               <Trash2 className="h-4 w-4" />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { TZDate } from "@date-fns/tz";
 import {
@@ -41,6 +41,7 @@ export function CalendarHeader({
   onCreateMilestone,
 }: CalendarHeaderProps) {
   const t = useTranslations("calendar");
+  const locale = useLocale();
 
   // Format localized heading for the current view and range
   const formattedRangeTitle = useMemo(() => {
@@ -55,7 +56,7 @@ export function CalendarHeader({
     );
 
     if (currentRange.view === "month") {
-      const title = formatCalendarDate(tzFrom, "es-MX", {
+      const title = formatCalendarDate(tzFrom, locale, {
         month: "long",
         year: "numeric",
       });
@@ -67,17 +68,19 @@ export function CalendarHeader({
       const sameYear = tzFrom.getFullYear() === tzToInclusive.getFullYear();
 
       if (sameMonth && sameYear) {
-        const monthName = formatCalendarDate(tzFrom, "es-MX", {
+        const monthName = formatCalendarDate(tzFrom, locale, {
           month: "long",
         });
-        return `${tzFrom.getDate()} - ${tzToInclusive.getDate()} de ${monthName} de ${tzFrom.getFullYear()}`;
+        return locale.startsWith("es")
+          ? `${tzFrom.getDate()} - ${tzToInclusive.getDate()} de ${monthName} de ${tzFrom.getFullYear()}`
+          : `${monthName} ${tzFrom.getDate()} - ${tzToInclusive.getDate()}, ${tzFrom.getFullYear()}`;
       }
 
-      const fromFormatted = formatCalendarDate(tzFrom, "es-MX", {
+      const fromFormatted = formatCalendarDate(tzFrom, locale, {
         day: "numeric",
         month: "short",
       });
-      const toFormatted = formatCalendarDate(tzToInclusive, "es-MX", {
+      const toFormatted = formatCalendarDate(tzToInclusive, locale, {
         day: "numeric",
         month: "short",
         year: "numeric",
@@ -86,18 +89,18 @@ export function CalendarHeader({
     }
 
     // Agenda / List
-    const fromFormatted = formatCalendarDate(tzFrom, "es-MX", {
+    const fromFormatted = formatCalendarDate(tzFrom, locale, {
       day: "numeric",
       month: "short",
       year: "numeric",
     });
-    const toFormatted = formatCalendarDate(tzToInclusive, "es-MX", {
+    const toFormatted = formatCalendarDate(tzToInclusive, locale, {
       day: "numeric",
       month: "short",
       year: "numeric",
     });
     return `${fromFormatted} - ${toFormatted}`;
-  }, [currentRange]);
+  }, [currentRange, locale]);
 
   // Deduplicated unique projects for filter
   const uniqueProjects = useMemo(() => {
@@ -122,7 +125,7 @@ export function CalendarHeader({
             size="sm"
             onClick={onPrev}
             aria-label={t("aria.prevPeriod")}
-            className="h-8 w-8 p-0"
+            className="h-11 w-11 p-0 min-h-[44px] min-w-[44px]"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -131,7 +134,7 @@ export function CalendarHeader({
             size="sm"
             onClick={onToday}
             aria-label={t("aria.todayButton")}
-            className="h-8 px-2.5 text-xs font-semibold"
+            className="min-h-[44px] px-3.5 text-sm font-semibold"
           >
             {t("nav.today")}
           </Button>
@@ -140,7 +143,7 @@ export function CalendarHeader({
             size="sm"
             onClick={onNext}
             aria-label={t("aria.nextPeriod")}
-            className="h-8 w-8 p-0"
+            className="h-11 w-11 p-0 min-h-[44px] min-w-[44px]"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -161,7 +164,7 @@ export function CalendarHeader({
               onProjectFilterChange(e.target.value ? e.target.value : undefined)
             }
             aria-label={t("scope.projectFilterLabel")}
-            className="h-8 rounded-md border border-input bg-background px-2.5 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            className="min-h-[44px] rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
             <option value="">{t("scope.allProjectsFilter")}</option>
             {uniqueProjects.map((p) => (
@@ -186,7 +189,7 @@ export function CalendarHeader({
                 type="button"
                 aria-pressed={isActive}
                 onClick={() => onViewChange(v)}
-                className={`rounded px-2.5 py-1 text-xs font-semibold transition-all ${
+                className={`min-h-[44px] rounded px-3.5 py-2 text-sm font-semibold transition-all ${
                   isActive
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -203,9 +206,9 @@ export function CalendarHeader({
           <Button
             size="sm"
             onClick={onCreateMilestone}
-            className="h-8 gap-1.5 px-3 text-xs font-semibold"
+            className="min-h-[44px] gap-1.5 px-3.5 text-sm font-semibold"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-4 w-4" />
             <span>{t("actions.createMilestone")}</span>
           </Button>
         )}

@@ -1,142 +1,95 @@
 ---
-document_id: S07-01-E09-CAPABILITY-MAP-02
+document_id: S07-E09-CAPABILITY-MAP-03
 sprint_id: S07
-work_item: S07-01
-status: completed-reconciled
+status: reconciled-closeout-pending
 source_plan: dev-docs/specs/s07/s07-e09-visibility-reporting-and-operational-administration-demo-completion-sprint-plan.md
-reconciled_at: 2026-08-23T20:00:00-06:00
+reconciled_at: 2026-08-24T11:24:44-06:00
 target_environment: jsf-pm-dev
 ---
 
 # S07 E09 Capability Contract Mapping Reference
 
-## 1. Purpose and authority
+## 1. Purpose, authority, and current status
 
-This repository-local map reconciles the S07 plan with committed migrations, generated types, and the Project Owner’s calendar-scope decisions. It is the implementation map for S07 work; it does not itself apply a migration or change remote state.
+This is the repository-local execution map for Sprint 07. It reconciles the original plan with the S07 migration sources, the Project Owner's application/type provenance, and the completed S07-02 through S07-06 implementation reports. It does not apply database changes, regenerate types, establish provider capability, or constitute sprint closeout evidence.
 
-Authority is: Project Owner direction, accepted provider-deferral posture, repository migration sources/current applied catalog, repository OpenAPI contract, the reconciled S07 plan, and the work-item implementation specifications.
+**Authority by subject:** Project Owner direction; applied migration/type provenance for database contracts; accepted work-item specifications for application behavior; this document and the sprint plan for execution status and remaining closeout scope. A discrepancy in an applied function signature, generated type, route, safe DTO, or authorization boundary stops the affected work.
 
-The calendar reconciliation is controlled by `s07-02-calendar-and-manual-milestones-implementation-spec.md`. It assumes the forward migration at `20260823144000_s07_e09_calendar-task-scoped-milestones-and-pm-authority.sql` is applied and types are regenerated before S07-02 application implementation begins.
-
-## 2. Migration order and application baseline
-
-| Order | Source | State at S07-02 application implementation |
+| Work item | Current implementation state | Remaining action |
 | --- | --- | --- |
-| M0 | `20260823083000` through `20260823130000` | Applied security baseline. |
-| M1 | `20260823140000_s07_e09_calendar-role-safe-feed-and-milestones.sql` | Applied original calendar RPC boundary. |
-| M1 direct-read remediation | `20260823143000_s07_e09_scope_calendar_events_direct_select.sql` | Applied. |
-| M1-R | `20260823144000_s07_e09_calendar-task-scoped-milestones-and-pm-authority.sql` | Must be reviewed, committed, applied to `jsf-pm-dev`, and followed by unchanged MCP-generated types before application work. |
-| M2 | `20260823141000_s07_e09_finalized-production-archive-and-link-incidents.sql` | Applied/current; not consumed by S07-02. |
-| M3 | `20260823142000_s07_e09_scoped-operations-metrics-and-admin-projections.sql` | Applied/current; not consumed by S07-02. |
+| S07-M0 | Completed earlier as the S07 security baseline. | Retain its findings and closed evidence; do not reopen as routine closeout work. |
+| S07-02 | Completed: role-safe calendar and manual milestones. | S07-07 only verifies integration/manual evidence; no calendar authority redesign. |
+| S07-03 / S07-04 | Completed: archive/incidents and bounded notification history. | S07-07 repairs only verified accessibility/corpus/documentation gaps. |
+| S07-05 / S07-06 | Completed: metrics, trend dashboards, Admin operations, diagnostics, and navigation. | S07-07 repairs only verified accessibility/corpus/documentation gaps. |
+| S07-07 | Not implemented. | Complete corpus reconciliation, bounded accessibility refactor, current documentation/runbook/closeout, and factual evidence. |
 
-M1-R is append-only. It does not edit M1 or the direct-read remediation, add an HTTP endpoint, alter OpenAPI, enable external providers, add Realtime/scheduling, or alter deadline source records.
+## 2. Applied migration and generated-type baseline
 
-## 3. Shared role and data-boundary facts
+The Project Owner reports all of the following are applied to `jsf-pm-dev`, and `src/lib/database.types.ts` was regenerated through Supabase MCP after the applicable migrations:
 
-| Capability | Calendar interpretation | Non-calendar authority |
-| --- | --- | --- |
-| Admin | Calendar-wide feed and manual milestone management. | Existing Admin authority remains unchanged. |
-| PM Lead | Calendar-wide feed and manual milestone management. | Existing project/workspace authority remains unchanged. |
-| PM Watcher | Calendar-wide feed and manual milestone management. | Existing non-calendar Watcher limits remain unchanged. |
-| Operator | Own-work deadlines and task-scoped milestones only for directly assigned tasks. | No project-wide calendar browsing inferred. |
-| Client | Existing safe deadline-only, read-only calendar. | No manual milestones or manager contracts. |
+| Order | Migration | State | Consumed capability |
+| --- | --- | --- | --- |
+| M0 | `20260823083000_s07_m0_revoke_rls_auto_enable_execute.sql` through `20260823130000_s07_m0_security_definer_command_hardening.sql` | Applied | S07 security baseline. |
+| M1 | `20260823140000_s07_e09_calendar-role-safe-feed-and-milestones.sql` | Applied | Initial role-safe calendar contracts. |
+| M1 direct-read remediation | `20260823143000_s07_e09_scope_calendar_events_direct_select.sql` | Applied | Direct calendar-event read restriction. |
+| M1-R | `20260823144000_s07_e09_calendar-task-scoped-milestones-and-pm-authority.sql` | Applied | Task-scoped milestones and all-active-PM calendar authority. |
+| M2 | `20260823141000_s07_e09_finalized-production-archive-and-link-incidents.sql` | Applied | Finalized archive and read-only incident projections. |
+| M3 | `20260823142000_s07_e09_scoped-operations-metrics-and-admin-projections.sql` | Applied | Aggregate metrics, audit history, and user/invitation state projections. |
+| M4 | `20260824080000_s07_e09_notification_history_window_and_filters.sql` | Applied | Self-only bounded notification history. |
+| M5 | `20260824110000_s07_e09_scoped-operations-metrics-trend-projection.sql` | Applied | Bounded seven-day metrics trend projection. |
 
-The calendar exception granting all active PM users calendar-wide management is limited to M1-R calendar RPCs. It does not silently broaden PM directory, project workspace, archive, metrics, queue, membership, or administration authority.
+**S07-07 migration determination:** no migration is required or authorized. The remaining corpus obligations use existing table shape and the applied M1-R/M2/M3/M4/M5 contracts. A seed/reconciler change must not alter tables, functions, grants, policies, views, generated types, or migration history.
 
-Every public S07 RPC remains postgres-owned `SECURITY DEFINER`, has `search_path = pg_catalog, public`, revokes `PUBLIC` and `anon`, grants only its needed authenticated execution, derives the caller from `auth.uid()`, and returns purpose-limited output. `service_role` is not a substitute for session authorization.
+## 3. Capability, route, and authorization map
 
-## 4. Calendar and milestones — M1 plus M1-R
+| Capability | Canonical routes | Eligible callers | Authoritative boundary | Status |
+| --- | --- | --- | --- | --- |
+| Calendar | `/calendario` | All active roles; only Admin/PM manage milestones | M1-R RPCs; Operator only direct-task milestones; Client no manual milestones | Implemented. |
+| Finalized archive | `/admin/archivo`, `/pm/archivo`, `/operador/archivo`, `/cliente/archivo` | Role-safe per M2 | M2 archive RPC; Operator is direct-assignee-only with no project/Drive expansion | Implemented. |
+| Link incidents | `/admin/incidentes-enlaces`, `/pm/incidentes-enlaces` | Admin and database-authorized PM scope | M2 incident RPC; read-only; no Client/Operator route | Implemented. |
+| Personal history | `/notificaciones` | Every active role | M4 self-only history RPC and recipient-owned read actions | Implemented. |
+| Notification operations | `/admin/notificaciones`, `/pm/notificaciones` | Admin; active PM Lead only | Existing S06 operations authorization and projection | Implemented. |
+| Metrics | `/admin/metricas`, `/pm/metricas` | Admin global; PM selected permitted project | M3/M5 RPCs; no Operator/Client route | Implemented. |
+| Admin operations | `/admin/operaciones` | Admin only | M3 safe projections and closed diagnostics DTO | Implemented. |
 
-### 4.1 Canonical storage and integrity
+All desktop/mobile navigation items must remain role-real and locale-aware. The protected server layout derives `canAccessNotificationOperations` fail-closed. Navigation is never authorization evidence.
 
-`public.calendar_events` remains the only manual milestone table. Deadlines remain in `projects`, `tasks`, and `deliverables`; no deadline is copied to manual storage.
+## 4. Security and presentation invariants retained through closeout
 
-M1-R adds nullable `calendar_events.task_id`:
+1. Application role and project membership capacity remain separate. Calendar's all-active-PM exception is restricted to calendar RPCs.
+2. RPC actor derivation, RLS, grants, and safe projections remain the data authority. Server route guards and navigation are defense in depth.
+3. Browser DTOs omit database identifiers and sensitive metadata. Raw audit, identity, provider, configuration, and recipient details do not cross presentation boundaries.
+4. S07 uses `America/Mexico_City` date normalization, explicit offset-bearing half-open ranges, and a 93-day maximum where the relevant RPC contract requires it.
+5. External delivery remains inactive. `suppressed` means not sent, not pending, and not subject to automatic retry or replay.
+6. Stored external archive URLs are outbound user actions only. They are never server-fetched, previewed, proxied, or treated as reachability evidence.
+7. A chart is supplemental to its visible semantic table. Null, zero, empty, unavailable, and authority-limited states remain distinct.
 
-- null means a project-scoped milestone;
-- non-null means a task-scoped milestone;
-- a trigger requires that the task is active and belongs to the same project;
-- existing records remain project-scoped;
-- audit facts record scope/task ID but never description text.
+## 5. S07-07 reconciliation findings
 
-### 4.2 Calendar feed contract
+### 5.1 Corpus gap requiring an application-tooling change
 
-`list_role_safe_calendar_events(p_from, p_to, p_project_id default null)` remains the only general calendar feed. It validates authenticated active profile, `p_from < p_to`, maximum 93 days, overlap semantics, optional filter, and deterministic `starts_at`, `event_type`, `entity_id` ordering.
+The current bootstrap script creates personas, reference/sandbox projects, basic tasks/deliverables, in-app notification rows, one project-scoped reference milestone, and a completion audit. It does **not** reconcile all S07 demo requirements:
 
-M1-R output is:
+- no deterministic finalized `approved` and `delivered` production archive pair;
+- no deterministic safe `deliverable_link_reports` incident;
+- no task-scoped manual milestone to demonstrate Operator visibility isolation;
+- no explicit overdue sandbox task alongside an upcoming sandbox task;
+- no explicit M4 older-history and suppressed-external-recipient scenarios;
+- no explicit project completion/reopen-cycle corpus; and
+- no deliberate invitation-state scenario.
 
-```text
-entity_id, project_id nullable, project_name nullable, task_id nullable,
-title, event_type, starts_at, ends_at nullable, is_all_day, color_override nullable
-```
+S07-07 must add these only to `Acme Sandbox Campaign`, preserving every named reference and isolation project.
 
-Project IDs are route/filter candidates only. Project names are human-readable display values where authorized; UUIDs are never UI labels.
+### 5.2 Accessibility refactor required before closeout
 
-| Caller | Feed inclusion |
-| --- | --- |
-| Admin / active PM | All role-safe project, task, review, delivery, submission, and manual-milestone rows across all projects. |
-| Operator | Directly assigned task deadlines, directly assigned production-deliverable deadlines, and only manual milestones whose `task_id` is directly assigned to caller. |
-| Client | Existing safe project deadline, direct client-request task, direct client-submission, and client-delivery deadline scope; no manual milestone. |
+Repository inspection found several primary S07 interaction leaves still explicitly sized below the accepted 44px target: archive external-link actions and archive filter/reset controls, notification-history filter presets, calendar header/navigation controls and milestone edit/delete controls. These are concrete implementation defects against the sprint's accessibility contract, not optional styling work.
 
-### 4.3 Management contracts
+S07-07 must make the bounded 44px remediation described in its implementation specification before any final manual accessibility matrix, closeout verdict, or sprint completion claim. No architecture, data, or authorization refactor is required.
 
-Only Admin and active PM users execute:
+### 5.3 Documentation drift requiring correction
 
-```text
-list_calendar_milestone_targets()
-get_calendar_milestone_for_edit(p_event_id)
-create_calendar_milestone(... p_project_id, p_task_id, ...)
-update_calendar_milestone(... p_event_id, p_project_id, p_task_id, ...)
-soft_delete_calendar_milestone(p_event_id)
-```
+The old plan still labels M2/M3 as candidate/unapplied and omits M4/M5. The old mapping does not record S07-03 through S07-06 implementation. The older persona guide also inaccurately describes PM Lead A as a Sandbox Watcher, while the bootstrap source gives that persona a `pm_lead` Sandbox membership. S07-07 owns the bounded documentation correction.
 
-Targets contain only project/task IDs and names. Edit detail contains the manager-only description needed to preserve it during update. The general feed never contains description. Operator and Client receive a safe generic denial for forged management calls.
+## 6. Implementation and closeout readiness
 
-Commands enforce Admin/PM authority, title 1–160, nullable trimmed description <=2,000, valid timestamps, non-inverted end, required boolean, finite chart token/null, active same-project task scope, milestone-only update/delete, actor/audit derivation, and soft deletion.
-
-A false soft delete is a safe no-op/missing outcome. It is not success.
-
-### 4.4 Direct access disposition
-
-M1-R revokes direct authenticated `SELECT` on `calendar_events` and removes its select policy. Application code consumes only calendar RPCs. This prevents base-table description exposure and avoids a parallel browser/PostgREST calendar authority.
-
-## 5. Other E09 contracts retained
-
-### M2 archive and incidents
-
-M2 remains unchanged: finalized production archive is purpose-limited, excludes client submissions/nonterminal rows, and supports the accepted direct-assignee Operator archive restriction. Link incidents remain read-only for the authorized internal scope. S07-02 does not consume M2.
-
-### M3 metrics, administration, audit, user/invitation state
-
-M3 remains unchanged: scoped metrics, Admin audit/user-invitation projections, and server-only configuration posture are separate S07 consumers. S07-02 does not consume M3.
-
-## 6. Route, module, and test inventory
-
-| Area | S07 destination |
-| --- | --- |
-| Calendar | Shared `/calendario` RSC route, server-only calendar queries/actions, client interaction leaves, optional server-fed Admin/PM workspace context. |
-| Archive | S07-03 consumes M2. |
-| Notifications | S07-04 consumes S06 contracts. |
-| Metrics | S07-05 consumes M3. |
-| Admin state/audit | S07-06 consumes M3. |
-| Locale/accessibility | Every S07 route preserves Spanish canonical routing, `/en/`, catalog parity, and an accessible alternative. |
-
-Calendar tests cover M1-R static contract/type shape after application, server RPC argument/error/revalidation behavior, role-safe UI projections, all four views/list equivalence, existing navigation/route guard updates, and manual 375px/keyboard evidence. Component tests do not replace live migration/RLS evidence.
-
-## 7. OpenAPI reconciliation and adoption trigger
-
-The existing calendar OpenAPI declaration remains stale deferred vocabulary. M1-R does not create a same-origin HTTP endpoint; therefore it does not update OpenAPI.
-
-Adoption trigger: a later approved item proposes an actual same-origin calendar HTTP route. Before implementation, reconcile OpenAPI first for task-scoped milestones, calendar-wide Admin/PM authority, Client/Operator scope, project-name DTO, 93-day range, title/description/token constraints, and safe errors. Do not invent an HTTP endpoint merely because server-only code calls a Supabase RPC.
-
-## 8. Stop conditions
-
-1. If M1-R cannot enforce task/project integrity in the database, stop; do not rely on UI validation.
-2. If generated types or live catalog differ after application, stop and reconcile before app work.
-3. If manager targets/edit detail expose data to Operator/Client, narrow the RPC; do not hide it only in UI.
-4. If a deep link cannot prove destination authorization independently, omit it.
-5. If a change requires OpenAPI/REST, scheduler, Realtime, broad direct table access, or provider activity, open a new decision/work item.
-
-## 9. Implementation readiness
-
-After M1-R is applied and types regenerated unchanged, the reconciled S07-02 specification is the sole implementation-plan input for Antigravity. It must inspect exact repository paths and consume only the applied contracts; it must not modify migration SQL, generated types, or remote state.
+S07-07 can start immediately. Its only prerequisite is the applied migration/type baseline listed above; no additional database work is needed. Sprint 07 cannot be closed until S07-07 completes its corpus and accessibility corrections, documentation/runbook, focused verification, final manual journey matrix, and factual closeout record.

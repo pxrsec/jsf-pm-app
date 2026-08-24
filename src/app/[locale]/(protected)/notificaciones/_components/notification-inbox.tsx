@@ -20,7 +20,7 @@ import {
 import { NotificationEmptyState } from "./notification-empty-state";
 import { NotificationInboxItem } from "./notification-inbox-item";
 import { NotificationInboxFilters } from "./notification-inbox-filters";
-import { getDefaultNotificationRange } from "@/lib/notifications/date-utils";
+import { isDefaultNotificationRange } from "@/lib/notifications/date-utils";
 
 interface NotificationInboxProps {
   initialPage: RecipientInboxPage;
@@ -159,10 +159,10 @@ export function NotificationInbox({
 
   const hasUnread = notifications.some((n) => n.readAt === null);
 
-  const defaultRange = getDefaultNotificationRange();
-  const isCustomDateRange =
-    currentQuery.from !== defaultRange.from ||
-    currentQuery.to !== defaultRange.to;
+  const isCustomDateRange = !isDefaultNotificationRange(
+    currentQuery.from,
+    currentQuery.to,
+  );
 
   return (
     <div className="space-y-6">

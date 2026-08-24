@@ -56,6 +56,28 @@ export function isValidNotificationRange(from: string, to: string): boolean {
 }
 
 /**
+ * Checks if a given range represents the default latest 90-day notification history window.
+ */
+export function isDefaultNotificationRange(
+  from: string,
+  to: string,
+  referenceDate?: Date,
+): boolean {
+  const refTime = (referenceDate ?? new Date()).getTime();
+  const fromTime = new Date(from).getTime();
+  const toTime = new Date(to).getTime();
+  if (isNaN(fromTime) || isNaN(toTime)) return false;
+
+  const durationMs = toTime - fromTime;
+  const ninetyDaysMs = 90 * 24 * 60 * 60 * 1000;
+
+  const isNinetyDays = Math.abs(durationMs - ninetyDaysMs) < 60000;
+  const isRecent = Math.abs(toTime - refTime) < 5 * 60 * 1000;
+
+  return isNinetyDays && isRecent;
+}
+
+/**
  * Normalizes raw URL search parameters into a safe RecipientInboxQuery.
  */
 export function normalizeNotificationSearchState(

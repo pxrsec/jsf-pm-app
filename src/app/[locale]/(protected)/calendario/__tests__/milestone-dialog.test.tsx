@@ -49,6 +49,7 @@ const mockTranslationMap: Record<string, string> = {
 const stableT = (key: string) => mockTranslationMap[key] ?? key;
 
 vi.mock("next-intl", () => ({
+  useLocale: () => "es-MX",
   useTranslations: () => stableT,
 }));
 

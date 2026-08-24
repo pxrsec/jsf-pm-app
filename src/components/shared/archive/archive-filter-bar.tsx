@@ -135,7 +135,7 @@ export function ArchiveFilterBar({
           >
             <SelectTrigger
               aria-label={t("statusAria")}
-              className="h-9 w-[160px] text-xs font-medium"
+              className="min-h-[44px] w-[160px] text-sm font-medium"
             >
               <SelectValue placeholder={t("allStatuses")} />
             </SelectTrigger>
@@ -157,7 +157,7 @@ export function ArchiveFilterBar({
             >
               <SelectTrigger
                 aria-label={t("projectAria")}
-                className="h-9 w-[190px] text-xs font-medium"
+                className="min-h-[44px] w-[190px] text-sm font-medium"
               >
                 <SelectValue placeholder={t("allProjects")} />
               </SelectTrigger>
@@ -190,7 +190,7 @@ export function ArchiveFilterBar({
             size="sm"
             onClick={handlePresetLast90Days}
             disabled={isPending}
-            className="h-9 text-xs font-medium"
+            className="min-h-[44px] px-3.5 text-sm font-medium"
           >
             {t("presetLast90")}
           </Button>
@@ -200,7 +200,7 @@ export function ArchiveFilterBar({
             size="sm"
             onClick={handlePresetPrevious90Days}
             disabled={isPending}
-            className="h-9 text-xs font-medium"
+            className="min-h-[44px] px-3.5 text-sm font-medium"
           >
             {t("presetPrevious90")}
           </Button>

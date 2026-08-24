@@ -9,6 +9,7 @@ import { Calendar, Filter, Loader2, Info } from "lucide-react";
 import type { NotificationReadFilter } from "@/lib/notifications/inbox-contracts";
 import {
   getDefaultNotificationRange,
+  isDefaultNotificationRange,
   formatIsoWithOffset,
 } from "@/lib/notifications/date-utils";
 import { TZDate } from "@date-fns/tz";
@@ -82,9 +83,7 @@ export function NotificationInboxFilters({
     });
   };
 
-  const defaultRange = getDefaultNotificationRange();
-  const isDefaultRange =
-    currentFrom === defaultRange.from && currentTo === defaultRange.to;
+  const isDefaultRange = isDefaultNotificationRange(currentFrom, currentTo);
 
   return (
     <div className="space-y-3">
@@ -116,7 +115,7 @@ export function NotificationInboxFilters({
                 size="sm"
                 disabled={isPending}
                 onClick={() => handleReadFilter(filter)}
-                className="h-8 text-xs font-medium min-h-[36px] sm:min-h-[32px]"
+                className="min-h-[44px] px-3.5 text-sm font-medium"
               >
                 {t(`filters.${filter}`)}
               </Button>
@@ -136,7 +135,7 @@ export function NotificationInboxFilters({
             size="sm"
             onClick={handlePresetLast90Days}
             disabled={isPending}
-            className="h-8 text-xs font-medium min-h-[36px] sm:min-h-[32px]"
+            className="min-h-[44px] px-3.5 text-sm font-medium"
           >
             {t("filters.presetLast90")}
           </Button>
@@ -146,7 +145,7 @@ export function NotificationInboxFilters({
             size="sm"
             onClick={handlePresetPrevious90Days}
             disabled={isPending}
-            className="h-8 text-xs font-medium min-h-[36px] sm:min-h-[32px]"
+            className="min-h-[44px] px-3.5 text-sm font-medium"
           >
             {t("filters.presetPrevious90")}
           </Button>

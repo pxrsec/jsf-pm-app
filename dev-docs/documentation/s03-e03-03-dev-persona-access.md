@@ -52,10 +52,10 @@ The database bootstrap reconciles nine personas across all four application role
 | Persona | Email Address | Application Role | Seeded Demonstration Context |
 |---|---|---|---|
 | **Demo Admin** | `demo-admin@demo.jsf.internal` | `admin` | Full workspace visibility; all 6 reference and sandbox projects. |
-| **Demo PM Lead A** | `demo-pm-lead-a@demo.jsf.internal` | `pm` | Lead on *Acme Brand Relaunch*; Watcher on *Acme Sandbox Campaign*. |
+| **Demo PM Lead A** | `demo-pm-lead-a@demo.jsf.internal` | `pm` | Lead on *Acme Brand Relaunch*; Lead (`pm_lead`) on *Acme Sandbox Campaign*. |
 | **Demo PM Lead B** | `demo-pm-lead-b@demo.jsf.internal` | `pm` | Lead on *Starlight Summer Campaign*. |
 | **Demo Watcher A** | `demo-watcher-a@demo.jsf.internal` | `pm` | Read-only watcher membership on *Acme Brand Relaunch*. |
-| **Demo Operator A** | `demo-operator-a@demo.jsf.internal` | `operator` | Assigned production tasks on *Acme Brand Relaunch*. |
+| **Demo Operator A** | `demo-operator-a@demo.jsf.internal` | `operator` | Assigned production tasks on *Acme Brand Relaunch* and *Acme Sandbox Campaign*. |
 | **Demo Operator B** | `demo-operator-b@demo.jsf.internal` | `operator` | Assigned interactive tasks on *Acme Sandbox Campaign*. |
 | **Demo Client A1** | `demo-client-a1@demo.jsf.internal` | `client` | Primary client stakeholder for *Acme Corp* projects. |
 | **Demo Client A2** | `demo-client-a2@demo.jsf.internal` | `client` | Secondary client stakeholder for *Acme Corp* projects. |
@@ -94,9 +94,14 @@ Demonstrations must maintain clear separation between persistent reference recor
   - *Starlight Summer Campaign*
   These projects demonstrate realistic multi-client workflows, team assignments, and varied statuses. They should not be mutated during routine inspection.
 
-- **Sandbox Corpus (Interactive Mutation)**:
+- **Sandbox Corpus (Interactive Mutation & S07 Capabilities)**:
   - *Acme Sandbox Campaign*
-  This project is designated specifically for live client walkthroughs, task mutations, and interactive role demonstrations.
+  This project is designated specifically for live client walkthroughs, task mutations, and interactive role demonstrations covering Sprint 07 features:
+  - **M1 / M1-R Calendar**: Task-scoped and project-scoped milestones with role-filtered operator visibility.
+  - **M2 Finalized Archive**: Approved master video cut and delivered teaser, link copy/open interactions, client-submission exclusions, and reported link incidents.
+  - **M3 Operational Metrics**: 90-day deliverable cycle metrics with canonical audit trails and project completion/reopen cycles.
+  - **M4 Notification History**: In-app read/unread queues, 90-day default window filtering, older (92-day) historical records, and terminal provider suppression truthfulness.
+  - **M5 Operational Administration**: Workspace-wide health counters, pending invitations, and unresolved link incident review.
 
 > [!TIP]
 > If test data in the sandbox becomes inconsistent or needs resetting, simply re-run `npm run db:bootstrap` to idempotently restore clean baseline state without database drops.

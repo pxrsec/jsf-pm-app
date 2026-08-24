@@ -48,10 +48,10 @@ export function ExternalLinkButton({
         rel="noopener noreferrer"
         title={t("externalNotice")}
         aria-label={`${openLabel} (${t("opensInNewTab")})`}
-        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-2.5 text-xs font-medium text-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors min-h-[36px] sm:min-h-[32px]"
+        className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground shadow-xs hover:bg-accent hover:text-accent-foreground transition-colors"
       >
         <ExternalLink
-          className="h-3.5 w-3.5 text-muted-foreground"
+          className="h-4 w-4 text-muted-foreground"
           aria-hidden="true"
         />
         <span>{openLabel}</span>
@@ -65,15 +65,12 @@ export function ExternalLinkButton({
         onClick={handleCopy}
         title={copyLabel}
         aria-label={copyLabel}
-        className="h-8 w-8 p-0 min-h-[36px] min-w-[36px] sm:min-h-[32px] sm:min-w-[32px]"
+        className="h-11 w-11 p-0 min-h-[44px] min-w-[44px]"
       >
         {copied ? (
-          <Check className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+          <Check className="h-4 w-4 text-primary" aria-hidden="true" />
         ) : (
-          <Copy
-            className="h-3.5 w-3.5 text-muted-foreground"
-            aria-hidden="true"
-          />
+          <Copy className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
         )}
       </Button>
 

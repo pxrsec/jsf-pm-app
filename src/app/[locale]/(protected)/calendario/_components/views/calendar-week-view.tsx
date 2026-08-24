@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useLocale } from "next-intl";
 import { TZDate } from "@date-fns/tz";
 import {
   CALENDAR_TIME_ZONE,
@@ -19,6 +20,7 @@ export function CalendarWeekView({
   onEditMilestone,
   onDeleteMilestone,
 }: CalendarViewProps) {
+  const locale = useLocale();
   const eventsByDate = useMemo(() => groupEventsByDate(events), [events]);
 
   const weekDays = useMemo(() => {
@@ -40,7 +42,7 @@ export function CalendarWeekView({
       const date = currentDay.getDate();
       const dateKey = `${year}-${padZero(month + 1)}-${padZero(date)}`;
 
-      const dayName = formatCalendarDate(currentDay, "es-MX", {
+      const dayName = formatCalendarDate(currentDay, locale, {
         weekday: "short",
       }).toUpperCase();
       const dayEvents = eventsByDate.get(dateKey) ?? [];
@@ -56,7 +58,7 @@ export function CalendarWeekView({
     }
 
     return days;
-  }, [currentRange.from, eventsByDate]);
+  }, [currentRange.from, eventsByDate, locale]);
 
   if (events.length === 0) {
     return <CalendarEmptyState hasFilter={Boolean(currentRange.projectId)} />;

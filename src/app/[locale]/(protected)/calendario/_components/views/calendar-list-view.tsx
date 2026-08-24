@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Pencil, Trash2 } from "lucide-react";
 import {
@@ -21,6 +21,7 @@ export function CalendarListView({
   onDeleteMilestone,
 }: CalendarViewProps) {
   const t = useTranslations("calendar");
+  const locale = useLocale();
 
   const getSafeProjectLink = (event: CalendarEventDto): string | null => {
     if (!event.project_id) return null;
@@ -88,7 +89,7 @@ export function CalendarListView({
               >
                 {/* Date */}
                 <td className="whitespace-nowrap px-4 py-3 font-medium text-foreground">
-                  {formatCalendarDate(event.starts_at, "es-MX", {
+                  {formatCalendarDate(event.starts_at, locale, {
                     day: "2-digit",
                     month: "short",
                     year: "numeric",
@@ -99,7 +100,7 @@ export function CalendarListView({
                 <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
                   {event.is_all_day
                     ? t("table.allDay")
-                    : formatCalendarDate(event.starts_at, "es-MX", {
+                    : formatCalendarDate(event.starts_at, locale, {
                         hour: "2-digit",
                         minute: "2-digit",
                         hour12: true,
@@ -155,7 +156,7 @@ export function CalendarListView({
                           variant="ghost"
                           size="sm"
                           onClick={() => onEditMilestone(event.entity_id)}
-                          className="h-8 w-8 p-0"
+                          className="h-11 w-11 p-0 min-h-[44px] min-w-[44px]"
                           aria-label={`${t("actions.editMilestone")}: ${event.title}`}
                         >
                           <Pencil className="h-4 w-4" />
@@ -168,7 +169,7 @@ export function CalendarListView({
                           onClick={() =>
                             onDeleteMilestone(event.entity_id, event.title)
                           }
-                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          className="h-11 w-11 p-0 min-h-[44px] min-w-[44px] text-destructive hover:text-destructive"
                           aria-label={`${t("actions.deleteMilestone")}: ${event.title}`}
                         >
                           <Trash2 className="h-4 w-4" />

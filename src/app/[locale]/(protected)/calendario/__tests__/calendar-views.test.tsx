@@ -12,7 +12,10 @@ import { CalendarWeekView } from "../_components/views/calendar-week-view";
 import { CalendarAgendaView } from "../_components/views/calendar-agenda-view";
 import { CalendarListView } from "../_components/views/calendar-list-view";
 
+let currentMockLocale = "es-MX";
+
 vi.mock("next-intl", () => ({
+  useLocale: () => currentMockLocale,
   useTranslations: () => (key: string) => {
     const map: Record<string, string> = {
       "table.date": "Fecha",
@@ -239,6 +242,42 @@ describe("Calendar Presentation Views", () => {
 
       expect(screen.getByText("Rough Cut Delivery")).toBeInTheDocument();
       expect(screen.getByText("Color Grading Session")).toBeInTheDocument();
+    });
+  });
+
+  describe("Locale Adaptation (English & Spanish)", () => {
+    it("renders localized weekday headers and dates in English when locale is en-US", () => {
+      currentMockLocale = "en-US";
+
+      render(
+        <CalendarMonthView
+          events={mockEvents}
+          currentRange={mockRange}
+          canManageMilestones={true}
+          userRole="admin"
+        />,
+      );
+
+      // In en-US, short weekdays include SUN, MON, TUE, WED, THU, FRI, SAT
+      expect(screen.getByText("SUN")).toBeInTheDocument();
+      expect(screen.getByText("MON")).toBeInTheDocument();
+
+      cleanup();
+
+      render(
+        <CalendarListView
+          events={mockEvents}
+          currentRange={mockRange}
+          canManageMilestones={true}
+          userRole="admin"
+        />,
+      );
+
+      // In en-US, month short name for August is "Aug"
+      expect(screen.getAllByText(/Aug/i).length).toBeGreaterThan(0);
+
+      // Reset mock locale
+      currentMockLocale = "es-MX";
     });
   });
 });

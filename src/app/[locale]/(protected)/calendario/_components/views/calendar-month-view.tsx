@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { TZDate } from "@date-fns/tz";
 import {
   CALENDAR_TIME_ZONE,
@@ -32,6 +32,7 @@ export function CalendarMonthView({
   onDeleteMilestone,
 }: CalendarViewProps) {
   const t = useTranslations("calendar");
+  const locale = useLocale();
 
   const eventsByDate = useMemo(() => groupEventsByDate(events), [events]);
 
@@ -112,11 +113,11 @@ export function CalendarMonthView({
         CALENDAR_TIME_ZONE,
       );
       headers.push(
-        formatCalendarDate(day, "es-MX", { weekday: "short" }).toUpperCase(),
+        formatCalendarDate(day, locale, { weekday: "short" }).toUpperCase(),
       );
     }
     return headers;
-  }, []);
+  }, [locale]);
 
   if (
     events.length === 0 &&

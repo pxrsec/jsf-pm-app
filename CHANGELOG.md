@@ -1,5 +1,66 @@
 # JSF PM App Development Changelog
 
+## [2026-08-24 @ 13:25]
+
+**🐛 Hotfixes: Clean Up Unused Notification Import**
+
+- **Notification Inbox (`src/app/[locale]/(protected)/notificaciones/_components/notification-inbox.tsx`):**
+  - Removed unused `getDefaultNotificationRange` import from `@/lib/notifications/date-utils`, resolving ESLint `@typescript-eslint/no-unused-vars` warning while preserving `isDefaultNotificationRange` functionality.
+- **Verification:**
+  - ESLint (`npm run lint`): PASSED (0 errors, 0 warnings).
+
+## [2026-08-24 @ 13:14]
+
+**🛠 Architecture & 🐛 Hotfixes: S07-07 Immutable Rollover Refinement (Duplicate Request-ID Guard & Generation-Scoped Deliverables)**
+
+- **Audit Duplicate Request-ID Validation (`scripts/bootstrap-dev-demo-data.ts`):**
+  - Added raw query row cardinality grouping and verification across candidate request UUIDs before Map construction, throwing a descriptive integrity error if any candidate request ID has $> 1$ occurrences to prevent Map overwrite concealment.
+- **Generation-Scoped Deliverables for Client Review Rollover (`scripts/bootstrap-dev-demo-data.ts`):**
+  - Retained fixed legacy deliverable (`dApprovedId`) for the initial valid period.
+  - Implemented automatic generation-scoped deliverable (`Sandbox Metrics Review Cycle — Epoch ${currentBucketEpoch}`) and version 1 reconciliation for future rollover epochs when prior cohorts age past 90 days, enabling `deliverable_cycle_metrics_view` to derive fresh `client_acted_at` timestamps without modifying older deliverable history.
+  - Updated candidate generation audit validation to dynamically verify provenance-marked generation deliverables against expected project, title, specifications, and Operator A ownership.
+- **Verification:**
+  - TypeScript Typecheck (`npm run typecheck`): PASSED (0 errors).
+
+## [2026-08-24 @ 13:08]
+
+**🛠 Architecture & 🐛 Hotfixes: S07-07 Immutable Fixture Rollover Correction & Amendment 01**
+
+- **Deterministic Fixture Reuse Before Rollover (`scripts/bootstrap-dev-demo-data.ts`):**
+  - **Metric Audit Log Generations**: Replaced unconditional 30-day epoch insertion with candidate discovery across 4 epochs (`currentBucketEpoch` down to `currentBucketEpoch - 3`). Implemented exact 5-UUID verification, entity relationship integrity checks, action/actor/status transition validation, chronological timestamp ordering, and 90-day presentation usability filtering before reuse.
+  - **Standard In-App Notification Pair**: Replaced bucketed insertions with candidate discovery across 4 epochs (`b0` to `b-3`), validating exact unread `task_assigned` and read `deliverable_submitted` pairs with single `opAId` in-app recipient topology and fail-closed error handling on partial generations.
+  - **1-Day Epoch Historic Notification**: Replaced 2-day epoch with 1-day epoch (`Math.floor(now.getTime() / ONE_DAY_MS)`) with prefix discovery (`sandbox_historical_event_92d:`) and exact-key corruption handling to prevent demonstration gaps when rows age past 93 days.
+  - **Singular External Suppression Fixture**: Ensured existing suppression event is preserved indefinitely. Validates single recipient cardinality on `opAId` + `email` with full terminal suppression contract before safely updating mutable `suppressed_at`.
+- **Verification:**
+  - TypeScript Typecheck (`npm run typecheck`): PASSED (0 errors).
+
+## [2026-08-24 @ 12:37]
+
+**🚀 Features & ♿ Accessibility: S07-07 (Localhost Demonstration Corpus, Accessibility Remediations & Sprint Closeout)**
+
+- **Demonstration Corpus & Seed Data Reconciliation (`scripts/bootstrap-dev-demo-data.ts`):**
+  - Added deterministic 30-day epoch bucketing and valid UUID generation (`deterministicFixtureUuid`) for canonical audit logs (`audit_logs.request_id`).
+  - Added deterministic Sandbox tasks, deliverables (with strict workflow deadline rules), insert-only deliverable versions (v1), and an open link incident on the delivered teaser.
+  - Implemented token-hash-first lookup for demo invitation (`sandbox-invitee@demo.jsf.internal`) formatted with `\x${tokenHashHex}` bytea representation.
+  - Implemented deterministic insert-only notification events (read, unread, 92-day historical record, and email suppression with complete constraint fields).
+  - Seeded task-scoped milestone (Operator A visible) and project-scoped milestone (Admin/PM visible).
+- **Accessibility Remediations ($\ge 44\text{px} \times 44\text{px}$ Touch Targets):**
+  - Updated external link anchor and copy URL button in `src/components/shared/archive/external-link-button.tsx` to `min-h-[44px] min-w-[44px]`.
+  - Updated status select, project select, and date preset buttons in `src/components/shared/archive/archive-filter-bar.tsx` to `min-h-[44px]`.
+  - Updated read/unread filter tabs and preset buttons in `src/app/[locale]/(protected)/notificaciones/_components/notification-inbox-filters.tsx` to `min-h-[44px]`.
+  - Updated view switchers, navigation chevrons, project select, and New Milestone button in `src/app/[locale]/(protected)/calendario/_components/calendar-header.tsx` to `min-h-[44px]`.
+  - Updated compact milestone trigger in `src/app/[locale]/(protected)/calendario/_components/event-badge.tsx` to remain touch-visible on mobile (`opacity-100 sm:opacity-0 sm:group-hover:opacity-100`) and sized to `44px x 44px`.
+  - Updated table row Edit and Delete milestone action buttons in `src/app/[locale]/(protected)/calendario/_components/views/calendar-list-view.tsx` to `min-h-[44px] min-w-[44px] h-11 w-11`.
+- **Localization Adaptation (`useLocale()`):**
+  - Removed all hardcoded `"es-MX"` calls across `calendar-header.tsx`, `event-badge.tsx`, `calendar-month-view.tsx`, `calendar-week-view.tsx`, `calendar-agenda-view.tsx`, and `calendar-list-view.tsx`, dynamically deriving active locale via `useLocale()`.
+  - Added unit test suite asserting English vs Spanish localized weekday and month name rendering in `calendar-views.test.tsx`.
+- **Documentation & Sprint Closeout Deliverables:**
+  - Authored comprehensive localhost stakeholder demonstration runbook: `dev-docs/documentation/s07-localhost-stakeholder-demo-runbook.md`.
+  - Updated development persona access guide: `dev-docs/documentation/s03-e03-03-dev-persona-access.md`.
+  - Authored Sprint 07 closeout verification and factual evidence record: `dev-docs/specs/s07/s07-sprint-07-closeout-verification.md`.
+- **Verification:**
+  - Integrated verification gate (`npm run verify`): PASSED (format:check, lint, typecheck, build, 84 test suites / 730 tests, test:coverage, audit:prod with 0 vulnerabilities).
+
 ## [2026-08-24 @ 11:03]
 
 **🐛 Hotfixes: Clean ESLint Warnings & Type Strictness in S07-05 / S07-06 Modules**
