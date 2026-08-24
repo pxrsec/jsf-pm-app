@@ -1,5 +1,30 @@
 # JSF PM App Development Changelog
 
+## [2026-08-24 @ 07:25]
+
+**🚀 Features & 🛠 Architecture: S07-02 Calendar & Manual Milestones Full Implementation**
+
+- **Timezone Domain Core (`@date-fns/tz` & `src/lib/calendar/`):**
+  - Configured `@date-fns/tz` with `CALENDAR_TIME_ZONE = "America/Mexico_City"` across all calendar arithmetic, preventing wall-clock drift and ensuring exact exclusive half-open range queries `[from, to)`.
+  - Implemented inclusive-end parsing: all-day UI milestones store `ends_at` as the next calendar day's 00:00:00 Mexico City wall-clock instant, displaying identically and unambiguously in the UI.
+  - Implemented strict Zod schemas with inheritance for create/update milestone commands, ensuring 160-char title limits, 2000-char description limits, and non-empty ISO validations.
+- **Data & Server Actions (`src/lib/calendar/`):**
+  - Routed all calendar data queries (`list_role_safe_calendar_events`, `list_calendar_milestone_targets`, `get_calendar_milestone_for_edit`) exclusively through `SECURITY DEFINER` RPCs.
+  - Implemented role-gated server actions (`createCalendarMilestoneAction`, `updateCalendarMilestoneAction`, `softDeleteCalendarMilestoneAction`, `getCalendarMilestoneForEditAction`) with server-side authorization check (`admin` and `pm`) and precise path revalidation (`/[locale]/(protected)/calendario` and concrete project paths).
+- **Navigation & Presentation Views (`src/app/[locale]/(protected)/calendario/`):**
+  - Added `/calendario` to route guards and navigation bars (`AppNav`, `MobileNavToggle`) for all authenticated roles.
+  - Built 4 responsive calendar views (`MonthView`, `WeekView`, `AgendaView`, `ListView`) with color tokens (`chart-1` through `chart-5`), deep links for Admin, PM, and Client project pages, and non-interactive text for Operator events.
+  - Created `MilestoneDialog` and `DeleteMilestoneDialog` with on-demand description fetching and target project/task pickers.
+- **Project Workspace Integration (`ProjectWorkspaceShell` & `ProjectCalendarTab`):**
+  - Added URL query-driven `tab=calendar` activation with view (`calendarView`) and date window (`calendarFrom`, `calendarTo`) persistence.
+  - Wired role- and capacity-aware milestone management (`canManageMilestones`), ensuring PM Watchers and terminal projects receive clean read-only calendar views.
+- **Verification & Compliance:**
+  - `npx vitest run ...`: 11 test suites / 114 tests passed (100%).
+  - `npm run typecheck`: 0 errors.
+  - `npm run lint`: 0 errors, 0 warnings.
+  - `npm run build`: Clean production compilation and dynamic route generation.
+  - All source files strictly <= 400 lines.
+
 ## [2026-08-24 @ 05:33]
 
 **S07-E09-M1R: Calendar Task-Scoped Milestones and PM Authority Migration Applied**

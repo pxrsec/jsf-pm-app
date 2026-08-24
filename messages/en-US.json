@@ -28,6 +28,7 @@
         "home": "Home",
         "projects": "Projects",
         "agenda": "My Agenda",
+        "calendar": "Calendar",
         "notifications": "Notifications",
         "notificationOperations": "Notification Operations"
       },
@@ -286,7 +287,8 @@
         "tasks": "Tasks",
         "deliverables": "Deliverables",
         "members": "Team",
-        "activity": "Activity"
+        "activity": "Activity",
+        "calendar": "Calendar"
       },
       "clientSetupBanner": {
         "title": "Client setup pending",
@@ -1444,6 +1446,121 @@
         "unauthorized": "You are not authorized to run this alert evaluation.",
         "unavailable": "The evaluation service is currently unavailable."
       }
+    }
+  },
+  "calendar": {
+    "title": "Operational Calendar",
+    "description": "View and manage project deadlines and operational milestones.",
+    "views": {
+      "month": "Month",
+      "week": "Week",
+      "agenda": "Agenda",
+      "list": "List"
+    },
+    "nav": {
+      "today": "Today",
+      "prev": "Previous",
+      "next": "Next",
+      "range": "Current range",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "prevWeek": "Previous week",
+      "nextWeek": "Next week"
+    },
+    "eventTypes": {
+      "project_deadline": "Project Deadline",
+      "task_deadline": "Task Deadline",
+      "internal_review_deadline": "Internal Review",
+      "client_delivery_deadline": "Client Delivery",
+      "milestone": "Manual Milestone"
+    },
+    "scope": {
+      "allProjects": "All projects",
+      "projectScope": "Project Scope",
+      "taskScope": "Task Scope",
+      "noTask": "No task (Project-scoped)",
+      "projectFilterLabel": "Filter by project",
+      "allProjectsFilter": "All projects"
+    },
+    "actions": {
+      "createMilestone": "New Milestone",
+      "editMilestone": "Edit Milestone",
+      "deleteMilestone": "Delete Milestone",
+      "confirmDelete": "Are you sure you want to delete this milestone?",
+      "confirmDeleteDesc": "This action will remove the milestone from the calendar. You can create a new milestone if needed.",
+      "saving": "Saving...",
+      "deleting": "Deleting...",
+      "cancel": "Cancel",
+      "save": "Save Milestone",
+      "saveChanges": "Save Changes",
+      "close": "Close",
+      "retry": "Retry"
+    },
+    "form": {
+      "createTitle": "Create Calendar Milestone",
+      "editTitle": "Edit Calendar Milestone",
+      "dialogDescription": "Configure the manual milestone details for the calendar.",
+      "titleLabel": "Milestone Title",
+      "titlePlaceholder": "e.g. Principal location shooting",
+      "projectLabel": "Project",
+      "projectPlaceholder": "Select a project...",
+      "taskLabel": "Linked Task (Optional)",
+      "taskPlaceholder": "Project level (no specific task)",
+      "descriptionLabel": "Description (Admins and PMs only)",
+      "descriptionPlaceholder": "Additional details, production notes, or internal reminders...",
+      "startsAtLabel": "Start Date and Time",
+      "startDateLabel": "Start Date",
+      "endsAtLabel": "End Date and Time (Optional)",
+      "endDateLabel": "End Date (Optional)",
+      "isAllDayLabel": "All-day event",
+      "colorLabel": "Milestone Color",
+      "defaultColor": "Default (Theme)",
+      "validation": {
+        "titleRequired": "Title is required.",
+        "titleLength": "Title must be between 1 and 160 characters.",
+        "projectRequired": "You must select a project.",
+        "descriptionTooLong": "Description cannot exceed 2000 characters.",
+        "startsAtRequired": "Start date is required.",
+        "endBeforeStart": "End date cannot be before start date."
+      }
+    },
+    "colors": {
+      "chart-1": "Color 1 (Blue)",
+      "chart-2": "Color 2 (Green)",
+      "chart-3": "Color 3 (Orange)",
+      "chart-4": "Color 4 (Purple)",
+      "chart-5": "Color 5 (Red)"
+    },
+    "states": {
+      "loading": "Loading calendar...",
+      "loadingDetail": "Loading milestone details...",
+      "empty": "No events scheduled in this period.",
+      "emptyFiltered": "No events found for the selected filter.",
+      "error": "An error occurred while loading the calendar.",
+      "unauthorized": "You do not have permission to perform this action.",
+      "notFound": "The requested milestone was not found.",
+      "successCreate": "Milestone created successfully.",
+      "successUpdate": "Milestone updated successfully.",
+      "successDelete": "Milestone deleted successfully."
+    },
+    "table": {
+      "date": "Date",
+      "time": "Time",
+      "event": "Event",
+      "project": "Project",
+      "type": "Event Type",
+      "actions": "Actions",
+      "allDay": "All day"
+    },
+    "aria": {
+      "grid": "Month event grid",
+      "list": "Accessible calendar event list",
+      "milestoneDialog": "Milestone management dialog",
+      "deleteDialog": "Milestone deletion confirmation",
+      "viewToggle": "Change calendar view",
+      "prevPeriod": "Go to previous period",
+      "nextPeriod": "Go to next period",
+      "todayButton": "Go to current date"
     }
   }
 }

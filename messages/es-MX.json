@@ -28,6 +28,7 @@
         "home": "Inicio",
         "projects": "Proyectos",
         "agenda": "Mi Agenda",
+        "calendar": "Calendario",
         "notifications": "Notificaciones",
         "notificationOperations": "Operaciones de Notificaciones"
       },
@@ -286,7 +287,8 @@
         "tasks": "Tareas",
         "deliverables": "Entregables",
         "members": "Equipo",
-        "activity": "Actividad"
+        "activity": "Actividad",
+        "calendar": "Calendario"
       },
       "clientSetupBanner": {
         "title": "Configuración de cliente pendiente",
@@ -1444,6 +1446,121 @@
         "unauthorized": "No tienes autorización para ejecutar esta evaluación de alertas.",
         "unavailable": "El servicio de evaluación no está disponible en este momento."
       }
+    }
+  },
+  "calendar": {
+    "title": "Calendario Operativo",
+    "description": "Visualiza y gestiona las fechas límites y los hitos operativos del proyecto.",
+    "views": {
+      "month": "Mes",
+      "week": "Semana",
+      "agenda": "Agenda",
+      "list": "Lista"
+    },
+    "nav": {
+      "today": "Hoy",
+      "prev": "Anterior",
+      "next": "Siguiente",
+      "range": "Rango actual",
+      "prevMonth": "Mes anterior",
+      "nextMonth": "Mes siguiente",
+      "prevWeek": "Semana anterior",
+      "nextWeek": "Semana siguiente"
+    },
+    "eventTypes": {
+      "project_deadline": "Entrega de Proyecto",
+      "task_deadline": "Fecha Límite de Tarea",
+      "internal_review_deadline": "Revisión Interna",
+      "client_delivery_deadline": "Entrega al Cliente",
+      "milestone": "Hito Manual"
+    },
+    "scope": {
+      "allProjects": "Todos los proyectos",
+      "projectScope": "Nivel de Proyecto",
+      "taskScope": "Nivel de Tarea",
+      "noTask": "Sin tarea (A nivel de proyecto)",
+      "projectFilterLabel": "Filtrar por proyecto",
+      "allProjectsFilter": "Todos los proyectos"
+    },
+    "actions": {
+      "createMilestone": "Nuevo Hito",
+      "editMilestone": "Editar Hito",
+      "deleteMilestone": "Eliminar Hito",
+      "confirmDelete": "¿Estás seguro de eliminar este hito?",
+      "confirmDeleteDesc": "Esta acción ocultará el hito del calendario. Puedes crear un nuevo hito si es necesario.",
+      "saving": "Guardando...",
+      "deleting": "Eliminando...",
+      "cancel": "Cancelar",
+      "save": "Guardar Hito",
+      "saveChanges": "Guardar Cambios",
+      "close": "Cerrar",
+      "retry": "Reintentar"
+    },
+    "form": {
+      "createTitle": "Crear Hito de Calendario",
+      "editTitle": "Editar Hito de Calendario",
+      "dialogDescription": "Configura los detalles del hito manual para el calendario.",
+      "titleLabel": "Título del Hito",
+      "titlePlaceholder": "Ej. Grabación en locación principal",
+      "projectLabel": "Proyecto",
+      "projectPlaceholder": "Selecciona un proyecto...",
+      "taskLabel": "Tarea Vinculada (Opcional)",
+      "taskPlaceholder": "A nivel de proyecto (sin tarea específica)",
+      "descriptionLabel": "Descripción (Solo Administradores y PMs)",
+      "descriptionPlaceholder": "Detalles adicionales, notas de producción o recordatorios internos...",
+      "startsAtLabel": "Fecha y Hora de Inicio",
+      "startDateLabel": "Fecha de Inicio",
+      "endsAtLabel": "Fecha y Hora de Fin (Opcional)",
+      "endDateLabel": "Fecha de Fin (Opcional)",
+      "isAllDayLabel": "Evento de todo el día",
+      "colorLabel": "Color del Hito",
+      "defaultColor": "Predeterminado (Tema)",
+      "validation": {
+        "titleRequired": "El título es obligatorio.",
+        "titleLength": "El título debe tener entre 1 y 160 caracteres.",
+        "projectRequired": "Debes seleccionar un proyecto.",
+        "descriptionTooLong": "La descripción no puede exceder 2000 caracteres.",
+        "startsAtRequired": "La fecha de inicio es obligatoria.",
+        "endBeforeStart": "La fecha de fin no puede ser anterior a la de inicio."
+      }
+    },
+    "colors": {
+      "chart-1": "Color 1 (Azul)",
+      "chart-2": "Color 2 (Verde)",
+      "chart-3": "Color 3 (Naranja)",
+      "chart-4": "Color 4 (Púrpura)",
+      "chart-5": "Color 5 (Rojo)"
+    },
+    "states": {
+      "loading": "Cargando calendario...",
+      "loadingDetail": "Cargando detalles del hito...",
+      "empty": "No hay eventos programados en este período.",
+      "emptyFiltered": "No se encontraron eventos para el filtro seleccionado.",
+      "error": "Ocurrió un error al cargar el calendario.",
+      "unauthorized": "No tienes permisos para realizar esta acción.",
+      "notFound": "El hito solicitado no fue encontrado.",
+      "successCreate": "Hito creado exitosamente.",
+      "successUpdate": "Hito actualizado exitosamente.",
+      "successDelete": "Hito eliminado exitosamente."
+    },
+    "table": {
+      "date": "Fecha",
+      "time": "Horario",
+      "event": "Evento",
+      "project": "Proyecto",
+      "type": "Tipo de Evento",
+      "actions": "Acciones",
+      "allDay": "Todo el día"
+    },
+    "aria": {
+      "grid": "Cuadrícula de eventos del mes",
+      "list": "Lista accesible de eventos del calendario",
+      "milestoneDialog": "Diálogo para gestión de hitos",
+      "deleteDialog": "Confirmación de eliminación de hito",
+      "viewToggle": "Cambiar vista del calendario",
+      "prevPeriod": "Ir al período anterior",
+      "nextPeriod": "Ir al período siguiente",
+      "todayButton": "Ir a la fecha actual"
     }
   }
 }

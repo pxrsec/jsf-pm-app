@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { usePathname, useRouter } from "@/i18n/routing";
+import { useSearchParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProjectHeader } from "./project-header";
 import { ProjectOverviewTab } from "./project-overview-tab";
@@ -17,6 +20,7 @@ import { TasksTab } from "../project-tasks/tasks-tab";
 import { DeliverablesTab } from "../project-deliverables/deliverables-tab";
 import { MemberRosterTab } from "../project-members/member-roster-tab";
 import { ProjectActivityTab } from "./project-activity-tab";
+import { ProjectCalendarTab } from "./project-calendar-tab";
 import type {
   ProjectDetail,
   ProjectCompletionCyclesView,
@@ -26,6 +30,11 @@ import type {
 } from "@/lib/projects/queries";
 import type { DeliverableListItem } from "@/lib/deliverables/queries";
 import type { ClientListItem } from "@/lib/clients/queries";
+import type {
+  CalendarEventDto,
+  CalendarMilestoneTargetDto,
+  CalendarRangeState,
+} from "@/lib/calendar/types";
 
 interface ProjectWorkspaceShellProps {
   project: ProjectDetail;
@@ -42,6 +51,9 @@ interface ProjectWorkspaceShellProps {
   currentUserId?: string;
   initialTasks?: TaskWithAssignee[];
   initialDeliverables?: DeliverableListItem[];
+  initialCalendarEvents?: CalendarEventDto[];
+  milestoneTargets?: CalendarMilestoneTargetDto[];
+  calendarRange?: CalendarRangeState;
   locale?: string;
   initialTab?: string;
 }
@@ -58,16 +70,43 @@ export function ProjectWorkspaceShell({
   currentUserId,
   initialTasks = [],
   initialDeliverables = [],
+  initialCalendarEvents,
+  milestoneTargets = [],
+  calendarRange,
   locale = "es",
   initialTab = "overview",
 }: ProjectWorkspaceShellProps) {
   const t = useTranslations("projects.workspace.tabs");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [activeTab, setActiveTab] = useState(initialTab);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isCompleteOpen, setIsCompleteOpen] = useState(false);
   const [isReopenOpen, setIsReopenOpen] = useState(false);
   const [statusAction, setStatusAction] =
     useState<ProjectStatusActionType | null>(null);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tab);
+
+    if (tab === "calendar") {
+      if (calendarRange) {
+        if (!params.has("calendarView"))
+          params.set("calendarView", calendarRange.view);
+        if (!params.has("calendarFrom"))
+          params.set("calendarFrom", calendarRange.from);
+        if (!params.has("calendarTo"))
+          params.set("calendarTo", calendarRange.to);
+      }
+    }
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const handleStatusDialog = (action: ProjectStatusActionType) => {
     if (action === "complete") {
@@ -80,6 +119,13 @@ export function ProjectWorkspaceShell({
   };
 
   const baseHref = actorRole === "admin" ? "/admin/proyectos" : "/pm/proyectos";
+  const canViewCalendarTab = actorRole === "admin" || actorRole === "pm";
+  const isTerminalStatus =
+    project.status === "completed" || project.status === "cancelled";
+  const canManageMilestones =
+    !isTerminalStatus &&
+    (actorRole === "admin" ||
+      (actorRole === "pm" && effectiveCapacity !== "pm_watcher"));
 
   return (
     <div className="min-h-screen bg-background">
@@ -106,7 +152,7 @@ export function ProjectWorkspaceShell({
 
         <Tabs
           value={activeTab}
-          onValueChange={setActiveTab}
+          onValueChange={handleTabChange}
           className="space-y-6"
         >
           <div className="border-b border-border overflow-x-auto">
@@ -141,6 +187,14 @@ export function ProjectWorkspaceShell({
               >
                 {t("activity")}
               </TabsTrigger>
+              {canViewCalendarTab && (
+                <TabsTrigger
+                  value="calendar"
+                  className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
+                >
+                  {t("calendar")}
+                </TabsTrigger>
+              )}
             </TabsList>
           </div>
 
@@ -150,7 +204,7 @@ export function ProjectWorkspaceShell({
               clients={clients}
               cycles={cycles}
               onOpenEditDialog={() => setIsEditOpen(true)}
-              onSelectTab={(tab) => setActiveTab(tab)}
+              onSelectTab={(tab) => handleTabChange(tab)}
             />
           </TabsContent>
 
@@ -186,6 +240,28 @@ export function ProjectWorkspaceShell({
           <TabsContent value="activity" className="outline-hidden">
             <ProjectActivityTab cycles={cycles} />
           </TabsContent>
+
+          {canViewCalendarTab && (
+            <TabsContent value="calendar" className="outline-hidden">
+              {initialCalendarEvents && calendarRange ? (
+                <ProjectCalendarTab
+                  initialEvents={initialCalendarEvents}
+                  milestoneTargets={milestoneTargets}
+                  projectId={project.id}
+                  canManageMilestones={canManageMilestones}
+                  userRole={actorRole}
+                  initialRange={calendarRange}
+                />
+              ) : (
+                <div className="flex h-48 items-center justify-center gap-2">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">
+                    {t("calendar")}...
+                  </span>
+                </div>
+              )}
+            </TabsContent>
+          )}
         </Tabs>
       </main>
 

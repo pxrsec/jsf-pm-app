@@ -90,6 +90,13 @@ export async function AppNav({
             </Link>
 
             <Link
+              href="/calendario"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("links.calendar")}
+            </Link>
+
+            <Link
               href="/notificaciones"
               aria-label={inboxAriaLabel}
               className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"

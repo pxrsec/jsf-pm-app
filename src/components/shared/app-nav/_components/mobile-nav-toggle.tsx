@@ -134,6 +134,14 @@ export function MobileNavToggle({
             </Link>
 
             <Link
+              href="/calendario"
+              onClick={() => setIsOpen(false)}
+              className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              {t("links.calendar")}
+            </Link>
+
+            <Link
               href="/notificaciones"
               onClick={() => setIsOpen(false)}
               aria-label={inboxAriaLabel}
