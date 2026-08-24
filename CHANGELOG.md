@@ -1,5 +1,17 @@
 # JSF PM App Development Changelog
 
+## [2026-08-24 @ 07:53]
+
+**🛠 Database & Architecture: S07 E09 M4 Notification History Window and Filters Migration Applied**
+
+- Applied migration `20260824080000_s07_e09_notification_history_window_and_filters.sql` (`20260824080000_s07_e09_notification_history_window_and_filters`) cleanly to remote database via Supabase MCP `apply_migration`.
+- Schema and RPC updates:
+  - Replaced superseded 3-argument overload with updated 6-argument `public.list_my_in_app_notifications(p_limit, p_from, p_to, p_read_state, p_before_created_at, p_before_recipient_id)`.
+  - Implemented purpose-limited read contract enforcing default 90-day visibility window (when dates are omitted), mandatory bounded date ranges (<= 93 days), optional read-state boolean filtering, and composite keyset continuation (`p_before_created_at`, `p_before_recipient_id`).
+  - Added partial index `notification_recipients_in_app_history_keyset_idx` on `public.notification_recipients (user_id, created_at desc, id desc) where channel = 'in_app'`.
+- Regenerated TypeScript definitions in `src/lib/database.types.ts` via Supabase MCP `generate_typescript_types`.
+- Verification: Vitest database suite passed 27/27 tests across all migration contract checks.
+
 ## [2026-08-24 @ 07:25]
 
 **🚀 Features & 🛠 Architecture: S07-02 Calendar & Manual Milestones Full Implementation**

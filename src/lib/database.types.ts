@@ -1878,16 +1878,14 @@ export type Database = {
         Args: {
           p_before_created_at?: string
           p_before_recipient_id?: string
+          p_from?: string
           p_limit?: number
+          p_read_state?: boolean
+          p_to?: string
         }
         Returns: {
           created_at: string
-          delivery_status: Database["public"]["Enums"]["notification_delivery_status"]
-          entity_id: string
-          entity_type: Database["public"]["Enums"]["entity_type"]
-          event_id: string
           occurred_at: string
-          project_id: string
           read_at: string
           recipient_id: string
           trigger: Database["public"]["Enums"]["notification_trigger"]
