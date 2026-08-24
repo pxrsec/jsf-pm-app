@@ -2,11 +2,11 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import { logger } from "@/lib/logger";
-import { LoadRecipientInboxPageSchema } from "./schemas";
 import type {
   RecipientInboxNotification,
   RecipientInboxCursor,
   RecipientInboxPage,
+  RecipientInboxQuery,
 } from "./inbox-contracts";
 
 export const NOTIFICATION_INBOX_PAGE_SIZE = 25;
@@ -15,6 +15,8 @@ export type {
   RecipientInboxNotification,
   RecipientInboxCursor,
   RecipientInboxPage,
+  RecipientInboxQuery,
+  NotificationReadFilter,
 } from "./inbox-contracts";
 
 /**
@@ -23,27 +25,29 @@ export type {
  */
 export async function listRecipientInboxPage(
   supabase: SupabaseClient<Database>,
+  query: RecipientInboxQuery,
   cursor?: RecipientInboxCursor | null,
 ): Promise<RecipientInboxPage> {
-  let validatedCursor: RecipientInboxCursor | null = null;
-
-  if (cursor !== undefined && cursor !== null) {
-    const parseResult = LoadRecipientInboxPageSchema.safeParse(cursor);
-    if (!parseResult.success) {
-      throw new Error("Failed to fetch notification inbox");
-    }
-    validatedCursor = parseResult.data;
-  }
+  const pReadState =
+    query.readFilter === "all"
+      ? undefined
+      : query.readFilter === "read"
+        ? true
+        : false;
 
   const { data, error } = await supabase.rpc("list_my_in_app_notifications", {
     p_limit: NOTIFICATION_INBOX_PAGE_SIZE + 1,
-    p_before_created_at: validatedCursor?.beforeCreatedAt ?? undefined,
-    p_before_recipient_id: validatedCursor?.beforeRecipientId ?? undefined,
+    p_from: query.from,
+    p_to: query.to,
+    p_read_state: pReadState,
+    p_before_created_at: cursor?.beforeCreatedAt ?? undefined,
+    p_before_recipient_id: cursor?.beforeRecipientId ?? undefined,
   });
 
   if (error) {
     logger.debug("notification-inbox-rpc-failed", {
       operation: "list-recipient-inbox",
+      error: error.message,
     });
     throw new Error("Failed to fetch notification inbox");
   }
@@ -52,15 +56,27 @@ export async function listRecipientInboxPage(
   const hasMore = rows.length > NOTIFICATION_INBOX_PAGE_SIZE;
   const retainedRows = rows.slice(0, NOTIFICATION_INBOX_PAGE_SIZE);
 
-  const notifications: RecipientInboxNotification[] = retainedRows.map(
-    (row) => ({
+  const notifications: RecipientInboxNotification[] = [];
+
+  for (const row of retainedRows) {
+    if (
+      !row.recipient_id ||
+      !row.trigger ||
+      !row.created_at ||
+      !row.occurred_at
+    ) {
+      logger.debug("notification-row-malformed", { row });
+      throw new Error("Failed to fetch notification inbox");
+    }
+
+    notifications.push({
       recipientId: row.recipient_id,
       trigger: row.trigger,
       createdAt: row.created_at,
       occurredAt: row.occurred_at,
       readAt: row.read_at ?? null,
-    }),
-  );
+    });
+  }
 
   const nextCursor: RecipientInboxCursor | null =
     hasMore && retainedRows.length === NOTIFICATION_INBOX_PAGE_SIZE

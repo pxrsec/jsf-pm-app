@@ -29,6 +29,8 @@
         "projects": "Proyectos",
         "agenda": "Mi Agenda",
         "calendar": "Calendario",
+        "archive": "Archivo",
+        "linkIncidents": "Incidentes de Enlaces",
         "notifications": "Notificaciones",
         "notificationOperations": "Operaciones de Notificaciones"
       },
@@ -288,7 +290,8 @@
         "deliverables": "Entregables",
         "members": "Equipo",
         "activity": "Actividad",
-        "calendar": "Calendario"
+        "calendar": "Calendario",
+        "archive": "Archivo"
       },
       "clientSetupBanner": {
         "title": "Configuración de cliente pendiente",
@@ -1296,6 +1299,8 @@
   "notifications": {
     "title": "Notificaciones",
     "description": "Historial de notificaciones en la aplicación.",
+    "historyNoticeDefault": "Mostrando notificaciones de los últimos 90 días.",
+    "historyNoticeCustom": "Mostrando notificaciones del período histórico seleccionado.",
     "listLabel": "Lista de notificaciones",
     "unreadState": "No leída",
     "readState": "Leída",
@@ -1310,9 +1315,23 @@
     "loadMore": "Cargar más",
     "loadMoreAria": "Cargar más notificaciones",
     "loading": "Cargando notificaciones...",
+    "filters": {
+      "all": "Todas",
+      "unread": "No leídas",
+      "read": "Leídas",
+      "presetLast90": "Últimos 90 días",
+      "presetPrevious90": "Días 91-180",
+      "filtering": "Filtrando notificaciones..."
+    },
     "empty": {
       "title": "Bandeja vacía",
-      "description": "No tienes notificaciones en la aplicación."
+      "description": "No tienes notificaciones en la aplicación.",
+      "unreadTitle": "No hay notificaciones no leídas",
+      "unreadDescription": "Todas tus notificaciones están al día.",
+      "readTitle": "No hay notificaciones leídas",
+      "readDescription": "No tienes notificaciones leídas en este período.",
+      "customRangeTitle": "Sin notificaciones en el período",
+      "customRangeDescription": "No se encontraron notificaciones en el rango de fechas seleccionado."
     },
     "error": {
       "title": "Error al cargar notificaciones",
@@ -1561,6 +1580,102 @@
       "prevPeriod": "Ir al período anterior",
       "nextPeriod": "Ir al período siguiente",
       "todayButton": "Ir a la fecha actual"
+    }
+  },
+  "archive": {
+    "title": "Archivo de Producción Finalizada",
+    "description": "Consulta el historial inmutable de entregables de producción aprobados y entregados.",
+    "statuses": {
+      "approved": "Aprobado",
+      "delivered": "Entregado"
+    },
+    "filters": {
+      "allStatuses": "Todos los estados",
+      "statusApproved": "Aprobados",
+      "statusDelivered": "Entregados",
+      "statusAria": "Filtrar por estado final",
+      "allProjects": "Todos los proyectos",
+      "projectAria": "Filtrar por proyecto",
+      "presetLast90": "Últimos 90 días",
+      "presetPrevious90": "Días 91-180",
+      "filtering": "Filtrando archivo..."
+    },
+    "table": {
+      "deliverable": "Entregable",
+      "status": "Estado",
+      "version": "Versión",
+      "finalizedAt": "Fecha de Finalización",
+      "project": "Proyecto",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "openSubmission": "Abrir entrega",
+      "copySubmission": "Copiar enlace de entrega",
+      "openDriveFolder": "Abrir carpeta Drive",
+      "copyDriveFolder": "Copiar enlace de carpeta",
+      "opensInNewTab": "Abre en una nueva pestaña",
+      "externalNotice": "Enlace externo almacenado. La aplicación no verifica su disponibilidad.",
+      "copySuccess": "Enlace copiado al portapapeles.",
+      "copyError": "No se pudo copiar el enlace al portapapeles.",
+      "loadMore": "Cargar más entregables",
+      "retry": "Reintentar carga"
+    },
+    "empty": {
+      "title": "No hay entregables finalizados",
+      "description": "No se encontraron entregables de producción finalizados en este período.",
+      "filteredTitle": "Sin resultados para el filtro",
+      "filteredDescription": "No hay entregables que coincidan con los criterios de filtro seleccionados."
+    },
+    "errors": {
+      "validation": "Los parámetros de consulta del archivo no son válidos.",
+      "unauthenticated": "Sesión no válida o expirada.",
+      "unavailable": "El servicio de archivo de producción no está disponible en este momento."
+    }
+  },
+  "linkIncidents": {
+    "title": "Incidentes de Enlaces",
+    "description": "Registro operacional interno de problemas reportados en enlaces de entregables.",
+    "statuses": {
+      "open": "Abierto",
+      "resolved": "Resuelto",
+      "dismissed": "Desestimado"
+    },
+    "filters": {
+      "allStatuses": "Todos los estados",
+      "statusOpen": "Abiertos",
+      "statusResolved": "Resueltos",
+      "statusDismissed": "Desestimados",
+      "statusAria": "Filtrar por estado de incidente",
+      "allProjects": "Todos los proyectos",
+      "projectAria": "Filtrar por proyecto",
+      "presetLast90": "Últimos 90 días",
+      "presetPrevious90": "Días 91-180",
+      "filtering": "Filtrando incidentes..."
+    },
+    "table": {
+      "deliverable": "Entregable",
+      "project": "Proyecto",
+      "status": "Estado",
+      "reportedAt": "Fecha de Reporte",
+      "resolvedAt": "Fecha de Resolución",
+      "reason": "Motivo",
+      "resolutionNote": "Nota de Resolución",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "loadMore": "Cargar más incidentes",
+      "retry": "Reintentar carga"
+    },
+    "empty": {
+      "title": "No hay incidentes de enlaces",
+      "description": "No se han registrado reportes de problemas con enlaces en este período.",
+      "filteredTitle": "Sin resultados para el filtro",
+      "filteredDescription": "No hay incidentes que coincidan con los filtros seleccionados."
+    },
+    "errors": {
+      "validation": "Los parámetros de consulta de incidentes no son válidos.",
+      "unauthenticated": "Sesión no válida o expirada.",
+      "unavailable": "El servicio de consulta de incidentes no está disponible en este momento."
     }
   }
 }

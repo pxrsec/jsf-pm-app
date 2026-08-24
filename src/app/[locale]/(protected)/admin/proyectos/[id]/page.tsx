@@ -23,6 +23,12 @@ import type {
   CalendarMilestoneTargetDto,
   CalendarRangeState,
 } from "@/lib/calendar/types";
+import { fetchFinalizedArchivePage } from "@/lib/archive/queries";
+import { normalizeArchiveSearchState } from "@/lib/archive/date-utils";
+import type {
+  FinalizedArchivePage,
+  FinalizedArchiveQuery,
+} from "@/lib/archive/types";
 import { ProjectWorkspaceShell } from "@/components/shared/projects/project-workspace/project-workspace-shell";
 
 interface AdminProjectDetailPageProps {
@@ -32,6 +38,9 @@ interface AdminProjectDetailPageProps {
     calendarView?: string;
     calendarFrom?: string;
     calendarTo?: string;
+    archiveFrom?: string;
+    archiveTo?: string;
+    archiveStatus?: string;
   }>;
 }
 
@@ -64,6 +73,14 @@ export default async function AdminProjectDetailPage({
       })
     : undefined;
 
+  const isArchiveTab = tab === "archive";
+  const archiveQuery: FinalizedArchiveQuery | undefined = isArchiveTab
+    ? normalizeArchiveSearchState(resolvedSearchParams, {
+        keyPrefix: "archive",
+        fixedProjectId: id,
+      })
+    : undefined;
+
   const [
     clients,
     cycles,
@@ -74,6 +91,7 @@ export default async function AdminProjectDetailPage({
     initialDeliverables,
     initialCalendarEvents,
     milestoneTargets,
+    initialArchivePage,
   ] = await Promise.all([
     listActiveClients(supabase),
     getCompletionCycles(supabase, id),
@@ -92,6 +110,9 @@ export default async function AdminProjectDetailPage({
     isCalendarTab
       ? fetchCalendarMilestoneTargets(supabase)
       : Promise.resolve<CalendarMilestoneTargetDto[] | undefined>(undefined),
+    isArchiveTab && archiveQuery
+      ? fetchFinalizedArchivePage(supabase, archiveQuery, null, "admin")
+      : Promise.resolve<FinalizedArchivePage | undefined>(undefined),
   ]);
 
   return (
@@ -110,6 +131,8 @@ export default async function AdminProjectDetailPage({
       initialCalendarEvents={initialCalendarEvents}
       milestoneTargets={milestoneTargets}
       calendarRange={calendarRange}
+      initialArchivePage={initialArchivePage}
+      archiveQuery={archiveQuery}
       locale={locale}
       initialTab={tab}
     />

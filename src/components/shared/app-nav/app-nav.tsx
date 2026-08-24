@@ -41,6 +41,22 @@ export async function AppNav({
           ? { href: "/operador/agenda", label: t("links.agenda") }
           : { href: "/cliente/proyectos", label: t("links.projects") };
 
+  const archiveHref =
+    role === "admin"
+      ? "/admin/archivo"
+      : role === "pm"
+        ? "/pm/archivo"
+        : role === "operator"
+          ? "/operador/archivo"
+          : "/cliente/archivo";
+
+  const linkIncidentsHref =
+    role === "admin"
+      ? "/admin/incidentes-enlaces"
+      : role === "pm"
+        ? "/pm/incidentes-enlaces"
+        : null;
+
   const inboxAriaLabel =
     unreadCount > 0
       ? t("notifications.inboxLinkAriaWithCount", { count: unreadCount })
@@ -95,6 +111,22 @@ export async function AppNav({
             >
               {t("links.calendar")}
             </Link>
+
+            <Link
+              href={archiveHref}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("links.archive")}
+            </Link>
+
+            {linkIncidentsHref && (
+              <Link
+                href={linkIncidentsHref}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("links.linkIncidents")}
+              </Link>
+            )}
 
             <Link
               href="/notificaciones"

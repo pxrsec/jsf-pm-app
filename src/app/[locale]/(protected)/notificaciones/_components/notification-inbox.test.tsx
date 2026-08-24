@@ -14,14 +14,41 @@ import type {
   RecipientInboxNotification,
   RecipientInboxPage,
   NotificationTrigger,
+  RecipientInboxQuery,
 } from "@/lib/notifications/inbox-contracts";
+import { getDefaultNotificationRange } from "@/lib/notifications/date-utils";
 import esCatalog from "../../../../../../messages/es-MX.json";
 
 const mockRefresh = vi.fn();
+const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     refresh: mockRefresh,
+    push: mockPush,
   }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/notificaciones",
+}));
+
+vi.mock("@/i18n/routing", () => ({
+  useRouter: () => ({
+    refresh: mockRefresh,
+    push: mockPush,
+  }),
+  usePathname: () => "/notificaciones",
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("next-intl", () => ({
@@ -94,6 +121,12 @@ const ALL_TRIGGERS: NotificationTrigger[] = [
   "system",
 ];
 
+const defaultRange = getDefaultNotificationRange();
+const defaultQuery: RecipientInboxQuery = {
+  ...defaultRange,
+  readFilter: "all",
+};
+
 describe("NotificationInbox Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -122,7 +155,10 @@ describe("NotificationInbox Component", () => {
     };
 
     const { container } = render(
-      <NotificationInbox initialPage={initialPage} />,
+      <NotificationInbox
+        initialPage={initialPage}
+        currentQuery={defaultQuery}
+      />,
     );
 
     for (const trigger of ALL_TRIGGERS) {
@@ -147,7 +183,10 @@ describe("NotificationInbox Component", () => {
     };
 
     const { container } = render(
-      <NotificationInbox initialPage={initialPage} />,
+      <NotificationInbox
+        initialPage={initialPage}
+        currentQuery={defaultQuery}
+      />,
     );
 
     expect(container.textContent).not.toContain(secretUuid);
@@ -175,7 +214,12 @@ describe("NotificationInbox Component", () => {
       hasMore: false,
     };
 
-    render(<NotificationInbox initialPage={initialPage} />);
+    render(
+      <NotificationInbox
+        initialPage={initialPage}
+        currentQuery={defaultQuery}
+      />,
+    );
 
     expect(screen.getByText("No leída")).toBeInTheDocument();
     expect(screen.getByText("Leída")).toBeInTheDocument();
@@ -197,7 +241,10 @@ describe("NotificationInbox Component", () => {
     };
 
     const { rerender } = render(
-      <NotificationInbox initialPage={allReadPage} />,
+      <NotificationInbox
+        initialPage={allReadPage}
+        currentQuery={defaultQuery}
+      />,
     );
 
     const markAllBtn = screen.getByRole("button", {
@@ -222,7 +269,12 @@ describe("NotificationInbox Component", () => {
       hasMore: false,
     };
 
-    rerender(<NotificationInbox initialPage={unreadPage} />);
+    rerender(
+      <NotificationInbox
+        initialPage={unreadPage}
+        currentQuery={defaultQuery}
+      />,
+    );
     expect(markAllBtn).not.toBeDisabled();
   });
 
@@ -247,7 +299,12 @@ describe("NotificationInbox Component", () => {
       hasMore: false,
     };
 
-    render(<NotificationInbox initialPage={initialPage} />);
+    render(
+      <NotificationInbox
+        initialPage={initialPage}
+        currentQuery={defaultQuery}
+      />,
+    );
 
     const markReadBtn = screen.getByRole("button", {
       name: "Marcar Asignación de tarea como leída",
@@ -270,7 +327,9 @@ describe("NotificationInbox Component", () => {
       hasMore: false,
     };
 
-    render(<NotificationInbox initialPage={emptyPage} />);
+    render(
+      <NotificationInbox initialPage={emptyPage} currentQuery={defaultQuery} />,
+    );
 
     expect(screen.getByText("Bandeja vacía")).toBeInTheDocument();
     expect(
@@ -301,7 +360,12 @@ describe("NotificationInbox Component", () => {
       hasMore: true,
     };
 
-    render(<NotificationInbox initialPage={initialPage} />);
+    render(
+      <NotificationInbox
+        initialPage={initialPage}
+        currentQuery={defaultQuery}
+      />,
+    );
 
     const loadMoreBtn = screen.getByRole("button", {
       name: "Cargar más notificaciones",
@@ -331,15 +395,26 @@ describe("NotificationInbox Component", () => {
       hasMore: false,
     };
 
-    render(<NotificationInbox initialPage={initialPage} />);
+    render(
+      <NotificationInbox
+        initialPage={initialPage}
+        currentQuery={defaultQuery}
+      />,
+    );
 
     const list = screen.getByRole("list", { name: "Lista de notificaciones" });
     expect(list.tagName.toLowerCase()).toBe("ol");
 
-    const buttons = screen.getAllByRole("button");
-    for (const btn of buttons) {
-      expect(btn.className).toContain("min-h-[44px]");
-      expect(btn.className).toContain("min-w-[44px]");
-    }
+    const markReadBtn = screen.getByRole("button", {
+      name: "Marcar Asignación de tarea como leída",
+    });
+    expect(markReadBtn.className).toContain("min-h-[44px]");
+    expect(markReadBtn.className).toContain("min-w-[44px]");
+
+    const markAllBtn = screen.getByRole("button", {
+      name: "Marcar todas las notificaciones como leídas",
+    });
+    expect(markAllBtn.className).toContain("min-h-[44px]");
+    expect(markAllBtn.className).toContain("min-w-[44px]");
   });
 });

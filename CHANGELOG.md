@@ -1,5 +1,53 @@
 # JSF PM App Development Changelog
 
+## [2026-08-24 @ 09:13]
+
+**🐛 Hotfixes: Fix NotificationInbox Component Test Type Signature**
+
+- **Notification Inbox Unit Tests (`src/app/[locale]/(protected)/notificaciones/_components/notification-inbox.test.tsx`):**
+  - Updated all test renders to supply the required `currentQuery` prop matching `NotificationInboxProps` contract (`RecipientInboxQuery`).
+  - Added routing mocks for `@/i18n/routing` (`useRouter`, `usePathname`, `Link`) and updated `next/navigation` mock (`useSearchParams`).
+- **Verification:**
+  - `npm run typecheck`: 0 errors.
+  - `npm run test`: 18/18 test suites passed (107/107 tests).
+  - `npm run build`: Production build completed successfully.
+  - `npm run lint`: 0 errors, 0 warnings.
+
+## [2026-08-24 @ 08:41]
+
+**🚀 Features & 🛠 Architecture: S07-03 (Finalized Production Archive & Link Incident Visibility) & S07-04 (Bounded Notification History & In-App Filters)**
+
+- **Archive & Link Incidents Core Layer (`src/lib/archive/`):**
+  - Implemented narrow purpose-limited DTOs (`FinalizedArchiveItem`, `FinalizedArchivePage`, `LinkIncidentItem`, `LinkIncidentPage`, `ArchiveProjectFilterOption`).
+  - Added strict lexical URL sanitizers for Google Drive deliverables (`sanitizeSubmissionUrl`) and Drive folder links (`sanitizeDriveFolderUrl`), failing closed to `null` without dereferencing or server-side probing.
+  - Implemented server-derived `projectHref` routing (Admin `/admin/proyectos/[id]`, PM `/pm/proyectos/[id]`, Client `/cliente/proyectos/[id]`, Operator `null`).
+  - Built server-only queries calling M2 `list_finalized_production_archive` and `list_role_safe_link_incidents` RPCs with composite keyset pagination (`[finalized_at, deliverable_id]` and `[reported_at, incident_id]`).
+  - Implemented purpose-limited project selector queries (`fetchArchiveProjectFilterOptionsForAdmin`, `fetchArchiveProjectFilterOptionsForPm`) returning non-deleted projects including completed/archived projects.
+  - Created server actions `loadFinalizedArchivePageAction` and `loadLinkIncidentPageAction` with strict Zod validation.
+- **Notification History Adapters (`src/lib/notifications/`):**
+  - Updated `listRecipientInboxPage` and `loadRecipientInboxPageAction` to support M4 6-argument RPC contract with default 90-day window, bounded date ranges (<= 93 days), read-state filtering (`all`, `unread`, `read`), and paired composite keyset continuation.
+  - Reused `CALENDAR_TIME_ZONE` (`America/Mexico_City`) and `formatIsoWithOffset` from date utilities.
+- **Shared Presentation Components (`src/components/shared/archive/`, `src/components/shared/incidents/`):**
+  - Built `ExternalLinkButton` with accessible copy-to-clipboard (polite live region announcement) and outbound anchor (`target="_blank" rel="noopener noreferrer"`).
+  - Created `ArchiveFilterBar` and `IncidentFilterBar` with status filters, 90-day preset range shortcuts, and purpose-limited project selectors.
+  - Created `ArchiveListView` and `IncidentListView` with semantic desktop table, mobile cards, and deterministic keyset state reset on RSC filter changes.
+- **Notification Inbox Refactor (`src/app/[locale]/(protected)/notificaciones/`):**
+  - Extracted `NotificationInboxFilters` child component with 90-day window notice, all/unread/read filter buttons, and date presets.
+  - Updated `NotificationInbox` with contextual empty states (`NotificationEmptyState`) and keyset state resets.
+- **Role Routes & Project Workspace Tab:**
+  - Added role RSC pages: `/admin/archivo`, `/pm/archivo`, `/cliente/archivo`, `/operador/archivo`, `/admin/incidentes-enlaces`, `/pm/incidentes-enlaces`.
+  - Added `ProjectArchiveTab` to `ProjectWorkspaceShell` under `tab=archive` with dedicated query parameter namespacing (`archiveFrom`, `archiveTo`, `archiveStatus`).
+  - Added Archive and Link Incidents links in `AppNav` and `MobileNavToggle`.
+  - Full bilingual localization parity added in `messages/es-MX.json` and `messages/en-US.json`.
+- **Verification:**
+  - Migration tests: `__tests__/database/s07-e09-migrations.test.ts` (6/6 passed).
+  - Notification tests: `src/lib/notifications/__tests__/` (91/91 passed).
+  - Archive tests: `src/lib/archive/__tests__/` (10/10 passed).
+  - App shell navigation tests: `__tests__/app-shell/navigation.test.ts` (19/19 passed).
+  - i18n parity tests: `__tests__/i18n/` (23/23 passed).
+  - `npm run lint`: 0 errors, 0 warnings.
+  - All source files strictly <= 400 lines.
+
 ## [2026-08-24 @ 07:53]
 
 **🛠 Database & Architecture: S07 E09 M4 Notification History Window and Filters Migration Applied**

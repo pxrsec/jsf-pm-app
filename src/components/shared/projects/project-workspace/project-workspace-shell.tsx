@@ -21,6 +21,7 @@ import { DeliverablesTab } from "../project-deliverables/deliverables-tab";
 import { MemberRosterTab } from "../project-members/member-roster-tab";
 import { ProjectActivityTab } from "./project-activity-tab";
 import { ProjectCalendarTab } from "./project-calendar-tab";
+import { ProjectArchiveTab } from "./project-archive-tab";
 import type {
   ProjectDetail,
   ProjectCompletionCyclesView,
@@ -35,6 +36,10 @@ import type {
   CalendarMilestoneTargetDto,
   CalendarRangeState,
 } from "@/lib/calendar/types";
+import type {
+  FinalizedArchivePage,
+  FinalizedArchiveQuery,
+} from "@/lib/archive/types";
 
 interface ProjectWorkspaceShellProps {
   project: ProjectDetail;
@@ -54,6 +59,8 @@ interface ProjectWorkspaceShellProps {
   initialCalendarEvents?: CalendarEventDto[];
   milestoneTargets?: CalendarMilestoneTargetDto[];
   calendarRange?: CalendarRangeState;
+  initialArchivePage?: FinalizedArchivePage;
+  archiveQuery?: FinalizedArchiveQuery;
   locale?: string;
   initialTab?: string;
 }
@@ -73,6 +80,8 @@ export function ProjectWorkspaceShell({
   initialCalendarEvents,
   milestoneTargets = [],
   calendarRange,
+  initialArchivePage,
+  archiveQuery,
   locale = "es",
   initialTab = "overview",
 }: ProjectWorkspaceShellProps) {
@@ -102,6 +111,14 @@ export function ProjectWorkspaceShell({
           params.set("calendarFrom", calendarRange.from);
         if (!params.has("calendarTo"))
           params.set("calendarTo", calendarRange.to);
+      }
+    } else if (tab === "archive") {
+      if (archiveQuery) {
+        if (!params.has("archiveFrom"))
+          params.set("archiveFrom", archiveQuery.from);
+        if (!params.has("archiveTo")) params.set("archiveTo", archiveQuery.to);
+        if (archiveQuery.status && !params.has("archiveStatus"))
+          params.set("archiveStatus", archiveQuery.status);
       }
     }
 
@@ -195,6 +212,14 @@ export function ProjectWorkspaceShell({
                   {t("calendar")}
                 </TabsTrigger>
               )}
+              {canViewCalendarTab && (
+                <TabsTrigger
+                  value="archive"
+                  className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
+                >
+                  {t("archive")}
+                </TabsTrigger>
+              )}
             </TabsList>
           </div>
 
@@ -257,6 +282,25 @@ export function ProjectWorkspaceShell({
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                   <span className="text-sm text-muted-foreground">
                     {t("calendar")}...
+                  </span>
+                </div>
+              )}
+            </TabsContent>
+          )}
+
+          {canViewCalendarTab && (
+            <TabsContent value="archive" className="outline-hidden">
+              {initialArchivePage && archiveQuery ? (
+                <ProjectArchiveTab
+                  projectId={project.id}
+                  initialArchivePage={initialArchivePage}
+                  currentQuery={archiveQuery}
+                />
+              ) : (
+                <div className="flex h-48 items-center justify-center gap-2">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">
+                    {t("archive")}...
                   </span>
                 </div>
               )}

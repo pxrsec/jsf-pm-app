@@ -63,6 +63,22 @@ export function MobileNavToggle({
           ? { href: "/operador/agenda", label: t("links.agenda") }
           : { href: "/cliente/proyectos", label: t("links.projects") };
 
+  const archiveHref =
+    role === "admin"
+      ? "/admin/archivo"
+      : role === "pm"
+        ? "/pm/archivo"
+        : role === "operator"
+          ? "/operador/archivo"
+          : "/cliente/archivo";
+
+  const linkIncidentsHref =
+    role === "admin"
+      ? "/admin/incidentes-enlaces"
+      : role === "pm"
+        ? "/pm/incidentes-enlaces"
+        : null;
+
   const inboxAriaLabel =
     unreadCount > 0
       ? t("notifications.inboxLinkAriaWithCount", { count: unreadCount })
@@ -140,6 +156,24 @@ export function MobileNavToggle({
             >
               {t("links.calendar")}
             </Link>
+
+            <Link
+              href={archiveHref}
+              onClick={() => setIsOpen(false)}
+              className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              {t("links.archive")}
+            </Link>
+
+            {linkIncidentsHref && (
+              <Link
+                href={linkIncidentsHref}
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {t("links.linkIncidents")}
+              </Link>
+            )}
 
             <Link
               href="/notificaciones"

@@ -29,6 +29,8 @@
         "projects": "Projects",
         "agenda": "My Agenda",
         "calendar": "Calendar",
+        "archive": "Archive",
+        "linkIncidents": "Link Incidents",
         "notifications": "Notifications",
         "notificationOperations": "Notification Operations"
       },
@@ -288,7 +290,8 @@
         "deliverables": "Deliverables",
         "members": "Team",
         "activity": "Activity",
-        "calendar": "Calendar"
+        "calendar": "Calendar",
+        "archive": "Archive"
       },
       "clientSetupBanner": {
         "title": "Client setup pending",
@@ -1296,6 +1299,8 @@
   "notifications": {
     "title": "Notifications",
     "description": "In-app notification history.",
+    "historyNoticeDefault": "Showing notifications from the past 90 days.",
+    "historyNoticeCustom": "Showing notifications from the selected historical period.",
     "listLabel": "Notification list",
     "unreadState": "Unread",
     "readState": "Read",
@@ -1310,9 +1315,23 @@
     "loadMore": "Load more",
     "loadMoreAria": "Load more notifications",
     "loading": "Loading notifications...",
+    "filters": {
+      "all": "All",
+      "unread": "Unread",
+      "read": "Read",
+      "presetLast90": "Last 90 days",
+      "presetPrevious90": "Days 91-180",
+      "filtering": "Filtering notifications..."
+    },
     "empty": {
       "title": "Inbox is empty",
-      "description": "You have no in-app notifications."
+      "description": "You have no in-app notifications.",
+      "unreadTitle": "No unread notifications",
+      "unreadDescription": "All your notifications are up to date.",
+      "readTitle": "No read notifications",
+      "readDescription": "You have no read notifications in this period.",
+      "customRangeTitle": "No notifications in period",
+      "customRangeDescription": "No notifications were found in the selected date range."
     },
     "error": {
       "title": "Error loading notifications",
@@ -1561,6 +1580,102 @@
       "prevPeriod": "Go to previous period",
       "nextPeriod": "Go to next period",
       "todayButton": "Go to current date"
+    }
+  },
+  "archive": {
+    "title": "Finalized Production Archive",
+    "description": "Browse the immutable history of approved and delivered production deliverables.",
+    "statuses": {
+      "approved": "Approved",
+      "delivered": "Delivered"
+    },
+    "filters": {
+      "allStatuses": "All statuses",
+      "statusApproved": "Approved",
+      "statusDelivered": "Delivered",
+      "statusAria": "Filter by final status",
+      "allProjects": "All projects",
+      "projectAria": "Filter by project",
+      "presetLast90": "Last 90 days",
+      "presetPrevious90": "Days 91-180",
+      "filtering": "Filtering archive..."
+    },
+    "table": {
+      "deliverable": "Deliverable",
+      "status": "Status",
+      "version": "Version",
+      "finalizedAt": "Finalized Date",
+      "project": "Project",
+      "actions": "Actions"
+    },
+    "actions": {
+      "openSubmission": "Open submission",
+      "copySubmission": "Copy submission link",
+      "openDriveFolder": "Open Drive folder",
+      "copyDriveFolder": "Copy folder link",
+      "opensInNewTab": "Opens in a new tab",
+      "externalNotice": "Stored external link. The application does not verify availability.",
+      "copySuccess": "Link copied to clipboard.",
+      "copyError": "Could not copy link to clipboard.",
+      "loadMore": "Load more deliverables",
+      "retry": "Retry loading"
+    },
+    "empty": {
+      "title": "No finalized deliverables",
+      "description": "No finalized production deliverables were found in this period.",
+      "filteredTitle": "No results for filter",
+      "filteredDescription": "No deliverables match the selected filter criteria."
+    },
+    "errors": {
+      "validation": "Invalid archive query parameters.",
+      "unauthenticated": "Invalid or expired session.",
+      "unavailable": "The production archive service is currently unavailable."
+    }
+  },
+  "linkIncidents": {
+    "title": "Link Incidents",
+    "description": "Internal operational registry of reported deliverable link issues.",
+    "statuses": {
+      "open": "Open",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed"
+    },
+    "filters": {
+      "allStatuses": "All statuses",
+      "statusOpen": "Open",
+      "statusResolved": "Resolved",
+      "statusDismissed": "Dismissed",
+      "statusAria": "Filter by incident status",
+      "allProjects": "All projects",
+      "projectAria": "Filter by project",
+      "presetLast90": "Last 90 days",
+      "presetPrevious90": "Days 91-180",
+      "filtering": "Filtering incidents..."
+    },
+    "table": {
+      "deliverable": "Deliverable",
+      "project": "Project",
+      "status": "Status",
+      "reportedAt": "Reported Date",
+      "resolvedAt": "Resolved Date",
+      "reason": "Reason",
+      "resolutionNote": "Resolution Note",
+      "actions": "Actions"
+    },
+    "actions": {
+      "loadMore": "Load more incidents",
+      "retry": "Retry loading"
+    },
+    "empty": {
+      "title": "No link incidents",
+      "description": "No link issue reports have been logged in this period.",
+      "filteredTitle": "No results for filter",
+      "filteredDescription": "No incidents match the selected filters."
+    },
+    "errors": {
+      "validation": "Invalid incident query parameters.",
+      "unauthenticated": "Invalid or expired session.",
+      "unavailable": "The link incidents service is currently unavailable."
     }
   }
 }

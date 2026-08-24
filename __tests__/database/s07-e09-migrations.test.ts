@@ -19,13 +19,15 @@ describe("S07 E09 candidate migration source contracts", () => {
   const m1r = readMigration(
     "20260823144000_s07_e09_calendar-task-scoped-milestones-and-pm-authority.sql",
   );
+  const m4 = readMigration(
+    "20260824080000_s07_e09_notification_history_window_and_filters.sql",
+  );
 
   it("uses append-only transactional sources", () => {
-    for (const source of [m1, m2, m3, m1r]) {
+    for (const source of [m1, m2, m3, m1r, m4]) {
       expect(source).toMatch(/^\s*begin\s*;/im);
       expect(source).toMatch(/commit\s*;\s*$/im);
       expect(source).not.toMatch(/drop\s+table|truncate\s+table/i);
-      expect(source).not.toMatch(/create\s+index/i);
     }
   });
 
@@ -150,5 +152,33 @@ describe("S07 E09 candidate migration source contracts", () => {
     expect(m3).toContain("Audit range must not exceed 93 days");
     expect(m3).not.toMatch(/\b(insert|update|delete)\s+(into\s+)?public\./i);
     expect(m3).not.toMatch(/current_setting|pg_read_file|alter\s+system/i);
+  });
+
+  it("M4 replaces recipient inbox with purpose-limited 90-day history window and filters", () => {
+    expect(m4).toMatch(
+      /drop\s+function\s+public\.list_my_in_app_notifications/i,
+    );
+    expect(m4).toMatch(
+      /create\s+function\s+public\.list_my_in_app_notifications\s*\(\s*p_limit\s+integer\s+default\s+25,\s*p_from\s+timestamptz\s+default\s+null,\s*p_to\s+timestamptz\s+default\s+null,\s*p_read_state\s+boolean\s+default\s+null,\s*p_before_created_at\s+timestamptz\s+default\s+null,\s*p_before_recipient_id\s+uuid\s+default\s+null\s*\)/i,
+    );
+    expect(m4).toContain("Authentication with an active profile is required");
+    expect(m4).toContain("Notification history range cannot exceed 93 days");
+    expect(m4).toContain(
+      "Notification history range start must precede its end",
+    );
+    expect(m4).toContain("Notification history cursor is incomplete");
+    expect(m4).toContain("set search_path = pg_catalog, public");
+    expect(m4).toMatch(
+      /revoke\s+all\s+on\s+function\s+public\.list_my_in_app_notifications[\s\S]*?from\s+public/i,
+    );
+    expect(m4).toMatch(
+      /revoke\s+all\s+on\s+function\s+public\.list_my_in_app_notifications[\s\S]*?from\s+anon/i,
+    );
+    expect(m4).toMatch(
+      /grant\s+execute\s+on\s+function\s+public\.list_my_in_app_notifications[\s\S]*?to\s+authenticated/i,
+    );
+    expect(m4).toContain(
+      "create index if not exists notification_recipients_in_app_history_keyset_idx",
+    );
   });
 });
