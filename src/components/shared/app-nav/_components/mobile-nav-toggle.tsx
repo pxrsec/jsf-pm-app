@@ -79,12 +79,21 @@ export function MobileNavToggle({
         ? "/pm/incidentes-enlaces"
         : null;
 
+  const metricsHref =
+    role === "admin"
+      ? "/admin/metricas"
+      : role === "pm"
+        ? "/pm/metricas"
+        : null;
+
+  const adminOperationsHref = role === "admin" ? "/admin/operaciones" : null;
+
   const inboxAriaLabel =
     unreadCount > 0
       ? t("notifications.inboxLinkAriaWithCount", { count: unreadCount })
       : t("notifications.inboxLinkAria");
 
-  const operationsHref =
+  const notificationOperationsHref =
     canAccessNotificationOperations && (role === "admin" || role === "pm")
       ? role === "admin"
         ? "/admin/notificaciones"
@@ -175,6 +184,26 @@ export function MobileNavToggle({
               </Link>
             )}
 
+            {metricsHref && (
+              <Link
+                href={metricsHref}
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {t("links.metrics")}
+              </Link>
+            )}
+
+            {adminOperationsHref && (
+              <Link
+                href={adminOperationsHref}
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {t("links.operations")}
+              </Link>
+            )}
+
             <Link
               href="/notificaciones"
               onClick={() => setIsOpen(false)}
@@ -189,9 +218,9 @@ export function MobileNavToggle({
               {`${t("notifications.badgeLabel")}: ${unreadCount}`}
             </span>
 
-            {operationsHref && (
+            {notificationOperationsHref && (
               <Link
-                href={operationsHref}
+                href={notificationOperationsHref}
                 onClick={() => setIsOpen(false)}
                 className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >

@@ -4,6 +4,19 @@ import React from "react";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
+vi.mock("server-only", () => ({}));
+
+vi.mock("@/config/app.config", () => ({
+  publicConfig: {
+    appUrl: "http://localhost:3000",
+    supabaseUrl: "https://example.supabase.co",
+    supabasePublishableKey: "sb_publishable_test_key",
+  },
+  serverConfig: {
+    supabaseServiceRoleKey: "sb_secret_test_key",
+  },
+}));
+
 vi.mock(
   "@/components/shared/projects/project-workspace/project-overview-tab",
   () => ({
@@ -41,6 +54,12 @@ vi.mock(
     ProjectActivityTab: () => (
       <div data-testid="activity-tab">Activity Tab</div>
     ),
+  }),
+);
+vi.mock(
+  "@/components/shared/projects/project-workspace/project-archive-tab",
+  () => ({
+    ProjectArchiveTab: () => <div data-testid="archive-tab">Archive Tab</div>,
   }),
 );
 vi.mock(

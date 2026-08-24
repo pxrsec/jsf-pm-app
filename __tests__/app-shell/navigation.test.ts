@@ -176,6 +176,8 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(html).toContain('href="/admin/proyectos"');
       expect(html).toContain('href="/admin/archivo"');
       expect(html).toContain('href="/admin/incidentes-enlaces"');
+      expect(html).toContain('href="/admin/metricas"');
+      expect(html).toContain('href="/admin/operaciones"');
       expect(html).toContain('href="/notificaciones"');
       expect(html).toContain(
         'aria-label="Bandeja de notificaciones, 3 no leídas"',
@@ -192,7 +194,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(html).toContain('aria-label="Navegación principal"');
     });
 
-    it("renders pm lead navigation with /pm, /pm/proyectos, /pm/archivo, /pm/incidentes-enlaces, /notificaciones, and /pm/notificaciones", async () => {
+    it("renders pm lead navigation with /pm, /pm/proyectos, /pm/archivo, /pm/incidentes-enlaces, /pm/metricas, /notificaciones, and /pm/notificaciones", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
@@ -215,6 +217,8 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(html).toContain('href="/pm/proyectos"');
       expect(html).toContain('href="/pm/archivo"');
       expect(html).toContain('href="/pm/incidentes-enlaces"');
+      expect(html).toContain('href="/pm/metricas"');
+      expect(html).not.toContain('href="/admin/operaciones"');
       expect(html).toContain('href="/notificaciones"');
       expect(html).toContain('aria-label="Bandeja de notificaciones"');
       expect(html).toContain('href="/pm/notificaciones"');
@@ -226,7 +230,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(html).toContain("Project Manager");
     });
 
-    it("renders pm watcher navigation with /pm, /pm/proyectos, /pm/archivo, /pm/incidentes-enlaces, /notificaciones, and NO operations link", async () => {
+    it("renders pm watcher navigation with /pm, /pm/proyectos, /pm/archivo, /pm/incidentes-enlaces, /pm/metricas, /notificaciones, and NO operations link", async () => {
       const session: SessionContext = {
         user: baseUser as unknown as SessionContext["user"],
         profile: createMockProfile({
@@ -249,9 +253,11 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(html).toContain('href="/pm/proyectos"');
       expect(html).toContain('href="/pm/archivo"');
       expect(html).toContain('href="/pm/incidentes-enlaces"');
+      expect(html).toContain('href="/pm/metricas"');
       expect(html).toContain('href="/notificaciones"');
       expect(html).not.toContain('href="/pm/notificaciones"');
       expect(html).not.toContain('href="/admin/notificaciones"');
+      expect(html).not.toContain('href="/admin/operaciones"');
       expect(html).not.toContain("Operaciones de Notificaciones");
       expect(html).toContain("PM Watcher User");
     });

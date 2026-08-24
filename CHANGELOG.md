@@ -1,5 +1,52 @@
 # JSF PM App Development Changelog
 
+## [2026-08-24 @ 11:03]
+
+**🐛 Hotfixes: Clean ESLint Warnings & Type Strictness in S07-05 / S07-06 Modules**
+
+- **ESLint & TypeScript Cleanup:**
+  - Removed unused icon imports (`ShieldCheck`, `Mail`, `Phone`, `ShieldAlert`, `ExternalLink`, `Inbox`, `RotateCcw`) across `DiagnosticsCard`, `UserInvitationStateSection`, `PmMetricsPage`, `MetricCardsGrid`, and `MetricsFilterBar`.
+  - Removed unused `role` prop from `MetricCardsGrid` and unused `xAxisLabel` prop from `StatusDistributionChart`.
+  - Replaced all explicit `any` casting in `src/lib/operations-metrics/__tests__/s07-05-s07-06-adapters.test.ts` with strict typed record and cursor structures.
+  - Added direct unit test assertions for `validateDeliverableStatusDistribution`.
+- **Verification:**
+  - `npm run lint`: 0 errors, 0 warnings.
+  - `npm run typecheck`: 0 errors.
+  - `npx vitest run src/lib/operations-metrics/__tests__/s07-05-s07-06-adapters.test.ts`: 10/10 tests passed.
+
+## [2026-08-24 @ 10:48]
+
+**🚀 Features & 🛠 Architecture: S07-05 (Scoped Operations Metrics Dashboards) & S07-06 (Admin Operations Console)**
+
+- **Operations Metrics Domain Layer (`src/lib/operations-metrics/`):**
+  - Defined explicit DTOs (`OperationsMetricsSummaryDto`, `OperationsMetricTrendPointDto`, `ProjectStatusDistribution`, `DeliverableStatusDistribution`) and finite section result types (`{ status: "available", data: T } | { status: "unavailable", code: "UNAVAILABLE" }`).
+  - Added strict Zod schemas for date ranges (ISO offset-bearing timestamps in `America/Mexico_City`, `<= 93` days) and role-specific query shapes (Admin global omitting project vs PM single required project).
+  - Built Mexico City timezone conversion utilities (`convertLocalDateToMexicoCityRange`, `getDefaultMetricsRange`, `normalizeMetricsSearchState`) with exclusive next-day start-of-day serialization via `formatIsoWithOffset`.
+  - Implemented server queries calling M3 (`get_scoped_operations_metrics`) and M5 (`list_scoped_operations_metric_trend`) with runtime response validation, closed-set status distribution projection (missing keys default to 0, unknown keys fail closed), and semantic epoch instant comparisons.
+- **Admin Operations Domain Layer (`src/lib/admin-operations/`):**
+  - Created presentation DTOs stripping raw internal identifiers (`audit_id`, `entity_id`, `profile_id`, `record_id`, `project_id`) prior to client exposure.
+  - Implemented safe development capability diagnostics mapper (`getAdminCapabilityDiagnostics`) translating posture to closed safe tokens (`local_demo`, `inactive`, `activation_prerequisites_incomplete`, `configuration_requires_review`) without sensitive data exposure.
+  - Built keyset-paginated server queries and continuation server actions (`fetchAdminAuditPage`, `fetchAdminUserInvitationStatePage`, `loadAdminAuditPageAction`, `loadAdminUserInvitationStatePageAction`).
+- **Shared Metrics Presentation Components (`src/components/shared/metrics/`):**
+  - Implemented `MetricsFilterBar` with 30-day and 90-day preset buttons, custom Mexico City date pickers, and PM project selector.
+  - Built `MetricCardsGrid` displaying 8 distinct operational attention metrics with truthful null-handling for PM Watcher queue counts.
+  - Created `StatusDistributionSection` with Recharts bar chart and always-visible accessible semantic HTML tables for project and deliverable statuses.
+  - Built `TrendChartSection` visualizing 7-day half-open interval operational trends across 4 distinct metric series with accessible data tables.
+  - Built `CycleDurationSummary` presenting client review and project completion cycle duration metrics with unit formatting.
+- **Admin Operations Console (`src/app/[locale]/(protected)/admin/operaciones/`):**
+  - Created `OperationalAttentionSection` with summary cards, suppression notice, and direct navigation links to specialized consoles.
+  - Created `DiagnosticsCard` presenting local demo integration posture and external delivery status.
+  - Created `AuditHistorySection` and `UserInvitationStateSection` with desktop table and mobile card views, keyset pagination, and screen-reader live regions.
+- **RSC Route Pages & Navigation (`src/app/[locale]/(protected)/`, `src/components/shared/app-nav/`):**
+  - Implemented `/admin/metricas`, `/pm/metricas`, and `/admin/operaciones` with independent section-level failure isolation (`Promise.allSettled`).
+  - Updated AppNav and MobileNavToggle to expose `/admin/metricas`, `/admin/operaciones`, and `/pm/metricas` based on role permissions.
+- **Localization & Tests:**
+  - Added complete bilingual translations in `messages/es-MX.json` and `messages/en-US.json` under `metrics` and `adminOperations` namespaces.
+  - Created single focused server-adapter test suite `src/lib/operations-metrics/__tests__/s07-05-s07-06-adapters.test.ts` (10/10 tests passed).
+  - Updated database migration contract tests in `__tests__/database/s07-e09-migrations.test.ts` (7/7 tests passed).
+  - Updated app shell navigation tests in `__tests__/app-shell/navigation.test.ts` (19/19 tests passed).
+  - Full test suite verification: 80 test files passed (729 tests passed, 0 failures).
+
 ## [2026-08-24 @ 10:05]
 
 **🛠 Database Migration: S07 E09 M5 Scoped Operations Metrics Trend Projection**

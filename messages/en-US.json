@@ -31,6 +31,8 @@
         "calendar": "Calendar",
         "archive": "Archive",
         "linkIncidents": "Link Incidents",
+        "metrics": "Metrics",
+        "operations": "Operations",
         "notifications": "Notifications",
         "notificationOperations": "Notification Operations"
       },
@@ -1676,6 +1678,300 @@
       "validation": "Invalid incident query parameters.",
       "unauthenticated": "Invalid or expired session.",
       "unavailable": "The link incidents service is currently unavailable."
+    }
+  },
+  "metrics": {
+    "adminTitle": "Operational Metrics",
+    "adminDescription": "Global overview of operational activity, task attention, deliverable status, and project cycles.",
+    "pmTitle": "Project Metrics",
+    "pmDescription": "Operational overview and trends for the selected project within your authorized scope.",
+    "globalScopeBadge": "Global scope (all projects)",
+    "noAuthorizedProjectsTitle": "No authorized projects",
+    "noAuthorizedProjectsDescription": "You currently have no assigned projects to display operational metrics.",
+    "viewPmArchive": "View project archive",
+    "viewPmLinkIncidents": "View link incidents",
+    "filters": {
+      "rangeLabel": "Range",
+      "preset30Days": "Last 30 days",
+      "preset90Days": "Last 90 days",
+      "projectLabel": "Project",
+      "projectSelectAria": "Select project for metrics",
+      "selectProjectPlaceholder": "Select project...",
+      "customRangeLabel": "Custom range",
+      "startDateAria": "Start date",
+      "endDateAria": "End date",
+      "applyCustomDates": "Apply",
+      "errorIncompleteDates": "Please select both dates.",
+      "errorInvalidRange": "Invalid range. Start date must precede end date (max 93 days).",
+      "updating": "Updating metrics..."
+    },
+    "cards": {
+      "activeTasks": {
+        "title": "Active Tasks",
+        "description": "Non-completed tasks in current scope."
+      },
+      "overdueTasks": {
+        "title": "Overdue Tasks",
+        "description": "Non-completed tasks whose deadline has passed."
+      },
+      "deadlinesInRange": {
+        "title": "Deadlines in Range",
+        "description": "Task deadlines within the selected date range."
+      },
+      "finalizedDeliverables": {
+        "title": "Finalized Deliverables",
+        "description": "Production deliverables approved or delivered in the range."
+      },
+      "unresolvedLinkIncidents": {
+        "title": "Link Incidents",
+        "description": "Currently open broken link reports."
+      },
+      "completedCycles": {
+        "title": "Completed Cycles",
+        "description": "Projects completed during the selected range."
+      },
+      "reopenedCycles": {
+        "title": "Reopened Cycles",
+        "description": "Projects completed in range that were subsequently reopened."
+      },
+      "suppressedExternal": {
+        "title": "External Suppressions",
+        "description": "External notifications not dispatched due to inactive providers."
+      },
+      "authorityLimited": "Not available for this access level"
+    },
+    "distributions": {
+      "projects": {
+        "title": "Project Distribution by Status",
+        "description": "Total of {total} non-deleted projects in current scope.",
+        "tableCaption": "Current project distribution by status"
+      },
+      "deliverables": {
+        "title": "Production Deliverable Distribution",
+        "description": "Total of {total} production deliverables in current scope.",
+        "tableCaption": "Current production deliverable distribution by status"
+      },
+      "table": {
+        "status": "Status",
+        "count": "Count",
+        "percentage": "Percentage"
+      },
+      "noRecords": "No records in the current status."
+    },
+    "projectStatus": {
+      "planning": "Planning",
+      "in_progress": "In Progress",
+      "paused": "Paused",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "deliverableStatus": {
+      "pending": "Pending",
+      "awaiting_internal_review": "In Internal Review",
+      "awaiting_client_review": "In Client Review",
+      "approved": "Approved",
+      "changes_requested": "Changes Requested",
+      "delivered": "Delivered",
+      "submitted": "Submitted"
+    },
+    "trend": {
+      "title": "Operational Activity by 7-Day Period",
+      "description": "Trend of finalized deliverables, client reviews, and project cycles.",
+      "tableCaption": "7-day half-open intervals in Mexico City time zone",
+      "noActivity": "No activity recorded in the periods for the selected range.",
+      "series": {
+        "finalized": "Finalized deliverables",
+        "reviewCycles": "Client review cycles",
+        "completionCycles": "Completed cycles",
+        "reopenedCycles": "Reopened cycles"
+      },
+      "columns": {
+        "period": "Period (7 days)",
+        "finalized": "Finalized deliverables",
+        "reviewCycles": "Client reviews",
+        "completionCycles": "Completed cycles",
+        "reopenedCycles": "Reopened cycles"
+      }
+    },
+    "cycles": {
+      "title": "Cycle Duration Summary",
+      "description": "Averages and counts for client review cycles and project completion cycles.",
+      "hoursUnit": "hours",
+      "daysUnit": "days",
+      "noData": "No measured data",
+      "clientReview": {
+        "heading": "Client Review Cycle",
+        "count": "Measured reviews",
+        "average": "Average duration",
+        "note": "Based on production deliverable reviews with client action in the range."
+      },
+      "projectCompletion": {
+        "heading": "Project Completion Cycle",
+        "count": "Measured completions",
+        "average": "Average duration",
+        "reopened": "Reopened",
+        "note": "Based on projects completed in the selected date range."
+      }
+    },
+    "errors": {
+      "summaryUnavailable": "Unable to load the metrics summary at this time.",
+      "trendUnavailable": "Unable to load the operational trend at this time."
+    }
+  },
+  "adminOperations": {
+    "title": "Operations Console",
+    "description": "Operational stewardship console: immediate attention, quick destinations, system posture, audit history, and user state.",
+    "readOnlyConsoleBadge": "Read-only console",
+    "attention": {
+      "title": "Immediate Operational Attention",
+      "description": "Key attention metrics for ongoing system supervision.",
+      "overdueTasks": "Overdue Tasks",
+      "deadlinesInRange": "Deadlines in Range",
+      "unresolvedLinkIncidents": "Broken Links",
+      "finalizedDeliverables": "Finalized Deliverables",
+      "suppressionNoticeTitle": "{count} external notifications suppressed",
+      "suppressionNoticeBody": "External delivery was suppressed because providers are inactive in this local demo. It was not sent, is not pending, and will not retry automatically."
+    },
+    "destinations": {
+      "title": "Specialized Operational Destinations",
+      "description": "Direct access to specialized consoles and system logs.",
+      "viewDestination": "Open section",
+      "metrics": {
+        "title": "Operational Metrics",
+        "description": "Global analytical dashboard of statuses, deliveries, and cycle durations."
+      },
+      "archive": {
+        "title": "Production Archive",
+        "description": "Repository of finalized and approved deliverables."
+      },
+      "linkIncidents": {
+        "title": "Link Incidents",
+        "description": "Management and resolution of broken link reports."
+      },
+      "notifications": {
+        "title": "Notification Queue",
+        "description": "Internal delivery history and provider suppressions."
+      }
+    },
+    "diagnostics": {
+      "title": "System Capability Posture",
+      "description": "Configuration status and readiness of services in this environment.",
+      "tableCaption": "System integration capabilities",
+      "columns": {
+        "capability": "Capability",
+        "state": "Safe state",
+        "meaning": "Operational meaning"
+      },
+      "capabilities": {
+        "localDemoPosture": "Local Demo Posture",
+        "externalDelivery": "External Delivery (Email / WhatsApp)"
+      },
+      "states": {
+        "local_demo": "Local Demo",
+        "inactive": "Inactive",
+        "activation_prerequisites_incomplete": "Prerequisites Incomplete",
+        "configuration_requires_review": "Requires Review"
+      },
+      "meanings": {
+        "local_demo": "This application operates in local demo posture; it does not represent a production deployment claim.",
+        "inactive": "External providers are inactive; external notifications are neither dispatched nor queued for retry.",
+        "activation_prerequisites_incomplete": "Local posture does not meet activation prerequisites; separate approved integration work is required.",
+        "configuration_requires_review": "Independent approved review is required before any activation; does not constitute live delivery confirmation."
+      }
+    },
+    "audit": {
+      "title": "Recent Audit History",
+      "description": "Bounded chronological log of events and status transitions across the system.",
+      "tableCaption": "Logged audit events",
+      "loadMore": "Load more events",
+      "loadingMore": "Loading events...",
+      "loadMoreError": "Unable to load additional audit events.",
+      "retry": "Retry",
+      "noRecords": "No audit events recorded in this period.",
+      "columns": {
+        "when": "Date / Time",
+        "action": "Action",
+        "entityType": "Entity",
+        "project": "Project",
+        "role": "Role",
+        "statusChange": "Status Change",
+        "summary": "Summary"
+      },
+      "actions": {
+        "generic": "Operational event recorded",
+        "project_completed": "Project completed",
+        "project_reopened": "Project reopened",
+        "project_status_recovered": "Project status recovered",
+        "entity_soft_deleted": "Record soft-deleted",
+        "entity_restored": "Record restored",
+        "invite_accepted": "Invitation accepted",
+        "invite_created": "Invitation created",
+        "invite_revoked": "Invitation revoked"
+      },
+      "entityTypes": {
+        "profile": "Profile",
+        "client": "Client",
+        "project": "Project",
+        "project_member": "Project member",
+        "task": "Task",
+        "deliverable": "Deliverable",
+        "deliverable_version": "Deliverable version",
+        "feedback": "Feedback",
+        "calendar_event": "Calendar event",
+        "notification": "Notification",
+        "invite_token": "Invite token",
+        "collaboration_comment": "Comment",
+        "link_report": "Link report"
+      },
+      "roles": {
+        "admin": "Administrator",
+        "pm": "Project Manager",
+        "operator": "Operator",
+        "client": "Client"
+      }
+    },
+    "userInvitation": {
+      "title": "User & Invitation Operational State",
+      "description": "Visibility of active accounts and issued invitations.",
+      "boundaryNotice": "Visibility only; user management is not available in this console.",
+      "tableCaption": "User accounts and issued invitations",
+      "loadMore": "Load more records",
+      "loadingMore": "Loading records...",
+      "loadMoreError": "Unable to load additional user/invitation records.",
+      "retry": "Retry",
+      "noRecords": "No user or invitation records available.",
+      "emailPreference": "Email notifications",
+      "whatsappPreference": "WhatsApp notifications",
+      "globalInvitation": "General invitation",
+      "project": "Project",
+      "expires": "Expires",
+      "kinds": {
+        "profile": "Profile",
+        "invitation": "Invitation"
+      },
+      "activeState": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "invitationStatus": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "expired": "Expired",
+        "revoked": "Revoked"
+      },
+      "columns": {
+        "kind": "Kind",
+        "identity": "Identity / Target",
+        "role": "Role",
+        "status": "Status",
+        "preferences": "Preferences",
+        "activity": "Last Activity / Expiration"
+      }
+    },
+    "errors": {
+      "attentionUnavailable": "Unable to load operational attention summary.",
+      "auditUnavailable": "Unable to load audit history.",
+      "userStateUnavailable": "Unable to load user and invitation state."
     }
   }
 }

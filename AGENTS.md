@@ -54,7 +54,6 @@ Inspect `package.json` for current scripts and dependencies. Consult installed p
 - Preserve RLS, server-side authorization, immutable audit evidence, idempotency requirements, and role-safe response shapes. A passing client test is not proof that an authorization rule is correct.
 - External URLs must remain public HTTPS URLs and must not be server-dereferenced unless an accepted decision changes that boundary.
 
-
 ## Change discipline
 
 1. Confirm that scope, acceptance evidence, responsible role, and dependencies are clear.

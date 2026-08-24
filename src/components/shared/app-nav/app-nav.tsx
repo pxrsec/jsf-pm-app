@@ -57,12 +57,21 @@ export async function AppNav({
         ? "/pm/incidentes-enlaces"
         : null;
 
+  const metricsHref =
+    role === "admin"
+      ? "/admin/metricas"
+      : role === "pm"
+        ? "/pm/metricas"
+        : null;
+
+  const adminOperationsHref = role === "admin" ? "/admin/operaciones" : null;
+
   const inboxAriaLabel =
     unreadCount > 0
       ? t("notifications.inboxLinkAriaWithCount", { count: unreadCount })
       : t("notifications.inboxLinkAria");
 
-  const operationsHref =
+  const notificationOperationsHref =
     canAccessNotificationOperations && (role === "admin" || role === "pm")
       ? role === "admin"
         ? "/admin/notificaciones"
@@ -128,6 +137,24 @@ export async function AppNav({
               </Link>
             )}
 
+            {metricsHref && (
+              <Link
+                href={metricsHref}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("links.metrics")}
+              </Link>
+            )}
+
+            {adminOperationsHref && (
+              <Link
+                href={adminOperationsHref}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("links.operations")}
+              </Link>
+            )}
+
             <Link
               href="/notificaciones"
               aria-label={inboxAriaLabel}
@@ -141,9 +168,9 @@ export async function AppNav({
               {`${t("notifications.badgeLabel")}: ${unreadCount}`}
             </span>
 
-            {operationsHref && (
+            {notificationOperationsHref && (
               <Link
-                href={operationsHref}
+                href={notificationOperationsHref}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("links.notificationOperations")}

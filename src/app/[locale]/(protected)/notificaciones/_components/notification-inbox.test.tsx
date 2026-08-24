@@ -327,8 +327,12 @@ describe("NotificationInbox Component", () => {
       hasMore: false,
     };
 
+    const range = getDefaultNotificationRange();
     render(
-      <NotificationInbox initialPage={emptyPage} currentQuery={defaultQuery} />,
+      <NotificationInbox
+        initialPage={emptyPage}
+        currentQuery={{ ...range, readFilter: "all" }}
+      />,
     );
 
     expect(screen.getByText("Bandeja vacía")).toBeInTheDocument();

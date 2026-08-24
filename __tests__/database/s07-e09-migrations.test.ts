@@ -22,9 +22,12 @@ describe("S07 E09 candidate migration source contracts", () => {
   const m4 = readMigration(
     "20260824080000_s07_e09_notification_history_window_and_filters.sql",
   );
+  const m5 = readMigration(
+    "20260824110000_s07_e09_scoped-operations-metrics-trend-projection.sql",
+  );
 
   it("uses append-only transactional sources", () => {
-    for (const source of [m1, m2, m3, m1r, m4]) {
+    for (const source of [m1, m2, m3, m1r, m4, m5]) {
       expect(source).toMatch(/^\s*begin\s*;/im);
       expect(source).toMatch(/commit\s*;\s*$/im);
       expect(source).not.toMatch(/drop\s+table|truncate\s+table/i);
@@ -180,5 +183,40 @@ describe("S07 E09 candidate migration source contracts", () => {
     expect(m4).toContain(
       "create index if not exists notification_recipients_in_app_history_keyset_idx",
     );
+  });
+
+  it("M5 provides bounded role-safe operational metric trend projection", () => {
+    expect(m5).toMatch(
+      /create\s+function\s+public\.list_scoped_operations_metric_trend/i,
+    );
+    expect(m5).toContain("Authentication required");
+    expect(m5).toContain("Active profile required");
+    expect(m5).toContain("Metrics range requires both p_from and p_to");
+    expect(m5).toContain("Metrics range start must precede its end");
+    expect(m5).toContain("Metrics range must not exceed 93 days");
+    expect(m5).toContain("A permitted project is required for PM metrics");
+    expect(m5).toContain("Project metrics are not permitted for this caller");
+    expect(m5).toContain("private.is_project_pm(p_project_id)");
+    expect(m5).toContain("generate_series(");
+    expect(m5).toContain("interval '7 days'");
+    expect(m5).toContain("set search_path = pg_catalog, public");
+    expect(m5).toContain(
+      "alter function public.list_scoped_operations_metric_trend",
+    );
+    expect(m5).toContain("owner to postgres");
+    expect(m5).toMatch(
+      /revoke\s+all\s+on\s+function\s+public\.list_scoped_operations_metric_trend[\s\S]*?from\s+public/i,
+    );
+    expect(m5).toMatch(
+      /revoke\s+all\s+on\s+function\s+public\.list_scoped_operations_metric_trend[\s\S]*?from\s+anon/i,
+    );
+    expect(m5).toMatch(
+      /grant\s+execute\s+on\s+function\s+public\.list_scoped_operations_metric_trend[\s\S]*?to\s+authenticated/i,
+    );
+    expect(m5).not.toMatch(/\b(insert|update|delete)\s+(into\s+)?public\./i);
+    expect(m5).not.toMatch(
+      /^\s*create\s+(table|view|index|unique\s+index)\b/im,
+    );
+    expect(m5).not.toMatch(/current_setting|pg_read_file|alter\s+system/i);
   });
 });
