@@ -2,14 +2,14 @@
 
 > **Epic 09: Visibility, Reporting, and Operational Administration**  
 > **Repository**: `pxrsec/jsf-pm-app`  
-> **Status**: Verified & Completed  
+> **Status**: Implementation verification complete; factual closeout pending J-01–J-10 evidence and Project Owner sign-off  
 > **Date**: August 24, 2026
 
 ---
 
 ## 1. Executive Summary
 
-Sprint 07 delivers the comprehensive Epic 09 visibility, reporting, and operational administration capabilities across five major milestones:
+Sprint 07 implementation delivers the Epic 09 visibility, reporting, and operational administration capabilities across five major milestones. The automated evidence below is recorded; final sprint closeout remains pending Project Owner bootstrap/walkthrough evidence for J-01 through J-10 and explicit sign-off:
 - **M1 / M1-R**: Multi-view localized calendar feed with task-scoped and project-scoped milestones, and role-filtered operator visibility.
 - **M2**: Finalized deliverables archive with 90-day windowing, status filtering, copy/open outbound link actions, and authenticated link incident reporting.
 - **M3**: Operational metrics dashboard featuring 90-day deliverable cycle analysis derived authoritatively from canonical audit trails and project completion/reopen cycles.
@@ -59,9 +59,10 @@ All calendar views and header components now dynamically derive the active local
 
 ## 4. Deterministic Demonstration Corpus Reconciliation
 
-The dev/demo data bootstrap script (`scripts/bootstrap-dev-demo-data.ts`) was reconciled with strict data plane constraints:
+The dev/demo data bootstrap script (`scripts/bootstrap-dev-demo-data.ts`) was reconciled with strict data plane constraints. Project Owner bootstrap evidence is recorded as completed: `npm run db:bootstrap` ended with `🎉 Demo Bootstrap Complete!`, created immutable fixture generation epoch `689`, and reported no bootstrap integrity error. The Node module-type warning is informational and did not prevent execution.
+
 - **Sandbox Tasks**: 3 named, provenance-marked tasks (`Sandbox Upcoming Feature Cut`, `Sandbox Overdue Asset Review`, `Sandbox Client Source Request`).
-- **Sandbox Deliverables**: 3 deliverables covering `production` and `client_submission` workflows with valid deadline constraints.
+- **Sandbox Deliverables**: 3 baseline deliverables covering `production` and `client_submission` workflows with valid deadline constraints, plus one provenance-marked generation-scoped production deliverable when immutable metric rollover is required.
 - **Insert-Only Deliverable Versions**: Version 1 created for approved and delivered deliverables without timestamp corruption.
 - **Link Incident**: Open link incident on *Sandbox Delivered Social Teaser* reported by Operator B.
 - **Bucketed Deterministic Audit Logs**: 5 canonical audit log rows derived with deterministic valid UUID `request_id` values.
@@ -77,3 +78,16 @@ The dev/demo data bootstrap script (`scripts/bootstrap-dev-demo-data.ts`) was re
 2. **Development Persona Access Guide**: `dev-docs/documentation/s03-e03-03-dev-persona-access.md`
 3. **Implementation Plan Artifact**: `dev-docs/agent-plans/` / IDE implementation plan.
 4. **Closeout Evidence Record**: `dev-docs/specs/s07/s07-sprint-07-closeout-verification.md`
+5. **Bootstrap Review Remediation**: `dev-docs/specs/s07/s07-07-bootstrap-review-remediation.md`
+
+---
+
+## 6. Manual Localhost Evidence Status
+
+The detailed execution steps and blank evidence tracker are maintained in `dev-docs/documentation/s07-localhost-stakeholder-demo-runbook.md` §5. The bootstrap evidence above is complete. No J-01–J-10 journey is claimed as complete until Project Owner records an observed result and verdict in that tracker.
+
+| Journey range | Status | Required evidence source |
+| --- | --- | --- |
+| Bootstrap reconciliation | **Complete** | Project Owner `npm run db:bootstrap` output ending in `🎉 Demo Bootstrap Complete!` |
+| J-01–J-10 | **Pending** | Actual localhost observations in the runbook tracker |
+| Sprint closeout | **Blocked** | Completion of every required journey, disposition of any defects, and Project Owner sign-off |
