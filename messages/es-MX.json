@@ -15,6 +15,8 @@
       "ariaLabel": "Navegación principal",
       "openMenu": "Abrir menú de navegación",
       "closeMenu": "Cerrar menú de navegación",
+      "collapseNavigation": "Contraer navegación",
+      "expandNavigation": "Expandir navegación",
       "signOut": "Cerrar sesión",
       "currentUser": {
         "role": {
@@ -75,7 +77,20 @@
       "cancelled": "Cancelado",
       "pending": "Pendiente",
       "inReview": "En revisión",
-      "blocked": "Bloqueado"
+      "blocked": "Bloqueado",
+      "awaitingInternalReview": "En revisión interna",
+      "awaitingClientReview": "Esperando revisión del cliente",
+      "approved": "Aprobado",
+      "changesRequested": "Cambios solicitados",
+      "delivered": "Entregado"
+    },
+    "deliverableStatus": {
+      "pending": "Pendiente",
+      "awaitingInternalReview": "En revisión interna",
+      "awaitingClientReview": "Esperando revisión del cliente",
+      "approved": "Aprobado",
+      "changesRequested": "Cambios solicitados",
+      "delivered": "Entregado"
     },
     "priority": {
       "low": "Baja",
@@ -1120,6 +1135,13 @@
           "blocking": "Bloqueante"
         }
       },
+      "taskStatus": {
+        "pending": "Pendiente",
+        "inProgress": "En progreso",
+        "inReview": "En revisión",
+        "completed": "Completada",
+        "blocked": "Bloqueada"
+      },
       "absence": {
         "title": "Solicitud no disponible",
         "description": "No se encontró la solicitud o no tienes permisos para acceder a ella.",
@@ -1243,6 +1265,22 @@
       "openReviewAria": "Revisar entregable {title}",
       "unnamedProject": "Sin nombre",
       "untitledDeliverable": "Sin título",
+      "status": {
+        "pending": "Pendiente",
+        "awaitingInternalReview": "En revisión interna",
+        "awaitingClientReview": "Esperando tu revisión",
+        "approved": "Aprobado",
+        "changesRequested": "Cambios solicitados",
+        "delivered": "Entregado"
+      },
+      "deliverableStatus": {
+        "pending": "Pendiente",
+        "awaitingInternalReview": "En revisión interna",
+        "awaitingClientReview": "Esperando tu revisión",
+        "approved": "Aprobado",
+        "changesRequested": "Cambios solicitados",
+        "delivered": "Entregado"
+      },
       "recovery": {
         "title": "Error al cargar las revisiones",
         "description": "Ocurrió un error inesperado al cargar los entregables de producción. Inténtalo de nuevo.",

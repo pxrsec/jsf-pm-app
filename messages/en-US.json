@@ -15,6 +15,8 @@
       "ariaLabel": "Main navigation",
       "openMenu": "Open navigation menu",
       "closeMenu": "Close navigation menu",
+      "collapseNavigation": "Collapse navigation",
+      "expandNavigation": "Expand navigation",
       "signOut": "Sign out",
       "currentUser": {
         "role": {
@@ -75,7 +77,20 @@
       "cancelled": "Cancelled",
       "pending": "Pending",
       "inReview": "In Review",
-      "blocked": "Blocked"
+      "blocked": "Blocked",
+      "awaitingInternalReview": "Awaiting Internal Review",
+      "awaitingClientReview": "Awaiting Client Review",
+      "approved": "Approved",
+      "changesRequested": "Changes Requested",
+      "delivered": "Delivered"
+    },
+    "deliverableStatus": {
+      "pending": "Pending",
+      "awaitingInternalReview": "Awaiting Internal Review",
+      "awaitingClientReview": "Awaiting Client Review",
+      "approved": "Approved",
+      "changesRequested": "Changes Requested",
+      "delivered": "Delivered"
     },
     "priority": {
       "low": "Low",
@@ -1120,6 +1135,13 @@
           "blocking": "Blocking"
         }
       },
+      "taskStatus": {
+        "pending": "Pending",
+        "inProgress": "In progress",
+        "inReview": "In review",
+        "completed": "Completed",
+        "blocked": "Blocked"
+      },
       "absence": {
         "title": "Request unavailable",
         "description": "The request was not found or you do not have permission to access it.",
@@ -1243,6 +1265,22 @@
       "openReviewAria": "Review deliverable {title}",
       "unnamedProject": "Unnamed project",
       "untitledDeliverable": "Untitled deliverable",
+      "status": {
+        "pending": "Pending",
+        "awaitingInternalReview": "In Internal Review",
+        "awaitingClientReview": "Awaiting Your Review",
+        "approved": "Approved",
+        "changesRequested": "Changes Requested",
+        "delivered": "Delivered"
+      },
+      "deliverableStatus": {
+        "pending": "Pending",
+        "awaitingInternalReview": "In Internal Review",
+        "awaitingClientReview": "Awaiting Your Review",
+        "approved": "Approved",
+        "changesRequested": "Changes Requested",
+        "delivered": "Delivered"
+      },
       "recovery": {
         "title": "Error loading reviews",
         "description": "An unexpected error occurred while loading production deliverables. Please try again.",

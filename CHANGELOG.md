@@ -1,5 +1,54 @@
 # JSF PM App Development Changelog
 
+## [2026-08-25 @ 11:51]
+
+**🐛 Hotfixes & 🌐 Localization: Deliverable & Lifecycle Status Key Resolution**
+
+- **Client Production Review Cards & Detail Views (`src/app/[locale]/(protected)/cliente/entregables/_components/client-review-list.tsx`, `src/app/[locale]/(protected)/cliente/proyectos/_components/client-project-detail.tsx`, `src/app/[locale]/(protected)/cliente/proyectos/_components/client-review-summary-card.tsx`, `src/app/[locale]/(protected)/cliente/entregables/_components/client-review-detail.tsx`):**
+  - Diagnosed root cause where `ClientReviewSummaryCard` was missing `statusLabel` prop in `client-review-list.tsx` and `client-project-detail.tsx`, causing badges to display raw internal keys like `deliverableStatus.awaitingClientReview`, `deliverableStatus.delivered`, and `deliverableStatus.approved`.
+  - Added localized status label lookups via `DELIVERABLE_STATUS_TRANSLATION_KEYS` in `ClientReviewList` and `ClientProjectDetailView` passed to `ClientReviewSummaryCard`.
+  - Added human-readable fallback mapping `DEFAULT_STATUS_LABELS` in `ClientReviewSummaryCard` to safeguard against unhandled key regressions.
+  - Fixed double-prefix translation key lookup (`deliverableStatus.deliverableStatus.*`) in `ClientReviewDetailView`.
+- **Status Maps Centralization (`src/lib/status-maps.ts`):**
+  - Exported `DELIVERABLE_STATUS_TRANSLATION_KEYS` mapping deliverable lifecycle statuses to translation key identifiers (`pending`, `awaitingInternalReview`, `awaitingClientReview`, `approved`, `changesRequested`, `delivered`).
+- **Localization Dictionary Completion (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Added full `deliverableStatus` namespace to `shell` and `projects.clientReviews` in both Spanish and English catalogs.
+  - Added `awaitingInternalReview`, `awaitingClientReview`, `approved`, `changesRequested`, and `delivered` to `shell.status` in both catalogs.
+  - Added `taskStatus` to `projects.clientRequests` to support direct key lookups.
+  - Verified 100% key parity across `es-MX.json` and `en-US.json` (0 missing keys).
+- **Automated Verification:**
+  - Vitest Client Portal Tests (`npx vitest run __tests__/client/client-portal.test.tsx`): PASSED (20/20 passed).
+  - Deliverable Workspace & Status Tests (`npx vitest run __tests__/projects/deliverables-workspace.test.tsx __tests__/operator/operator-task-detail.test.tsx __tests__/projects/task-status-semantics.test.tsx`): PASSED (27/27 passed).
+  - TypeScript Compilation (`npm run typecheck`): PASSED (0 errors).
+
+**🚀 Features & 🛠 Architecture: S08-02 (Desktop Global Navigation Drawer Refinement)**
+
+- **Desktop Left Navigation Drawer (`src/components/shared/app-nav/_components/desktop-nav-drawer.tsx`):**
+  - Implemented persistent, non-modal collapsible left navigation drawer for all authenticated users at `md+` viewports (768px and wider).
+  - Configured outer container with `overflow-hidden`, pinned top collapse control, scrollable link region (`min-h-0 flex-1 overflow-y-auto`), and pinned footer with user identity and second sign-out button.
+  - Implemented `useState(true)` for expanded-by-default behavior with width transition (`w-64` expanded, `w-16` collapsed).
+  - Used Base UI `Tooltip` with `render={<Link ... />}` / `render={<SignOutButton ... />}` composition to eliminate nested interactive elements (`<button>` inside `<a>` or `<button>`).
+  - Implemented exact active route resolution via `@/i18n/routing` `usePathname`, providing semantic `aria-current="page"` and accessible styling on exact match for Home and descendant matching for other routes.
+- **Centralized Pure Navigation Model (`src/components/shared/app-nav/navigation-model.ts`):**
+  - Created serializable `AppNavigationItem` model builder function `buildNavigationModel` consumed once by server `AppNav`.
+  - Enforced exact authorized role/capability matrix across Admin, PM Lead, PM Watcher, Operator, and Client without duplicated client logic.
+- **AppNav & Header Simplification (`src/components/shared/app-nav/app-nav.tsx`):**
+  - Removed top inline `<nav>` link row from desktop header, keeping only brand link, language switcher, theme toggle, truncated user full name and role, and top sign-out button.
+- **Mobile Navigation Consolidation (`src/components/shared/app-nav/_components/mobile-nav-toggle.tsx`):**
+  - Refactored `MobileNavToggle` to consume shared navigation items while preserving all existing mobile dropdown behavior, close-on-link, and Escape key handling.
+- **SignOutButton Extension (`src/components/shared/app-nav/_components/sign-out-button.tsx`):**
+  - Extended component with `React.forwardRef` and optional `iconOnly` prop rendering `LogOut` icon for collapsed drawer mode.
+- **Localization (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Added `collapseNavigation` and `expandNavigation` keys in Spanish ("Contraer navegación" / "Expandir navegación") and English ("Collapse navigation" / "Expand navigation").
+- **Focused Automated Tests (`__tests__/app-shell/navigation.test.ts`):**
+  - Added unit tests verifying default expanded state, toggle interaction, collapsed accessible names, active route evaluation, and server role matrix outputs (24/24 tests passed).
+- **Verification:**
+  - Vitest Unit Tests (`npm test -- __tests__/app-shell/navigation.test.ts`): PASSED (24 passed).
+  - TypeScript Typecheck (`npm run typecheck`): PASSED (0 errors).
+  - ESLint (`npm run lint`): PASSED (0 errors).
+  - Prettier Formatting (`npx prettier --check`): PASSED.
+
+
 ## [2026-08-24 @ 15:44]
 
 **🐛 Hotfixes: Multi-Role Localhost Bug Fixes (i18n Catalogs, RSC Function Closures, Duplicate Keys, and Task Datetime Format)**

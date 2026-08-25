@@ -105,7 +105,7 @@ export async function ClientReviewDetailView({
             >
               <statusConfig.icon className="h-3.5 w-3.5" aria-hidden="true" />
               {shellT(
-                `deliverableStatus.${statusConfig.labelKey}` as
+                statusConfig.labelKey as
                   | "deliverableStatus.pending"
                   | "deliverableStatus.awaitingInternalReview"
                   | "deliverableStatus.awaitingClientReview"

@@ -837,6 +837,8 @@ describe("Client Presentation & Review UI", () => {
         openReview: enCatalog.projects.clientReviews.openReview,
         untitledDeliverable:
           enCatalog.projects.clientReviews.untitledDeliverable,
+        statusLabel:
+          enCatalog.projects.clientReviews.status.awaitingClientReview,
       };
 
       const { container } = render(
@@ -847,6 +849,7 @@ describe("Client Presentation & Review UI", () => {
       );
 
       expect(container.textContent).toContain("Untitled deliverable");
+      expect(container.textContent).toContain("Awaiting Your Review");
       expect(container.textContent).not.toContain("Sin título");
       expect(container.textContent).not.toContain("Sin nombre");
       expect(container.textContent).not.toContain("Proyecto");
