@@ -1,5 +1,19 @@
 # JSF PM App Development Changelog
 
+## [2026-08-25 @ 12:35]
+
+**🐛 Hotfixes & 🛠 Architecture: RSC Payload Fetch Abort & Navigation Resolution**
+
+- **Sign-Out Teardown (`src/components/shared/app-nav/_components/sign-out-button.tsx`):**
+  - Replaced racing `router.push("/iniciar-sesion")` + `router.refresh()` with clean, full browser navigation (`window.location.href = isEnglish ? "/en/iniciar-sesion" : "/iniciar-sesion"`).
+  - Purges all client-side RSC memory caches, prevents concurrent unauthenticated layout revalidation collisions, and eliminates aborted fetch errors.
+- **Sign-In & Invitation Form Transitions (`src/app/[locale]/iniciar-sesion/_components/sign-in-form.tsx`, `src/app/[locale]/invitacion/_components/invitation-form.tsx`):**
+  - Removed redundant immediate `router.refresh()` following `router.push()`, allowing Next.js App Router transitions to complete without in-flight `AbortController` cancellation.
+- **Theme Provider Dev Console Interceptor (`src/components/shared/theme/theme-provider.tsx`):**
+  - Updated development `console.error` wrapper to suppress false-positive Next.js RSC fallback dev logs alongside the existing React 19 anti-FOUC script warning.
+- **Focused Verification:**
+  - `npx vitest run __tests__/app-shell/navigation.test.ts __tests__/auth/pages.test.ts`: PASSED (30/30 tests).
+
 ## [2026-08-25 @ 12:26]
 
 **🚀 Features & 🛠 Architecture: S08-03 (Desktop Drawer Content Reflow and Collapsed Notification Badge)**

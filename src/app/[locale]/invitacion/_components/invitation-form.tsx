@@ -60,7 +60,6 @@ export function InvitationForm({ token }: InvitationFormProps) {
         const result = await response.json();
         const redirectPath = result.data?.redirect_path ?? "/";
         router.push(redirectPath);
-        router.refresh();
         return;
       }
 

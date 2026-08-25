@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
@@ -17,7 +16,6 @@ export const SignOutButton = React.forwardRef<
   SignOutButtonProps
 >(({ className, iconOnly, ...props }, ref) => {
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
   const t = useTranslations("shell.nav");
 
   const handleSignOut = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -30,8 +28,10 @@ export const SignOutButton = React.forwardRef<
     } catch {
       // Gracefully handle sign-out errors
     } finally {
-      router.push("/iniciar-sesion");
-      router.refresh();
+      if (typeof window !== "undefined") {
+        const isEnglish = window.location.pathname.startsWith("/en");
+        window.location.href = isEnglish ? "/en/iniciar-sesion" : "/iniciar-sesion";
+      }
     }
   };
 

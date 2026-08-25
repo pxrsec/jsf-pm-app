@@ -77,7 +77,6 @@ export function SignInForm() {
       const targetPath = ROLE_DEFAULT_PATHS[role] ?? "/iniciar-sesion";
 
       router.push(targetPath);
-      router.refresh();
     } catch {
       setErrorMessage(t("errorGeneric"));
       setIsLoading(false);
