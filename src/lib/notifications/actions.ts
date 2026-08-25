@@ -9,6 +9,7 @@ import {
   MarkNotificationReadSchema,
   MarkAllNotificationsReadSchema,
   LoadRecipientInboxPageSchema,
+  AcknowledgeNotificationNavigationSchema,
 } from "./schemas";
 import { listRecipientInboxPage } from "./queries";
 import type { RecipientInboxPage } from "./inbox-contracts";
@@ -93,6 +94,47 @@ export async function markAllNotificationsReadAction(
 
   revalidateNotificationPaths();
   return { ok: true, changed: data > 0, changedCount: data };
+}
+
+/**
+ * Server action to acknowledge an unread in-app notification before navigation.
+ * Validates strictly by recipient ID and revalidates notification paths on success.
+ */
+export async function acknowledgeNotificationNavigationAction(
+  rawInput: unknown,
+): Promise<NotificationActionResult> {
+  const parsed = AcknowledgeNotificationNavigationSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return { ok: false, error: { code: "VALIDATION_FAILED" } };
+  }
+
+  const cookieStore = await cookies();
+  try {
+    await requireSession(cookieStore);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return { ok: false, error: { code: "UNAUTHENTICATED" } };
+    }
+    throw error;
+  }
+
+  const supabase = createClient(cookieStore);
+  const { data, error } = await supabase.rpc(
+    "acknowledge_notification_and_navigate",
+    {
+      p_notification_recipient_id: parsed.data.notificationRecipientId,
+    },
+  );
+
+  if (error || typeof data !== "boolean") {
+    logger.debug("notification-action-failed", {
+      action: "acknowledge-and-navigate",
+    });
+    return { ok: false, error: { code: "UNAVAILABLE" } };
+  }
+
+  revalidateNotificationPaths();
+  return { ok: true, changed: data === true };
 }
 
 /**

@@ -1,5 +1,41 @@
 # JSF PM App Development Changelog
 
+## [2026-08-25 @ 15:45]
+
+**🚀 Features & 🛠 Architecture: S08-04 Actionable In-App Notification History and Deep Links**
+
+- **Data Contracts & Strict Zod Validation (`src/lib/notifications/inbox-contracts.ts`, `src/lib/notifications/schemas.ts`):**
+  - Defined `NotificationDestination` as a closed discriminated union with 11 distinct variants (`admin_project_overview`, `admin_project_tasks`, `admin_project_deliverables`, `pm_project_overview`, `pm_project_tasks`, `pm_project_deliverables`, `operator_task`, `client_task`, `client_deliverable_review`, `client_project`, `none`).
+  - Updated `RecipientInboxNotification` to include `subjectKind`, `subjectTitle`, `projectName`, `contextKind`, `contextValue`, and `destination`.
+  - Added `AcknowledgeNotificationNavigationSchema`, `RawNotificationRpcRowSchema`, and `parseAndValidateNotificationRow` enforcing fail-closed destination invariants and context bounds.
+- **Pure Destination Route Builder (`src/lib/notifications/destination-routes.ts` & tests):**
+  - Created `resolveNotificationDestinationHref(destination)` mapping destinations to canonical unprefixed application routes with tab selectors (`?tab=tasks`, `?tab=deliverables`).
+- **Query Adapter & Server Actions (`src/lib/notifications/queries.ts`, `src/lib/notifications/actions.ts`):**
+  - Updated `listRecipientInboxPage` with strict pre-slice validation of all 26 returned rows before pagination slicing.
+  - Implemented `acknowledgeNotificationNavigationAction(rawInput)` calling `acknowledge_notification_and_navigate` RPC, handling `{ ok: true, changed }` idempotency, and revalidating notification paths.
+- **Client Components & Accessible Hierarchy (`src/app/[locale]/(protected)/notificaciones/_components/`):**
+  - Updated `NotificationInboxItem` to render the 7-step visual hierarchy (Read/Unread badge, category title, localized contextual sentence, project context tag, optional deadline detail, semantic `<time>`, and visible "View details" affordance).
+  - Updated `NotificationInbox` with separate `pendingNavigationRecipientId` state so navigation acknowledgement disables only the active row without blocking pagination or other rows.
+  - Read rows navigate directly via Next.js `Link`, unread rows execute acknowledgment mutation before client transition, and non-navigable historical rows display safe copy without interactive buttons.
+- **Localization Parity (`messages/en-US.json`, `messages/es-MX.json`):**
+  - Added full translation coverage with exact structural parity across English and Spanish for all 21 trigger sentence keys, action labels, context tags, and error messages.
+- **Automated Verification:**
+  - Unit/integration tests (`npm test`): 66/66 tests PASSED across queries, actions, destination routes, UI inbox components, migration contracts, and message catalogs.
+  - Typecheck (`npm run typecheck`): PASSED (0 errors).
+  - Linter (`npm run lint`): PASSED (0 warnings/errors).
+  - Code formatting (`npm run format:check`): PASSED (all files formatted with Prettier).
+
+## [2026-08-25 @ 14:38]
+
+**🛠 Database Migration & Types: S08-04 In-App Notification Inbox Context & Deep Links**
+
+- **Database Migration (`supabase/migrations/20260825140000_s08_04_notification_inbox_context_and_deep_links.sql`):**
+  - Applied migration `20260825140000_s08_04_notification_inbox_context_and_deep_links` via Supabase MCP.
+  - Recreated `public.list_my_in_app_notifications` function with updated projection supporting context fields (`context_kind`, `context_value`) and deep-linking targets (`navigation_kind`, `navigation_project_id`, `navigation_task_id`, `navigation_deliverable_id`).
+  - Added `public.acknowledge_notification_and_navigate(p_notification_recipient_id uuid)` RPC function for atomic notification acknowledgment on detail navigation.
+- **TypeScript Type Generation (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript definitions from Supabase schema via MCP tool `generate_typescript_types` to synchronize RPC signatures and return shapes.
+
 ## [2026-08-25 @ 13:50]
 
 **🐛 Hotfixes: Base UI Select Trigger Label Resolution & Dropdown Localization**

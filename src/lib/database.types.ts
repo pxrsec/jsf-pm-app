@@ -1717,6 +1717,10 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { p_token_hash: string }; Returns: Json }
+      acknowledge_notification_and_navigate: {
+        Args: { p_notification_recipient_id: string }
+        Returns: boolean
+      }
       create_calendar_milestone: {
         Args: {
           p_color_override?: string
@@ -1884,10 +1888,19 @@ export type Database = {
           p_to?: string
         }
         Returns: {
+          context_kind: string
+          context_value: string
           created_at: string
+          navigation_deliverable_id: string
+          navigation_kind: string
+          navigation_project_id: string
+          navigation_task_id: string
           occurred_at: string
+          project_name: string
           read_at: string
           recipient_id: string
+          subject_kind: string
+          subject_title: string
           trigger: Database["public"]["Enums"]["notification_trigger"]
         }[]
       }
@@ -2422,3 +2435,4 @@ export const Constants = {
     },
   },
 } as const
+
