@@ -65,6 +65,14 @@ export function ProjectFilters({
           onValueChange={(val) => {
             if (val) onStatusChange(val);
           }}
+          items={[
+            { value: "all", label: t("allStatuses") },
+            { value: "planning", label: tStatus("planning") },
+            { value: "in_progress", label: tStatus("inProgress") },
+            { value: "paused", label: tStatus("paused") },
+            { value: "completed", label: tStatus("completed") },
+            { value: "cancelled", label: tStatus("cancelled") },
+          ]}
         >
           <SelectTrigger className="w-[160px] h-9 text-xs">
             <SelectValue placeholder={t("filterStatus")} />
@@ -84,6 +92,11 @@ export function ProjectFilters({
           onValueChange={(val) => {
             if (val) onTypeChange(val);
           }}
+          items={[
+            { value: "all", label: t("allTypes") },
+            { value: "client", label: tTypes("client") },
+            { value: "internal", label: tTypes("internal") },
+          ]}
         >
           <SelectTrigger className="w-[140px] h-9 text-xs">
             <SelectValue placeholder={t("filterType")} />

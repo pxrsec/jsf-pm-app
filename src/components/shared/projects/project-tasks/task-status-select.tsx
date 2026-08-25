@@ -119,6 +119,20 @@ export function TaskStatusSelect({
         value={status}
         onValueChange={handleStatusChange}
         disabled={disabled || isPending}
+        items={allowedStatuses.map((s) => {
+          const config = TASK_STATUS_MAP[s];
+          const Icon = config.icon;
+          const itemTransKey = STATUS_TRANSLATION_KEYS[s] ?? "pending";
+          return {
+            value: s,
+            label: (
+              <span className="inline-flex items-center gap-2">
+                <Icon className="size-3.5" aria-hidden="true" />
+                <span>{t(itemTransKey)}</span>
+              </span>
+            ),
+          };
+        })}
       >
         <SelectTrigger className="h-8 min-w-[140px] text-xs font-medium">
           {isPending ? (

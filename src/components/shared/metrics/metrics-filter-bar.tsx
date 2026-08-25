@@ -185,6 +185,7 @@ export function MetricsFilterBar({
                 value={currentProjectId ?? projects[0]?.id}
                 onValueChange={handleProjectChange}
                 disabled={isPending}
+                items={projects.map((p) => ({ value: p.id, label: p.name }))}
               >
                 <SelectTrigger
                   id="pm-project-select"

@@ -166,6 +166,16 @@ export function ProjectEditDialog({
                   onValueChange={(val) =>
                     setClientId(val === "none" || !val ? undefined : val)
                   }
+                  items={[
+                    {
+                      value: "none",
+                      label: <em>Sin cliente asignado</em>,
+                    },
+                    ...clients.map((c) => ({
+                      value: c.id,
+                      label: c.display_name,
+                    })),
+                  ]}
                 >
                   <SelectTrigger id="edit-project-client-org">
                     <SelectValue placeholder={t("clientOrgPlaceholder")} />

@@ -125,6 +125,12 @@ export function IncidentFilterBar({
             value={currentStatus ?? "all"}
             onValueChange={handleStatusChange}
             disabled={isPending}
+            items={[
+              { value: "all", label: t("allStatuses") },
+              { value: "open", label: t("statusOpen") },
+              { value: "resolved", label: t("statusResolved") },
+              { value: "dismissed", label: t("statusDismissed") },
+            ]}
           >
             <SelectTrigger
               aria-label={t("statusAria")}
@@ -148,6 +154,13 @@ export function IncidentFilterBar({
               value={currentProjectId ?? "all"}
               onValueChange={handleProjectChange}
               disabled={isPending}
+              items={[
+                { value: "all", label: t("allProjects") },
+                ...projects.map((proj) => ({
+                  value: proj.id,
+                  label: proj.name,
+                })),
+              ]}
             >
               <SelectTrigger
                 aria-label={t("projectAria")}

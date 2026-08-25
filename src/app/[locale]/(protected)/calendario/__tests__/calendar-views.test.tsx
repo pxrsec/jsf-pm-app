@@ -321,8 +321,12 @@ describe("Calendar Presentation Views", () => {
         />,
       );
 
-      expect(screen.getByText("Teaser Cut (Internal Review)")).toBeInTheDocument();
-      expect(screen.getByText("Teaser Cut (Client Delivery)")).toBeInTheDocument();
+      expect(
+        screen.getByText("Teaser Cut (Internal Review)"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Teaser Cut (Client Delivery)"),
+      ).toBeInTheDocument();
       expect(consoleErrorSpy).not.toHaveBeenCalledWith(
         expect.stringContaining("Encountered two children with the same key"),
       );
@@ -340,8 +344,12 @@ describe("Calendar Presentation Views", () => {
         />,
       );
 
-      expect(screen.getByText("Teaser Cut (Internal Review)")).toBeInTheDocument();
-      expect(screen.getByText("Teaser Cut (Client Delivery)")).toBeInTheDocument();
+      expect(
+        screen.getByText("Teaser Cut (Internal Review)"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Teaser Cut (Client Delivery)"),
+      ).toBeInTheDocument();
       expect(consoleErrorSpy).not.toHaveBeenCalledWith(
         expect.stringContaining("Encountered two children with the same key"),
       );
@@ -365,8 +373,12 @@ describe("Calendar Presentation Views", () => {
         />,
       );
 
-      expect(screen.getByText("Teaser Cut (Internal Review)")).toBeInTheDocument();
-      expect(screen.getByText("Teaser Cut (Client Delivery)")).toBeInTheDocument();
+      expect(
+        screen.getByText("Teaser Cut (Internal Review)"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Teaser Cut (Client Delivery)"),
+      ).toBeInTheDocument();
       unmount();
 
       render(
@@ -378,8 +390,12 @@ describe("Calendar Presentation Views", () => {
         />,
       );
 
-      expect(screen.getByText("Teaser Cut (Internal Review)")).toBeInTheDocument();
-      expect(screen.getByText("Teaser Cut (Client Delivery)")).toBeInTheDocument();
+      expect(
+        screen.getByText("Teaser Cut (Internal Review)"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Teaser Cut (Client Delivery)"),
+      ).toBeInTheDocument();
 
       expect(consoleErrorSpy).not.toHaveBeenCalledWith(
         expect.stringContaining("Encountered two children with the same key"),
@@ -388,4 +404,3 @@ describe("Calendar Presentation Views", () => {
     });
   });
 });
-

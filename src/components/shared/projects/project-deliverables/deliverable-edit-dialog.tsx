@@ -178,6 +178,10 @@ export function DeliverableEditDialog({
               onValueChange={(val) => {
                 if (val) setValue("assignee_id", val);
               }}
+              items={eligibleAssignees.map((member) => ({
+                value: member.user_id,
+                label: `${member.profile?.full_name || t("userFallback")} (${member.member_type})`,
+              }))}
             >
               <SelectTrigger id="edit-assignee" className="text-xs">
                 <SelectValue placeholder={t("assigneePlaceholder")} />

@@ -1,5 +1,23 @@
 # JSF PM App Development Changelog
 
+## [2026-08-25 @ 13:50]
+
+**🐛 Hotfixes: Base UI Select Trigger Label Resolution & Dropdown Localization**
+
+- **Base UI Select Integration (`src/components/ui/select.tsx` & components across the app):**
+  - Configured explicit `items` prop across all Base UI `<Select>` implementations in the application to properly resolve human-readable labels instead of displaying raw internal values or UUIDs in `<SelectValue />` triggers when closed.
+- **Metrics Project Selector (`src/components/shared/metrics/metrics-filter-bar.tsx`):**
+  - Added `items` mapping (`projects.map(p => ({ value: p.id, label: p.name }))`) so the selected project trigger displays the human-readable project title rather than the raw database UUID.
+- **Task Status Selector (`src/components/shared/projects/project-tasks/task-status-select.tsx`):**
+  - Provided `items` mapping with localized status translations and icons (`TASK_STATUS_MAP[s]`, `STATUS_TRANSLATION_KEYS[s]`), resolving the desktop task detail drawer issue where raw status keys like `"in_progress"` were displayed instead of `"En progreso"`.
+- **View Filter Dropdowns Across Routes (`src/components/shared/projects/`, `src/components/shared/archive/`, `src/components/shared/incidents/`):**
+  - Fixed filter dropdown triggers in `project-filters.tsx`, `archive-filter-bar.tsx`, `incident-filter-bar.tsx`, `task-filters.tsx`, and `deliverables-filter-bar.tsx` across `proyectos`, `archivo`, `incidentes-enlaces`, and workspace views.
+  - Triggers now correctly display localized options (e.g. `"Todos los estados"`, `"Todos los proyectos"`, `"Todos los tipos"`) and translated entity names instead of raw fallback strings like `"all"` or UUIDs.
+- **Dialog & Form Selects (`src/components/shared/projects/`, `src/app/[locale]/(protected)/`):**
+  - Added `items` prop to project creation forms (`admin-create-form.tsx`, `pm-create-form.tsx`), edit dialogs (`project-edit-dialog.tsx`, `task-edit-dialog.tsx`, `deliverable-edit-dialog.tsx`), member dialogs (`add-member-dialog.tsx`, `change-capacity-dialog.tsx`), and deliverable creation dialogs.
+- **Verification:**
+  - TypeScript (`npm run typecheck`): PASSED (0 errors).
+
 ## [2026-08-25 @ 13:14]
 
 **🐛 Hotfixes: Calendar View Duplicate React Keys (`entity_id` Collision)**
