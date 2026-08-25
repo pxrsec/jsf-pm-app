@@ -1099,13 +1099,26 @@
         "inProgress": "En progreso",
         "inReview": "En revisión",
         "completed": "Completada",
-        "blocked": "Bloqueada"
+        "blocked": "Bloqueada",
+        "taskStatus": {
+          "pending": "Pendiente",
+          "inProgress": "En progreso",
+          "inReview": "En revisión",
+          "completed": "Completada",
+          "blocked": "Bloqueada"
+        }
       },
       "priority": {
         "low": "Baja",
         "medium": "Media",
         "high": "Alta",
-        "blocking": "Bloqueante"
+        "blocking": "Bloqueante",
+        "priority": {
+          "low": "Baja",
+          "medium": "Media",
+          "high": "Alta",
+          "blocking": "Bloqueante"
+        }
       },
       "absence": {
         "title": "Solicitud no disponible",

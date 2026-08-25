@@ -1099,13 +1099,26 @@
         "inProgress": "In progress",
         "inReview": "In review",
         "completed": "Completed",
-        "blocked": "Blocked"
+        "blocked": "Blocked",
+        "taskStatus": {
+          "pending": "Pending",
+          "inProgress": "In progress",
+          "inReview": "In review",
+          "completed": "Completed",
+          "blocked": "Blocked"
+        }
       },
       "priority": {
         "low": "Low",
         "medium": "Medium",
         "high": "High",
-        "blocking": "Blocking"
+        "blocking": "Blocking",
+        "priority": {
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High",
+          "blocking": "Blocking"
+        }
       },
       "absence": {
         "title": "Request unavailable",

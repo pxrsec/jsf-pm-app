@@ -403,6 +403,55 @@ describe("S04-05 Project Completion, Reopening, and Visible Audit Context", () =
       expect(html).not.toContain("Completar Proyecto");
       expect(html).not.toContain("Editar Información");
     });
+
+    it("renders navigation slot following metadata pills and preceding header bottom boundary", () => {
+      const html = renderToStaticMarkup(
+        <ProjectHeader
+          project={mockActiveProject}
+          clients={[]}
+          effectiveCapacity="pm_lead"
+          baseHref="/pm/proyectos"
+          onOpenEditDialog={vi.fn()}
+          onOpenStatusDialog={vi.fn()}
+          navigation={
+            <div data-testid="test-nav-sentinel">Navigation Tabs</div>
+          }
+        />,
+      );
+
+      // Verify presence
+      expect(html).toContain('data-testid="project-header-pills"');
+      expect(html).toContain('data-testid="project-workspace-navigation"');
+      expect(html).toContain('data-testid="test-nav-sentinel"');
+      expect(html).toContain("Navigation Tabs");
+
+      // Verify DOM order: metadata pills -> navigation slot
+      const pillsIndex = html.indexOf('data-testid="project-header-pills"');
+      const navIndex = html.indexOf(
+        'data-testid="project-workspace-navigation"',
+      );
+      expect(pillsIndex).toBeGreaterThan(-1);
+      expect(navIndex).toBeGreaterThan(pillsIndex);
+
+      // Verify navigation is inside header container with bottom border
+      expect(html).toContain("border-b border-border bg-card/60 pb-0");
+    });
+
+    it("does not render navigation slot when navigation prop is omitted", () => {
+      const html = renderToStaticMarkup(
+        <ProjectHeader
+          project={mockActiveProject}
+          clients={[]}
+          effectiveCapacity="pm_lead"
+          baseHref="/pm/proyectos"
+          onOpenEditDialog={vi.fn()}
+          onOpenStatusDialog={vi.fn()}
+        />,
+      );
+
+      expect(html).not.toContain('data-testid="project-workspace-navigation"');
+      expect(html).toContain("border-b border-border bg-card/60 pb-5");
+    });
   });
 
   // ── 5. Component: TasksTab 'Nueva Tarea' Gating ────────────────────────────
