@@ -164,7 +164,10 @@ export function normalizeCalendarRange(
     projectId = rawProjectId;
   }
 
-  const defaultMonth = getDefaultMonthRange(referenceDate);
+  const defaultRange =
+    view === "week"
+      ? getWeekRange(referenceDate)
+      : getDefaultMonthRange(referenceDate);
 
   if (
     !rawFrom ||
@@ -174,8 +177,8 @@ export function normalizeCalendarRange(
   ) {
     return {
       view,
-      from: defaultMonth.from,
-      to: defaultMonth.to,
+      from: defaultRange.from,
+      to: defaultRange.to,
       projectId,
     };
   }
@@ -186,8 +189,8 @@ export function normalizeCalendarRange(
   if (isNaN(fromTime) || isNaN(toTime)) {
     return {
       view,
-      from: defaultMonth.from,
-      to: defaultMonth.to,
+      from: defaultRange.from,
+      to: defaultRange.to,
       projectId,
     };
   }
@@ -195,8 +198,8 @@ export function normalizeCalendarRange(
   if (fromTime >= toTime) {
     return {
       view,
-      from: defaultMonth.from,
-      to: defaultMonth.to,
+      from: defaultRange.from,
+      to: defaultRange.to,
       projectId,
     };
   }
@@ -205,8 +208,8 @@ export function normalizeCalendarRange(
   if (toTime - fromTime > maxRangeMs) {
     return {
       view,
-      from: defaultMonth.from,
-      to: defaultMonth.to,
+      from: defaultRange.from,
+      to: defaultRange.to,
       projectId,
     };
   }

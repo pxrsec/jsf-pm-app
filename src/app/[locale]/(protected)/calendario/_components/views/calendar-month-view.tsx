@@ -9,7 +9,10 @@ import {
   formatCalendarDate,
 } from "@/lib/calendar/date-utils";
 import type { CalendarViewProps } from "../types";
-import type { CalendarEventDto } from "@/lib/calendar/types";
+import {
+  getCalendarEventKey,
+  type CalendarEventDto,
+} from "@/lib/calendar/types";
 import { EventBadge } from "../event-badge";
 import { CalendarEmptyState } from "../calendar-empty-state";
 
@@ -180,7 +183,7 @@ export function CalendarMonthView({
               <div className="mt-1.5 space-y-1 overflow-y-auto max-h-[90px] pr-0.5">
                 {day.events.map((event) => (
                   <EventBadge
-                    key={event.entity_id}
+                    key={getCalendarEventKey(event)}
                     event={event}
                     canManageMilestones={canManageMilestones}
                     userRole={userRole}

@@ -9,7 +9,7 @@ import {
   formatCalendarDate,
   groupEventsByDate,
 } from "../date-utils";
-import type { CalendarEventDto } from "../types";
+import { getCalendarEventKey, type CalendarEventDto } from "../types";
 
 describe("Calendar Date Utilities", () => {
   it("uses America/Mexico_City as operational timezone", () => {
@@ -57,11 +57,23 @@ describe("Calendar Date Utilities", () => {
       expect(result.projectId).toBe("00000000-0000-0000-0000-000000000001");
     });
 
-    it("falls back to default month on missing from/to", () => {
+    it("falls back to default month on missing from/to for month/agenda/list views", () => {
       const result = normalizeCalendarRange({}, ref);
       expect(result.view).toBe("month");
       expect(result.from).toBe("2026-08-01T00:00:00-06:00");
       expect(result.to).toBe("2026-09-01T00:00:00-06:00");
+
+      const resultAgenda = normalizeCalendarRange({ view: "agenda" }, ref);
+      expect(resultAgenda.view).toBe("agenda");
+      expect(resultAgenda.from).toBe("2026-08-01T00:00:00-06:00");
+      expect(resultAgenda.to).toBe("2026-09-01T00:00:00-06:00");
+    });
+
+    it("falls back to default week range when view is week and from/to are missing", () => {
+      const result = normalizeCalendarRange({ view: "week" }, ref);
+      expect(result.view).toBe("week");
+      expect(result.from).toBe("2026-08-09T00:00:00-06:00");
+      expect(result.to).toBe("2026-08-16T00:00:00-06:00");
     });
 
     it("falls back to default month on inverted range (from >= to)", () => {
@@ -234,4 +246,57 @@ describe("Calendar Date Utilities", () => {
       expect(grouped.get("2026-08-25")?.length).toBe(1);
     });
   });
+
+  describe("getCalendarEventKey", () => {
+    it("generates deterministic composite key with event_type, entity_id, and starts_at", () => {
+      const event: CalendarEventDto = {
+        entity_id: "deliv-123",
+        project_id: "proj-456",
+        project_name: "Project A",
+        task_id: null,
+        title: "Client Delivery",
+        event_type: "client_delivery_deadline",
+        starts_at: "2026-08-20T18:00:00-06:00",
+        ends_at: "2026-08-20T18:00:00-06:00",
+        is_all_day: true,
+        color_override: null,
+      };
+
+      expect(getCalendarEventKey(event)).toBe(
+        "client_delivery_deadline-deliv-123-2026-08-20T18:00:00-06:00",
+      );
+    });
+
+    it("generates distinct keys for events originating from the same entity", () => {
+      const reviewEvent: CalendarEventDto = {
+        entity_id: "deliv-123",
+        project_id: "proj-456",
+        project_name: "Project A",
+        task_id: null,
+        title: "Internal Review",
+        event_type: "internal_review_deadline",
+        starts_at: "2026-08-20T10:00:00-06:00",
+        ends_at: null,
+        is_all_day: true,
+        color_override: null,
+      };
+      const deliveryEvent: CalendarEventDto = {
+        entity_id: "deliv-123",
+        project_id: "proj-456",
+        project_name: "Project A",
+        task_id: null,
+        title: "Client Delivery",
+        event_type: "client_delivery_deadline",
+        starts_at: "2026-08-20T18:00:00-06:00",
+        ends_at: null,
+        is_all_day: true,
+        color_override: null,
+      };
+
+      expect(getCalendarEventKey(reviewEvent)).not.toBe(
+        getCalendarEventKey(deliveryEvent),
+      );
+    });
+  });
 });
+

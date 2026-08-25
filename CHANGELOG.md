@@ -1,5 +1,40 @@
 # JSF PM App Development Changelog
 
+## [2026-08-25 @ 13:14]
+
+**🐛 Hotfixes: Calendar View Duplicate React Keys (`entity_id` Collision)**
+
+- **Calendar Event Identity Helper (`src/lib/calendar/types.ts`):**
+  - Added `getCalendarEventKey(event: CalendarEventDto): string` helper producing a deterministic composite key (`${event.event_type}-${event.entity_id}-${event.starts_at}`).
+  - Resolves React duplicate key reconciliation collisions occurring when a single underlying entity produces multiple calendar occurrences in the feed (e.g. production deliverables emitting both `internal_review_deadline` and `client_delivery_deadline`).
+- **Calendar Presentation Views (`src/app/[locale]/(protected)/calendario/_components/views/`):**
+  - Updated `CalendarListView`, `CalendarMonthView`, `CalendarWeekView`, and `CalendarAgendaView` to use `key={getCalendarEventKey(event)}` instead of `key={event.entity_id}`.
+- **Automated Tests & Regressions:**
+  - Added unit test suite in `src/app/[locale]/(protected)/calendario/__tests__/calendar-views.test.tsx` verifying that multi-event deliverable entities render across all 4 calendar presentation views without duplicate key warnings.
+  - Added test coverage in `src/lib/calendar/__tests__/date-utils.test.ts` for composite key formatting and collision avoidance.
+- **Verification:**
+  - Vitest (`npx vitest run "src/app/[locale]/(protected)/calendario" "src/lib/calendar"`): PASSED (6 test files, 54 tests).
+  - TypeScript (`npx tsc --noEmit`): PASSED (0 errors).
+  - ESLint (`npm run lint`): PASSED (0 errors, 0 warnings).
+
+## [2026-08-25 @ 12:54]
+
+**🐛 Hotfixes: Calendar View Switching Date Drift & Current-Date Anchoring**
+
+- **Calendar Coordinator Date Anchoring (`src/app/[locale]/(protected)/calendario/_components/calendar-coordinator.tsx`):**
+  - Updated `handleViewChange` to compute the target date range anchored on the current date (`new Date()`).
+  - Switching to `"week"` now always selects the 7-day interval containing today (`getWeekRange(new Date())`).
+  - Switching to `"month"`, `"agenda"`, or `"list"` now always selects the month containing today (`getDefaultMonthRange(new Date())`).
+  - Completely resolved the compound backward time drift bug caused by deriving ranges from `initialRange.from`.
+- **Calendar Range Normalization Default (`src/lib/calendar/date-utils.ts`):**
+  - Updated `normalizeCalendarRange` fallback logic when `from`/`to` are missing or invalid: now correctly evaluates `view === "week"` to return `getWeekRange(referenceDate)` instead of defaulting indiscriminately to `getDefaultMonthRange`.
+- **Automated Tests & Regressions:**
+  - Added unit test suite `src/app/[locale]/(protected)/calendario/__tests__/calendar-coordinator.test.tsx` verifying view switcher transitions to current week/month without date drift.
+  - Added test coverage in `src/lib/calendar/__tests__/date-utils.test.ts` for week-view fallback normalization.
+- **Verification:**
+  - Vitest (`npm run test -- "src/lib/calendar" "src/app/[locale]/(protected)/calendario"`): PASSED (6 test files, 49 tests).
+  - TypeScript (`npm run typecheck`): PASSED (0 errors).
+
 ## [2026-08-25 @ 12:35]
 
 **🐛 Hotfixes & 🛠 Architecture: RSC Payload Fetch Abort & Navigation Resolution**

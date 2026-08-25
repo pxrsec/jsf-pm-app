@@ -280,4 +280,112 @@ describe("Calendar Presentation Views", () => {
       currentMockLocale = "es-MX";
     });
   });
+
+  describe("Multi-Event Entity Key Reconciliation", () => {
+    // Deliverable with both internal review deadline and client delivery deadline sharing entity_id
+    const deliverableEvents: CalendarEventDto[] = [
+      {
+        entity_id: "deliv-0000-0000-0000-000000000001",
+        project_id: "00000000-0000-0000-0000-000000000001",
+        project_name: "Documentary Film",
+        task_id: null,
+        title: "Teaser Cut (Internal Review)",
+        event_type: "internal_review_deadline",
+        starts_at: "2026-08-18T10:00:00-06:00",
+        ends_at: "2026-08-18T10:00:00-06:00",
+        is_all_day: true,
+        color_override: null,
+      },
+      {
+        entity_id: "deliv-0000-0000-0000-000000000001",
+        project_id: "00000000-0000-0000-0000-000000000001",
+        project_name: "Documentary Film",
+        task_id: null,
+        title: "Teaser Cut (Client Delivery)",
+        event_type: "client_delivery_deadline",
+        starts_at: "2026-08-18T18:00:00-06:00",
+        ends_at: "2026-08-18T18:00:00-06:00",
+        is_all_day: true,
+        color_override: null,
+      },
+    ];
+
+    it("renders CalendarListView without duplicate key errors for shared entity_id", () => {
+      const consoleErrorSpy = vi.spyOn(console, "error");
+      render(
+        <CalendarListView
+          events={deliverableEvents}
+          currentRange={mockRange}
+          canManageMilestones={true}
+          userRole="admin"
+        />,
+      );
+
+      expect(screen.getByText("Teaser Cut (Internal Review)")).toBeInTheDocument();
+      expect(screen.getByText("Teaser Cut (Client Delivery)")).toBeInTheDocument();
+      expect(consoleErrorSpy).not.toHaveBeenCalledWith(
+        expect.stringContaining("Encountered two children with the same key"),
+      );
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("renders CalendarMonthView without duplicate key errors for shared entity_id on same date", () => {
+      const consoleErrorSpy = vi.spyOn(console, "error");
+      render(
+        <CalendarMonthView
+          events={deliverableEvents}
+          currentRange={mockRange}
+          canManageMilestones={true}
+          userRole="admin"
+        />,
+      );
+
+      expect(screen.getByText("Teaser Cut (Internal Review)")).toBeInTheDocument();
+      expect(screen.getByText("Teaser Cut (Client Delivery)")).toBeInTheDocument();
+      expect(consoleErrorSpy).not.toHaveBeenCalledWith(
+        expect.stringContaining("Encountered two children with the same key"),
+      );
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("renders CalendarWeekView and CalendarAgendaView without duplicate key errors", () => {
+      const consoleErrorSpy = vi.spyOn(console, "error");
+      const weekRange: CalendarRangeState = {
+        view: "week",
+        from: "2026-08-16T00:00:00-06:00",
+        to: "2026-08-23T00:00:00-06:00",
+      };
+
+      const { unmount } = render(
+        <CalendarWeekView
+          events={deliverableEvents}
+          currentRange={weekRange}
+          canManageMilestones={true}
+          userRole="admin"
+        />,
+      );
+
+      expect(screen.getByText("Teaser Cut (Internal Review)")).toBeInTheDocument();
+      expect(screen.getByText("Teaser Cut (Client Delivery)")).toBeInTheDocument();
+      unmount();
+
+      render(
+        <CalendarAgendaView
+          events={deliverableEvents}
+          currentRange={mockRange}
+          canManageMilestones={true}
+          userRole="admin"
+        />,
+      );
+
+      expect(screen.getByText("Teaser Cut (Internal Review)")).toBeInTheDocument();
+      expect(screen.getByText("Teaser Cut (Client Delivery)")).toBeInTheDocument();
+
+      expect(consoleErrorSpy).not.toHaveBeenCalledWith(
+        expect.stringContaining("Encountered two children with the same key"),
+      );
+      consoleErrorSpy.mockRestore();
+    });
+  });
 });
+

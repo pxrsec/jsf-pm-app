@@ -5,6 +5,7 @@ import { Link } from "@/i18n/routing";
 import { Pencil, Trash2 } from "lucide-react";
 import {
   CALENDAR_COLOR_CLASSES,
+  getCalendarEventKey,
   type CalendarEventDto,
 } from "@/lib/calendar/types";
 import { formatCalendarDate } from "@/lib/calendar/date-utils";
@@ -84,7 +85,7 @@ export function CalendarListView({
 
             return (
               <tr
-                key={event.entity_id}
+                key={getCalendarEventKey(event)}
                 className="hover:bg-muted/20 transition-colors"
               >
                 {/* Date */}

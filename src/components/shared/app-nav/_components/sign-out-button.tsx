@@ -30,7 +30,9 @@ export const SignOutButton = React.forwardRef<
     } finally {
       if (typeof window !== "undefined") {
         const isEnglish = window.location.pathname.startsWith("/en");
-        window.location.href = isEnglish ? "/en/iniciar-sesion" : "/iniciar-sesion";
+        window.location.href = isEnglish
+          ? "/en/iniciar-sesion"
+          : "/iniciar-sesion";
       }
     }
   };

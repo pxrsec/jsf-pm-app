@@ -152,3 +152,8 @@ export function normalizeMilestoneEditDetailDto(
       : null,
   };
 }
+
+export function getCalendarEventKey(event: CalendarEventDto): string {
+  return `${event.event_type}-${event.entity_id}-${event.starts_at}`;
+}
+
