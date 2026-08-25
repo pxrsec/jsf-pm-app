@@ -1,5 +1,34 @@
 # JSF PM App Development Changelog
 
+## [2026-08-25 @ 12:26]
+
+**🚀 Features & 🛠 Architecture: S08-03 (Desktop Drawer Content Reflow and Collapsed Notification Badge)**
+
+- **Desktop Navigation Shell (`src/components/shared/app-nav/_components/desktop-navigation-shell.tsx`):**
+  - Created client layout context provider `DesktopNavigationShell` managing `isDesktopNavigationExpanded` state (defaulting to expanded `true` on mount).
+  - Exposed fail-fast `useDesktopNavigationLayout()` context hook with functional state update `toggleDesktopNavigation`.
+  - Injected typed CSS custom property `--desktop-navigation-width` (`16rem` expanded, `4rem` collapsed) at root `data-slot="desktop-navigation-shell"`.
+- **Protected Layout Reflow (`src/app/[locale]/(protected)/layout.tsx`):**
+  - Wrapped `AppNav` and `<main id="main-content">` inside `DesktopNavigationShell` while preserving React Server Component boundaries and all session/authorization queries.
+  - Applied explicit `box-border w-full min-w-0 flex-1 md:pl-[var(--desktop-navigation-width)]` and synchronized `transition-[padding-left] duration-200 ease-out motion-reduce:transition-none` to `<main>`.
+  - Eliminated S08-02 overlay-only main content behavior without requiring per-page left-margin overrides.
+- **Desktop Nav Drawer Refinement (`src/components/shared/app-nav/_components/desktop-nav-drawer.tsx`):**
+  - Replaced local state with `useDesktopNavigationLayout()`, eliminating state duplication between drawer and main content.
+  - Aligned drawer width transition to `transition-[width] duration-200 ease-out motion-reduce:transition-none`.
+  - Configured collapsed Notification link badge with pointer-events-safe positional geometry (`pointer-events-none absolute -right-0.5 -top-0.5 z-10 h-5 min-w-5 px-1 text-[10px] leading-none`).
+- **Notification Badge Class Merging (`src/components/shared/app-nav/_components/notification-badge.tsx`):**
+  - Refactored `NotificationBadge` to merge `baseClassName` (`bg-destructive`, `rounded-full`, `shadow-sm`, etc.) with optional caller `className` via `cn`.
+  - Ensured collapsed Notification bell retains a prominent red rounded numeric counter when unread count is positive.
+- **Automated Verification (`__tests__/app-shell/navigation.test.ts`):**
+  - Updated all direct `DesktopNavDrawer` and `AppNav` test fixtures with `DesktopNavigationShell`.
+  - Added assertions for `--desktop-navigation-width` custom property (16rem -> 4rem), fail-fast error throwing outside provider, positive unread badge style merging, and zero-count badge omission (28/28 tests passed).
+- **Verification Commands:**
+  - Vitest Unit Tests (`npm test -- __tests__/app-shell/navigation.test.ts`): PASSED (28/28 passed).
+  - Vitest Integration Tests (`npm test -- __tests__/integration/role-journey.test.ts`): PASSED (13/13 passed).
+  - TypeScript Compilation (`npm run typecheck`): PASSED (0 errors).
+  - ESLint (`npm run lint`): PASSED (0 errors).
+  - Prettier Formatting (`npx prettier --check`): PASSED.
+
 ## [2026-08-25 @ 11:51]
 
 **🐛 Hotfixes & 🌐 Localization: Deliverable & Lifecycle Status Key Resolution**

@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useState } from "react";
 import { usePathname, Link } from "@/i18n/routing";
 import {
   PanelLeftClose,
@@ -26,6 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 import { NotificationBadge } from "./notification-badge";
 import { SignOutButton } from "./sign-out-button";
+import { useDesktopNavigationLayout } from "./desktop-navigation-shell";
 import { cn } from "@/lib/utils";
 import type {
   AppNavigationItem,
@@ -67,7 +67,8 @@ export function DesktopNavDrawer({
   signOutLabel,
   unreadCountAnnouncement,
 }: DesktopNavDrawerProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const { isDesktopNavigationExpanded, toggleDesktopNavigation } =
+    useDesktopNavigationLayout();
   const pathname = usePathname();
 
   return (
@@ -76,31 +77,33 @@ export function DesktopNavDrawer({
         aria-label={navAriaLabel}
         className={cn(
           "hidden md:flex fixed top-16 bottom-0 left-0 z-30 flex-col",
-          "border-r border-border bg-background transition-[width] duration-200",
+          "border-r border-border bg-background transition-[width] duration-200 ease-out motion-reduce:transition-none",
           "overflow-hidden",
-          isExpanded ? "w-64" : "w-16",
+          isDesktopNavigationExpanded ? "w-64" : "w-16",
         )}
       >
         {/* Collapse toggle button: shrink-0 */}
         <div
           className={cn(
             "shrink-0 p-2 flex items-center",
-            isExpanded ? "justify-end" : "justify-center",
+            isDesktopNavigationExpanded ? "justify-end" : "justify-center",
           )}
         >
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            onClick={() => setIsExpanded(!isExpanded)}
-            aria-expanded={isExpanded}
+            onClick={toggleDesktopNavigation}
+            aria-expanded={isDesktopNavigationExpanded}
             aria-controls="desktop-nav-links"
             aria-label={
-              isExpanded ? collapseNavigationLabel : expandNavigationLabel
+              isDesktopNavigationExpanded
+                ? collapseNavigationLabel
+                : expandNavigationLabel
             }
             className="h-11 w-11 min-h-[44px] min-w-[44px]"
           >
-            {isExpanded ? (
+            {isDesktopNavigationExpanded ? (
               <PanelLeftClose className="h-5 w-5" aria-hidden="true" />
             ) : (
               <PanelLeftOpen className="h-5 w-5" aria-hidden="true" />
@@ -121,7 +124,7 @@ export function DesktopNavDrawer({
                 : pathname === item.href ||
                   pathname.startsWith(`${item.href}/`);
 
-            if (isExpanded) {
+            if (isDesktopNavigationExpanded) {
               return (
                 <Link
                   key={item.key}
@@ -164,7 +167,7 @@ export function DesktopNavDrawer({
                         item.unreadCount > 0 && (
                           <NotificationBadge
                             count={item.unreadCount}
-                            className="absolute top-1 right-1"
+                            className="pointer-events-none absolute -right-0.5 -top-0.5 z-10 h-5 min-w-5 px-1 text-[10px] leading-none"
                           />
                         )}
                     </Link>
@@ -178,7 +181,7 @@ export function DesktopNavDrawer({
 
         {/* Pinned identity + second sign-out footer */}
         <div className="shrink-0 border-t border-border p-3 flex flex-col gap-3">
-          {isExpanded && (
+          {isDesktopNavigationExpanded && (
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">
                 {profile.full_name}
@@ -188,7 +191,7 @@ export function DesktopNavDrawer({
               </p>
             </div>
           )}
-          {isExpanded ? (
+          {isDesktopNavigationExpanded ? (
             <SignOutButton className="w-full justify-center min-h-[44px] text-destructive hover:bg-destructive/10" />
           ) : (
             <Tooltip>

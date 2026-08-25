@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getUnreadNotificationCount } from "@/lib/shell-data/shell-queries";
 import { hasActivePmLeadMembership } from "@/lib/notifications/operations-authorization";
 import { AppNav } from "@/components/shared/app-nav/app-nav";
+import { DesktopNavigationShell } from "@/components/shared/app-nav/_components/desktop-navigation-shell";
 
 export default async function ProtectedLayout({
   children,
@@ -79,15 +80,19 @@ export default async function ProtectedLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <DesktopNavigationShell>
       <AppNav
         session={session}
         unreadCount={unreadCount}
         canAccessNotificationOperations={canAccessNotificationOperations}
       />
-      <main id="main-content" tabIndex={-1} className="flex-1">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="box-border w-full min-w-0 flex-1 transition-[padding-left] duration-200 ease-out motion-reduce:transition-none md:pl-[var(--desktop-navigation-width)]"
+      >
         {children}
       </main>
-    </div>
+    </DesktopNavigationShell>
   );
 }
