@@ -15,8 +15,8 @@
       "ariaLabel": "Main navigation",
       "openMenu": "Open navigation menu",
       "closeMenu": "Close navigation menu",
-      "collapseNavigation": "Collapse navigation",
-      "expandNavigation": "Expand navigation",
+      "collapse": "Collapse navigation",
+      "expand": "Expand navigation",
       "signOut": "Sign out",
       "currentUser": {
         "role": {

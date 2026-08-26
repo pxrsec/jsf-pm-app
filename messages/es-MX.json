@@ -15,8 +15,8 @@
       "ariaLabel": "Navegación principal",
       "openMenu": "Abrir menú de navegación",
       "closeMenu": "Cerrar menú de navegación",
-      "collapseNavigation": "Contraer navegación",
-      "expandNavigation": "Expandir navegación",
+      "collapse": "Contraer navegación",
+      "expand": "Expandir navegación",
       "signOut": "Cerrar sesión",
       "currentUser": {
         "role": {

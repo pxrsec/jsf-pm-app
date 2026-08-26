@@ -1,5 +1,17 @@
 # JSF PM App Development Changelog
 
+## [2026-08-26 @ 07:36]
+
+**🐛 Hotfixes: i18n Semantic Key Naming Alignment**
+
+- **Semantic Key Naming Alignment (`messages/es-MX.json`, `messages/en-US.json`, `src/components/shared/app-nav/app-nav.tsx`):**
+  - Renamed `shell.nav.collapseNavigation` and `shell.nav.expandNavigation` to `shell.nav.collapse` and `shell.nav.expand` to eliminate visual/structural keyword coupling (`/nav/i` collision in `shell.nav` namespace).
+  - Updated drawer control consumers in `app-nav.tsx` to consume the normalized `collapse` and `expand` translation keys.
+- **Test Whitelist Coverage (`__tests__/i18n/key-naming.test.ts`):**
+  - Added `navigating` (loading indicator key for notification deep-linking) to the segment allowlist in `key-naming.test.ts`.
+- **Focused Verification:**
+  - Ran `__tests__/i18n/key-naming.test.ts`: PASSED (3/3 tests).
+
 ## [2026-08-25 @ 15:45]
 
 **🚀 Features & 🛠 Architecture: S08-04 Actionable In-App Notification History and Deep Links**

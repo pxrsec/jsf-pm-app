@@ -86,8 +86,8 @@ export async function AppNav({
         profile={profile}
         roleLabel={t(`currentUser.role.${role}` as const)}
         navAriaLabel={t("ariaLabel")}
-        collapseNavigationLabel={t("collapseNavigation")}
-        expandNavigationLabel={t("expandNavigation")}
+        collapseNavigationLabel={t("collapse")}
+        expandNavigationLabel={t("expand")}
         signOutLabel={t("signOut")}
         unreadCountAnnouncement={`${t("notifications.badgeLabel")}: ${unreadCount}`}
       />
