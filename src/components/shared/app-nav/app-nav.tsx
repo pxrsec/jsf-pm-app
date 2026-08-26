@@ -7,7 +7,10 @@ import { MobileNavToggle } from "./_components/mobile-nav-toggle";
 import { DesktopNavDrawer } from "./_components/desktop-nav-drawer";
 import { LanguageSwitcher } from "@/components/shared/language-switcher/language-switcher";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
-import { buildNavigationModel } from "./navigation-model";
+import {
+  buildNavigationModel,
+  buildMobileQuickAccessItems,
+} from "./navigation-model";
 
 interface AppNavProps {
   session: SessionContext;
@@ -29,6 +32,11 @@ export async function AppNav({
     unreadCount,
     canAccessNotificationOperations,
     t,
+  });
+
+  const quickAccessItems = buildMobileQuickAccessItems({
+    items,
+    role,
   });
 
   const roleHomePath =
@@ -76,10 +84,15 @@ export async function AppNav({
 
             <SignOutButton />
           </div>
-
-          <MobileNavToggle items={items} role={role} profile={profile} />
         </div>
       </header>
+
+      <MobileNavToggle
+        items={items}
+        quickAccessItems={quickAccessItems}
+        role={role}
+        profile={profile}
+      />
 
       <DesktopNavDrawer
         items={items}

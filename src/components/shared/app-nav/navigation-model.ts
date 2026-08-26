@@ -168,3 +168,27 @@ export function buildNavigationModel({
 
   return items;
 }
+
+export function buildMobileQuickAccessItems({
+  items,
+  role,
+}: {
+  items: AppNavigationItem[];
+  role: AppRole;
+}): AppNavigationItem[] {
+  const keysByRole: Record<AppRole, readonly AppNavigationItemKey[]> = {
+    admin: ["home", "projects", "operations"],
+    pm: ["home", "projects", "calendar"],
+    operator: ["home", "agenda", "calendar"],
+    client: ["home", "projects", "calendar"],
+  };
+  return keysByRole[role].map((key) => {
+    const item = items.find((candidate) => candidate.key === key);
+    if (!item) {
+      throw new Error(
+        `Mobile quick-access invariant failed: missing authorized "${key}" item for role "${role}".`,
+      );
+    }
+    return item;
+  });
+}

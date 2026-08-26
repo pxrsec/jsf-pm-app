@@ -1,5 +1,41 @@
 # JSF PM App Development Changelog
 
+## [2026-08-26 @ 10:21]
+
+**🚀 Features & 🛠 Architecture: S09-01 Mobile Bottom Quick-Access Navigation & Responsive App Shell**
+
+- **Deterministic Server-Side Quick-Access Model (`src/components/shared/app-nav/navigation-model.ts`):**
+  - Implemented and exported `buildMobileQuickAccessItems({ items, role })` enforcing a fail-closed server invariant that extracts the exact 3 primary destinations per role:
+    - **Admin:** Home (`/admin`), Projects (`/admin/proyectos`), Operations (`/admin/operaciones`).
+    - **PM (Lead & Watcher):** Home (`/pm`), Projects (`/pm/proyectos`), Calendar (`/calendario`).
+    - **Operator:** Home (`/operador`), My Agenda (`/operador/agenda`), Calendar (`/calendario`).
+    - **Client:** Home (`/cliente`), Projects (`/cliente/proyectos`), Calendar (`/calendario`).
+  - Throws a descriptive invariant `Error` if any authorized role key is missing from the parent `items` model.
+- **5-Action Persistent Mobile Bottom Navigation Bar (`src/components/shared/app-nav/_components/mobile-nav-toggle.tsx`):**
+  - Built a fixed bottom navigation bar (`<nav aria-label="Navegación de acceso rápido">`) with equal columns, `min-h-[44px] min-w-[44px]` touch targets, text truncation safety, and active route highlighting via `isNavigationItemActive`.
+  - Integrates the authorized `notifications` item with `NotificationBadge` and accurate pluralized aria-labels.
+  - Implemented the 5th action: a Menu toggle button (`<button aria-controls="mobile-nav-drawer">`) with dynamic `aria-expanded` and `aria-label` toggling between `"Abrir menú de navegación"` and `"Cerrar menú de navegación"`.
+- **Structurally Scroll-Safe Mobile Full Menu Panel (`src/components/shared/app-nav/_components/mobile-nav-toggle.tsx`):**
+  - Divided into 3 explicit flex sections: (1) `shrink-0` header with user identity & language/theme controls, (2) `min-h-0 flex-1 overflow-y-auto` scrollable list of all server-authorized links, and (3) `shrink-0` footer with `SignOutButton`.
+  - Single polite live region (`aria-live="polite"`) for live screen reader announcements.
+  - Focus restoration to the Menu trigger button on Escape key dismiss or menu close.
+  - Automatically dismisses the full menu when any bottom quick link or drawer link is clicked.
+- **App Shell & Layout Integration (`src/components/shared/app-nav/app-nav.tsx`, `src/app/[locale]/(protected)/layout.tsx`, `src/app/layout.tsx`):**
+  - Integrated `MobileNavToggle` as a sibling below `<header>`, removing the old mobile menu button from the header.
+  - Updated `#main-content` in protected layout with `pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0` to eliminate content overlap under the persistent mobile bottom bar.
+  - Exported Next.js `viewport: Viewport` with `viewportFit: "cover"` and `interactiveWidget: "resizes-content"`.
+- **Internationalization (`messages/en-US.json`, `messages/es-MX.json`):**
+  - Added `mobileQuickAccessAriaLabel`, `fullMenuAriaLabel`, and `menu` to `shell.nav` in both English and Spanish message catalogs.
+- **Comprehensive Test Suite (`__tests__/app-shell/navigation.test.ts`, `__tests__/i18n/message-catalogs.test.ts`, `__tests__/integration/role-journey.test.ts`):**
+  - Added unit test suite for `buildMobileQuickAccessItems` model invariant across all roles and error paths.
+  - Added comprehensive `MobileNavToggle` tests for landmark scoping (`within(quickNav)` / `within(fullMenu)`), 5-action DOM sequence, badge rendering, drawer toggling, route matching, Escape focus restoration, and PM Watcher capability boundaries.
+- **Verification:**
+  - Ran `npm test -- __tests__/app-shell/navigation.test.ts __tests__/i18n/message-catalogs.test.ts`: PASSED (47/47 tests).
+  - Ran `npm test`: PASSED (788/788 tests across 82 suites).
+  - Ran `npm run typecheck`: PASSED (0 errors).
+  - Ran `npm run lint`: PASSED (0 errors).
+  - Ran `npm run format:check`: PASSED.
+
 ## [2026-08-26 @ 09:31]
 
 **🐛 Hotfixes: Language Switcher Transition Handling & Mobile Stream Cancellation Fix**

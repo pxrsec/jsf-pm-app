@@ -89,7 +89,7 @@ export default async function ProtectedLayout({
       <main
         id="main-content"
         tabIndex={-1}
-        className="box-border w-full min-w-0 flex-1 transition-[padding-left] duration-200 ease-out motion-reduce:transition-none md:pl-[var(--desktop-navigation-width)]"
+        className="box-border w-full min-w-0 flex-1 pb-[calc(4rem+env(safe-area-inset-bottom,0px))] transition-[padding-left] duration-200 ease-out motion-reduce:transition-none md:pb-0 md:pl-[var(--desktop-navigation-width)]"
       >
         {children}
       </main>
