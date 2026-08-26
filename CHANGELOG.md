@@ -1,5 +1,42 @@
 # JSF PM App Development Changelog
 
+## [2026-08-26 @ 09:31]
+
+**🐛 Hotfixes: Language Switcher Transition Handling & Mobile Stream Cancellation Fix**
+
+- **Concurrent Transition Handling (`src/components/shared/language-switcher/language-switcher.tsx`):**
+  - Wrapped locale `router.replace` in React 19 `startTransition` and added `disabled={isPending}` to the button primitive.
+  - Prevents rapid double-taps on mobile touch devices from firing duplicate concurrent navigation requests that cause WebKit (iOS Safari/Chrome) to abort in-flight RSC fetch streams and trigger `TypeError: stream is closing or closed` in the stream writer.
+- **Interactive Test Suite Coverage (`__tests__/i18n/language-switcher.test.tsx`):**
+  - Added JSDOM testing environment and interactive click tests validating transition dispatch to `en-US` and `es-MX`.
+- **Focused Verification:**
+  - Ran `__tests__/i18n/language-switcher.test.tsx`: PASSED (4/4 tests).
+  - Ran `npm run typecheck`: PASSED (0 errors).
+  - Ran `npm run lint`: PASSED (0 errors).
+  - Ran `npm run format:check`: PASSED.
+
+## [2026-08-26 @ 09:19]
+
+**🐛 Hotfixes: Mobile Autofill Hydration Mismatch Suppression**
+
+- **Form & Input Hydration Protection (`src/app/[locale]/iniciar-sesion/_components/sign-in-form.tsx`, `src/components/ui/input.tsx`):**
+  - Added `suppressHydrationWarning` to the sign-in `<form>` component and the reusable `<Input>` primitive to suppress dev-mode hydration mismatch errors caused by third-party mobile browser credential injection (such as Chrome on iOS adding `__gcruniqueid`).
+- **Focused Verification:**
+  - Ran `npm run typecheck`: PASSED (0 errors).
+  - Ran `npm run test`: PASSED (779/779 tests passing across 82 test suites).
+
+## [2026-08-26 @ 09:01]
+
+**🐛 Hotfixes: Dev Server CSP & LAN Connection Configuration**
+
+- **Environment-Aware CSP (`next.config.ts`):**
+  - Excluded `upgrade-insecure-requests` directive when running in development (`process.env.NODE_ENV !== "production"`), preventing mobile browsers from forcibly upgrading plain HTTP local LAN IP requests to HTTPS.
+  - Added `ws:` and `wss:` to `connect-src` CSP directive to support development Hot Module Reloading (HMR) and WebSockets over network interfaces.
+- **Focused Verification:**
+  - Ran `npm run typecheck`: PASSED (0 errors).
+  - Ran `npm run lint`: PASSED (0 warnings/errors).
+  - Ran `npm run format:check`: PASSED.
+
 ## [2026-08-26 @ 07:36]
 
 **🐛 Hotfixes: i18n Semantic Key Naming Alignment**

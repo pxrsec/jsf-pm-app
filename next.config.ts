@@ -18,9 +18,11 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  "connect-src 'self' https:",
+  "connect-src 'self' https: ws: wss:",
   "frame-src 'none'",
-  "upgrade-insecure-requests",
+  ...(process.env.NODE_ENV === "production"
+    ? ["upgrade-insecure-requests"]
+    : []),
 ].join("; ");
 
 const securityHeaders = [
@@ -43,6 +45,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Current private-Wi-Fi host permitted to load Next.js development assets.
+  allowedDevOrigins: ["192.168.1.4"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
