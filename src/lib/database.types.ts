@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -1953,6 +1953,38 @@ export type Database = {
           reopening_cycle_count: number
         }[]
       }
+      list_scoped_user_operations_metrics: {
+        Args: {
+          p_from?: string
+          p_project_id?: string
+          p_to?: string
+          p_user_id?: string
+        }
+        Returns: {
+          application_role: Database["public"]["Enums"]["app_role"]
+          average_assignment_to_start_hours: number
+          average_in_app_notification_read_hours: number
+          client_submission_count: number
+          current_active_task_count: number
+          deliverable_delivered_count: number
+          deliverable_review_count: number
+          full_name: string
+          in_app_notification_read_count: number
+          in_app_notification_received_count: number
+          in_app_notification_unread_count_at_range_end: number
+          in_app_notification_unread_over_24h_count_at_range_end: number
+          is_active: boolean
+          last_workflow_action_at: string
+          production_deliverable_submission_count: number
+          range_from: string
+          range_to: string
+          task_assigned_count: number
+          task_completed_count: number
+          task_started_count: number
+          unstarted_task_count_at_range_end: number
+          user_id: string
+        }[]
+      }
       list_suppressed_notification_operations: {
         Args: {
           p_before_channel?: Database["public"]["Enums"]["notification_channel"]
@@ -2435,4 +2467,3 @@ export const Constants = {
     },
   },
 } as const
-

@@ -4,22 +4,28 @@ import { getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/auth/session";
 import { ROLE_DEFAULT_PATHS } from "@/lib/auth/routes";
 import { createClient } from "@/lib/supabase/server";
+import { fetchArchiveProjectFilterOptionsForAdmin } from "@/lib/archive/queries";
 import {
   fetchScopedOperationsMetrics,
   fetchScopedOperationsMetricTrend,
 } from "@/lib/operations-metrics/queries";
+import { fetchScopedUserOperationsMetrics } from "@/lib/user-operations-metrics/queries";
+import type { UserOperationsMetricsQuery } from "@/lib/user-operations-metrics/types";
 import { normalizeMetricsSearchState } from "@/lib/operations-metrics/date-utils";
 import { MetricsFilterBar } from "@/components/shared/metrics/metrics-filter-bar";
 import { MetricCardsGrid } from "@/components/shared/metrics/metric-cards-grid";
 import { StatusDistributionSection } from "@/components/shared/metrics/status-distribution-section";
 import { TrendChartSection } from "@/components/shared/metrics/trend-chart-section";
 import { CycleDurationSummary } from "@/components/shared/metrics/cycle-duration-summary";
+import { UserOperationalAuditSection } from "@/components/shared/metrics/user-operational-audit-section";
 import { AlertCircle, Globe } from "lucide-react";
 
 interface AdminMetricsPageProps {
   searchParams: Promise<{
     from?: string;
     to?: string;
+    projectId?: string;
+    userId?: string;
   }>;
 }
 
@@ -42,11 +48,28 @@ export default async function AdminMetricsPage({
   const t = await getTranslations("metrics");
   const supabase = createClient(cookieStore);
 
+  // Fetch project options for Admin scope control
+  const projectOptions =
+    await fetchArchiveProjectFilterOptionsForAdmin(supabase);
+  const matchedProject = projectOptions?.find(
+    (p) => p.id === resolvedSearchParams.projectId,
+  );
+  const validatedProjectId = matchedProject ? matchedProject.id : undefined;
+
+  const userAuditRpcQuery: UserOperationsMetricsQuery = {
+    from: currentQuery.from,
+    to: currentQuery.to,
+    projectId: validatedProjectId,
+    userId: undefined, // Always query full user dataset for dashboard
+  };
+
   // Independent section-level failure isolation
-  const [metricsSettled, trendSettled] = await Promise.allSettled([
-    fetchScopedOperationsMetrics(supabase, currentQuery, "admin"),
-    fetchScopedOperationsMetricTrend(supabase, currentQuery, "admin"),
-  ]);
+  const [metricsSettled, trendSettled, userAuditSettled] =
+    await Promise.allSettled([
+      fetchScopedOperationsMetrics(supabase, currentQuery, "admin"),
+      fetchScopedOperationsMetricTrend(supabase, currentQuery, "admin"),
+      fetchScopedUserOperationsMetrics(supabase, userAuditRpcQuery, "admin"),
+    ]);
 
   const metricsAvailable =
     metricsSettled.status === "fulfilled" &&
@@ -59,6 +82,11 @@ export default async function AdminMetricsPage({
     trendSettled.value.status === "available"
       ? trendSettled.value.data
       : null;
+
+  const userAuditResult =
+    userAuditSettled.status === "fulfilled"
+      ? userAuditSettled.value
+      : { status: "unavailable" as const, code: "UNAVAILABLE" as const };
 
   return (
     <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -118,6 +146,15 @@ export default async function AdminMetricsPage({
           <p>{t("errors.trendUnavailable")}</p>
         </div>
       )}
+
+      {/* 3. User Operational Audit Section */}
+      <UserOperationalAuditSection
+        role="admin"
+        result={userAuditResult}
+        currentProjectId={validatedProjectId}
+        currentUserId={resolvedSearchParams.userId}
+        projects={projectOptions ?? []}
+      />
     </div>
   );
 }

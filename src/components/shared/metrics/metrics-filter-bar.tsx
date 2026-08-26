@@ -78,7 +78,12 @@ export function MetricsFilterBar({
   const [dateError, setDateError] = useState<string | null>(null);
 
   const updateFilters = useCallback(
-    (updates: { from?: string; to?: string; projectId?: string }) => {
+    (updates: {
+      from?: string;
+      to?: string;
+      projectId?: string;
+      clearUserId?: boolean;
+    }) => {
       const params = new URLSearchParams(searchParams.toString());
 
       if (updates.from !== undefined) {
@@ -89,6 +94,9 @@ export function MetricsFilterBar({
       }
       if (updates.projectId !== undefined) {
         params.set("projectId", updates.projectId);
+      }
+      if (updates.clearUserId) {
+        params.delete("userId");
       }
 
       startTransition(() => {
@@ -138,7 +146,7 @@ export function MetricsFilterBar({
 
   const handleProjectChange = (val: string | null) => {
     if (!val) return;
-    updateFilters({ projectId: val });
+    updateFilters({ projectId: val, clearUserId: true });
   };
 
   return (

@@ -10,12 +10,15 @@ import {
   fetchScopedOperationsMetrics,
   fetchScopedOperationsMetricTrend,
 } from "@/lib/operations-metrics/queries";
+import { fetchScopedUserOperationsMetrics } from "@/lib/user-operations-metrics/queries";
+import type { UserOperationsMetricsQuery } from "@/lib/user-operations-metrics/types";
 import { normalizeMetricsSearchState } from "@/lib/operations-metrics/date-utils";
 import { MetricsFilterBar } from "@/components/shared/metrics/metrics-filter-bar";
 import { MetricCardsGrid } from "@/components/shared/metrics/metric-cards-grid";
 import { StatusDistributionSection } from "@/components/shared/metrics/status-distribution-section";
 import { TrendChartSection } from "@/components/shared/metrics/trend-chart-section";
 import { CycleDurationSummary } from "@/components/shared/metrics/cycle-duration-summary";
+import { UserOperationalAuditSection } from "@/components/shared/metrics/user-operational-audit-section";
 import { AlertCircle, Archive, FolderKanban, Radio } from "lucide-react";
 
 interface PmMetricsPageProps {
@@ -23,6 +26,7 @@ interface PmMetricsPageProps {
     from?: string;
     to?: string;
     projectId?: string;
+    userId?: string;
   }>;
 }
 
@@ -45,7 +49,7 @@ export default async function PmMetricsPage({
     session.user.id,
   );
 
-  // 2. If no authorized projects exist, render localized empty state without calling M3/M5
+  // 2. If no authorized projects exist, render localized empty state without calling M3/M5/UserAudit
   if (!projectOptions || projectOptions.length === 0) {
     return (
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -83,11 +87,20 @@ export default async function PmMetricsPage({
     fixedProjectId: selectedProjectId,
   });
 
-  // 4. Fetch metrics and trend with independent section-level failure isolation
-  const [metricsSettled, trendSettled] = await Promise.allSettled([
-    fetchScopedOperationsMetrics(supabase, currentQuery, "pm"),
-    fetchScopedOperationsMetricTrend(supabase, currentQuery, "pm"),
-  ]);
+  const userAuditRpcQuery: UserOperationsMetricsQuery = {
+    from: currentQuery.from,
+    to: currentQuery.to,
+    projectId: selectedProjectId,
+    userId: undefined, // Always query full user dataset for dashboard
+  };
+
+  // 4. Fetch metrics, trend, and user audit with independent section-level failure isolation
+  const [metricsSettled, trendSettled, userAuditSettled] =
+    await Promise.allSettled([
+      fetchScopedOperationsMetrics(supabase, currentQuery, "pm"),
+      fetchScopedOperationsMetricTrend(supabase, currentQuery, "pm"),
+      fetchScopedUserOperationsMetrics(supabase, userAuditRpcQuery, "pm"),
+    ]);
 
   const metricsAvailable =
     metricsSettled.status === "fulfilled" &&
@@ -100,6 +113,11 @@ export default async function PmMetricsPage({
     trendSettled.value.status === "available"
       ? trendSettled.value.data
       : null;
+
+  const userAuditResult =
+    userAuditSettled.status === "fulfilled"
+      ? userAuditSettled.value
+      : { status: "unavailable" as const, code: "UNAVAILABLE" as const };
 
   return (
     <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -161,6 +179,15 @@ export default async function PmMetricsPage({
           <p>{t("errors.trendUnavailable")}</p>
         </div>
       )}
+
+      {/* 3. User Operational Audit Section */}
+      <UserOperationalAuditSection
+        role="pm"
+        result={userAuditResult}
+        currentProjectId={selectedProjectId}
+        currentUserId={resolvedSearchParams.userId}
+        projectName={selectedProject.name}
+      />
 
       {/* Generic PM Navigation Links */}
       <div className="pt-2 flex flex-wrap items-center gap-4 text-xs">

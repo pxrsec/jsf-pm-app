@@ -1,5 +1,44 @@
 # JSF PM App Development Changelog
 
+## [2026-08-26 @ 14:05]
+
+**🚀 Features & 🛠 Architecture: S09-02 User and Project Operational Audit Metrics Implementation**
+
+- **Server-Only User Operations Metrics Module (`src/lib/user-operations-metrics/`):**
+  - Implemented typed DTOs, sort unions, and query contracts in `types.ts`.
+  - Created strict validation schemas with 93-day window checks (`from < to`) and role-specific query schemas (`adminUserMetricsQuerySchema`, `pmUserMetricsQuerySchema`) in `schemas.ts`.
+  - Built time zone and search state normalization helpers in `date-utils.ts`.
+  - Implemented server-only query adapter `fetchScopedUserOperationsMetrics` in `queries.ts` enforcing a fail-closed role authorization guard at entry, runtime data validation from `unknown` preserving `null` values for accurate review/completion averages, instant comparison for range boundaries, and sanitized debug logging.
+- **Shared Operational Audit UI Components (`src/components/shared/metrics/`):**
+  - `metrics-filter-bar.tsx`: Enhanced filter bar to support `clearUserId` upon PM project selection change.
+  - `user-metrics-sort-utils.ts`: Deterministic client-side sorting across 10 metric fields (nulls always sort last in both asc/desc) and `Intl` number/hour/timestamp formatters in `America/Mexico_City`.
+  - `user-metrics-attention-cues.tsx`: Operational attention cues card replacing browser-side aggregates with clear triage guidance.
+  - `user-metrics-scope-control.tsx`: Responsive project and user selectors with minimum 44px touch targets.
+  - `user-metrics-table.tsx`: Desktop and tablet sortable table with semantic `aria-sort` on active column only, screen-reader status, and accessible "Ver detalles" button.
+  - `user-metrics-card-list.tsx`: Mobile stacked card list with accessible metric rows and detail buttons.
+  - `user-metrics-detail-panel.tsx`: Accessible inline detail panel (`role="region"`) displaying full user operational breakdown.
+  - `user-operational-audit-section.tsx`: Orchestrator handling unavailable, zero-data, and populated states with search parameter synchronization.
+- **Page Integration & Localization:**
+  - `src/app/[locale]/(protected)/admin/metricas/page.tsx`: Integrated `UserOperationalAuditSection` with Admin scope options and failure isolation.
+  - `src/app/[locale]/(protected)/pm/metricas/page.tsx`: Integrated `UserOperationalAuditSection` with PM resolved authorized project scope and failure isolation.
+  - Added complete `metrics.userAudit` translation dictionaries in `messages/es-MX.json` and `messages/en-US.json` with strict parity testing.
+- **Comprehensive Test Suite & Verification:**
+  - Unit and integration tests in `src/lib/user-operations-metrics/__tests__/` (29 tests).
+  - UI component tests in `src/components/shared/metrics/__tests__/` (15 tests).
+  - Page orchestration tests in `admin/metricas/page.test.tsx` and `pm/metricas/page.test.tsx` (6 tests).
+  - Whole repository verification: `npm run typecheck` (0 errors), `npm run lint` (0 errors, 0 warnings), `npm run test` (839/839 passed across 90 files), `npm run build` (33 routes generated cleanly), `npm run audit:prod` (0 vulnerabilities).
+
+## [2026-08-26 @ 13:14]
+
+**🛠 Database & Architecture: S09 User-Scoped Operations Metrics Migration & TypeScript Generation**
+
+- **Database Migration Applied (`supabase/migrations/20260826110000_s09_user-scoped-operations-metrics.sql`):**
+  - Executed migration `20260826110000_s09_user_scoped_operations_metrics` via Supabase MCP `apply_migration`.
+  - Added indexes on `audit_logs`, `tasks`, `notification_events`, and `notification_recipients` supporting actor, assignment, and in-app acknowledgement query paths.
+  - Deployed `public.list_scoped_user_operations_metrics` security definer RPC function with bounded interval validation, role authorization, and operational metric aggregations.
+- **TypeScript Type Regeneration (`src/lib/database.types.ts`):**
+  - Generated updated TypeScript definitions directly from Supabase schema via MCP `generate_typescript_types`, adding full parameter and return typings for `list_scoped_user_operations_metrics`.
+
 ## [2026-08-26 @ 10:21]
 
 **🚀 Features & 🛠 Architecture: S09-01 Mobile Bottom Quick-Access Navigation & Responsive App Shell**
