@@ -2,7 +2,7 @@
 --
 -- This forward migration replaces only the M4 inbox read projection and adds a
 -- self-owned acknowledgement command for unread detail navigation. It preserves
--- the 90-day/93-day range policy, read filtering, composite keyset pagination,
+-- the 90-day/93-day range policy, read-filtering, composite keyset pagination,
 -- immutable event history, and external-delivery/operations isolation.
 --
 -- It does not mutate notification_events, notification generation/fan-out,
