@@ -86,6 +86,7 @@ export function SignInForm() {
   return (
     <form
       onSubmit={handleSubmit}
+      suppressHydrationWarning
       className="w-full space-y-6 rounded-2xl border border-border/80 bg-card/95 p-7 sm:p-9 shadow-2xl shadow-accent/5 backdrop-blur-xl text-card-foreground transition-all duration-300 hover:border-border"
     >
       {/* Brand & Logo Header */}

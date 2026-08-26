@@ -13,6 +13,9 @@
     },
     "nav": {
       "ariaLabel": "Main navigation",
+      "mobileQuickAccessAriaLabel": "Quick access navigation",
+      "fullMenuAriaLabel": "All navigation",
+      "menu": "Menu",
       "openMenu": "Open navigation menu",
       "closeMenu": "Close navigation menu",
       "collapse": "Collapse navigation",

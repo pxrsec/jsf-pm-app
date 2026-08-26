@@ -1,5 +1,78 @@
 # JSF PM App Development Changelog
 
+## [2026-08-26 @ 10:21]
+
+**🚀 Features & 🛠 Architecture: S09-01 Mobile Bottom Quick-Access Navigation & Responsive App Shell**
+
+- **Deterministic Server-Side Quick-Access Model (`src/components/shared/app-nav/navigation-model.ts`):**
+  - Implemented and exported `buildMobileQuickAccessItems({ items, role })` enforcing a fail-closed server invariant that extracts the exact 3 primary destinations per role:
+    - **Admin:** Home (`/admin`), Projects (`/admin/proyectos`), Operations (`/admin/operaciones`).
+    - **PM (Lead & Watcher):** Home (`/pm`), Projects (`/pm/proyectos`), Calendar (`/calendario`).
+    - **Operator:** Home (`/operador`), My Agenda (`/operador/agenda`), Calendar (`/calendario`).
+    - **Client:** Home (`/cliente`), Projects (`/cliente/proyectos`), Calendar (`/calendario`).
+  - Throws a descriptive invariant `Error` if any authorized role key is missing from the parent `items` model.
+- **5-Action Persistent Mobile Bottom Navigation Bar (`src/components/shared/app-nav/_components/mobile-nav-toggle.tsx`):**
+  - Built a fixed bottom navigation bar (`<nav aria-label="Navegación de acceso rápido">`) with equal columns, `min-h-[44px] min-w-[44px]` touch targets, text truncation safety, and active route highlighting via `isNavigationItemActive`.
+  - Integrates the authorized `notifications` item with `NotificationBadge` and accurate pluralized aria-labels.
+  - Implemented the 5th action: a Menu toggle button (`<button aria-controls="mobile-nav-drawer">`) with dynamic `aria-expanded` and `aria-label` toggling between `"Abrir menú de navegación"` and `"Cerrar menú de navegación"`.
+- **Structurally Scroll-Safe Mobile Full Menu Panel (`src/components/shared/app-nav/_components/mobile-nav-toggle.tsx`):**
+  - Divided into 3 explicit flex sections: (1) `shrink-0` header with user identity & language/theme controls, (2) `min-h-0 flex-1 overflow-y-auto` scrollable list of all server-authorized links, and (3) `shrink-0` footer with `SignOutButton`.
+  - Single polite live region (`aria-live="polite"`) for live screen reader announcements.
+  - Focus restoration to the Menu trigger button on Escape key dismiss or menu close.
+  - Automatically dismisses the full menu when any bottom quick link or drawer link is clicked.
+- **App Shell & Layout Integration (`src/components/shared/app-nav/app-nav.tsx`, `src/app/[locale]/(protected)/layout.tsx`, `src/app/layout.tsx`):**
+  - Integrated `MobileNavToggle` as a sibling below `<header>`, removing the old mobile menu button from the header.
+  - Updated `#main-content` in protected layout with `pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0` to eliminate content overlap under the persistent mobile bottom bar.
+  - Exported Next.js `viewport: Viewport` with `viewportFit: "cover"` and `interactiveWidget: "resizes-content"`.
+- **Internationalization (`messages/en-US.json`, `messages/es-MX.json`):**
+  - Added `mobileQuickAccessAriaLabel`, `fullMenuAriaLabel`, and `menu` to `shell.nav` in both English and Spanish message catalogs.
+- **Comprehensive Test Suite (`__tests__/app-shell/navigation.test.ts`, `__tests__/i18n/message-catalogs.test.ts`, `__tests__/integration/role-journey.test.ts`):**
+  - Added unit test suite for `buildMobileQuickAccessItems` model invariant across all roles and error paths.
+  - Added comprehensive `MobileNavToggle` tests for landmark scoping (`within(quickNav)` / `within(fullMenu)`), 5-action DOM sequence, badge rendering, drawer toggling, route matching, Escape focus restoration, and PM Watcher capability boundaries.
+- **Verification:**
+  - Ran `npm test -- __tests__/app-shell/navigation.test.ts __tests__/i18n/message-catalogs.test.ts`: PASSED (47/47 tests).
+  - Ran `npm test`: PASSED (788/788 tests across 82 suites).
+  - Ran `npm run typecheck`: PASSED (0 errors).
+  - Ran `npm run lint`: PASSED (0 errors).
+  - Ran `npm run format:check`: PASSED.
+
+## [2026-08-26 @ 09:31]
+
+**🐛 Hotfixes: Language Switcher Transition Handling & Mobile Stream Cancellation Fix**
+
+- **Concurrent Transition Handling (`src/components/shared/language-switcher/language-switcher.tsx`):**
+  - Wrapped locale `router.replace` in React 19 `startTransition` and added `disabled={isPending}` to the button primitive.
+  - Prevents rapid double-taps on mobile touch devices from firing duplicate concurrent navigation requests that cause WebKit (iOS Safari/Chrome) to abort in-flight RSC fetch streams and trigger `TypeError: stream is closing or closed` in the stream writer.
+- **Interactive Test Suite Coverage (`__tests__/i18n/language-switcher.test.tsx`):**
+  - Added JSDOM testing environment and interactive click tests validating transition dispatch to `en-US` and `es-MX`.
+- **Focused Verification:**
+  - Ran `__tests__/i18n/language-switcher.test.tsx`: PASSED (4/4 tests).
+  - Ran `npm run typecheck`: PASSED (0 errors).
+  - Ran `npm run lint`: PASSED (0 errors).
+  - Ran `npm run format:check`: PASSED.
+
+## [2026-08-26 @ 09:19]
+
+**🐛 Hotfixes: Mobile Autofill Hydration Mismatch Suppression**
+
+- **Form & Input Hydration Protection (`src/app/[locale]/iniciar-sesion/_components/sign-in-form.tsx`, `src/components/ui/input.tsx`):**
+  - Added `suppressHydrationWarning` to the sign-in `<form>` component and the reusable `<Input>` primitive to suppress dev-mode hydration mismatch errors caused by third-party mobile browser credential injection (such as Chrome on iOS adding `__gcruniqueid`).
+- **Focused Verification:**
+  - Ran `npm run typecheck`: PASSED (0 errors).
+  - Ran `npm run test`: PASSED (779/779 tests passing across 82 test suites).
+
+## [2026-08-26 @ 09:01]
+
+**🐛 Hotfixes: Dev Server CSP & LAN Connection Configuration**
+
+- **Environment-Aware CSP (`next.config.ts`):**
+  - Excluded `upgrade-insecure-requests` directive when running in development (`process.env.NODE_ENV !== "production"`), preventing mobile browsers from forcibly upgrading plain HTTP local LAN IP requests to HTTPS.
+  - Added `ws:` and `wss:` to `connect-src` CSP directive to support development Hot Module Reloading (HMR) and WebSockets over network interfaces.
+- **Focused Verification:**
+  - Ran `npm run typecheck`: PASSED (0 errors).
+  - Ran `npm run lint`: PASSED (0 warnings/errors).
+  - Ran `npm run format:check`: PASSED.
+
 ## [2026-08-26 @ 07:36]
 
 **🐛 Hotfixes: i18n Semantic Key Naming Alignment**

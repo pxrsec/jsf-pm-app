@@ -164,6 +164,10 @@ import { AppNav } from "@/components/shared/app-nav/app-nav";
 import { SignOutButton } from "@/components/shared/app-nav/_components/sign-out-button";
 import { NotificationBadge } from "@/components/shared/app-nav/_components/notification-badge";
 import { MobileNavToggle } from "@/components/shared/app-nav/_components/mobile-nav-toggle";
+import {
+  buildNavigationModel,
+  buildMobileQuickAccessItems,
+} from "@/components/shared/app-nav/navigation-model";
 import type { SessionContext, Profile } from "@/lib/auth/session";
 
 function createMockProfile(overrides: Partial<Profile> = {}): Profile {
@@ -337,12 +341,22 @@ describe("S03-E03-03 Positive-Path Cross-Role & Integration Test Suite", () => {
 
     it("P-20: Mobile nav toggle includes aria-expanded and aria-controls attributes", () => {
       const profile = createMockProfile({ role: "admin" });
+      const items = buildNavigationModel({
+        role: "admin",
+        unreadCount: 0,
+        canAccessNotificationOperations: true,
+        t: (key: string) => key,
+      });
+      const quickAccessItems = buildMobileQuickAccessItems({
+        items,
+        role: "admin",
+      });
       const html = renderToStaticMarkup(
         React.createElement(MobileNavToggle, {
           role: "admin",
           profile,
-          unreadCount: 0,
-          canAccessNotificationOperations: true,
+          items,
+          quickAccessItems,
         }),
       );
       expect(html).toContain('aria-expanded="false"');

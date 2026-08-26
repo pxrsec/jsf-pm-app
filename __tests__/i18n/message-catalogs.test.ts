@@ -91,6 +91,41 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
     );
   });
 
+  it("both catalogs contain active mobile quick access navigation keys", () => {
+    const esShell = esCatalog.shell as {
+      nav?: {
+        mobileQuickAccessAriaLabel?: string;
+        fullMenuAriaLabel?: string;
+        menu?: string;
+        openMenu?: string;
+        closeMenu?: string;
+      };
+    };
+    const enShell = enCatalog.shell as {
+      nav?: {
+        mobileQuickAccessAriaLabel?: string;
+        fullMenuAriaLabel?: string;
+        menu?: string;
+        openMenu?: string;
+        closeMenu?: string;
+      };
+    };
+    expect(esShell?.nav?.mobileQuickAccessAriaLabel).toBe(
+      "Navegación de acceso rápido",
+    );
+    expect(enShell?.nav?.mobileQuickAccessAriaLabel).toBe(
+      "Quick access navigation",
+    );
+    expect(esShell?.nav?.fullMenuAriaLabel).toBe("Toda la navegación");
+    expect(enShell?.nav?.fullMenuAriaLabel).toBe("All navigation");
+    expect(esShell?.nav?.menu).toBe("Menú");
+    expect(enShell?.nav?.menu).toBe("Menu");
+    expect(esShell?.nav?.openMenu).toBe("Abrir menú de navegación");
+    expect(enShell?.nav?.openMenu).toBe("Open navigation menu");
+    expect(esShell?.nav?.closeMenu).toBe("Cerrar menú de navegación");
+    expect(enShell?.nav?.closeMenu).toBe("Close navigation menu");
+  });
+
   it("all 15 category title/description pairs exist under notifications.categories in both catalogs", () => {
     const requiredCategories = [
       "invitation",

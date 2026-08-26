@@ -2,7 +2,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  cleanup,
+  within,
+} from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import esCatalog from "../../messages/es-MX.json";
 
@@ -123,7 +129,10 @@ import {
 } from "@/components/shared/app-nav/_components/desktop-nav-drawer";
 import { DesktopNavigationShell } from "@/components/shared/app-nav/_components/desktop-navigation-shell";
 import { MobileNavToggle } from "@/components/shared/app-nav/_components/mobile-nav-toggle";
-import { buildNavigationModel } from "@/components/shared/app-nav/navigation-model";
+import {
+  buildNavigationModel,
+  buildMobileQuickAccessItems,
+} from "@/components/shared/app-nav/navigation-model";
 import type { SessionContext, Profile, AppRole } from "@/lib/auth/session";
 
 function getSpanishTranslation(namespace: string) {
@@ -160,6 +169,13 @@ function createTestItems(
     canAccessNotificationOperations,
     t: getSpanishTranslation("shell.nav"),
   });
+}
+
+function createTestQuickAccessItems(
+  items: ReturnType<typeof createTestItems>,
+  role: AppRole,
+) {
+  return buildMobileQuickAccessItems({ items, role });
 }
 
 function createMockProfile(overrides: Partial<Profile> = {}): Profile {
@@ -827,294 +843,656 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
     });
   });
 
-  describe("MobileNavToggle Drawer & Role Matrix", () => {
-    it("renders closed toggle with accessible aria attributes", () => {
-      const profile = createMockProfile({
-        id: "u-1",
-        full_name: "Admin User",
-        role: "admin",
-      });
-      const items = createTestItems("admin", 2, true);
+  describe("buildMobileQuickAccessItems Model Invariant", () => {
+    it("selects exact 3 quick items in order for Admin (Home, Projects, Operations)", () => {
+      const items = createTestItems("admin", 0, true);
+      const quickItems = createTestQuickAccessItems(items, "admin");
 
-      const html = renderToStaticMarkup(
-        React.createElement(MobileNavToggle, {
-          items,
-          role: "admin",
-          profile,
-        }),
-      );
-
-      expect(html).toContain('aria-expanded="false"');
-      expect(html).toContain('aria-controls="mobile-nav-drawer"');
+      expect(quickItems).toHaveLength(3);
+      expect(quickItems.map((i) => i.key)).toEqual([
+        "home",
+        "projects",
+        "operations",
+      ]);
+      expect(quickItems.map((i) => i.href)).toEqual([
+        "/admin",
+        "/admin/proyectos",
+        "/admin/operaciones",
+      ]);
     });
 
-    it("opens drawer and renders live links for admin including operations link", () => {
+    it("selects exact 3 quick items in order for PM (Home, Projects, Calendar)", () => {
+      const itemsLead = createTestItems("pm", 0, true);
+      const quickLead = createTestQuickAccessItems(itemsLead, "pm");
+      expect(quickLead.map((i) => i.key)).toEqual([
+        "home",
+        "projects",
+        "calendar",
+      ]);
+      expect(quickLead.map((i) => i.href)).toEqual([
+        "/pm",
+        "/pm/proyectos",
+        "/calendario",
+      ]);
+
+      const itemsWatcher = createTestItems("pm", 0, false);
+      const quickWatcher = createTestQuickAccessItems(itemsWatcher, "pm");
+      expect(quickWatcher.map((i) => i.key)).toEqual([
+        "home",
+        "projects",
+        "calendar",
+      ]);
+      expect(quickWatcher.map((i) => i.href)).toEqual([
+        "/pm",
+        "/pm/proyectos",
+        "/calendario",
+      ]);
+    });
+
+    it("selects exact 3 quick items in order for Operator (Home, My Agenda, Calendar)", () => {
+      const items = createTestItems("operator", 0, false);
+      const quickItems = createTestQuickAccessItems(items, "operator");
+
+      expect(quickItems).toHaveLength(3);
+      expect(quickItems.map((i) => i.key)).toEqual([
+        "home",
+        "agenda",
+        "calendar",
+      ]);
+      expect(quickItems.map((i) => i.href)).toEqual([
+        "/operador",
+        "/operador/agenda",
+        "/calendario",
+      ]);
+    });
+
+    it("selects exact 3 quick items in order for Client (Home, Projects, Calendar)", () => {
+      const items = createTestItems("client", 0, false);
+      const quickItems = createTestQuickAccessItems(items, "client");
+
+      expect(quickItems).toHaveLength(3);
+      expect(quickItems.map((i) => i.key)).toEqual([
+        "home",
+        "projects",
+        "calendar",
+      ]);
+      expect(quickItems.map((i) => i.href)).toEqual([
+        "/cliente",
+        "/cliente/proyectos",
+        "/calendario",
+      ]);
+    });
+
+    it("throws deterministic invariant error if an expected role key is missing from supplied items", () => {
+      const items = createTestItems("admin", 0, true);
+      // Remove operations item
+      const incompleteItems = items.filter((i) => i.key !== "operations");
+
+      expect(() => {
+        buildMobileQuickAccessItems({ items: incompleteItems, role: "admin" });
+      }).toThrow(
+        'Mobile quick-access invariant failed: missing authorized "operations" item for role "admin".',
+      );
+    });
+  });
+
+  describe("MobileNavToggle Persistent Bar & Full Menu", () => {
+    it("renders persistent bottom quick-access bar with 4 links and 1 menu button in exact DOM order for Admin", () => {
       const profile = createMockProfile({
         id: "u-1",
         full_name: "Admin User",
         role: "admin",
       });
-      const items = createTestItems("admin", 2, true);
+      const items = createTestItems("admin", 3, true);
+      const quickAccessItems = createTestQuickAccessItems(items, "admin");
 
       render(
         React.createElement(MobileNavToggle, {
           items,
+          quickAccessItems,
           role: "admin",
           profile,
         }),
       );
 
-      const toggleButton = screen.getByRole("button", {
+      const quickNav = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      expect(quickNav).toBeInTheDocument();
+
+      const links = within(quickNav).getAllByRole("link");
+      expect(links).toHaveLength(4);
+
+      expect(links[0]).toHaveAttribute("href", "/admin");
+      expect(within(links[0]).getByText("Inicio")).toBeInTheDocument();
+
+      expect(links[1]).toHaveAttribute("href", "/admin/proyectos");
+      expect(within(links[1]).getByText("Proyectos")).toBeInTheDocument();
+
+      expect(links[2]).toHaveAttribute("href", "/admin/operaciones");
+      expect(within(links[2]).getByText("Operaciones")).toBeInTheDocument();
+
+      expect(links[3]).toHaveAttribute("href", "/notificaciones");
+      expect(links[3]).toHaveAttribute(
+        "aria-label",
+        "Bandeja de notificaciones, 3 no leídas",
+      );
+      expect(within(links[3]).getByText("Notificaciones")).toBeInTheDocument();
+
+      const menuButton = within(quickNav).getByRole("button", {
         name: "Abrir menú de navegación",
       });
-      fireEvent.click(toggleButton);
+      expect(menuButton).toBeInTheDocument();
+      expect(menuButton).toHaveAttribute("aria-expanded", "false");
+      expect(menuButton).toHaveAttribute("aria-controls", "mobile-nav-drawer");
+      expect(within(menuButton).getByText("Menú")).toBeInTheDocument();
 
       expect(
-        screen.getByRole("button", { name: "Cerrar menú de navegación" }),
-      ).toBeInTheDocument();
-      const projectLink = screen.getByRole("link", { name: "Proyectos" });
-      expect(projectLink).toHaveAttribute("href", "/admin/proyectos");
+        screen.queryByRole("navigation", { name: "Toda la navegación" }),
+      ).not.toBeInTheDocument();
+    });
 
-      const inboxLink = screen.getByRole("link", {
+    it("renders persistent bottom quick-access bar for PM, Operator, and Client with their approved role destinations", () => {
+      const profilePm = createMockProfile({ id: "u-2", role: "pm" });
+      const itemsPm = createTestItems("pm", 0, true);
+      const quickPm = createTestQuickAccessItems(itemsPm, "pm");
+
+      const { unmount: unmountPm } = render(
+        React.createElement(MobileNavToggle, {
+          items: itemsPm,
+          quickAccessItems: quickPm,
+          role: "pm",
+          profile: profilePm,
+        }),
+      );
+
+      const quickNavPm = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const pmLinks = within(quickNavPm).getAllByRole("link");
+      expect(pmLinks.map((l) => l.getAttribute("href"))).toEqual([
+        "/pm",
+        "/pm/proyectos",
+        "/calendario",
+        "/notificaciones",
+      ]);
+      unmountPm();
+
+      const profileOp = createMockProfile({ id: "u-3", role: "operator" });
+      const itemsOp = createTestItems("operator", 0, false);
+      const quickOp = createTestQuickAccessItems(itemsOp, "operator");
+
+      const { unmount: unmountOp } = render(
+        React.createElement(MobileNavToggle, {
+          items: itemsOp,
+          quickAccessItems: quickOp,
+          role: "operator",
+          profile: profileOp,
+        }),
+      );
+
+      const quickNavOp = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const opLinks = within(quickNavOp).getAllByRole("link");
+      expect(opLinks.map((l) => l.getAttribute("href"))).toEqual([
+        "/operador",
+        "/operador/agenda",
+        "/calendario",
+        "/notificaciones",
+      ]);
+      unmountOp();
+
+      const profileCl = createMockProfile({ id: "u-4", role: "client" });
+      const itemsCl = createTestItems("client", 0, false);
+      const quickCl = createTestQuickAccessItems(itemsCl, "client");
+
+      render(
+        React.createElement(MobileNavToggle, {
+          items: itemsCl,
+          quickAccessItems: quickCl,
+          role: "client",
+          profile: profileCl,
+        }),
+      );
+
+      const quickNavCl = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const clLinks = within(quickNavCl).getAllByRole("link");
+      expect(clLinks.map((l) => l.getAttribute("href"))).toEqual([
+        "/cliente",
+        "/cliente/proyectos",
+        "/calendario",
+        "/notificaciones",
+      ]);
+    });
+
+    it("opens full menu drawer on Menu button click with identity, language/theme controls, complete authorized links, and sign-out", () => {
+      const profile = createMockProfile({
+        id: "u-1",
+        full_name: "Admin User",
+        role: "admin",
+      });
+      const items = createTestItems("admin", 2, true);
+      const quickAccessItems = createTestQuickAccessItems(items, "admin");
+
+      render(
+        React.createElement(MobileNavToggle, {
+          items,
+          quickAccessItems,
+          role: "admin",
+          profile,
+        }),
+      );
+
+      const quickNav = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const menuButton = within(quickNav).getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+
+      fireEvent.click(menuButton);
+
+      expect(menuButton).toHaveAttribute("aria-expanded", "true");
+      expect(
+        within(quickNav).getByRole("button", {
+          name: "Cerrar menú de navegación",
+        }),
+      ).toBeInTheDocument();
+
+      const fullMenu = screen.getByRole("navigation", {
+        name: "Toda la navegación",
+      });
+      expect(fullMenu).toBeInTheDocument();
+      expect(fullMenu).toHaveAttribute("id", "mobile-nav-drawer");
+
+      expect(within(fullMenu).getByText("Admin User")).toBeInTheDocument();
+      expect(within(fullMenu).getByText("Administrador")).toBeInTheDocument();
+      expect(
+        within(fullMenu).getByTestId("language-switcher"),
+      ).toBeInTheDocument();
+      expect(within(fullMenu).getByTestId("theme-toggle")).toBeInTheDocument();
+
+      const fullLinks = within(fullMenu).getAllByRole("link");
+      expect(fullLinks.map((l) => l.getAttribute("href"))).toEqual([
+        "/admin",
+        "/admin/proyectos",
+        "/calendario",
+        "/admin/archivo",
+        "/admin/incidentes-enlaces",
+        "/admin/metricas",
+        "/admin/operaciones",
+        "/notificaciones",
+        "/admin/notificaciones",
+      ]);
+
+      expect(
+        within(fullMenu).getByRole("button", { name: "Cerrar sesión" }),
+      ).toBeInTheDocument();
+
+      expect(
+        within(fullMenu).getByText("Notificaciones no leídas: 2"),
+      ).toBeInTheDocument();
+    });
+
+    it("closes full menu when any bottom quick link or Notifications is clicked", () => {
+      const profile = createMockProfile({
+        id: "u-1",
+        full_name: "Admin User",
+        role: "admin",
+      });
+      const items = createTestItems("admin", 2, true);
+      const quickAccessItems = createTestQuickAccessItems(items, "admin");
+
+      render(
+        React.createElement(MobileNavToggle, {
+          items,
+          quickAccessItems,
+          role: "admin",
+          profile,
+        }),
+      );
+
+      const quickNav = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const menuButton = within(quickNav).getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+
+      // 1. Click bottom quick link
+      fireEvent.click(menuButton);
+      expect(
+        screen.getByRole("navigation", { name: "Toda la navegación" }),
+      ).toBeInTheDocument();
+
+      const quickProjects = within(quickNav).getByRole("link", {
+        name: "Proyectos",
+      });
+      fireEvent.click(quickProjects);
+
+      expect(
+        screen.queryByRole("navigation", { name: "Toda la navegación" }),
+      ).not.toBeInTheDocument();
+      expect(menuButton).toHaveAttribute("aria-expanded", "false");
+
+      // 2. Click bottom notifications link
+      fireEvent.click(menuButton);
+      expect(
+        screen.getByRole("navigation", { name: "Toda la navegación" }),
+      ).toBeInTheDocument();
+
+      const quickNotifs = within(quickNav).getByRole("link", {
         name: "Bandeja de notificaciones, 2 no leídas",
       });
-      expect(inboxLink).toHaveAttribute("href", "/notificaciones");
-
-      const operationsLink = screen.getByRole("link", {
-        name: "Operaciones de Notificaciones",
-      });
-      expect(operationsLink).toHaveAttribute("href", "/admin/notificaciones");
-    });
-
-    it("opens drawer and renders operations link for PM Lead", () => {
-      const profile = createMockProfile({
-        id: "u-2",
-        full_name: "PM Lead",
-        role: "pm",
-      });
-      const items = createTestItems("pm", 0, true);
-
-      render(
-        React.createElement(MobileNavToggle, {
-          items,
-          role: "pm",
-          profile,
-        }),
-      );
-
-      const toggleButton = screen.getByRole("button", {
-        name: "Abrir menú de navegación",
-      });
-      fireEvent.click(toggleButton);
-
-      const operationsLink = screen.getByRole("link", {
-        name: "Operaciones de Notificaciones",
-      });
-      expect(operationsLink).toHaveAttribute("href", "/pm/notificaciones");
-    });
-
-    it("opens drawer and does NOT render operations link for PM Watcher", () => {
-      const profile = createMockProfile({
-        id: "u-2w",
-        full_name: "PM Watcher",
-        role: "pm",
-      });
-      const items = createTestItems("pm", 0, false);
-
-      render(
-        React.createElement(MobileNavToggle, {
-          items,
-          role: "pm",
-          profile,
-        }),
-      );
-
-      const toggleButton = screen.getByRole("button", {
-        name: "Abrir menú de navegación",
-      });
-      fireEvent.click(toggleButton);
+      fireEvent.click(quickNotifs);
 
       expect(
-        screen.queryByRole("link", { name: "Operaciones de Notificaciones" }),
+        screen.queryByRole("navigation", { name: "Toda la navegación" }),
       ).not.toBeInTheDocument();
+      expect(menuButton).toHaveAttribute("aria-expanded", "false");
     });
 
-    it("renders active agenda link and inbox in drawer for operator, no operations", () => {
-      const profile = createMockProfile({
-        id: "u-3",
-        full_name: "Operator User",
-        role: "operator",
-      });
-      const items = createTestItems("operator", 0, false);
-
-      render(
-        React.createElement(MobileNavToggle, {
-          items,
-          role: "operator",
-          profile,
-        }),
-      );
-
-      const toggleButton = screen.getByRole("button", {
-        name: "Abrir menú de navegación",
-      });
-      fireEvent.click(toggleButton);
-
-      const agendaLink = screen.getByRole("link", { name: "Mi Agenda" });
-      expect(agendaLink).toBeInTheDocument();
-      expect(agendaLink).toHaveAttribute("href", "/operador/agenda");
-
-      const archiveLink = screen.getByRole("link", { name: "Archivo" });
-      expect(archiveLink).toBeInTheDocument();
-      expect(archiveLink).toHaveAttribute("href", "/operador/archivo");
-
-      const inboxLink = screen.getByRole("link", {
-        name: "Bandeja de notificaciones",
-      });
-      expect(inboxLink).toHaveAttribute("href", "/notificaciones");
-
-      expect(
-        screen.queryByRole("link", { name: "Operaciones de Notificaciones" }),
-      ).not.toBeInTheDocument();
-    });
-
-    it("renders active project link and inbox in drawer for client, no operations", () => {
-      const profile = createMockProfile({
-        id: "u-4",
-        full_name: "Client User",
-        role: "client",
-      });
-      const items = createTestItems("client", 0, false);
-
-      render(
-        React.createElement(MobileNavToggle, {
-          items,
-          role: "client",
-          profile,
-        }),
-      );
-
-      const toggleButton = screen.getByRole("button", {
-        name: "Abrir menú de navegación",
-      });
-      fireEvent.click(toggleButton);
-
-      const projectLink = screen.getByRole("link", { name: "Proyectos" });
-      expect(projectLink).toBeInTheDocument();
-      expect(projectLink).toHaveAttribute("href", "/cliente/proyectos");
-
-      const archiveLink = screen.getByRole("link", { name: "Archivo" });
-      expect(archiveLink).toBeInTheDocument();
-      expect(archiveLink).toHaveAttribute("href", "/cliente/archivo");
-
-      const inboxLink = screen.getByRole("link", {
-        name: "Bandeja de notificaciones",
-      });
-      expect(inboxLink).toHaveAttribute("href", "/notificaciones");
-
-      expect(
-        screen.queryByRole("link", { name: "Operaciones de Notificaciones" }),
-      ).not.toBeInTheDocument();
-    });
-
-    it("closes drawer when inbox navigation link is clicked", () => {
-      const profile = createMockProfile({
-        id: "u-4",
-        full_name: "Client User",
-        role: "client",
-      });
-      const items = createTestItems("client", 0, false);
-
-      render(
-        React.createElement(MobileNavToggle, {
-          items,
-          role: "client",
-          profile,
-        }),
-      );
-
-      const toggleButton = screen.getByRole("button", {
-        name: "Abrir menú de navegación",
-      });
-      fireEvent.click(toggleButton);
-
-      const inboxLink = screen.getByRole("link", {
-        name: "Bandeja de notificaciones",
-      });
-      fireEvent.click(inboxLink);
-
-      expect(
-        screen.getByRole("button", { name: "Abrir menú de navegación" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.queryByRole("link", { name: "Bandeja de notificaciones" }),
-      ).not.toBeInTheDocument();
-    });
-
-    it("closes drawer when operations navigation link is clicked", () => {
+    it("closes full menu when a link inside the full menu is clicked", () => {
       const profile = createMockProfile({
         id: "u-1",
         full_name: "Admin User",
         role: "admin",
       });
       const items = createTestItems("admin", 0, true);
+      const quickAccessItems = createTestQuickAccessItems(items, "admin");
 
       render(
         React.createElement(MobileNavToggle, {
           items,
+          quickAccessItems,
           role: "admin",
           profile,
         }),
       );
 
-      const toggleButton = screen.getByRole("button", {
+      const quickNav = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const menuButton = within(quickNav).getByRole("button", {
         name: "Abrir menú de navegación",
       });
-      fireEvent.click(toggleButton);
 
-      const operationsLink = screen.getByRole("link", {
-        name: "Operaciones de Notificaciones",
+      fireEvent.click(menuButton);
+      const fullMenu = screen.getByRole("navigation", {
+        name: "Toda la navegación",
       });
-      fireEvent.click(operationsLink);
+
+      const archiveLink = within(fullMenu).getByRole("link", {
+        name: "Archivo",
+      });
+      fireEvent.click(archiveLink);
 
       expect(
-        screen.getByRole("button", { name: "Abrir menú de navegación" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.queryByRole("link", { name: "Operaciones de Notificaciones" }),
+        screen.queryByRole("navigation", { name: "Toda la navegación" }),
       ).not.toBeInTheDocument();
+      expect(menuButton).toHaveAttribute("aria-expanded", "false");
     });
 
-    it("closes drawer on Escape key and restores focus to toggle button", () => {
+    it("closes full menu on Escape key and restores actual focus to Menu button", () => {
       const profile = createMockProfile({
         id: "u-3",
         full_name: "Operator User",
         role: "operator",
       });
       const items = createTestItems("operator", 0, false);
+      const quickAccessItems = createTestQuickAccessItems(items, "operator");
 
       render(
         React.createElement(MobileNavToggle, {
           items,
+          quickAccessItems,
           role: "operator",
           profile,
         }),
       );
 
-      const toggleButton = screen.getByRole("button", {
+      const quickNav = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const menuButton = within(quickNav).getByRole("button", {
         name: "Abrir menú de navegación",
       });
-      fireEvent.click(toggleButton);
 
+      fireEvent.click(menuButton);
       expect(
-        screen.getByRole("button", { name: "Cerrar menú de navegación" }),
+        screen.getByRole("navigation", { name: "Toda la navegación" }),
       ).toBeInTheDocument();
 
       fireEvent.keyDown(document, { key: "Escape" });
 
       expect(
-        screen.getByRole("button", { name: "Abrir menú de navegación" }),
-      ).toBeInTheDocument();
+        screen.queryByRole("navigation", { name: "Toda la navegación" }),
+      ).not.toBeInTheDocument();
+      expect(menuButton).toHaveFocus();
+    });
+
+    it("handles notification count formatting (0 -> hidden badge, 5 -> numerical badge, 100 -> 99+)", () => {
+      const profile = createMockProfile({ role: "admin" });
+
+      // Count 0
+      const items0 = createTestItems("admin", 0, true);
+      const quick0 = createTestQuickAccessItems(items0, "admin");
+      const { unmount: unmount0 } = render(
+        React.createElement(MobileNavToggle, {
+          items: items0,
+          quickAccessItems: quick0,
+          role: "admin",
+          profile,
+        }),
+      );
+
+      const quickNav0 = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const notifsLink0 = within(quickNav0).getByRole("link", {
+        name: "Bandeja de notificaciones",
+      });
+      expect(notifsLink0.querySelector("span[aria-hidden='true']")).toBeNull();
+      unmount0();
+
+      // Count 5
+      const items5 = createTestItems("admin", 5, true);
+      const quick5 = createTestQuickAccessItems(items5, "admin");
+      const { unmount: unmount5 } = render(
+        React.createElement(MobileNavToggle, {
+          items: items5,
+          quickAccessItems: quick5,
+          role: "admin",
+          profile,
+        }),
+      );
+
+      const quickNav5 = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const notifsLink5 = within(quickNav5).getByRole("link", {
+        name: "Bandeja de notificaciones, 5 no leídas",
+      });
+      const badge5 = notifsLink5.querySelector("span[aria-hidden='true']");
+      expect(badge5).not.toBeNull();
+      expect(badge5).toHaveTextContent("5");
+      unmount5();
+
+      // Count 100 -> 99+
+      const items100 = createTestItems("admin", 100, true);
+      const quick100 = createTestQuickAccessItems(items100, "admin");
+      render(
+        React.createElement(MobileNavToggle, {
+          items: items100,
+          quickAccessItems: quick100,
+          role: "admin",
+          profile,
+        }),
+      );
+
+      const quickNav100 = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const notifsLink100 = within(quickNav100).getByRole("link", {
+        name: "Bandeja de notificaciones, 100 no leídas",
+      });
+      const badge100 = notifsLink100.querySelector("span[aria-hidden='true']");
+      expect(badge100).not.toBeNull();
+      expect(badge100).toHaveTextContent("99+");
+    });
+
+    it("evaluates exact home matching and descendant matching for active states across quick bar and full menu", () => {
+      const profile = createMockProfile({ role: "admin" });
+      const items = createTestItems("admin", 0, true);
+      const quickAccessItems = createTestQuickAccessItems(items, "admin");
+
+      // 1. Exact match on Home (/admin)
+      currentPathname = "/admin";
+      const { unmount: unmount1 } = render(
+        React.createElement(MobileNavToggle, {
+          items,
+          quickAccessItems,
+          role: "admin",
+          profile,
+        }),
+      );
+
+      const quickNav1 = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const homeLink1 = within(quickNav1).getByRole("link", { name: "Inicio" });
+      const projectsLink1 = within(quickNav1).getByRole("link", {
+        name: "Proyectos",
+      });
+
+      expect(homeLink1).toHaveAttribute("aria-current", "page");
+      expect(projectsLink1).not.toHaveAttribute("aria-current");
+      unmount1();
+
+      // 2. Descendant match on Projects (/admin/proyectos/p-123)
+      currentPathname = "/admin/proyectos/p-123";
+      const { unmount: unmount2 } = render(
+        React.createElement(MobileNavToggle, {
+          items,
+          quickAccessItems,
+          role: "admin",
+          profile,
+        }),
+      );
+
+      const quickNav2 = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const homeLink2 = within(quickNav2).getByRole("link", { name: "Inicio" });
+      const projectsLink2 = within(quickNav2).getByRole("link", {
+        name: "Proyectos",
+      });
+
+      expect(homeLink2).not.toHaveAttribute("aria-current");
+      expect(projectsLink2).toHaveAttribute("aria-current", "page");
+      unmount2();
+
+      // 3. Match on Notifications (/notificaciones)
+      currentPathname = "/notificaciones";
+      render(
+        React.createElement(MobileNavToggle, {
+          items,
+          quickAccessItems,
+          role: "admin",
+          profile,
+        }),
+      );
+
+      const quickNav3 = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const notifsLink3 = within(quickNav3).getByRole("link", {
+        name: "Bandeja de notificaciones",
+      });
+      const homeLink3 = within(quickNav3).getByRole("link", { name: "Inicio" });
+
+      expect(notifsLink3).toHaveAttribute("aria-current", "page");
+      expect(homeLink3).not.toHaveAttribute("aria-current");
+    });
+
+    it("preserves PM Watcher boundary: never exposes Notification Operations in quick bar or full menu", () => {
+      const profile = createMockProfile({
+        id: "u-2w",
+        full_name: "PM Watcher",
+        role: "pm",
+      });
+      const items = createTestItems("pm", 0, false);
+      const quickAccessItems = createTestQuickAccessItems(items, "pm");
+
+      render(
+        React.createElement(MobileNavToggle, {
+          items,
+          quickAccessItems,
+          role: "pm",
+          profile,
+        }),
+      );
+
+      const quickNav = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      expect(
+        within(quickNav).queryByRole("link", {
+          name: "Operaciones de Notificaciones",
+        }),
+      ).not.toBeInTheDocument();
+
+      const menuButton = within(quickNav).getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+      fireEvent.click(menuButton);
+
+      const fullMenu = screen.getByRole("navigation", {
+        name: "Toda la navegación",
+      });
+      expect(
+        within(fullMenu).queryByRole("link", {
+          name: "Operaciones de Notificaciones",
+        }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("exposes Notification Operations in full menu for PM Lead with active capability", () => {
+      const profile = createMockProfile({
+        id: "u-2l",
+        full_name: "PM Lead",
+        role: "pm",
+      });
+      const items = createTestItems("pm", 0, true);
+      const quickAccessItems = createTestQuickAccessItems(items, "pm");
+
+      render(
+        React.createElement(MobileNavToggle, {
+          items,
+          quickAccessItems,
+          role: "pm",
+          profile,
+        }),
+      );
+
+      const quickNav = screen.getByRole("navigation", {
+        name: "Navegación de acceso rápido",
+      });
+      const menuButton = within(quickNav).getByRole("button", {
+        name: "Abrir menú de navegación",
+      });
+      fireEvent.click(menuButton);
+
+      const fullMenu = screen.getByRole("navigation", {
+        name: "Toda la navegación",
+      });
+      const notifOps = within(fullMenu).getByRole("link", {
+        name: "Operaciones de Notificaciones",
+      });
+      expect(notifOps).toHaveAttribute("href", "/pm/notificaciones");
     });
   });
 });
