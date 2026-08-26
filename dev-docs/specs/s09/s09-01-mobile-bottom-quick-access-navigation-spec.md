@@ -386,7 +386,7 @@ If only the iPhone is available initially, M-01, M-02, M-06, and M-07 are the mi
 
 | ID | Persona/route | Steps | Required result |
 | --- | --- | --- | --- |
-| R-01 | Admin, unread 0 then positive unread if available | Visit Admin home; open each quick action; inspect bell at 0/positive counts; open Menu. | Home, Projects, Operations, Notifications, Menu in order. Bell badge absent at zero and red numerical at positive. Menu contains all Admin routes including Metrics/Archive/Link Incidents/Notification Operations. |
+| R-01 | Admin, unread 0 then positive-unread if available | Visit Admin home; open each quick action; inspect bell at 0/positive counts; open Menu. | Home, Projects, Operations, Notifications, Menu in order. Bell badge absent at zero and red numerical at positive. Menu contains all Admin routes including Metrics/Archive/Link Incidents/Notification Operations. |
 | R-02 | PM Lead and PM Watcher | Visit PM home; inspect quick bar and open Menu. | Both show Home/Projects/Calendar/Notifications/Menu. PM Lead sees Notification Operations only when current capability allows; Watcher never sees it. |
 | R-03 | Operator | Visit operator home and agenda. | Home/My Agenda/Calendar/Notifications/Menu in order; no Admin/PM-only action; full menu retains Archive. |
 | R-04 | Client | Visit client home and projects. | Home/Projects/Calendar/Notifications/Menu in order; client-safe full menu only. |
