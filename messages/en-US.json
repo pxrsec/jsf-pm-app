@@ -15,6 +15,8 @@
       "ariaLabel": "Main navigation",
       "openMenu": "Open navigation menu",
       "closeMenu": "Close navigation menu",
+      "collapse": "Collapse navigation",
+      "expand": "Expand navigation",
       "signOut": "Sign out",
       "currentUser": {
         "role": {
@@ -75,7 +77,20 @@
       "cancelled": "Cancelled",
       "pending": "Pending",
       "inReview": "In Review",
-      "blocked": "Blocked"
+      "blocked": "Blocked",
+      "awaitingInternalReview": "Awaiting Internal Review",
+      "awaitingClientReview": "Awaiting Client Review",
+      "approved": "Approved",
+      "changesRequested": "Changes Requested",
+      "delivered": "Delivered"
+    },
+    "deliverableStatus": {
+      "pending": "Pending",
+      "awaitingInternalReview": "Awaiting Internal Review",
+      "awaitingClientReview": "Awaiting Client Review",
+      "approved": "Approved",
+      "changesRequested": "Changes Requested",
+      "delivered": "Delivered"
     },
     "priority": {
       "low": "Low",
@@ -1099,13 +1114,33 @@
         "inProgress": "In progress",
         "inReview": "In review",
         "completed": "Completed",
-        "blocked": "Blocked"
+        "blocked": "Blocked",
+        "taskStatus": {
+          "pending": "Pending",
+          "inProgress": "In progress",
+          "inReview": "In review",
+          "completed": "Completed",
+          "blocked": "Blocked"
+        }
       },
       "priority": {
         "low": "Low",
         "medium": "Medium",
         "high": "High",
-        "blocking": "Blocking"
+        "blocking": "Blocking",
+        "priority": {
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High",
+          "blocking": "Blocking"
+        }
+      },
+      "taskStatus": {
+        "pending": "Pending",
+        "inProgress": "In progress",
+        "inReview": "In review",
+        "completed": "Completed",
+        "blocked": "Blocked"
       },
       "absence": {
         "title": "Request unavailable",
@@ -1230,6 +1265,22 @@
       "openReviewAria": "Review deliverable {title}",
       "unnamedProject": "Unnamed project",
       "untitledDeliverable": "Untitled deliverable",
+      "status": {
+        "pending": "Pending",
+        "awaitingInternalReview": "In Internal Review",
+        "awaitingClientReview": "Awaiting Your Review",
+        "approved": "Approved",
+        "changesRequested": "Changes Requested",
+        "delivered": "Delivered"
+      },
+      "deliverableStatus": {
+        "pending": "Pending",
+        "awaitingInternalReview": "In Internal Review",
+        "awaitingClientReview": "Awaiting Your Review",
+        "approved": "Approved",
+        "changesRequested": "Changes Requested",
+        "delivered": "Delivered"
+      },
       "recovery": {
         "title": "Error loading reviews",
         "description": "An unexpected error occurred while loading production deliverables. Please try again.",
@@ -1359,7 +1410,58 @@
     "errors": {
       "validation": "Invalid request.",
       "unauthenticated": "Invalid or expired session.",
-      "unavailable": "The service is currently unavailable."
+      "unavailable": "The service is currently unavailable.",
+      "acknowledgementFailed": "Could not acknowledge notification. Please try again."
+    },
+    "viewDetails": "View details",
+    "viewDetailsAria": "View details for {category}: {subject} in {project}",
+    "viewDetailsAriaNoProject": "View details for {category}: {subject}",
+    "viewDetailsAriaGeneric": "View details for {category}",
+    "navigating": "Opening...",
+    "projectContext": "Project: {name}",
+    "deadlineContext": "Deadline: {date}",
+    "sentences": {
+      "user_invited": "An invitation was sent to your account.",
+      "invite_expiring": "Your invitation is about to expire.",
+      "project_assigned": "You were assigned to {projectName}.",
+      "project_assigned_fallback": "You were assigned to a project.",
+      "task_assigned": "{taskTitle} in {projectName}",
+      "task_assigned_fallback": "You were assigned a new task.",
+      "task_status_changed": "Status updated for {taskTitle} in {projectName}.",
+      "task_status_changed_fallback": "Task status updated.",
+      "client_task_blocking": "Task {taskTitle} in {projectName} requires client attention.",
+      "client_task_blocking_fallback": "A task requires urgent attention.",
+      "client_submission_received": "Client submission received for {deliverableTitle} in {projectName}.",
+      "client_submission_received_fallback": "Client submission received.",
+      "client_submission_reopened": "Client submission reopened for {deliverableTitle} in {projectName}.",
+      "client_submission_reopened_fallback": "Client submission reopened.",
+      "deliverable_submitted": "New version submitted for {deliverableTitle} in {projectName}.",
+      "deliverable_submitted_fallback": "Deliverable submitted for review.",
+      "internal_changes_requested": "Changes requested for {deliverableTitle} in {projectName}.",
+      "internal_changes_requested_fallback": "Changes requested on deliverable.",
+      "internal_review_approved": "Review approved for {deliverableTitle} in {projectName}.",
+      "internal_review_approved_fallback": "Deliverable review approved.",
+      "client_changes_requested": "Client requested changes for {deliverableTitle} in {projectName}.",
+      "client_changes_requested_fallback": "Client requested changes.",
+      "client_review_approved": "Client approved review for {deliverableTitle} in {projectName}.",
+      "client_review_approved_fallback": "Client approved deliverable.",
+      "deliverable_delivered": "Deliverable {deliverableTitle} in {projectName} was delivered.",
+      "deliverable_delivered_fallback": "Deliverable marked as delivered.",
+      "deadline_24h": "Deadline in 24 hours for {taskTitle} in {projectName}.",
+      "deadline_24h_fallback": "Upcoming deadline in 24 hours.",
+      "deadline_12h": "Deadline in 12 hours for {taskTitle} in {projectName}.",
+      "deadline_12h_fallback": "Upcoming deadline in 12 hours.",
+      "deadline_6h": "Deadline in 6 hours for {taskTitle} in {projectName}.",
+      "deadline_6h_fallback": "Upcoming deadline in 6 hours.",
+      "deadline_overdue": "Deadline overdue for {taskTitle} in {projectName}.",
+      "deadline_overdue_fallback": "Task deadline is overdue.",
+      "review_inactivity_reminder": "Review reminder for {deliverableTitle} in {projectName}.",
+      "review_inactivity_reminder_fallback": "Pending review requires attention.",
+      "link_reported_broken": "Broken link reported for {deliverableTitle} in {projectName}.",
+      "link_reported_broken_fallback": "A broken link was reported on a deliverable.",
+      "system": "System notice regarding {projectName}.",
+      "system_fallback": "System notification.",
+      "genericHistoricalFallback": "Historical notification record."
     },
     "categories": {
       "invitation": {

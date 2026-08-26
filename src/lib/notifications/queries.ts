@@ -8,6 +8,7 @@ import type {
   RecipientInboxPage,
   RecipientInboxQuery,
 } from "./inbox-contracts";
+import { parseAndValidateNotificationRow } from "./schemas";
 
 export const NOTIFICATION_INBOX_PAGE_SIZE = 25;
 
@@ -17,11 +18,13 @@ export type {
   RecipientInboxPage,
   RecipientInboxQuery,
   NotificationReadFilter,
+  NotificationDestination,
 } from "./inbox-contracts";
 
 /**
  * Server-only typed inbox query calling the self-only keyset pagination RPC.
- * Discards sensitive database/event/provider details and returns a safe projection.
+ * Validates all returned rows against destination/context invariants before
+ * pagination slicing and returns a safe projection.
  */
 export async function listRecipientInboxPage(
   supabase: SupabaseClient<Database>,
@@ -52,44 +55,41 @@ export async function listRecipientInboxPage(
     throw new Error("Failed to fetch notification inbox");
   }
 
-  const rows = data ?? [];
-  const hasMore = rows.length > NOTIFICATION_INBOX_PAGE_SIZE;
-  const retainedRows = rows.slice(0, NOTIFICATION_INBOX_PAGE_SIZE);
+  const rawRows = (data ?? []) as unknown[];
+  const validatedNotifications: RecipientInboxNotification[] = [];
 
-  const notifications: RecipientInboxNotification[] = [];
-
-  for (const row of retainedRows) {
-    if (
-      !row.recipient_id ||
-      !row.trigger ||
-      !row.created_at ||
-      !row.occurred_at
-    ) {
-      logger.debug("notification-row-malformed", { row });
+  // Validate ALL returned rows (including 26th pagination probe row) before slicing
+  for (const rawRow of rawRows) {
+    try {
+      const validated = parseAndValidateNotificationRow(rawRow);
+      validatedNotifications.push(validated);
+    } catch (err) {
+      logger.debug("notification-inbox-validation-failed", {
+        operation: "list-recipient-inbox",
+        reason: err instanceof Error ? err.message : "unknown",
+      });
       throw new Error("Failed to fetch notification inbox");
     }
-
-    notifications.push({
-      recipientId: row.recipient_id,
-      trigger: row.trigger,
-      createdAt: row.created_at,
-      occurredAt: row.occurred_at,
-      readAt: row.read_at ?? null,
-    });
   }
 
+  const hasMore = validatedNotifications.length > NOTIFICATION_INBOX_PAGE_SIZE;
+  const retainedNotifications = validatedNotifications.slice(
+    0,
+    NOTIFICATION_INBOX_PAGE_SIZE,
+  );
+
   const nextCursor: RecipientInboxCursor | null =
-    hasMore && retainedRows.length === NOTIFICATION_INBOX_PAGE_SIZE
+    hasMore && retainedNotifications.length === NOTIFICATION_INBOX_PAGE_SIZE
       ? {
           beforeCreatedAt:
-            retainedRows[NOTIFICATION_INBOX_PAGE_SIZE - 1].created_at,
+            retainedNotifications[NOTIFICATION_INBOX_PAGE_SIZE - 1].createdAt,
           beforeRecipientId:
-            retainedRows[NOTIFICATION_INBOX_PAGE_SIZE - 1].recipient_id,
+            retainedNotifications[NOTIFICATION_INBOX_PAGE_SIZE - 1].recipientId,
         }
       : null;
 
   return {
-    notifications,
+    notifications: retainedNotifications,
     nextCursor,
     hasMore,
   };

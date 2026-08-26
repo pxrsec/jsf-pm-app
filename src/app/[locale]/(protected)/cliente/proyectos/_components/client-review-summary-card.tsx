@@ -16,6 +16,15 @@ interface ClientReviewSummaryCardProps {
   };
 }
 
+const DEFAULT_STATUS_LABELS: Record<string, string> = {
+  "deliverableStatus.pending": "Pendiente",
+  "deliverableStatus.awaitingInternalReview": "En revisión interna",
+  "deliverableStatus.awaitingClientReview": "Esperando revisión de cliente",
+  "deliverableStatus.approved": "Aprobado",
+  "deliverableStatus.changesRequested": "Cambios solicitados",
+  "deliverableStatus.delivered": "Entregado",
+};
+
 export function ClientReviewSummaryCard({
   review,
   translations,
@@ -38,7 +47,10 @@ export function ClientReviewSummaryCard({
   const openReviewAriaLabel =
     translations?.openReviewAria ??
     (review.title ? `Revisar entregable ${review.title}` : openReviewLabel);
-  const statusLabel = translations?.statusLabel ?? statusConfig.labelKey;
+  const statusLabel =
+    translations?.statusLabel ??
+    DEFAULT_STATUS_LABELS[statusConfig.labelKey] ??
+    "En revisión";
 
   return (
     <article

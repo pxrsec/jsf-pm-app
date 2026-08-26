@@ -153,6 +153,21 @@ export function AddMemberDialog({
                 setCapacity(val as ProjectMemberType);
                 setSelectedUserId("");
               }}
+              items={[
+                { value: "pm_lead", label: tCapacities("pm_lead") },
+                { value: "pm_watcher", label: tCapacities("pm_watcher") },
+                { value: "operator", label: tCapacities("operator") },
+                {
+                  value: "client",
+                  label: `${tCapacities("client")}${
+                    isInternal
+                      ? " (No disponible en proyectos internos)"
+                      : !hasClientId
+                        ? " (Requiere vincular cliente primero)"
+                        : ""
+                  }`,
+                },
+              ]}
             >
               <SelectTrigger id="add-member-capacity">
                 <SelectValue />
@@ -188,6 +203,10 @@ export function AddMemberDialog({
               onValueChange={(val) => {
                 if (val) setSelectedUserId(val);
               }}
+              items={userOptions.map((opt) => ({
+                value: opt.id,
+                label: opt.label,
+              }))}
             >
               <SelectTrigger id="add-member-user">
                 <SelectValue placeholder={t("userPlaceholder")} />

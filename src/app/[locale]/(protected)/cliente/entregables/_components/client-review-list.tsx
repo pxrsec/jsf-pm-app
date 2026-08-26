@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { ClientProductionReviewQueueItem } from "@/lib/client/types";
+import { DELIVERABLE_STATUS_TRANSLATION_KEYS } from "@/lib/status-maps";
 import { FileCheck2, Clock, CheckCircle2 } from "lucide-react";
 import { ClientReviewSummaryCard } from "../../proyectos/_components/client-review-summary-card";
 
@@ -64,13 +65,21 @@ export async function ClientReviewList({ reviews }: ClientReviewListProps) {
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {awaitingReviews.map((rev) => (
-              <ClientReviewSummaryCard
-                key={rev.id}
-                review={rev}
-                translations={reviewTranslations}
-              />
-            ))}
+            {awaitingReviews.map((rev) => {
+              const statusKey =
+                DELIVERABLE_STATUS_TRANSLATION_KEYS[rev.status] ??
+                "awaitingClientReview";
+              return (
+                <ClientReviewSummaryCard
+                  key={rev.id}
+                  review={rev}
+                  translations={{
+                    ...reviewTranslations,
+                    statusLabel: t(`status.${statusKey}`),
+                  }}
+                />
+              );
+            })}
           </div>
         )}
       </section>
@@ -98,13 +107,21 @@ export async function ClientReviewList({ reviews }: ClientReviewListProps) {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {recentOutcomes.map((rev) => (
-              <ClientReviewSummaryCard
-                key={rev.id}
-                review={rev}
-                translations={reviewTranslations}
-              />
-            ))}
+            {recentOutcomes.map((rev) => {
+              const statusKey =
+                DELIVERABLE_STATUS_TRANSLATION_KEYS[rev.status] ??
+                "awaitingClientReview";
+              return (
+                <ClientReviewSummaryCard
+                  key={rev.id}
+                  review={rev}
+                  translations={{
+                    ...reviewTranslations,
+                    statusLabel: t(`status.${statusKey}`),
+                  }}
+                />
+              );
+            })}
           </div>
         </section>
       )}

@@ -6,7 +6,7 @@ const repoRoot = path.resolve(__dirname, "../..");
 const readMigration = (name: string) =>
   fs.readFileSync(path.join(repoRoot, "supabase/migrations", name), "utf-8");
 
-describe("S07 E09 candidate migration source contracts", () => {
+describe("S07 E09 and S08 candidate migration source contracts", () => {
   const m1 = readMigration(
     "20260823140000_s07_e09_calendar-role-safe-feed-and-milestones.sql",
   );
@@ -25,9 +25,12 @@ describe("S07 E09 candidate migration source contracts", () => {
   const m5 = readMigration(
     "20260824110000_s07_e09_scoped-operations-metrics-trend-projection.sql",
   );
+  const s08_04 = readMigration(
+    "20260825140000_s08_04_notification_inbox_context_and_deep_links.sql",
+  );
 
   it("uses append-only transactional sources", () => {
-    for (const source of [m1, m2, m3, m1r, m4, m5]) {
+    for (const source of [m1, m2, m3, m1r, m4, m5, s08_04]) {
       expect(source).toMatch(/^\s*begin\s*;/im);
       expect(source).toMatch(/commit\s*;\s*$/im);
       expect(source).not.toMatch(/drop\s+table|truncate\s+table/i);
@@ -218,5 +221,70 @@ describe("S07 E09 candidate migration source contracts", () => {
       /^\s*create\s+(table|view|index|unique\s+index)\b/im,
     );
     expect(m5).not.toMatch(/current_setting|pg_read_file|alter\s+system/i);
+  });
+
+  it("S08-04 replaces list_my_in_app_notifications with 14-column projection and adds acknowledge_notification_and_navigate command", () => {
+    // Drop of previous overload
+    expect(s08_04).toMatch(
+      /drop\s+function\s+public\.list_my_in_app_notifications/i,
+    );
+
+    // 14-column table return
+    const requiredAliases = [
+      "recipient_id uuid",
+      "trigger public.notification_trigger",
+      "created_at timestamptz",
+      "occurred_at timestamptz",
+      "read_at timestamptz",
+      "subject_kind text",
+      "subject_title text",
+      "project_name text",
+      "context_kind text",
+      "context_value text",
+      "navigation_kind text",
+      "navigation_project_id uuid",
+      "navigation_task_id uuid",
+      "navigation_deliverable_id uuid",
+    ];
+    for (const alias of requiredAliases) {
+      expect(s08_04).toContain(alias);
+    }
+
+    // Security & Range invariants preserved
+    expect(s08_04).toContain(
+      "Authentication with an active profile is required",
+    );
+    expect(s08_04).toContain(
+      "Notification history range cannot exceed 93 days",
+    );
+    expect(s08_04).toContain(
+      "Notification history range start must precede its end",
+    );
+    expect(s08_04).toContain("Notification history cursor is incomplete");
+    expect(s08_04).toContain("set search_path = pg_catalog, public");
+    expect(s08_04).toMatch(
+      /grant\s+execute\s+on\s+function\s+public\.list_my_in_app_notifications[\s\S]*?to\s+authenticated/i,
+    );
+
+    // Acknowledge command created with hardening
+    expect(s08_04).toMatch(
+      /create\s+function\s+public\.acknowledge_notification_and_navigate\s*\(\s*p_notification_recipient_id\s+uuid\s*\)/i,
+    );
+    expect(s08_04).toContain("Active profile required");
+    expect(s08_04).toContain("nr.id = p_notification_recipient_id");
+    expect(s08_04).toContain("nr.user_id = v_user_id");
+    expect(s08_04).toContain("nr.channel = 'in_app'");
+    expect(s08_04).toContain("nr.read_at is null");
+    expect(s08_04).toMatch(
+      /grant\s+execute\s+on\s+function\s+public\.acknowledge_notification_and_navigate\(uuid\)[\s\S]*?to\s+authenticated/i,
+    );
+
+    // No mutation of notification_events or provider tables
+    expect(s08_04).not.toMatch(
+      /\b(insert|update|delete)\s+(into\s+)?public\.notification_events\b/i,
+    );
+    // Strip comments and verify ne.payload is not selected/exposed in projection
+    const codeWithoutComments = s08_04.replace(/--.*$/gm, "");
+    expect(codeWithoutComments).not.toMatch(/ne\.payload\b/i);
   });
 });

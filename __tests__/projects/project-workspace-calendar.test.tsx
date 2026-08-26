@@ -28,7 +28,14 @@ vi.mock(
 vi.mock(
   "@/components/shared/projects/project-workspace/project-header",
   () => ({
-    ProjectHeader: () => <div data-testid="project-header">Header</div>,
+    ProjectHeader: ({ navigation }: { navigation?: React.ReactNode }) => (
+      <div data-testid="project-header">
+        <div>Header</div>
+        {navigation && (
+          <div data-testid="project-workspace-navigation">{navigation}</div>
+        )}
+      </div>
+    ),
   }),
 );
 vi.mock("@/components/shared/projects/project-tasks/tasks-tab", () => ({
@@ -113,6 +120,7 @@ vi.mock("next-intl", () => ({
       members: "Equipo",
       activity: "Actividad",
       calendar: "Calendario",
+      archive: "Archivo",
       "views.month": "Mes",
       "views.week": "Semana",
       "views.agenda": "Agenda",
@@ -150,7 +158,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams("tab=overview"),
 }));
 
-describe("Project Workspace Calendar Integration", () => {
+describe("Project Workspace Navigation and Calendar Integration", () => {
   const mockProject: ProjectDetail = {
     id: "00000000-0000-0000-0000-000000000001",
     name: "Acme Commercial",
@@ -198,6 +206,52 @@ describe("Project Workspace Calendar Integration", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: true,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+  });
+
+  it("renders all 7 tabs inside header navigation slot on desktop Admin workspace", () => {
+    render(
+      <ProjectWorkspaceShell
+        project={mockProject}
+        clients={[]}
+        cycles={[]}
+        eligiblePms={[]}
+        eligibleOperators={[]}
+        eligibleClients={[]}
+        effectiveCapacity="admin"
+        actorRole="admin"
+        initialTab="overview"
+      />,
+    );
+
+    const navContainer = screen.getByTestId("project-workspace-navigation");
+    expect(navContainer).toBeInTheDocument();
+
+    const expectedTabs = [
+      "Resumen",
+      "Tareas",
+      "Entregables (0)",
+      "Equipo (0)",
+      "Actividad",
+      "Calendario",
+      "Archivo",
+    ];
+
+    expectedTabs.forEach((tabName) => {
+      expect(screen.getByRole("tab", { name: tabName })).toBeInTheDocument();
+    });
+
+    const tablists = screen.getAllByRole("tablist");
+    expect(tablists).toHaveLength(1);
   });
 
   it("covers the transition journey: overview URL -> Calendar tab click -> URL has tab=calendar", () => {
@@ -270,5 +324,63 @@ describe("Project Workspace Calendar Integration", () => {
     expect(
       screen.queryByRole("button", { name: "Nuevo Hito" }),
     ).not.toBeInTheDocument();
+  });
+
+  it("retains project-level Tasks tab selection when rendering TasksTab", () => {
+    render(
+      <ProjectWorkspaceShell
+        project={mockProject}
+        clients={[]}
+        cycles={[]}
+        eligiblePms={[]}
+        eligibleOperators={[]}
+        eligibleClients={[]}
+        effectiveCapacity="admin"
+        actorRole="admin"
+        initialTab="tasks"
+      />,
+    );
+
+    const tasksTab = screen.getByRole("tab", { name: "Tareas" });
+    expect(tasksTab).toBeInTheDocument();
+    expect(tasksTab).toHaveAttribute("data-active", "");
+    expect(screen.getByTestId("tasks-tab")).toBeInTheDocument();
+  });
+
+  it("renders tablist in main content area when viewport is below md (mobile)", () => {
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    render(
+      <ProjectWorkspaceShell
+        project={mockProject}
+        clients={[]}
+        cycles={[]}
+        eligiblePms={[]}
+        eligibleOperators={[]}
+        eligibleClients={[]}
+        effectiveCapacity="admin"
+        actorRole="admin"
+        initialTab="overview"
+      />,
+    );
+
+    // Navigation slot in ProjectHeader is not rendered on mobile
+    expect(
+      screen.queryByTestId("project-workspace-navigation"),
+    ).not.toBeInTheDocument();
+
+    // The single tablist is rendered in main content
+    const tablists = screen.getAllByRole("tablist");
+    expect(tablists).toHaveLength(1);
+    expect(screen.getByRole("tab", { name: "Resumen" })).toBeInTheDocument();
   });
 });

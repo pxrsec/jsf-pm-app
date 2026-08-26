@@ -238,6 +238,10 @@ export function PmCreateForm({ clients }: PmCreateFormProps) {
                     onValueChange={(val) => {
                       setClientId(val ?? "");
                     }}
+                    items={clients.map((c) => ({
+                      value: c.id,
+                      label: c.display_name,
+                    }))}
                   >
                     <SelectTrigger id="pm-create-project-client-org">
                       <SelectValue

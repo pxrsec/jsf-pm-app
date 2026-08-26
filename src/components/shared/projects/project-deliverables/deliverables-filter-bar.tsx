@@ -57,6 +57,15 @@ export function DeliverablesFilterBar({
           onValueChange={(val) => {
             if (val) setStatusFilter(val);
           }}
+          items={[
+            { value: "all", label: t("allStatuses") },
+            ...statuses.map((s) => ({
+              value: s,
+              label: t(
+                `status.${s === "awaiting_internal_review" ? "awaitingInternalReview" : s === "awaiting_client_review" ? "awaitingClientReview" : s === "changes_requested" ? "changesRequested" : s}` as "status.pending",
+              ),
+            })),
+          ]}
         >
           <SelectTrigger className="w-[170px] h-8 text-xs bg-card">
             <SelectValue placeholder={t("filterStatus")} />
@@ -80,6 +89,15 @@ export function DeliverablesFilterBar({
           onValueChange={(val) => {
             if (val) setAssigneeFilter(val);
           }}
+          items={[
+            { value: "all", label: t("allAssignees") },
+            ...project.members
+              .filter((m) => !m.deleted_at && m.profile)
+              .map((m) => ({
+                value: m.user_id,
+                label: m.profile?.full_name || t("userFallback"),
+              })),
+          ]}
         >
           <SelectTrigger className="w-[170px] h-8 text-xs bg-card">
             <SelectValue placeholder={t("filterAssignee")} />

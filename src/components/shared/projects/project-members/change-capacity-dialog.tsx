@@ -106,6 +106,10 @@ function ChangeCapacityForm({
           <Select
             value={capacity}
             onValueChange={(val) => setCapacity(val as ProjectMemberType)}
+            items={allowedCapacities.map((c) => ({
+              value: c,
+              label: tCapacities(c),
+            }))}
           >
             <SelectTrigger id="change-capacity-select">
               <SelectValue />

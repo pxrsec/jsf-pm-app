@@ -149,7 +149,7 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
     expect(esPrivacyKeys).toEqual(enPrivacyKeys);
   });
 
-  it("all keys under notifications namespace are identical between catalogs", () => {
+  it("all keys under notifications namespace are identical between catalogs and contain S08-04 deep-link keys", () => {
     function collectKeys(obj: Record<string, unknown>, prefix = ""): string[] {
       return Object.entries(obj).flatMap(([k, v]) => {
         const fullKey = prefix ? `${prefix}.${k}` : k;
@@ -168,7 +168,54 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
     ).sort();
 
     expect(esNotificationKeys).toEqual(enNotificationKeys);
-    expect(esNotificationKeys).toHaveLength(68);
+    expect(esNotificationKeys).toHaveLength(117);
+
+    // S08-04 deep-link & contextual action keys
+    const requiredS08Keys = [
+      "viewDetails",
+      "viewDetailsAria",
+      "viewDetailsAriaNoProject",
+      "viewDetailsAriaGeneric",
+      "navigating",
+      "projectContext",
+      "deadlineContext",
+      "errors.acknowledgementFailed",
+    ];
+
+    for (const key of requiredS08Keys) {
+      expect(esNotificationKeys).toContain(key);
+      expect(enNotificationKeys).toContain(key);
+    }
+
+    // All 21 trigger sentence keys
+    const all21Triggers = [
+      "user_invited",
+      "invite_expiring",
+      "project_assigned",
+      "task_assigned",
+      "task_status_changed",
+      "client_task_blocking",
+      "client_submission_received",
+      "client_submission_reopened",
+      "deliverable_submitted",
+      "internal_changes_requested",
+      "internal_review_approved",
+      "client_changes_requested",
+      "client_review_approved",
+      "deliverable_delivered",
+      "deadline_24h",
+      "deadline_12h",
+      "deadline_6h",
+      "deadline_overdue",
+      "review_inactivity_reminder",
+      "link_reported_broken",
+      "system",
+    ];
+
+    for (const trigger of all21Triggers) {
+      expect(esNotificationKeys).toContain(`sentences.${trigger}`);
+      expect(enNotificationKeys).toContain(`sentences.${trigger}`);
+    }
   });
 
   it("all keys under archive namespace are identical between catalogs", () => {

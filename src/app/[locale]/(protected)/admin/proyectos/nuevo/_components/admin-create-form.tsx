@@ -248,6 +248,10 @@ export function AdminCreateForm({
                     onValueChange={(val) => {
                       setClientId(val ?? "");
                     }}
+                    items={clients.map((c) => ({
+                      value: c.id,
+                      label: c.display_name,
+                    }))}
                   >
                     <SelectTrigger id="create-project-client-org">
                       <SelectValue
@@ -291,6 +295,10 @@ export function AdminCreateForm({
                   if (val) setInitialPmLeadId(val);
                 }}
                 required
+                items={eligiblePms.map((pm) => ({
+                  value: pm.id,
+                  label: pm.full_name,
+                }))}
               >
                 <SelectTrigger id="create-project-pm-lead">
                   <SelectValue

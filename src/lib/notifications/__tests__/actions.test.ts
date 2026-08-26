@@ -58,6 +58,7 @@ vi.mock("@/lib/logger", () => ({
 import {
   markNotificationReadAction,
   markAllNotificationsReadAction,
+  acknowledgeNotificationNavigationAction,
   loadRecipientInboxPageAction,
 } from "../actions";
 import { AuthError } from "@/lib/auth/session";
@@ -121,6 +122,10 @@ describe("TC-NOTIF-ACT: Notification Server Actions", () => {
       });
       expect(mockRevalidatePath).toHaveBeenCalledWith("/notificaciones");
       expect(mockRevalidatePath).toHaveBeenCalledWith("/en/notificaciones");
+      expect(mockRevalidatePath).toHaveBeenCalledWith(
+        "/[locale]/(protected)",
+        "layout",
+      );
     });
   });
 
@@ -133,6 +138,100 @@ describe("TC-NOTIF-ACT: Notification Server Actions", () => {
       expect(result).toEqual({ ok: true, changed: true, changedCount: 3 });
       expect(mockRpc).toHaveBeenCalledWith("mark_all_notifications_read");
       expect(mockRevalidatePath).toHaveBeenCalledWith("/notificaciones");
+    });
+  });
+
+  describe("acknowledgeNotificationNavigationAction", () => {
+    it("1. Rejects non-UUID input with VALIDATION_FAILED", async () => {
+      const result = await acknowledgeNotificationNavigationAction({
+        notificationRecipientId: "invalid-uuid",
+      });
+
+      expect(result).toEqual({
+        ok: false,
+        error: { code: "VALIDATION_FAILED" },
+      });
+      expect(mockRequireSession).not.toHaveBeenCalled();
+      expect(mockRpc).not.toHaveBeenCalled();
+    });
+
+    it("2. Rejects unexpected additional parameters with VALIDATION_FAILED (.strict())", async () => {
+      const result = await acknowledgeNotificationNavigationAction({
+        notificationRecipientId: "00000000-0000-0000-0000-000000000001",
+        href: "/admin/proyectos/123",
+        role: "admin",
+      });
+
+      expect(result).toEqual({
+        ok: false,
+        error: { code: "VALIDATION_FAILED" },
+      });
+      expect(mockRpc).not.toHaveBeenCalled();
+    });
+
+    it("3. Maps AuthError to UNAUTHENTICATED", async () => {
+      mockRequireSession.mockRejectedValueOnce(
+        new AuthError("UNAUTHENTICATED", "No active session"),
+      );
+
+      const result = await acknowledgeNotificationNavigationAction({
+        notificationRecipientId: "00000000-0000-0000-0000-000000000001",
+      });
+
+      expect(result).toEqual({
+        ok: false,
+        error: { code: "UNAUTHENTICATED" },
+      });
+    });
+
+    it("4. Successfully acknowledges unread notification (changed: true) and revalidates paths", async () => {
+      mockRpc.mockResolvedValueOnce({ data: true, error: null });
+
+      const result = await acknowledgeNotificationNavigationAction({
+        notificationRecipientId: "00000000-0000-0000-0000-000000000001",
+      });
+
+      expect(result).toEqual({ ok: true, changed: true });
+      expect(mockRpc).toHaveBeenCalledWith(
+        "acknowledge_notification_and_navigate",
+        {
+          p_notification_recipient_id: "00000000-0000-0000-0000-000000000001",
+        },
+      );
+      expect(mockRevalidatePath).toHaveBeenCalledWith("/notificaciones");
+      expect(mockRevalidatePath).toHaveBeenCalledWith("/en/notificaciones");
+      expect(mockRevalidatePath).toHaveBeenCalledWith(
+        "/[locale]/(protected)",
+        "layout",
+      );
+    });
+
+    it("5. Successfully handles already-read notification (changed: false) without error", async () => {
+      mockRpc.mockResolvedValueOnce({ data: false, error: null });
+
+      const result = await acknowledgeNotificationNavigationAction({
+        notificationRecipientId: "00000000-0000-0000-0000-000000000001",
+      });
+
+      expect(result).toEqual({ ok: true, changed: false });
+      expect(mockRevalidatePath).toHaveBeenCalledWith("/notificaciones");
+    });
+
+    it("6. Handles RPC failure safely and does not revalidate paths", async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: null,
+        error: { message: "Database error" },
+      });
+
+      const result = await acknowledgeNotificationNavigationAction({
+        notificationRecipientId: "00000000-0000-0000-0000-000000000001",
+      });
+
+      expect(result).toEqual({
+        ok: false,
+        error: { code: "UNAVAILABLE" },
+      });
+      expect(mockRevalidatePath).not.toHaveBeenCalled();
     });
   });
 

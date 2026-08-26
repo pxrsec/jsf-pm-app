@@ -9,6 +9,7 @@ import {
   formatCalendarDate,
 } from "@/lib/calendar/date-utils";
 import type { CalendarViewProps } from "../types";
+import { getCalendarEventKey } from "@/lib/calendar/types";
 import { EventBadge } from "../event-badge";
 import { CalendarEmptyState } from "../calendar-empty-state";
 
@@ -99,7 +100,7 @@ export function CalendarWeekView({
               ) : (
                 day.events.map((event) => (
                   <EventBadge
-                    key={event.entity_id}
+                    key={getCalendarEventKey(event)}
                     event={event}
                     canManageMilestones={canManageMilestones}
                     userRole={userRole}

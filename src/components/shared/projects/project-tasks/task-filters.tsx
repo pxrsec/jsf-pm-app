@@ -59,6 +59,14 @@ export function TaskFilters({
               status: val === "all" ? undefined : (val as TaskStatus),
             })
           }
+          items={[
+            { value: "all", label: t("allStatuses") },
+            { value: "pending", label: tStatus("pending") },
+            { value: "in_progress", label: tStatus("inProgress") },
+            { value: "in_review", label: tStatus("inReview") },
+            { value: "completed", label: tStatus("completed") },
+            { value: "blocked", label: tStatus("blocked") },
+          ]}
         >
           <SelectTrigger className="h-9 text-xs">
             <SelectValue placeholder={t("statusLabel")} />
@@ -96,6 +104,20 @@ export function TaskFilters({
               priority: val === "all" ? undefined : (val as TaskPriority),
             })
           }
+          items={[
+            { value: "all", label: t("allPriorities") },
+            {
+              value: "blocking",
+              label: (
+                <span className="font-semibold text-rose-700 dark:text-rose-400">
+                  {tPriority("blocking")}
+                </span>
+              ),
+            },
+            { value: "high", label: tPriority("high") },
+            { value: "medium", label: tPriority("medium") },
+            { value: "low", label: tPriority("low") },
+          ]}
         >
           <SelectTrigger className="h-9 text-xs">
             <SelectValue placeholder={t("priorityLabel")} />
@@ -133,6 +155,11 @@ export function TaskFilters({
               task_type: val === "all" ? undefined : (val as TaskType),
             })
           }
+          items={[
+            { value: "all", label: t("allTypes") },
+            { value: "internal_work", label: tType("internalWork") },
+            { value: "client_request", label: tType("clientRequest") },
+          ]}
         >
           <SelectTrigger className="h-9 text-xs">
             <SelectValue placeholder={t("typeLabel")} />
@@ -161,6 +188,13 @@ export function TaskFilters({
               assignee_id: val === "all" || !val ? undefined : val,
             })
           }
+          items={[
+            { value: "all", label: t("allAssignees") },
+            ...activeMembers.map((m) => ({
+              value: m.user_id,
+              label: m.profile?.full_name ?? "Usuario",
+            })),
+          ]}
         >
           <SelectTrigger className="h-9 text-xs">
             <SelectValue placeholder={t("assigneeLabel")} />

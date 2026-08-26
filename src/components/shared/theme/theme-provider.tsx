@@ -4,15 +4,16 @@ import * as React from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import type { ThemeProviderProps } from "next-themes";
 
-// Suppress React 19 false-positive dev warning for next-themes SSR inline anti-FOUC script tag
+// Suppress React 19 / Next.js false-positive dev warnings (next-themes SSR script & aborted RSC dev fallbacks)
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   const origConsoleError = console.error;
   console.error = (...args: unknown[]) => {
     if (
       typeof args[0] === "string" &&
-      args[0].includes(
+      (args[0].includes(
         "Encountered a script tag while rendering React component",
-      )
+      ) ||
+        args[0].includes("Failed to fetch RSC payload"))
     ) {
       return;
     }

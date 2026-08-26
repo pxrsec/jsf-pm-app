@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import type { ClientProjectDetail as ClientProjectDetailType } from "@/lib/client/types";
 import {
+  DELIVERABLE_STATUS_TRANSLATION_KEYS,
   PROJECT_STATUS_MAP,
   TASK_PRIORITY_MAP,
   TASK_STATUS_MAP,
@@ -333,13 +334,21 @@ export async function ClientProjectDetailView({
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {releasedProductionReviews.map((rev) => (
-              <ClientReviewSummaryCard
-                key={rev.id}
-                review={rev}
-                translations={reviewTranslations}
-              />
-            ))}
+            {releasedProductionReviews.map((rev) => {
+              const statusKey =
+                DELIVERABLE_STATUS_TRANSLATION_KEYS[rev.status] ??
+                "awaitingClientReview";
+              return (
+                <ClientReviewSummaryCard
+                  key={rev.id}
+                  review={rev}
+                  translations={{
+                    ...reviewTranslations,
+                    statusLabel: revT(`status.${statusKey}`),
+                  }}
+                />
+              );
+            })}
           </div>
         )}
       </section>

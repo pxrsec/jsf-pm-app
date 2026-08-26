@@ -159,6 +159,10 @@ export function DeliverableCreateDialog({
               onValueChange={(val) => {
                 if (val) setValue("task_id", val);
               }}
+              items={eligibleTasks.map((task) => ({
+                value: task.id,
+                label: task.title,
+              }))}
             >
               <SelectTrigger id="create-task" className="text-xs">
                 <SelectValue placeholder={t("taskPlaceholder")} />
@@ -188,6 +192,10 @@ export function DeliverableCreateDialog({
               onValueChange={(val) => {
                 if (val) setValue("assignee_id", val);
               }}
+              items={eligibleAssignees.map((member) => ({
+                value: member.user_id,
+                label: `${member.profile?.full_name || t("userFallback")} (${member.member_type})`,
+              }))}
             >
               <SelectTrigger id="create-assignee" className="text-xs">
                 <SelectValue placeholder={t("assigneePlaceholder")} />

@@ -76,14 +76,14 @@ export function CalendarCoordinator({
     let from = initialRange.from;
     let to = initialRange.to;
 
-    const fromDate = new Date(initialRange.from);
+    const today = new Date();
 
     if (newView === "month" || newView === "agenda" || newView === "list") {
-      const monthRange = getDefaultMonthRange(fromDate);
+      const monthRange = getDefaultMonthRange(today);
       from = monthRange.from;
       to = monthRange.to;
     } else if (newView === "week") {
-      const weekRange = getWeekRange(fromDate);
+      const weekRange = getWeekRange(today);
       from = weekRange.from;
       to = weekRange.to;
     }

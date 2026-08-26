@@ -10,19 +10,21 @@ import { NotificationBadge } from "./notification-badge";
 import { SignOutButton } from "./sign-out-button";
 import { LanguageSwitcher } from "@/components/shared/language-switcher/language-switcher";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
+import type { AppNavigationItem } from "../navigation-model";
+import { cn } from "@/lib/utils";
 
-interface MobileNavToggleProps {
+export interface MobileNavToggleProps {
+  items?: AppNavigationItem[];
   role: AppRole;
   profile: Profile;
-  unreadCount: number;
-  canAccessNotificationOperations: boolean;
+  unreadCount?: number;
+  canAccessNotificationOperations?: boolean;
 }
 
 export function MobileNavToggle({
+  items = [],
   role,
   profile,
-  unreadCount,
-  canAccessNotificationOperations,
 }: MobileNavToggleProps) {
   const [isOpen, setIsOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -45,60 +47,8 @@ export function MobileNavToggle({
     };
   }, [isOpen]);
 
-  const roleHomePath =
-    role === "admin"
-      ? "/admin"
-      : role === "pm"
-        ? "/pm"
-        : role === "operator"
-          ? "/operador"
-          : "/cliente";
-
-  const secondaryNavigationItem =
-    role === "admin"
-      ? { href: "/admin/proyectos", label: t("links.projects") }
-      : role === "pm"
-        ? { href: "/pm/proyectos", label: t("links.projects") }
-        : role === "operator"
-          ? { href: "/operador/agenda", label: t("links.agenda") }
-          : { href: "/cliente/proyectos", label: t("links.projects") };
-
-  const archiveHref =
-    role === "admin"
-      ? "/admin/archivo"
-      : role === "pm"
-        ? "/pm/archivo"
-        : role === "operator"
-          ? "/operador/archivo"
-          : "/cliente/archivo";
-
-  const linkIncidentsHref =
-    role === "admin"
-      ? "/admin/incidentes-enlaces"
-      : role === "pm"
-        ? "/pm/incidentes-enlaces"
-        : null;
-
-  const metricsHref =
-    role === "admin"
-      ? "/admin/metricas"
-      : role === "pm"
-        ? "/pm/metricas"
-        : null;
-
-  const adminOperationsHref = role === "admin" ? "/admin/operaciones" : null;
-
-  const inboxAriaLabel =
-    unreadCount > 0
-      ? t("notifications.inboxLinkAriaWithCount", { count: unreadCount })
-      : t("notifications.inboxLinkAria");
-
-  const notificationOperationsHref =
-    canAccessNotificationOperations && (role === "admin" || role === "pm")
-      ? role === "admin"
-        ? "/admin/notificaciones"
-        : "/pm/notificaciones"
-      : null;
+  const unreadCount =
+    items.find((item) => item.key === "notifications")?.unreadCount ?? 0;
 
   return (
     <div className="md:hidden">
@@ -142,91 +92,43 @@ export function MobileNavToggle({
           </div>
 
           <div className="flex flex-col gap-2">
-            <Link
-              href={roleHomePath}
-              onClick={() => setIsOpen(false)}
-              className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-foreground hover:bg-muted transition-colors"
-            >
-              {t("links.home")}
-            </Link>
+            {items.map((item) => {
+              if (item.unreadCount !== undefined) {
+                return (
+                  <Link
+                    key={item.key}
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    aria-label={item.ariaLabel}
+                    className="px-3 py-2 min-h-[44px] flex items-center justify-between rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  >
+                    <span>{item.label}</span>
+                    <NotificationBadge count={item.unreadCount} />
+                  </Link>
+                );
+              }
 
-            <Link
-              href={secondaryNavigationItem.href}
-              onClick={() => setIsOpen(false)}
-              className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              {secondaryNavigationItem.label}
-            </Link>
-
-            <Link
-              href="/calendario"
-              onClick={() => setIsOpen(false)}
-              className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              {t("links.calendar")}
-            </Link>
-
-            <Link
-              href={archiveHref}
-              onClick={() => setIsOpen(false)}
-              className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              {t("links.archive")}
-            </Link>
-
-            {linkIncidentsHref && (
-              <Link
-                href={linkIncidentsHref}
-                onClick={() => setIsOpen(false)}
-                className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
-                {t("links.linkIncidents")}
-              </Link>
-            )}
-
-            {metricsHref && (
-              <Link
-                href={metricsHref}
-                onClick={() => setIsOpen(false)}
-                className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
-                {t("links.metrics")}
-              </Link>
-            )}
-
-            {adminOperationsHref && (
-              <Link
-                href={adminOperationsHref}
-                onClick={() => setIsOpen(false)}
-                className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
-                {t("links.operations")}
-              </Link>
-            )}
-
-            <Link
-              href="/notificaciones"
-              onClick={() => setIsOpen(false)}
-              aria-label={inboxAriaLabel}
-              className="px-3 py-2 min-h-[44px] flex items-center justify-between rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <span>{t("links.notifications")}</span>
-              <NotificationBadge count={unreadCount} />
-            </Link>
+              return (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                  aria-label={item.ariaLabel}
+                  className={cn(
+                    "px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium transition-colors",
+                    item.key === "home"
+                      ? "text-foreground hover:bg-muted"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
 
             <span className="sr-only" role="status" aria-live="polite">
               {`${t("notifications.badgeLabel")}: ${unreadCount}`}
             </span>
-
-            {notificationOperationsHref && (
-              <Link
-                href={notificationOperationsHref}
-                onClick={() => setIsOpen(false)}
-                className="px-3 py-2 min-h-[44px] flex items-center rounded-md font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
-                {t("links.notificationOperations")}
-              </Link>
-            )}
           </div>
 
           <div className="pt-2 border-t border-border">

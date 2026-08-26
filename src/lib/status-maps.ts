@@ -197,6 +197,24 @@ export const DELIVERABLE_STATUS_MAP: Record<DeliverableStatus, StatusConfig> = {
   },
 };
 
+export const DELIVERABLE_STATUS_TRANSLATION_KEYS: Record<
+  DeliverableStatus,
+  | "pending"
+  | "awaitingInternalReview"
+  | "awaitingClientReview"
+  | "approved"
+  | "changesRequested"
+  | "delivered"
+> = {
+  pending: "pending",
+  awaiting_internal_review: "awaitingInternalReview",
+  awaiting_client_review: "awaitingClientReview",
+  approved: "approved",
+  changes_requested: "changesRequested",
+  delivered: "delivered",
+  submitted: "awaitingInternalReview",
+};
+
 // ── Project membership capacity ───────────────────────────────────────────────
 
 export type MemberCapacity = "pm_lead" | "pm_watcher" | "operator" | "client";

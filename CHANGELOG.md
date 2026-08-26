@@ -1,5 +1,198 @@
 # JSF PM App Development Changelog
 
+## [2026-08-26 @ 07:36]
+
+**🐛 Hotfixes: i18n Semantic Key Naming Alignment**
+
+- **Semantic Key Naming Alignment (`messages/es-MX.json`, `messages/en-US.json`, `src/components/shared/app-nav/app-nav.tsx`):**
+  - Renamed `shell.nav.collapseNavigation` and `shell.nav.expandNavigation` to `shell.nav.collapse` and `shell.nav.expand` to eliminate visual/structural keyword coupling (`/nav/i` collision in `shell.nav` namespace).
+  - Updated drawer control consumers in `app-nav.tsx` to consume the normalized `collapse` and `expand` translation keys.
+- **Test Whitelist Coverage (`__tests__/i18n/key-naming.test.ts`):**
+  - Added `navigating` (loading indicator key for notification deep-linking) to the segment allowlist in `key-naming.test.ts`.
+- **Focused Verification:**
+  - Ran `__tests__/i18n/key-naming.test.ts`: PASSED (3/3 tests).
+
+## [2026-08-25 @ 15:45]
+
+**🚀 Features & 🛠 Architecture: S08-04 Actionable In-App Notification History and Deep Links**
+
+- **Data Contracts & Strict Zod Validation (`src/lib/notifications/inbox-contracts.ts`, `src/lib/notifications/schemas.ts`):**
+  - Defined `NotificationDestination` as a closed discriminated union with 11 distinct variants (`admin_project_overview`, `admin_project_tasks`, `admin_project_deliverables`, `pm_project_overview`, `pm_project_tasks`, `pm_project_deliverables`, `operator_task`, `client_task`, `client_deliverable_review`, `client_project`, `none`).
+  - Updated `RecipientInboxNotification` to include `subjectKind`, `subjectTitle`, `projectName`, `contextKind`, `contextValue`, and `destination`.
+  - Added `AcknowledgeNotificationNavigationSchema`, `RawNotificationRpcRowSchema`, and `parseAndValidateNotificationRow` enforcing fail-closed destination invariants and context bounds.
+- **Pure Destination Route Builder (`src/lib/notifications/destination-routes.ts` & tests):**
+  - Created `resolveNotificationDestinationHref(destination)` mapping destinations to canonical unprefixed application routes with tab selectors (`?tab=tasks`, `?tab=deliverables`).
+- **Query Adapter & Server Actions (`src/lib/notifications/queries.ts`, `src/lib/notifications/actions.ts`):**
+  - Updated `listRecipientInboxPage` with strict pre-slice validation of all 26 returned rows before pagination slicing.
+  - Implemented `acknowledgeNotificationNavigationAction(rawInput)` calling `acknowledge_notification_and_navigate` RPC, handling `{ ok: true, changed }` idempotency, and revalidating notification paths.
+- **Client Components & Accessible Hierarchy (`src/app/[locale]/(protected)/notificaciones/_components/`):**
+  - Updated `NotificationInboxItem` to render the 7-step visual hierarchy (Read/Unread badge, category title, localized contextual sentence, project context tag, optional deadline detail, semantic `<time>`, and visible "View details" affordance).
+  - Updated `NotificationInbox` with separate `pendingNavigationRecipientId` state so navigation acknowledgement disables only the active row without blocking pagination or other rows.
+  - Read rows navigate directly via Next.js `Link`, unread rows execute acknowledgment mutation before client transition, and non-navigable historical rows display safe copy without interactive buttons.
+- **Localization Parity (`messages/en-US.json`, `messages/es-MX.json`):**
+  - Added full translation coverage with exact structural parity across English and Spanish for all 21 trigger sentence keys, action labels, context tags, and error messages.
+- **Automated Verification:**
+  - Unit/integration tests (`npm test`): 66/66 tests PASSED across queries, actions, destination routes, UI inbox components, migration contracts, and message catalogs.
+  - Typecheck (`npm run typecheck`): PASSED (0 errors).
+  - Linter (`npm run lint`): PASSED (0 warnings/errors).
+  - Code formatting (`npm run format:check`): PASSED (all files formatted with Prettier).
+
+## [2026-08-25 @ 14:38]
+
+**🛠 Database Migration & Types: S08-04 In-App Notification Inbox Context & Deep Links**
+
+- **Database Migration (`supabase/migrations/20260825140000_s08_04_notification_inbox_context_and_deep_links.sql`):**
+  - Applied migration `20260825140000_s08_04_notification_inbox_context_and_deep_links` via Supabase MCP.
+  - Recreated `public.list_my_in_app_notifications` function with updated projection supporting context fields (`context_kind`, `context_value`) and deep-linking targets (`navigation_kind`, `navigation_project_id`, `navigation_task_id`, `navigation_deliverable_id`).
+  - Added `public.acknowledge_notification_and_navigate(p_notification_recipient_id uuid)` RPC function for atomic notification acknowledgment on detail navigation.
+- **TypeScript Type Generation (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript definitions from Supabase schema via MCP tool `generate_typescript_types` to synchronize RPC signatures and return shapes.
+
+## [2026-08-25 @ 13:50]
+
+**🐛 Hotfixes: Base UI Select Trigger Label Resolution & Dropdown Localization**
+
+- **Base UI Select Integration (`src/components/ui/select.tsx` & components across the app):**
+  - Configured explicit `items` prop across all Base UI `<Select>` implementations in the application to properly resolve human-readable labels instead of displaying raw internal values or UUIDs in `<SelectValue />` triggers when closed.
+- **Metrics Project Selector (`src/components/shared/metrics/metrics-filter-bar.tsx`):**
+  - Added `items` mapping (`projects.map(p => ({ value: p.id, label: p.name }))`) so the selected project trigger displays the human-readable project title rather than the raw database UUID.
+- **Task Status Selector (`src/components/shared/projects/project-tasks/task-status-select.tsx`):**
+  - Provided `items` mapping with localized status translations and icons (`TASK_STATUS_MAP[s]`, `STATUS_TRANSLATION_KEYS[s]`), resolving the desktop task detail drawer issue where raw status keys like `"in_progress"` were displayed instead of `"En progreso"`.
+- **View Filter Dropdowns Across Routes (`src/components/shared/projects/`, `src/components/shared/archive/`, `src/components/shared/incidents/`):**
+  - Fixed filter dropdown triggers in `project-filters.tsx`, `archive-filter-bar.tsx`, `incident-filter-bar.tsx`, `task-filters.tsx`, and `deliverables-filter-bar.tsx` across `proyectos`, `archivo`, `incidentes-enlaces`, and workspace views.
+  - Triggers now correctly display localized options (e.g. `"Todos los estados"`, `"Todos los proyectos"`, `"Todos los tipos"`) and translated entity names instead of raw fallback strings like `"all"` or UUIDs.
+- **Dialog & Form Selects (`src/components/shared/projects/`, `src/app/[locale]/(protected)/`):**
+  - Added `items` prop to project creation forms (`admin-create-form.tsx`, `pm-create-form.tsx`), edit dialogs (`project-edit-dialog.tsx`, `task-edit-dialog.tsx`, `deliverable-edit-dialog.tsx`), member dialogs (`add-member-dialog.tsx`, `change-capacity-dialog.tsx`), and deliverable creation dialogs.
+- **Verification:**
+  - TypeScript (`npm run typecheck`): PASSED (0 errors).
+
+## [2026-08-25 @ 13:14]
+
+**🐛 Hotfixes: Calendar View Duplicate React Keys (`entity_id` Collision)**
+
+- **Calendar Event Identity Helper (`src/lib/calendar/types.ts`):**
+  - Added `getCalendarEventKey(event: CalendarEventDto): string` helper producing a deterministic composite key (`${event.event_type}-${event.entity_id}-${event.starts_at}`).
+  - Resolves React duplicate key reconciliation collisions occurring when a single underlying entity produces multiple calendar occurrences in the feed (e.g. production deliverables emitting both `internal_review_deadline` and `client_delivery_deadline`).
+- **Calendar Presentation Views (`src/app/[locale]/(protected)/calendario/_components/views/`):**
+  - Updated `CalendarListView`, `CalendarMonthView`, `CalendarWeekView`, and `CalendarAgendaView` to use `key={getCalendarEventKey(event)}` instead of `key={event.entity_id}`.
+- **Automated Tests & Regressions:**
+  - Added unit test suite in `src/app/[locale]/(protected)/calendario/__tests__/calendar-views.test.tsx` verifying that multi-event deliverable entities render across all 4 calendar presentation views without duplicate key warnings.
+  - Added test coverage in `src/lib/calendar/__tests__/date-utils.test.ts` for composite key formatting and collision avoidance.
+- **Verification:**
+  - Vitest (`npx vitest run "src/app/[locale]/(protected)/calendario" "src/lib/calendar"`): PASSED (6 test files, 54 tests).
+  - TypeScript (`npx tsc --noEmit`): PASSED (0 errors).
+  - ESLint (`npm run lint`): PASSED (0 errors, 0 warnings).
+
+## [2026-08-25 @ 12:54]
+
+**🐛 Hotfixes: Calendar View Switching Date Drift & Current-Date Anchoring**
+
+- **Calendar Coordinator Date Anchoring (`src/app/[locale]/(protected)/calendario/_components/calendar-coordinator.tsx`):**
+  - Updated `handleViewChange` to compute the target date range anchored on the current date (`new Date()`).
+  - Switching to `"week"` now always selects the 7-day interval containing today (`getWeekRange(new Date())`).
+  - Switching to `"month"`, `"agenda"`, or `"list"` now always selects the month containing today (`getDefaultMonthRange(new Date())`).
+  - Completely resolved the compound backward time drift bug caused by deriving ranges from `initialRange.from`.
+- **Calendar Range Normalization Default (`src/lib/calendar/date-utils.ts`):**
+  - Updated `normalizeCalendarRange` fallback logic when `from`/`to` are missing or invalid: now correctly evaluates `view === "week"` to return `getWeekRange(referenceDate)` instead of defaulting indiscriminately to `getDefaultMonthRange`.
+- **Automated Tests & Regressions:**
+  - Added unit test suite `src/app/[locale]/(protected)/calendario/__tests__/calendar-coordinator.test.tsx` verifying view switcher transitions to current week/month without date drift.
+  - Added test coverage in `src/lib/calendar/__tests__/date-utils.test.ts` for week-view fallback normalization.
+- **Verification:**
+  - Vitest (`npm run test -- "src/lib/calendar" "src/app/[locale]/(protected)/calendario"`): PASSED (6 test files, 49 tests).
+  - TypeScript (`npm run typecheck`): PASSED (0 errors).
+
+## [2026-08-25 @ 12:35]
+
+**🐛 Hotfixes & 🛠 Architecture: RSC Payload Fetch Abort & Navigation Resolution**
+
+- **Sign-Out Teardown (`src/components/shared/app-nav/_components/sign-out-button.tsx`):**
+  - Replaced racing `router.push("/iniciar-sesion")` + `router.refresh()` with clean, full browser navigation (`window.location.href = isEnglish ? "/en/iniciar-sesion" : "/iniciar-sesion"`).
+  - Purges all client-side RSC memory caches, prevents concurrent unauthenticated layout revalidation collisions, and eliminates aborted fetch errors.
+- **Sign-In & Invitation Form Transitions (`src/app/[locale]/iniciar-sesion/_components/sign-in-form.tsx`, `src/app/[locale]/invitacion/_components/invitation-form.tsx`):**
+  - Removed redundant immediate `router.refresh()` following `router.push()`, allowing Next.js App Router transitions to complete without in-flight `AbortController` cancellation.
+- **Theme Provider Dev Console Interceptor (`src/components/shared/theme/theme-provider.tsx`):**
+  - Updated development `console.error` wrapper to suppress false-positive Next.js RSC fallback dev logs alongside the existing React 19 anti-FOUC script warning.
+- **Focused Verification:**
+  - `npx vitest run __tests__/app-shell/navigation.test.ts __tests__/auth/pages.test.ts`: PASSED (30/30 tests).
+
+## [2026-08-25 @ 12:26]
+
+**🚀 Features & 🛠 Architecture: S08-03 (Desktop Drawer Content Reflow and Collapsed Notification Badge)**
+
+- **Desktop Navigation Shell (`src/components/shared/app-nav/_components/desktop-navigation-shell.tsx`):**
+  - Created client layout context provider `DesktopNavigationShell` managing `isDesktopNavigationExpanded` state (defaulting to expanded `true` on mount).
+  - Exposed fail-fast `useDesktopNavigationLayout()` context hook with functional state update `toggleDesktopNavigation`.
+  - Injected typed CSS custom property `--desktop-navigation-width` (`16rem` expanded, `4rem` collapsed) at root `data-slot="desktop-navigation-shell"`.
+- **Protected Layout Reflow (`src/app/[locale]/(protected)/layout.tsx`):**
+  - Wrapped `AppNav` and `<main id="main-content">` inside `DesktopNavigationShell` while preserving React Server Component boundaries and all session/authorization queries.
+  - Applied explicit `box-border w-full min-w-0 flex-1 md:pl-[var(--desktop-navigation-width)]` and synchronized `transition-[padding-left] duration-200 ease-out motion-reduce:transition-none` to `<main>`.
+  - Eliminated S08-02 overlay-only main content behavior without requiring per-page left-margin overrides.
+- **Desktop Nav Drawer Refinement (`src/components/shared/app-nav/_components/desktop-nav-drawer.tsx`):**
+  - Replaced local state with `useDesktopNavigationLayout()`, eliminating state duplication between drawer and main content.
+  - Aligned drawer width transition to `transition-[width] duration-200 ease-out motion-reduce:transition-none`.
+  - Configured collapsed Notification link badge with pointer-events-safe positional geometry (`pointer-events-none absolute -right-0.5 -top-0.5 z-10 h-5 min-w-5 px-1 text-[10px] leading-none`).
+- **Notification Badge Class Merging (`src/components/shared/app-nav/_components/notification-badge.tsx`):**
+  - Refactored `NotificationBadge` to merge `baseClassName` (`bg-destructive`, `rounded-full`, `shadow-sm`, etc.) with optional caller `className` via `cn`.
+  - Ensured collapsed Notification bell retains a prominent red rounded numeric counter when unread count is positive.
+- **Automated Verification (`__tests__/app-shell/navigation.test.ts`):**
+  - Updated all direct `DesktopNavDrawer` and `AppNav` test fixtures with `DesktopNavigationShell`.
+  - Added assertions for `--desktop-navigation-width` custom property (16rem -> 4rem), fail-fast error throwing outside provider, positive unread badge style merging, and zero-count badge omission (28/28 tests passed).
+- **Verification Commands:**
+  - Vitest Unit Tests (`npm test -- __tests__/app-shell/navigation.test.ts`): PASSED (28/28 passed).
+  - Vitest Integration Tests (`npm test -- __tests__/integration/role-journey.test.ts`): PASSED (13/13 passed).
+  - TypeScript Compilation (`npm run typecheck`): PASSED (0 errors).
+  - ESLint (`npm run lint`): PASSED (0 errors).
+  - Prettier Formatting (`npx prettier --check`): PASSED.
+
+## [2026-08-25 @ 11:51]
+
+**🐛 Hotfixes & 🌐 Localization: Deliverable & Lifecycle Status Key Resolution**
+
+- **Client Production Review Cards & Detail Views (`src/app/[locale]/(protected)/cliente/entregables/_components/client-review-list.tsx`, `src/app/[locale]/(protected)/cliente/proyectos/_components/client-project-detail.tsx`, `src/app/[locale]/(protected)/cliente/proyectos/_components/client-review-summary-card.tsx`, `src/app/[locale]/(protected)/cliente/entregables/_components/client-review-detail.tsx`):**
+  - Diagnosed root cause where `ClientReviewSummaryCard` was missing `statusLabel` prop in `client-review-list.tsx` and `client-project-detail.tsx`, causing badges to display raw internal keys like `deliverableStatus.awaitingClientReview`, `deliverableStatus.delivered`, and `deliverableStatus.approved`.
+  - Added localized status label lookups via `DELIVERABLE_STATUS_TRANSLATION_KEYS` in `ClientReviewList` and `ClientProjectDetailView` passed to `ClientReviewSummaryCard`.
+  - Added human-readable fallback mapping `DEFAULT_STATUS_LABELS` in `ClientReviewSummaryCard` to safeguard against unhandled key regressions.
+  - Fixed double-prefix translation key lookup (`deliverableStatus.deliverableStatus.*`) in `ClientReviewDetailView`.
+- **Status Maps Centralization (`src/lib/status-maps.ts`):**
+  - Exported `DELIVERABLE_STATUS_TRANSLATION_KEYS` mapping deliverable lifecycle statuses to translation key identifiers (`pending`, `awaitingInternalReview`, `awaitingClientReview`, `approved`, `changesRequested`, `delivered`).
+- **Localization Dictionary Completion (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Added full `deliverableStatus` namespace to `shell` and `projects.clientReviews` in both Spanish and English catalogs.
+  - Added `awaitingInternalReview`, `awaitingClientReview`, `approved`, `changesRequested`, and `delivered` to `shell.status` in both catalogs.
+  - Added `taskStatus` to `projects.clientRequests` to support direct key lookups.
+  - Verified 100% key parity across `es-MX.json` and `en-US.json` (0 missing keys).
+- **Automated Verification:**
+  - Vitest Client Portal Tests (`npx vitest run __tests__/client/client-portal.test.tsx`): PASSED (20/20 passed).
+  - Deliverable Workspace & Status Tests (`npx vitest run __tests__/projects/deliverables-workspace.test.tsx __tests__/operator/operator-task-detail.test.tsx __tests__/projects/task-status-semantics.test.tsx`): PASSED (27/27 passed).
+  - TypeScript Compilation (`npm run typecheck`): PASSED (0 errors).
+
+**🚀 Features & 🛠 Architecture: S08-02 (Desktop Global Navigation Drawer Refinement)**
+
+- **Desktop Left Navigation Drawer (`src/components/shared/app-nav/_components/desktop-nav-drawer.tsx`):**
+  - Implemented persistent, non-modal collapsible left navigation drawer for all authenticated users at `md+` viewports (768px and wider).
+  - Configured outer container with `overflow-hidden`, pinned top collapse control, scrollable link region (`min-h-0 flex-1 overflow-y-auto`), and pinned footer with user identity and second sign-out button.
+  - Implemented `useState(true)` for expanded-by-default behavior with width transition (`w-64` expanded, `w-16` collapsed).
+  - Used Base UI `Tooltip` with `render={<Link ... />}` / `render={<SignOutButton ... />}` composition to eliminate nested interactive elements (`<button>` inside `<a>` or `<button>`).
+  - Implemented exact active route resolution via `@/i18n/routing` `usePathname`, providing semantic `aria-current="page"` and accessible styling on exact match for Home and descendant matching for other routes.
+- **Centralized Pure Navigation Model (`src/components/shared/app-nav/navigation-model.ts`):**
+  - Created serializable `AppNavigationItem` model builder function `buildNavigationModel` consumed once by server `AppNav`.
+  - Enforced exact authorized role/capability matrix across Admin, PM Lead, PM Watcher, Operator, and Client without duplicated client logic.
+- **AppNav & Header Simplification (`src/components/shared/app-nav/app-nav.tsx`):**
+  - Removed top inline `<nav>` link row from desktop header, keeping only brand link, language switcher, theme toggle, truncated user full name and role, and top sign-out button.
+- **Mobile Navigation Consolidation (`src/components/shared/app-nav/_components/mobile-nav-toggle.tsx`):**
+  - Refactored `MobileNavToggle` to consume shared navigation items while preserving all existing mobile dropdown behavior, close-on-link, and Escape key handling.
+- **SignOutButton Extension (`src/components/shared/app-nav/_components/sign-out-button.tsx`):**
+  - Extended component with `React.forwardRef` and optional `iconOnly` prop rendering `LogOut` icon for collapsed drawer mode.
+- **Localization (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Added `collapseNavigation` and `expandNavigation` keys in Spanish ("Contraer navegación" / "Expandir navegación") and English ("Collapse navigation" / "Expand navigation").
+- **Focused Automated Tests (`__tests__/app-shell/navigation.test.ts`):**
+  - Added unit tests verifying default expanded state, toggle interaction, collapsed accessible names, active route evaluation, and server role matrix outputs (24/24 tests passed).
+- **Verification:**
+  - Vitest Unit Tests (`npm test -- __tests__/app-shell/navigation.test.ts`): PASSED (24 passed).
+  - TypeScript Typecheck (`npm run typecheck`): PASSED (0 errors).
+  - ESLint (`npm run lint`): PASSED (0 errors).
+  - Prettier Formatting (`npx prettier --check`): PASSED.
+
+
 ## [2026-08-24 @ 15:44]
 
 **🐛 Hotfixes: Multi-Role Localhost Bug Fixes (i18n Catalogs, RSC Function Closures, Duplicate Keys, and Task Datetime Format)**

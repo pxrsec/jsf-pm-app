@@ -132,6 +132,11 @@ export function ArchiveFilterBar({
             value={currentStatus ?? "all"}
             onValueChange={handleStatusChange}
             disabled={isPending}
+            items={[
+              { value: "all", label: t("allStatuses") },
+              { value: "approved", label: t("statusApproved") },
+              { value: "delivered", label: t("statusDelivered") },
+            ]}
           >
             <SelectTrigger
               aria-label={t("statusAria")}
@@ -154,6 +159,13 @@ export function ArchiveFilterBar({
               value={currentProjectId ?? "all"}
               onValueChange={handleProjectChange}
               disabled={isPending}
+              items={[
+                { value: "all", label: t("allProjects") },
+                ...projects.map((proj) => ({
+                  value: proj.id,
+                  label: proj.name,
+                })),
+              ]}
             >
               <SelectTrigger
                 aria-label={t("projectAria")}

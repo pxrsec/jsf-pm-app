@@ -199,6 +199,12 @@ export function TaskEditDialog({
                     value={field.value}
                     onValueChange={field.onChange}
                     disabled={isSubmitting}
+                    items={(
+                      ["low", "medium", "high", "blocking"] as TaskPriority[]
+                    ).map((p) => ({
+                      value: p,
+                      label: <TaskPriorityBadge priority={p} />,
+                    }))}
                   >
                     <SelectTrigger className="h-10">
                       <SelectValue />

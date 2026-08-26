@@ -36,6 +36,7 @@ interface ProjectHeaderProps {
   baseHref: string;
   onOpenEditDialog: () => void;
   onOpenStatusDialog: (action: ProjectStatusActionType) => void;
+  navigation?: React.ReactNode;
 }
 
 export function ProjectHeader({
@@ -45,6 +46,7 @@ export function ProjectHeader({
   baseHref,
   onOpenEditDialog,
   onOpenStatusDialog,
+  navigation,
 }: ProjectHeaderProps) {
   const t = useTranslations("projects.workspace");
   const tStatus = useTranslations("shell.status");
@@ -70,7 +72,13 @@ export function ProjectHeader({
     : null;
 
   return (
-    <div className="border-b border-border bg-card/60 pb-5">
+    <div
+      className={
+        navigation
+          ? "border-b border-border bg-card/60 pb-0"
+          : "border-b border-border bg-card/60 pb-5"
+      }
+    >
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
         {/* Breadcrumbs */}
         <nav
@@ -191,7 +199,10 @@ export function ProjectHeader({
         </div>
 
         {/* Badges Row */}
-        <div className="flex flex-wrap items-center gap-2 pt-1">
+        <div
+          data-testid="project-header-pills"
+          className="flex flex-wrap items-center gap-2 pt-1"
+        >
           {/* Status Badge */}
           <span
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig.badgeBg} ${statusConfig.badgeFg}`}
@@ -251,6 +262,13 @@ export function ProjectHeader({
             </div>
           )}
         </div>
+
+        {/* Desktop Navigation Slot */}
+        {navigation && (
+          <div data-testid="project-workspace-navigation" className="pt-2">
+            {navigation}
+          </div>
+        )}
       </div>
     </div>
   );

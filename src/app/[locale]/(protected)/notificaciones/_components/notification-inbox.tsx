@@ -14,6 +14,7 @@ import type {
 import {
   markNotificationReadAction,
   markAllNotificationsReadAction,
+  acknowledgeNotificationNavigationAction,
   loadRecipientInboxPageAction,
   type NotificationActionErrorCode,
 } from "@/lib/notifications/actions";
@@ -43,6 +44,13 @@ export function NotificationInbox({
   );
   const [hasMore, setHasMore] = useState<boolean>(initialPage.hasMore);
 
+  // Per-recipient pending states so other rows/pagination are not globally blocked
+  const [pendingNavigationRecipientId, setPendingNavigationRecipientId] =
+    useState<string | null>(null);
+  const [pendingMarkReadRecipientId, setPendingMarkReadRecipientId] = useState<
+    string | null
+  >(null);
+
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loadMoreError, setLoadMoreError] = useState<boolean>(false);
@@ -57,6 +65,8 @@ export function NotificationInbox({
     setNotifications(initialPage.notifications);
     setNextCursor(initialPage.nextCursor);
     setHasMore(initialPage.hasMore);
+    setPendingNavigationRecipientId(null);
+    setPendingMarkReadRecipientId(null);
     setLoadMoreError(false);
     setStatusMessage(null);
     setErrorMessage(null);
@@ -87,29 +97,67 @@ export function NotificationInbox({
     [t],
   );
 
-  const handleMarkRead = useCallback(
-    (recipientId: string) => {
-      if (isPending) return;
+  const handleNavigate = useCallback(
+    (recipientId: string, href: string) => {
+      if (pendingNavigationRecipientId !== null) return;
       lastActiveElementRef.current = document.activeElement as HTMLElement;
       setErrorMessage(null);
+      setPendingNavigationRecipientId(recipientId);
 
       startTransition(async () => {
-        const result = await markNotificationReadAction({
-          notificationRecipientId: recipientId,
-        });
+        try {
+          const result = await acknowledgeNotificationNavigationAction({
+            notificationRecipientId: recipientId,
+          });
 
-        if (!result.ok) {
-          setErrorMessage(mapErrorCodeToMessage(result.error.code));
-          return;
+          if (!result.ok) {
+            setPendingNavigationRecipientId(null);
+            setErrorMessage(t("errors.acknowledgementFailed"));
+            return;
+          }
+
+          // Acknowledged successfully (changed: true or false) -> perform client navigation
+          router.push(href);
+        } catch {
+          setPendingNavigationRecipientId(null);
+          setErrorMessage(t("errors.acknowledgementFailed"));
         }
-
-        setStatusMessage(
-          result.changed ? t("readSuccess") : t("alreadyUpToDate"),
-        );
-        router.refresh();
       });
     },
-    [isPending, mapErrorCodeToMessage, router, t],
+    [pendingNavigationRecipientId, router, t],
+  );
+
+  const handleMarkRead = useCallback(
+    (recipientId: string) => {
+      if (pendingMarkReadRecipientId !== null) return;
+      lastActiveElementRef.current = document.activeElement as HTMLElement;
+      setErrorMessage(null);
+      setPendingMarkReadRecipientId(recipientId);
+
+      startTransition(async () => {
+        try {
+          const result = await markNotificationReadAction({
+            notificationRecipientId: recipientId,
+          });
+
+          setPendingMarkReadRecipientId(null);
+
+          if (!result.ok) {
+            setErrorMessage(mapErrorCodeToMessage(result.error.code));
+            return;
+          }
+
+          setStatusMessage(
+            result.changed ? t("readSuccess") : t("alreadyUpToDate"),
+          );
+          router.refresh();
+        } catch {
+          setPendingMarkReadRecipientId(null);
+          setErrorMessage(t("errors.unavailable"));
+        }
+      });
+    },
+    [mapErrorCodeToMessage, pendingMarkReadRecipientId, router, t],
   );
 
   const handleMarkAllRead = useCallback(() => {
@@ -235,7 +283,13 @@ export function NotificationInbox({
               key={notification.recipientId}
               notification={notification}
               onMarkRead={handleMarkRead}
-              isPending={isPending}
+              onNavigate={handleNavigate}
+              isMarkReadPending={
+                pendingMarkReadRecipientId === notification.recipientId
+              }
+              isNavigating={
+                pendingNavigationRecipientId === notification.recipientId
+              }
             />
           ))}
         </ol>

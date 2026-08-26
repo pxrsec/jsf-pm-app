@@ -8,6 +8,8 @@ import esCatalog from "../../messages/es-MX.json";
 
 vi.mock("server-only", () => ({}));
 
+let currentPathname = "/";
+
 vi.mock("@/i18n/routing", () => ({
   Link: ({
     href,
@@ -32,7 +34,7 @@ vi.mock("@/i18n/routing", () => ({
     replace: vi.fn(),
     refresh: vi.fn(),
   }),
-  usePathname: () => "/",
+  usePathname: () => currentPathname,
 }));
 
 vi.mock("@/components/shared/language-switcher/language-switcher", () => ({
@@ -54,7 +56,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("next-intl/server", () => ({
   getTranslations: vi.fn(async (namespace?: string) => {
-    return (key: string, params?: Record<string, string>) => {
+    return (key: string, params?: Record<string, string | number>) => {
       const fullPath = namespace ? `${namespace}.${key}` : key;
       const val = fullPath
         .split(".")
@@ -66,7 +68,7 @@ vi.mock("next-intl/server", () => ({
         if (params) {
           let str = val;
           for (const [k, v] of Object.entries(params)) {
-            str = str.replace(`{${k}}`, v);
+            str = str.replace(`{${k}}`, String(v));
           }
           return str;
         }
@@ -79,7 +81,7 @@ vi.mock("next-intl/server", () => ({
 
 vi.mock("next-intl", () => ({
   useTranslations: (namespace?: string) => {
-    return (key: string, params?: Record<string, string>) => {
+    return (key: string, params?: Record<string, string | number>) => {
       const fullPath = namespace ? `${namespace}.${key}` : key;
       const val = fullPath
         .split(".")
@@ -91,7 +93,7 @@ vi.mock("next-intl", () => ({
         if (params) {
           let str = val;
           for (const [k, v] of Object.entries(params)) {
-            str = str.replace(`{${k}}`, v);
+            str = str.replace(`{${k}}`, String(v));
           }
           return str;
         }
@@ -115,8 +117,50 @@ vi.mock("@/lib/supabase/browser", () => ({
 import { AppNav } from "@/components/shared/app-nav/app-nav";
 import { NotificationBadge } from "@/components/shared/app-nav/_components/notification-badge";
 import { SignOutButton } from "@/components/shared/app-nav/_components/sign-out-button";
+import {
+  DesktopNavDrawer,
+  type DesktopNavDrawerProps,
+} from "@/components/shared/app-nav/_components/desktop-nav-drawer";
+import { DesktopNavigationShell } from "@/components/shared/app-nav/_components/desktop-navigation-shell";
 import { MobileNavToggle } from "@/components/shared/app-nav/_components/mobile-nav-toggle";
-import type { SessionContext, Profile } from "@/lib/auth/session";
+import { buildNavigationModel } from "@/components/shared/app-nav/navigation-model";
+import type { SessionContext, Profile, AppRole } from "@/lib/auth/session";
+
+function getSpanishTranslation(namespace: string) {
+  return (key: string, params?: Record<string, string | number>) => {
+    const fullPath = `${namespace}.${key}`;
+    const val = fullPath
+      .split(".")
+      .reduce<unknown>(
+        (acc, part) => (acc as Record<string, unknown>)?.[part],
+        esCatalog,
+      );
+    if (typeof val === "string") {
+      if (params) {
+        let str = val;
+        for (const [k, v] of Object.entries(params)) {
+          str = str.replace(`{${k}}`, String(v));
+        }
+        return str;
+      }
+      return val;
+    }
+    return fullPath;
+  };
+}
+
+function createTestItems(
+  role: AppRole,
+  unreadCount = 0,
+  canAccessNotificationOperations = false,
+) {
+  return buildNavigationModel({
+    role,
+    unreadCount,
+    canAccessNotificationOperations,
+    t: getSpanishTranslation("shell.nav"),
+  });
+}
 
 function createMockProfile(overrides: Partial<Profile> = {}): Profile {
   return {
@@ -144,6 +188,7 @@ function createMockProfile(overrides: Partial<Profile> = {}): Profile {
 describe("Global Navigation (AppNav & Subcomponents)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    currentPathname = "/";
   });
 
   afterEach(() => {
@@ -151,6 +196,16 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
   });
 
   const baseUser = { id: "u-1", email: "user@jsf.internal" };
+
+  async function renderAppNavInShell(props: {
+    session: SessionContext;
+    unreadCount: number;
+    canAccessNotificationOperations: boolean;
+  }) {
+    return renderToStaticMarkup(
+      React.createElement(DesktopNavigationShell, null, await AppNav(props)),
+    );
+  }
 
   describe("AppNav Server Component per role and capability", () => {
     it("renders admin navigation with /admin, /admin/proyectos, /notificaciones, and /admin/notificaciones", async () => {
@@ -164,14 +219,13 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         role: "admin",
       };
 
-      const html = renderToStaticMarkup(
-        await AppNav({
-          session,
-          unreadCount: 3,
-          canAccessNotificationOperations: true,
-        }),
-      );
+      const html = await renderAppNavInShell({
+        session,
+        unreadCount: 3,
+        canAccessNotificationOperations: true,
+      });
 
+      // Verify header has brand and no inline route link <nav>
       expect(html).toContain('href="/admin"');
       expect(html).toContain('href="/admin/proyectos"');
       expect(html).toContain('href="/admin/archivo"');
@@ -205,13 +259,11 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         role: "pm",
       };
 
-      const html = renderToStaticMarkup(
-        await AppNav({
-          session,
-          unreadCount: 0,
-          canAccessNotificationOperations: true,
-        }),
-      );
+      const html = await renderAppNavInShell({
+        session,
+        unreadCount: 0,
+        canAccessNotificationOperations: true,
+      });
 
       expect(html).toContain('href="/pm"');
       expect(html).toContain('href="/pm/proyectos"');
@@ -241,13 +293,11 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         role: "pm",
       };
 
-      const html = renderToStaticMarkup(
-        await AppNav({
-          session,
-          unreadCount: 0,
-          canAccessNotificationOperations: false,
-        }),
-      );
+      const html = await renderAppNavInShell({
+        session,
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+      });
 
       expect(html).toContain('href="/pm"');
       expect(html).toContain('href="/pm/proyectos"');
@@ -273,13 +323,11 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         role: "operator",
       };
 
-      const html = renderToStaticMarkup(
-        await AppNav({
-          session,
-          unreadCount: 7,
-          canAccessNotificationOperations: false,
-        }),
-      );
+      const html = await renderAppNavInShell({
+        session,
+        unreadCount: 7,
+        canAccessNotificationOperations: false,
+      });
 
       expect(html).toContain('href="/operador"');
       expect(html).toContain('href="/operador/agenda"');
@@ -307,13 +355,11 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         role: "client",
       };
 
-      const html = renderToStaticMarkup(
-        await AppNav({
-          session,
-          unreadCount: 0,
-          canAccessNotificationOperations: false,
-        }),
-      );
+      const html = await renderAppNavInShell({
+        session,
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+      });
 
       expect(html).toContain('href="/cliente"');
       expect(html).toContain('href="/cliente/proyectos"');
@@ -339,17 +385,385 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         role: "operator",
       };
 
-      const html = renderToStaticMarkup(
-        await AppNav({
-          session,
-          unreadCount: 0,
-          canAccessNotificationOperations: true,
-        }),
-      );
+      const html = await renderAppNavInShell({
+        session,
+        unreadCount: 0,
+        canAccessNotificationOperations: true,
+      });
 
       expect(html).not.toContain('href="/admin/notificaciones"');
       expect(html).not.toContain('href="/pm/notificaciones"');
       expect(html).not.toContain("Operaciones de Notificaciones");
+    });
+  });
+
+  function renderDesktopDrawerInShell(props: DesktopNavDrawerProps) {
+    return render(
+      React.createElement(
+        DesktopNavigationShell,
+        null,
+        React.createElement(DesktopNavDrawer, props),
+        React.createElement("main", {
+          id: "main-content",
+          className:
+            "box-border w-full min-w-0 flex-1 md:pl-[var(--desktop-navigation-width)]",
+        }),
+      ),
+    );
+  }
+
+  describe("DesktopNavDrawer Component & Interactions", () => {
+    it("renders expanded by default with all authorized Admin items in order, identity, and sign-out", () => {
+      const profile = createMockProfile({
+        id: "u-1",
+        full_name: "Admin User",
+        role: "admin",
+      });
+      const items = createTestItems("admin", 3, true);
+
+      renderDesktopDrawerInShell({
+        items,
+        profile,
+        roleLabel: "Administrador",
+        navAriaLabel: "Navegación principal",
+        collapseNavigationLabel: "Contraer navegación",
+        expandNavigationLabel: "Expandir navegación",
+        signOutLabel: "Cerrar sesión",
+        unreadCountAnnouncement: "Notificaciones no leídas: 3",
+      });
+
+      const shell = document.querySelector(
+        '[data-slot="desktop-navigation-shell"]',
+      ) as HTMLElement;
+      expect(shell).not.toBeNull();
+      expect(shell.style.getPropertyValue("--desktop-navigation-width")).toBe(
+        "16rem",
+      );
+
+      const nav = screen.getByRole("navigation", {
+        name: "Navegación principal",
+      });
+      expect(nav).toHaveClass("w-64");
+
+      const toggleButton = screen.getByRole("button", {
+        name: "Contraer navegación",
+      });
+      expect(toggleButton).toHaveAttribute("aria-expanded", "true");
+      expect(toggleButton).toHaveAttribute(
+        "aria-controls",
+        "desktop-nav-links",
+      );
+
+      expect(screen.getByRole("link", { name: "Inicio" })).toHaveAttribute(
+        "href",
+        "/admin",
+      );
+      expect(screen.getByRole("link", { name: "Proyectos" })).toHaveAttribute(
+        "href",
+        "/admin/proyectos",
+      );
+      expect(screen.getByRole("link", { name: "Calendario" })).toHaveAttribute(
+        "href",
+        "/calendario",
+      );
+      expect(screen.getByRole("link", { name: "Archivo" })).toHaveAttribute(
+        "href",
+        "/admin/archivo",
+      );
+      expect(
+        screen.getByRole("link", { name: "Incidentes de Enlaces" }),
+      ).toHaveAttribute("href", "/admin/incidentes-enlaces");
+      expect(screen.getByRole("link", { name: "Métricas" })).toHaveAttribute(
+        "href",
+        "/admin/metricas",
+      );
+      expect(screen.getByRole("link", { name: "Operaciones" })).toHaveAttribute(
+        "href",
+        "/admin/operaciones",
+      );
+      expect(
+        screen.getByRole("link", {
+          name: "Bandeja de notificaciones, 3 no leídas",
+        }),
+      ).toHaveAttribute("href", "/notificaciones");
+      expect(
+        screen.getByRole("link", { name: "Operaciones de Notificaciones" }),
+      ).toHaveAttribute("href", "/admin/notificaciones");
+
+      expect(screen.getByText("Admin User")).toBeInTheDocument();
+      expect(screen.getByText("Administrador")).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Cerrar sesión" }),
+      ).toBeInTheDocument();
+    });
+
+    it("toggles collapse/expand state and updates custom property", () => {
+      const profile = createMockProfile({
+        id: "u-1",
+        full_name: "Admin User",
+        role: "admin",
+      });
+      const items = createTestItems("admin", 0, true);
+
+      renderDesktopDrawerInShell({
+        items,
+        profile,
+        roleLabel: "Administrador",
+        navAriaLabel: "Navegación principal",
+        collapseNavigationLabel: "Contraer navegación",
+        expandNavigationLabel: "Expandir navegación",
+        signOutLabel: "Cerrar sesión",
+        unreadCountAnnouncement: "Notificaciones no leídas: 0",
+      });
+
+      const shell = document.querySelector(
+        '[data-slot="desktop-navigation-shell"]',
+      ) as HTMLElement;
+      const nav = screen.getByRole("navigation", {
+        name: "Navegación principal",
+      });
+      const toggleButton = screen.getByRole("button", {
+        name: "Contraer navegación",
+      });
+
+      expect(shell.style.getPropertyValue("--desktop-navigation-width")).toBe(
+        "16rem",
+      );
+      expect(nav).toHaveClass("w-64");
+
+      // Click to collapse
+      fireEvent.click(toggleButton);
+
+      expect(shell.style.getPropertyValue("--desktop-navigation-width")).toBe(
+        "4rem",
+      );
+      expect(nav).toHaveClass("w-16");
+      expect(
+        screen.getByRole("button", { name: "Expandir navegación" }),
+      ).toHaveAttribute("aria-expanded", "false");
+
+      // Click to expand again
+      fireEvent.click(
+        screen.getByRole("button", { name: "Expandir navegación" }),
+      );
+
+      expect(shell.style.getPropertyValue("--desktop-navigation-width")).toBe(
+        "16rem",
+      );
+      expect(nav).toHaveClass("w-64");
+      expect(
+        screen.getByRole("button", { name: "Contraer navegación" }),
+      ).toHaveAttribute("aria-expanded", "true");
+    });
+
+    it("renders collapsed notifications item with visible red rounded counter when unread count > 0", () => {
+      const profile = createMockProfile({
+        id: "u-1",
+        full_name: "Admin User",
+        role: "admin",
+      });
+      const items = createTestItems("admin", 3, true);
+
+      renderDesktopDrawerInShell({
+        items,
+        profile,
+        roleLabel: "Administrador",
+        navAriaLabel: "Navegación principal",
+        collapseNavigationLabel: "Contraer navegación",
+        expandNavigationLabel: "Expandir navegación",
+        signOutLabel: "Cerrar sesión",
+        unreadCountAnnouncement: "Notificaciones no leídas: 3",
+      });
+
+      // Collapse drawer
+      fireEvent.click(
+        screen.getByRole("button", { name: "Contraer navegación" }),
+      );
+
+      const notifsLink = screen.getByRole("link", {
+        name: "Bandeja de notificaciones, 3 no leídas",
+      });
+      expect(notifsLink).toBeInTheDocument();
+
+      const badge = notifsLink.querySelector("span[aria-hidden='true']");
+      expect(badge).not.toBeNull();
+      expect(badge).toHaveTextContent("3");
+      expect(badge).toHaveClass("bg-destructive");
+      expect(badge).toHaveClass("rounded-full");
+      expect(badge).toHaveClass("-right-0.5");
+      expect(badge).toHaveClass("-top-0.5");
+      expect(badge).toHaveClass("pointer-events-none");
+    });
+
+    it("renders collapsed notifications item without visual badge when unread count is 0", () => {
+      const profile = createMockProfile({
+        id: "u-1",
+        full_name: "Admin User",
+        role: "admin",
+      });
+      const items = createTestItems("admin", 0, true);
+
+      renderDesktopDrawerInShell({
+        items,
+        profile,
+        roleLabel: "Administrador",
+        navAriaLabel: "Navegación principal",
+        collapseNavigationLabel: "Contraer navegación",
+        expandNavigationLabel: "Expandir navegación",
+        signOutLabel: "Cerrar sesión",
+        unreadCountAnnouncement: "Notificaciones no leídas: 0",
+      });
+
+      // Collapse drawer
+      fireEvent.click(
+        screen.getByRole("button", { name: "Contraer navegación" }),
+      );
+
+      const notifsLink = screen.getByRole("link", {
+        name: "Bandeja de notificaciones",
+      });
+      expect(notifsLink).toBeInTheDocument();
+
+      const badge = notifsLink.querySelector("span[aria-hidden='true']");
+      expect(badge).toBeNull();
+    });
+
+    it("preserves localized accessible names on links and sign-out in collapsed mode", () => {
+      const profile = createMockProfile({
+        id: "u-1",
+        full_name: "Admin User",
+        role: "admin",
+      });
+      const items = createTestItems("admin", 2, true);
+
+      renderDesktopDrawerInShell({
+        items,
+        profile,
+        roleLabel: "Administrador",
+        navAriaLabel: "Navegación principal",
+        collapseNavigationLabel: "Contraer navegación",
+        expandNavigationLabel: "Expandir navegación",
+        signOutLabel: "Cerrar sesión",
+        unreadCountAnnouncement: "Notificaciones no leídas: 2",
+      });
+
+      // Collapse drawer
+      fireEvent.click(
+        screen.getByRole("button", { name: "Contraer navegación" }),
+      );
+
+      // Verify links retain accessible names
+      expect(screen.getByRole("link", { name: "Inicio" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("link", { name: "Proyectos" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("link", {
+          name: "Bandeja de notificaciones, 2 no leídas",
+        }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Cerrar sesión" }),
+      ).toBeInTheDocument();
+    });
+
+    it("evaluates exact match for home route and descendant match for non-home routes", () => {
+      const profile = createMockProfile({
+        id: "u-1",
+        full_name: "Admin User",
+        role: "admin",
+      });
+      const items = createTestItems("admin", 0, true);
+
+      // 1. Exact match on Home
+      currentPathname = "/admin";
+      const { unmount: unmount1 } = renderDesktopDrawerInShell({
+        items,
+        profile,
+        roleLabel: "Administrador",
+        navAriaLabel: "Navegación principal",
+        collapseNavigationLabel: "Contraer navegación",
+        expandNavigationLabel: "Expandir navegación",
+        signOutLabel: "Cerrar sesión",
+        unreadCountAnnouncement: "Notificaciones no leídas: 0",
+      });
+
+      const homeLink1 = screen.getByRole("link", { name: "Inicio" });
+      const projectsLink1 = screen.getByRole("link", { name: "Proyectos" });
+      expect(homeLink1).toHaveAttribute("aria-current", "page");
+      expect(projectsLink1).not.toHaveAttribute("aria-current");
+      unmount1();
+
+      // 2. Descendant route of projects: /admin/proyectos/p-123
+      currentPathname = "/admin/proyectos/p-123";
+      const { unmount: unmount2 } = renderDesktopDrawerInShell({
+        items,
+        profile,
+        roleLabel: "Administrador",
+        navAriaLabel: "Navegación principal",
+        collapseNavigationLabel: "Contraer navegación",
+        expandNavigationLabel: "Expandir navegación",
+        signOutLabel: "Cerrar sesión",
+        unreadCountAnnouncement: "Notificaciones no leídas: 0",
+      });
+
+      const homeLink2 = screen.getByRole("link", { name: "Inicio" });
+      const projectsLink2 = screen.getByRole("link", { name: "Proyectos" });
+      expect(homeLink2).not.toHaveAttribute("aria-current");
+      expect(projectsLink2).toHaveAttribute("aria-current", "page");
+      unmount2();
+
+      // 3. Non-home notifications route
+      currentPathname = "/notificaciones";
+      renderDesktopDrawerInShell({
+        items,
+        profile,
+        roleLabel: "Administrador",
+        navAriaLabel: "Navegación principal",
+        collapseNavigationLabel: "Contraer navegación",
+        expandNavigationLabel: "Expandir navegación",
+        signOutLabel: "Cerrar sesión",
+        unreadCountAnnouncement: "Notificaciones no leídas: 0",
+      });
+
+      const notifsLink3 = screen.getByRole("link", {
+        name: "Bandeja de notificaciones",
+      });
+      const homeLink3 = screen.getByRole("link", { name: "Inicio" });
+      expect(notifsLink3).toHaveAttribute("aria-current", "page");
+      expect(homeLink3).not.toHaveAttribute("aria-current");
+    });
+
+    it("throws error when DesktopNavDrawer is rendered outside DesktopNavigationShell", () => {
+      const profile = createMockProfile({
+        id: "u-1",
+        full_name: "Admin User",
+        role: "admin",
+      });
+      const items = createTestItems("admin", 0, true);
+
+      const consoleSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      expect(() => {
+        render(
+          React.createElement(DesktopNavDrawer, {
+            items,
+            profile,
+            roleLabel: "Administrador",
+            navAriaLabel: "Navegación principal",
+            collapseNavigationLabel: "Contraer navegación",
+            expandNavigationLabel: "Expandir navegación",
+            signOutLabel: "Cerrar sesión",
+            unreadCountAnnouncement: "Notificaciones no leídas: 0",
+          }),
+        );
+      }).toThrow(
+        "useDesktopNavigationLayout must be used within DesktopNavigationShell",
+      );
+
+      consoleSpy.mockRestore();
     });
   });
 
@@ -378,6 +792,21 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(html).toContain('aria-hidden="true"');
       expect(html).not.toContain('role="status"');
     });
+
+    it("merges custom positional className with base classes via cn", () => {
+      const html = renderToStaticMarkup(
+        React.createElement(NotificationBadge, {
+          count: 5,
+          className: "pointer-events-none absolute -right-0.5 -top-0.5",
+        }),
+      );
+      expect(html).toContain("bg-destructive");
+      expect(html).toContain("rounded-full");
+      expect(html).toContain("pointer-events-none");
+      expect(html).toContain("-right-0.5");
+      expect(html).toContain("-top-0.5");
+      expect(html).toContain("5");
+    });
   });
 
   describe("SignOutButton", () => {
@@ -386,6 +815,15 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(html).toContain("Cerrar sesión");
       expect(html).toContain('aria-label="Cerrar sesión"');
       expect(html).toContain('type="button"');
+    });
+
+    it("renders icon-only sign-out button with accessible aria-label", () => {
+      const html = renderToStaticMarkup(
+        React.createElement(SignOutButton, { iconOnly: true }),
+      );
+      expect(html).toContain('aria-label="Cerrar sesión"');
+      expect(html).toContain('type="button"');
+      expect(html).toContain('aria-hidden="true"');
     });
   });
 
@@ -396,13 +834,13 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         full_name: "Admin User",
         role: "admin",
       });
+      const items = createTestItems("admin", 2, true);
 
       const html = renderToStaticMarkup(
         React.createElement(MobileNavToggle, {
+          items,
           role: "admin",
           profile,
-          unreadCount: 2,
-          canAccessNotificationOperations: true,
         }),
       );
 
@@ -416,13 +854,13 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         full_name: "Admin User",
         role: "admin",
       });
+      const items = createTestItems("admin", 2, true);
 
       render(
         React.createElement(MobileNavToggle, {
+          items,
           role: "admin",
           profile,
-          unreadCount: 2,
-          canAccessNotificationOperations: true,
         }),
       );
 
@@ -454,13 +892,13 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         full_name: "PM Lead",
         role: "pm",
       });
+      const items = createTestItems("pm", 0, true);
 
       render(
         React.createElement(MobileNavToggle, {
+          items,
           role: "pm",
           profile,
-          unreadCount: 0,
-          canAccessNotificationOperations: true,
         }),
       );
 
@@ -481,13 +919,13 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         full_name: "PM Watcher",
         role: "pm",
       });
+      const items = createTestItems("pm", 0, false);
 
       render(
         React.createElement(MobileNavToggle, {
+          items,
           role: "pm",
           profile,
-          unreadCount: 0,
-          canAccessNotificationOperations: false,
         }),
       );
 
@@ -507,13 +945,13 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         full_name: "Operator User",
         role: "operator",
       });
+      const items = createTestItems("operator", 0, false);
 
       render(
         React.createElement(MobileNavToggle, {
+          items,
           role: "operator",
           profile,
-          unreadCount: 0,
-          canAccessNotificationOperations: false,
         }),
       );
 
@@ -546,13 +984,13 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         full_name: "Client User",
         role: "client",
       });
+      const items = createTestItems("client", 0, false);
 
       render(
         React.createElement(MobileNavToggle, {
+          items,
           role: "client",
           profile,
-          unreadCount: 0,
-          canAccessNotificationOperations: false,
         }),
       );
 
@@ -585,13 +1023,13 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         full_name: "Client User",
         role: "client",
       });
+      const items = createTestItems("client", 0, false);
 
       render(
         React.createElement(MobileNavToggle, {
+          items,
           role: "client",
           profile,
-          unreadCount: 0,
-          canAccessNotificationOperations: false,
         }),
       );
 
@@ -619,13 +1057,13 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         full_name: "Admin User",
         role: "admin",
       });
+      const items = createTestItems("admin", 0, true);
 
       render(
         React.createElement(MobileNavToggle, {
+          items,
           role: "admin",
           profile,
-          unreadCount: 0,
-          canAccessNotificationOperations: true,
         }),
       );
 
@@ -653,13 +1091,13 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         full_name: "Operator User",
         role: "operator",
       });
+      const items = createTestItems("operator", 0, false);
 
       render(
         React.createElement(MobileNavToggle, {
+          items,
           role: "operator",
           profile,
-          unreadCount: 0,
-          canAccessNotificationOperations: false,
         }),
       );
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
@@ -40,6 +40,20 @@ import type {
   FinalizedArchivePage,
   FinalizedArchiveQuery,
 } from "@/lib/archive/types";
+
+function subscribeDesktopMedia(callback: () => void) {
+  const mediaQuery = window.matchMedia("(min-width: 768px)");
+  mediaQuery.addEventListener("change", callback);
+  return () => mediaQuery.removeEventListener("change", callback);
+}
+
+function getDesktopSnapshot() {
+  return window.matchMedia("(min-width: 768px)").matches;
+}
+
+function getDesktopServerSnapshot() {
+  return false;
+}
 
 interface ProjectWorkspaceShellProps {
   project: ProjectDetail;
@@ -91,6 +105,11 @@ export function ProjectWorkspaceShell({
   const searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState(initialTab);
+  const isDesktop = useSyncExternalStore(
+    subscribeDesktopMedia,
+    getDesktopSnapshot,
+    getDesktopServerSnapshot,
+  );
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isCompleteOpen, setIsCompleteOpen] = useState(false);
   const [isReopenOpen, setIsReopenOpen] = useState(false);
@@ -144,8 +163,64 @@ export function ProjectWorkspaceShell({
     (actorRole === "admin" ||
       (actorRole === "pm" && effectiveCapacity !== "pm_watcher"));
 
+  const navigationContent = (
+    <TabsList className="h-10 bg-transparent p-0 flex space-x-6 justify-start">
+      <TabsTrigger
+        value="overview"
+        className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
+      >
+        {t("overview")}
+      </TabsTrigger>
+      <TabsTrigger
+        value="tasks"
+        className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
+      >
+        {t("tasks")}
+      </TabsTrigger>
+      <TabsTrigger
+        value="deliverables"
+        className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
+      >
+        {t("deliverables")} ({initialDeliverables.length})
+      </TabsTrigger>
+      <TabsTrigger
+        value="members"
+        className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
+      >
+        {t("members")} ({project.members.length})
+      </TabsTrigger>
+      <TabsTrigger
+        value="activity"
+        className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
+      >
+        {t("activity")}
+      </TabsTrigger>
+      {canViewCalendarTab && (
+        <TabsTrigger
+          value="calendar"
+          className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
+        >
+          {t("calendar")}
+        </TabsTrigger>
+      )}
+      {canViewCalendarTab && (
+        <TabsTrigger
+          value="archive"
+          className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
+        >
+          {t("archive")}
+        </TabsTrigger>
+      )}
+    </TabsList>
+  );
+
   return (
-    <div className="min-h-screen bg-background">
+    <Tabs
+      value={activeTab}
+      onValueChange={handleTabChange}
+      orientation="horizontal"
+      className="min-h-screen bg-background gap-0 flex-col"
+    >
       {/* Top Header */}
       <ProjectHeader
         project={project}
@@ -154,10 +229,18 @@ export function ProjectWorkspaceShell({
         baseHref={baseHref}
         onOpenEditDialog={() => setIsEditOpen(true)}
         onOpenStatusDialog={handleStatusDialog}
+        navigation={isDesktop ? navigationContent : undefined}
       />
 
       {/* Main Tabs Workspace */}
       <main className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Mobile Navigation Placement (below md) */}
+        {!isDesktop && (
+          <div className="border-b border-border overflow-x-auto">
+            {navigationContent}
+          </div>
+        )}
+
         {/* Completed Project Banner */}
         {project.status === "completed" && (
           <CompletedProjectBanner
@@ -167,146 +250,89 @@ export function ProjectWorkspaceShell({
           />
         )}
 
-        <Tabs
-          value={activeTab}
-          onValueChange={handleTabChange}
-          className="space-y-6"
-        >
-          <div className="border-b border-border overflow-x-auto">
-            <TabsList className="h-10 bg-transparent p-0 flex space-x-6 justify-start">
-              <TabsTrigger
-                value="overview"
-                className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
-              >
-                {t("overview")}
-              </TabsTrigger>
-              <TabsTrigger
-                value="tasks"
-                className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
-              >
-                {t("tasks")}
-              </TabsTrigger>
-              <TabsTrigger
-                value="deliverables"
-                className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
-              >
-                {t("deliverables")} ({initialDeliverables.length})
-              </TabsTrigger>
-              <TabsTrigger
-                value="members"
-                className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
-              >
-                {t("members")} ({project.members.length})
-              </TabsTrigger>
-              <TabsTrigger
-                value="activity"
-                className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
-              >
-                {t("activity")}
-              </TabsTrigger>
-              {canViewCalendarTab && (
-                <TabsTrigger
-                  value="calendar"
-                  className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
-                >
-                  {t("calendar")}
-                </TabsTrigger>
-              )}
-              {canViewCalendarTab && (
-                <TabsTrigger
-                  value="archive"
-                  className="h-10 rounded-none border-b-2 border-transparent px-2 pb-3 pt-2 text-xs sm:text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent shadow-none"
-                >
-                  {t("archive")}
-                </TabsTrigger>
-              )}
-            </TabsList>
-          </div>
+        <TabsContent value="overview" className="outline-hidden">
+          <ProjectOverviewTab
+            project={project}
+            clients={clients}
+            cycles={cycles}
+            onOpenEditDialog={() => setIsEditOpen(true)}
+            onSelectTab={(tab) => handleTabChange(tab)}
+          />
+        </TabsContent>
 
-          <TabsContent value="overview" className="outline-hidden">
-            <ProjectOverviewTab
-              project={project}
-              clients={clients}
-              cycles={cycles}
-              onOpenEditDialog={() => setIsEditOpen(true)}
-              onSelectTab={(tab) => handleTabChange(tab)}
-            />
+        <TabsContent value="tasks" className="outline-hidden">
+          <TasksTab
+            project={project}
+            initialTasks={initialTasks}
+            effectiveCapacity={effectiveCapacity}
+            locale={locale}
+          />
+        </TabsContent>
+
+        <TabsContent value="deliverables" className="outline-hidden">
+          <DeliverablesTab
+            project={project}
+            initialDeliverables={initialDeliverables}
+            tasks={initialTasks}
+            effectiveCapacity={effectiveCapacity}
+            currentUserId={currentUserId}
+          />
+        </TabsContent>
+
+        <TabsContent value="members" className="outline-hidden">
+          <MemberRosterTab
+            project={project}
+            effectiveCapacity={effectiveCapacity}
+            eligiblePms={eligiblePms}
+            eligibleOperators={eligibleOperators}
+            eligibleClients={eligibleClients}
+          />
+        </TabsContent>
+
+        <TabsContent value="activity" className="outline-hidden">
+          <ProjectActivityTab cycles={cycles} />
+        </TabsContent>
+
+        {canViewCalendarTab && (
+          <TabsContent value="calendar" className="outline-hidden">
+            {initialCalendarEvents && calendarRange ? (
+              <ProjectCalendarTab
+                initialEvents={initialCalendarEvents}
+                milestoneTargets={milestoneTargets}
+                projectId={project.id}
+                canManageMilestones={canManageMilestones}
+                userRole={actorRole}
+                initialRange={calendarRange}
+              />
+            ) : (
+              <div className="flex h-48 items-center justify-center gap-2">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <span className="text-sm text-muted-foreground">
+                  {t("calendar")}...
+                </span>
+              </div>
+            )}
           </TabsContent>
+        )}
 
-          <TabsContent value="tasks" className="outline-hidden">
-            <TasksTab
-              project={project}
-              initialTasks={initialTasks}
-              effectiveCapacity={effectiveCapacity}
-              locale={locale}
-            />
+        {canViewCalendarTab && (
+          <TabsContent value="archive" className="outline-hidden">
+            {initialArchivePage && archiveQuery ? (
+              <ProjectArchiveTab
+                projectId={project.id}
+                initialArchivePage={initialArchivePage}
+                currentQuery={archiveQuery}
+              />
+            ) : (
+              <div className="flex h-48 items-center justify-center gap-2">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <span className="text-sm text-muted-foreground">
+                  {t("archive")}...
+                </span>
+              </div>
+            )}
           </TabsContent>
-
-          <TabsContent value="deliverables" className="outline-hidden">
-            <DeliverablesTab
-              project={project}
-              initialDeliverables={initialDeliverables}
-              tasks={initialTasks}
-              effectiveCapacity={effectiveCapacity}
-              currentUserId={currentUserId}
-            />
-          </TabsContent>
-
-          <TabsContent value="members" className="outline-hidden">
-            <MemberRosterTab
-              project={project}
-              effectiveCapacity={effectiveCapacity}
-              eligiblePms={eligiblePms}
-              eligibleOperators={eligibleOperators}
-              eligibleClients={eligibleClients}
-            />
-          </TabsContent>
-
-          <TabsContent value="activity" className="outline-hidden">
-            <ProjectActivityTab cycles={cycles} />
-          </TabsContent>
-
-          {canViewCalendarTab && (
-            <TabsContent value="calendar" className="outline-hidden">
-              {initialCalendarEvents && calendarRange ? (
-                <ProjectCalendarTab
-                  initialEvents={initialCalendarEvents}
-                  milestoneTargets={milestoneTargets}
-                  projectId={project.id}
-                  canManageMilestones={canManageMilestones}
-                  userRole={actorRole}
-                  initialRange={calendarRange}
-                />
-              ) : (
-                <div className="flex h-48 items-center justify-center gap-2">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">
-                    {t("calendar")}...
-                  </span>
-                </div>
-              )}
-            </TabsContent>
-          )}
-
-          {canViewCalendarTab && (
-            <TabsContent value="archive" className="outline-hidden">
-              {initialArchivePage && archiveQuery ? (
-                <ProjectArchiveTab
-                  projectId={project.id}
-                  initialArchivePage={initialArchivePage}
-                  currentQuery={archiveQuery}
-                />
-              ) : (
-                <div className="flex h-48 items-center justify-center gap-2">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">
-                    {t("archive")}...
-                  </span>
-                </div>
-              )}
-            </TabsContent>
-          )}
-        </Tabs>
+        )}
       </main>
 
       {/* Edit Dialog */}
@@ -338,6 +364,6 @@ export function ProjectWorkspaceShell({
         isOpen={isReopenOpen}
         onClose={() => setIsReopenOpen(false)}
       />
-    </div>
+    </Tabs>
   );
 }
