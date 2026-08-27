@@ -1,5 +1,25 @@
 # JSF PM App Development Changelog
 
+## [2026-08-27 @ 08:11]
+
+**🛠 Database & Architecture: S09 PM Global User Metrics Authority Migration & TypeScript Generation**
+
+- **Database Migration Applied (`supabase/migrations/20260827101000_s09-pm-global-user-metrics-authority.sql`):**
+  - Executed migration `20260827101000_s09_pm_global_user_metrics_authority` via Supabase MCP `apply_migration`.
+  - Replaced `public.list_scoped_user_operations_metrics` security definer RPC function body to permit active Admin and PM profiles to query user operations metrics across all projects or scoped to a selected project.
+- **TypeScript Type Regeneration (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript types directly from Supabase schema using MCP `generate_typescript_types` and updated `src/lib/database.types.ts`.
+
+## [2026-08-27 @ 08:08]
+
+**🛠 Database & Architecture: S09 Project Metrics Scope Filter Migration & TypeScript Generation**
+
+- **Database Migration Applied (`supabase/migrations/20260827100000_s09-project-metrics-scope-filter.sql`):**
+  - Executed migration `20260827100000_s09_project_metrics_scope_filter` via Supabase MCP `apply_migration`.
+  - Replaced `public.get_scoped_operations_metrics` and `public.list_scoped_operations_metric_trend` security definer RPC bodies to permit active Admin and PM company-owner accounts to query metrics globally or for a specific project scope.
+- **TypeScript Type Regeneration (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript types directly from Supabase schema using MCP `generate_typescript_types` and updated `src/lib/database.types.ts`.
+
 ## [2026-08-26 @ 14:05]
 
 **🚀 Features & 🛠 Architecture: S09-02 User and Project Operational Audit Metrics Implementation**
