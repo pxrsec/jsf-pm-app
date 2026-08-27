@@ -48,7 +48,8 @@ export const adminUserMetricsQuerySchema = userMetricsDateRangeSchema.and(
 
 export const pmUserMetricsQuerySchema = userMetricsDateRangeSchema.and(
   z.object({
-    projectId: z.string().uuid("projectId must be a valid UUID"),
+    projectId: z.string().uuid("projectId must be a valid UUID").optional(),
     userId: z.string().uuid("userId must be a valid UUID").optional(),
   }),
 );
+

@@ -15,16 +15,15 @@ import {
 import { FolderKanban, User, X, Loader2 } from "lucide-react";
 
 interface UserMetricsScopeControlProps {
-  role: "admin" | "pm";
   currentProjectId?: string;
   currentUserId?: string;
   projects?: readonly { id: string; name: string }[];
   users: readonly { userId: string; fullName: string }[];
   onFilterChangeAnnouncement?: (message: string) => void;
+  role?: "admin" | "pm" | string;
 }
 
 export function UserMetricsScopeControl({
-  role,
   currentProjectId,
   currentUserId,
   projects,
@@ -66,7 +65,7 @@ export function UserMetricsScopeControl({
     [searchParams, router, pathname],
   );
 
-  const handleAdminProjectChange = (val: string | null) => {
+  const handleProjectChange = (val: string | null) => {
     if (!val) return;
     updateScope({ projectId: val });
     if (onFilterChangeAnnouncement) {
@@ -92,8 +91,8 @@ export function UserMetricsScopeControl({
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-border bg-card shadow-sm">
       <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-        {/* Admin Project Filter */}
-        {role === "admin" && projects && projects.length > 0 && (
+        {/* Project Filter (both Admin and PM) */}
+        {projects && projects.length > 0 && (
           <div className="flex items-center gap-2">
             <label
               htmlFor="user-audit-project-select"
@@ -104,7 +103,7 @@ export function UserMetricsScopeControl({
             </label>
             <Select
               value={currentProjectId ?? "all"}
-              onValueChange={handleAdminProjectChange}
+              onValueChange={handleProjectChange}
               disabled={isPending}
               items={[
                 { value: "all", label: t("allProjects") },

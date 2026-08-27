@@ -41,8 +41,13 @@ export const metricsDateRangeSchema = z
 
 export const pmMetricsQuerySchema = metricsDateRangeSchema.and(
   z.object({
-    projectId: z.string().uuid("projectId must be a valid UUID"),
+    projectId: z.string().uuid("projectId must be a valid UUID").optional(),
   }),
 );
 
-export const adminMetricsQuerySchema = metricsDateRangeSchema;
+export const adminMetricsQuerySchema = metricsDateRangeSchema.and(
+  z.object({
+    projectId: z.string().uuid("projectId must be a valid UUID").optional(),
+  }),
+);
+

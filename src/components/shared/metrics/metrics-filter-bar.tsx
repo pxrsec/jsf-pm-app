@@ -21,12 +21,47 @@ import {
 } from "@/lib/operations-metrics/date-utils";
 import { TZDate } from "@date-fns/tz";
 
+function extractDateOnly(isoStr: string): string {
+  try {
+    const tz = new TZDate(isoStr, CALENDAR_TIME_ZONE);
+    const y = tz.getFullYear();
+    const m = String(tz.getMonth() + 1).padStart(2, "0");
+    const d = String(tz.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  } catch {
+    return "";
+  }
+}
+
+function extractInclusiveEndDate(isoTo: string): string {
+  try {
+    const toTz = new TZDate(isoTo, CALENDAR_TIME_ZONE);
+    const previousDate = new TZDate(
+      toTz.getFullYear(),
+      toTz.getMonth(),
+      toTz.getDate() - 1,
+      0,
+      0,
+      0,
+      0,
+      CALENDAR_TIME_ZONE,
+    );
+    const y = previousDate.getFullYear();
+    const m = String(previousDate.getMonth() + 1).padStart(2, "0");
+    const d = String(previousDate.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  } catch {
+    return "";
+  }
+}
+
 interface MetricsFilterBarProps {
   currentFrom: string;
   currentTo: string;
   currentProjectId?: string;
   projects?: readonly { id: string; name: string }[];
-  role: "admin" | "pm";
+  showProjectSelector?: boolean;
+  role?: "admin" | "pm" | string;
 }
 
 export function MetricsFilterBar({
@@ -34,7 +69,7 @@ export function MetricsFilterBar({
   currentTo,
   currentProjectId,
   projects,
-  role,
+  showProjectSelector = true,
 }: MetricsFilterBarProps) {
   const t = useTranslations("metrics.filters");
   const router = useRouter();
@@ -42,47 +77,28 @@ export function MetricsFilterBar({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  // Extract initial YYYY-MM-DD from offset-bearing ISO strings for the inputs
-  const extractDateOnly = (isoStr: string): string => {
-    try {
-      const tz = new TZDate(isoStr, CALENDAR_TIME_ZONE);
-      const y = tz.getFullYear();
-      const m = String(tz.getMonth() + 1).padStart(2, "0");
-      const d = String(tz.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    } catch {
-      return "";
-    }
-  };
-
+  const [prevFrom, setPrevFrom] = useState(currentFrom);
+  const [prevTo, setPrevTo] = useState(currentTo);
   const [startDate, setStartDate] = useState(() =>
     extractDateOnly(currentFrom),
   );
-  const [endDate, setEndDate] = useState(() => {
-    // Upper bound is exclusive next-day; subtract 1 day to show inclusive end date
-    try {
-      const tz = new TZDate(currentTo, CALENDAR_TIME_ZONE);
-      const prevDay = new TZDate(
-        tz.getTime() - 24 * 60 * 60 * 1000,
-        CALENDAR_TIME_ZONE,
-      );
-      const y = prevDay.getFullYear();
-      const m = String(prevDay.getMonth() + 1).padStart(2, "0");
-      const d = String(prevDay.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    } catch {
-      return "";
-    }
-  });
-
+  const [endDate, setEndDate] = useState(() =>
+    extractInclusiveEndDate(currentTo),
+  );
   const [dateError, setDateError] = useState<string | null>(null);
+
+  if (prevFrom !== currentFrom || prevTo !== currentTo) {
+    setPrevFrom(currentFrom);
+    setPrevTo(currentTo);
+    setStartDate(extractDateOnly(currentFrom));
+    setEndDate(extractInclusiveEndDate(currentTo));
+    setDateError(null);
+  }
 
   const updateFilters = useCallback(
     (updates: {
       from?: string;
       to?: string;
-      projectId?: string;
-      clearUserId?: boolean;
     }) => {
       const params = new URLSearchParams(searchParams.toString());
 
@@ -91,12 +107,6 @@ export function MetricsFilterBar({
       }
       if (updates.to !== undefined) {
         params.set("to", updates.to);
-      }
-      if (updates.projectId !== undefined) {
-        params.set("projectId", updates.projectId);
-      }
-      if (updates.clearUserId) {
-        params.delete("userId");
       }
 
       startTransition(() => {
@@ -116,7 +126,7 @@ export function MetricsFilterBar({
     const from = formatIsoWithOffset(fromTz);
     const to = formatIsoWithOffset(nowTz);
     setStartDate(extractDateOnly(from));
-    setEndDate(extractDateOnly(to));
+    setEndDate(extractInclusiveEndDate(to));
     updateFilters({ from, to });
   };
 
@@ -124,7 +134,7 @@ export function MetricsFilterBar({
     setDateError(null);
     const range = getDefaultMetricsRange();
     setStartDate(extractDateOnly(range.from));
-    setEndDate(extractDateOnly(range.to));
+    setEndDate(extractInclusiveEndDate(range.to));
     updateFilters({ from: range.from, to: range.to });
   };
 
@@ -146,13 +156,22 @@ export function MetricsFilterBar({
 
   const handleProjectChange = (val: string | null) => {
     if (!val) return;
-    updateFilters({ projectId: val, clearUserId: true });
+    const params = new URLSearchParams(searchParams.toString());
+    if (val === "all") {
+      params.delete("projectId");
+    } else {
+      params.set("projectId", val);
+    }
+    params.delete("userId");
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`);
+    });
   };
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        {/* Left side: Range Presets and PM Project Selector */}
+        {/* Left side: Range Presets and Project Selector */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
             <Filter className="h-3.5 w-3.5" aria-hidden="true" />
@@ -181,28 +200,34 @@ export function MetricsFilterBar({
             {t("preset90Days")}
           </Button>
 
-          {role === "pm" && projects && projects.length > 0 && (
+          {showProjectSelector && projects && projects.length > 0 && (
             <div className="flex items-center gap-2 ml-0 sm:ml-2">
               <label
-                htmlFor="pm-project-select"
+                htmlFor="metrics-project-select"
                 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
                 {t("projectLabel")}:
               </label>
               <Select
-                value={currentProjectId ?? projects[0]?.id}
+                value={currentProjectId ?? "all"}
                 onValueChange={handleProjectChange}
                 disabled={isPending}
-                items={projects.map((p) => ({ value: p.id, label: p.name }))}
+                items={[
+                  { value: "all", label: t("allProjects") },
+                  ...projects.map((p) => ({ value: p.id, label: p.name })),
+                ]}
               >
                 <SelectTrigger
-                  id="pm-project-select"
+                  id="metrics-project-select"
                   aria-label={t("projectSelectAria")}
                   className="w-[200px] sm:w-[240px] min-h-[44px] sm:min-h-[36px] text-xs"
                 >
-                  <SelectValue placeholder={t("selectProjectPlaceholder")} />
+                  <SelectValue placeholder={t("allProjects")} />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="all" className="text-xs">
+                    {t("allProjects")}
+                  </SelectItem>
                   {projects.map((p) => (
                     <SelectItem key={p.id} value={p.id} className="text-xs">
                       {p.name}

@@ -1,8 +1,8 @@
 ---
-document_id: S09-03-METRICAS-TABS-AND-GLOBAL-PM-AUTHORITY-IMPLEMENTATION-SPEC-01
+document_id: S09-03-METRICAS-TABS-AND-GLOBAL-PM-AUTHORITY-IMPLEMENTATION-SPEC-02
 sprint_id: S09
 work_item: S09-03
-status: ready-for-owner-migration-application-and-implementation
+status: blocked-pending-metrics-project-options-migration-and-types
 created_at: 2026-08-27T00:00:00-06:00
 branch: feature/metrics-expansion
 target_environment: jsf-pm-dev
@@ -10,6 +10,7 @@ required_applied_migrations:
   - supabase/migrations/20260826110000_s09_user-scoped-operations-metrics.sql
   - supabase/migrations/20260827100000_s09-project-metrics-scope-filter.sql
   - supabase/migrations/20260827101000_s09-pm-global-user-metrics-authority.sql
+  - supabase/migrations/20260827102000_s09-metrics-project-filter-options.sql
 ---
 
 # S09-03 — Métricas Tabs and Global PM Metrics Authority
@@ -29,9 +30,12 @@ This changes only metrics read authority and metrics presentation. It does not p
 
 Before implementation, the Project Owner applies these exact migrations to `jsf-pm-dev`, in filename order, then regenerates and commits `src/lib/database.types.ts` unchanged:
 
-1. `20260826110000_s09_user-scoped-operations-metrics.sql`
-2. `20260827100000_s09-project-metrics-scope-filter.sql`
-3. `20260827101000_s09-pm-global-user-metrics-authority.sql`
+1. `20260826110000_s09_user-scoped-operations-metrics.sql` — already applied.
+2. `20260827100000_s09-project-metrics-scope-filter.sql` — already applied.
+3. `20260827101000_s09-pm-global-user-metrics-authority.sql` — already applied.
+4. `20260827102000_s09-metrics-project-filter-options.sql` — required before implementation.
+
+The fourth forward migration is required because `projects_select_policy` allows an ordinary PM to select only projects they are a member of. Reusing either archive project-options helper would silently reintroduce the rejected membership restriction. After applying migration 4, regenerate `src/lib/database.types.ts` again through Supabase MCP and commit it unchanged.
 
 No migration may be edited after application. A failure requires a new reviewed forward migration; do not hand-edit generated types or work around an absent RPC with direct queries, casts, or service role access.
 
@@ -80,6 +84,16 @@ It preserves the existing purpose-limited aggregate row shape and range semantic
 
 The UI continues to fetch the full validated permitted user result for the active project/range and derives the selector and selected-user detail from it. It does **not** send arbitrary user IDs to the RPC and does not aggregate base tables in the browser.
 
+### Project filter options RPC
+
+`20260827102000_s09-metrics-project-filter-options.sql` adds:
+
+```text
+list_scoped_metrics_project_filter_options()
+```
+
+It is the sole project-option source for **both** metrics pages. It returns only `(project_id, project_name)` for every non-deleted project, ordered by name then ID, and permits only active `admin`/`pm` callers. Implement one server-only metrics adapter around this RPC with fail-closed row validation and a metrics-local `{ id, name }` DTO. Do not call `fetchArchiveProjectFilterOptionsForAdmin` or `fetchArchiveProjectFilterOptionsForPm` from either metrics page: those helpers follow archive/RLS membership rules and cannot satisfy global PM metrics authority.
+
 ## Canonical URL state
 
 ```text
@@ -117,11 +131,13 @@ Remove the current role branch that strips an Admin project ID. Do not change ex
 
 ### UI
 
-- The project selector for both Admin and PM starts with localized **All projects**, represented by no `projectId`, followed by the same validated all-project option list.
-- The scope badge says All projects or the selected project name for either role.
-- Project metrics owns the project selector and existing range controls; do not show a user selector on this tab.
+- The project selector for both Admin and PM starts with localized **All projects**, represented by no `projectId`, followed by the validated result of `list_scoped_metrics_project_filter_options()`.
+- The scope badge says All projects or the selected project name for either role and is derived from the validated project ID, never the raw URL value.
+- **Project metrics tab:** `MetricsFilterBar` renders the range controls and the project selector.
+- **User metrics tab:** `MetricsFilterBar` renders range controls only; `UserMetricsScopeControl` renders the project and user selectors. Introduce an explicit prop such as `showProjectSelector` so the selected-project control cannot be rendered twice on the User tab.
 - Preserve the existing cards, distributions, cycle summary, and trend presentation; the selected scope must now be reflected by all four.
-- Generalize `MetricsFilterBar` rather than making conflicting Admin/PM variants. Changing project clears `userId`; selecting All projects deletes `projectId`.
+- Changing project clears `userId`; selecting All projects deletes `projectId`.
+- `normalizeMetricsSearchState` may retain a syntactically valid UUID candidate for either role, but each page must construct the query passed to every RPC as `{ ...normalizedRange, projectId: validatedProjectId }`. The validated ID comes only from the metrics project-options RPC; invalid/missing values become `undefined`. Do not pass `currentQuery` before this replacement.
 
 ## User metrics tab
 
@@ -137,7 +153,9 @@ Remove the current role branch that strips an Admin project ID. Do not change ex
 ```text
 src/lib/database.types.ts                                      (owner-generated only)
 src/lib/operations-metrics/schemas.ts
-src/lib/operations-metrics/queries.ts
+src/lib/operations-metrics/queries.ts                          (add metrics project-options adapter here or a focused sibling)
+src/lib/operations-metrics/types.ts                            (metrics-local project option DTO if needed)
+src/lib/operations-metrics/date-utils.ts
 src/lib/user-operations-metrics/schemas.ts
 src/app/[locale]/(protected)/admin/metricas/page.tsx
 src/app/[locale]/(protected)/pm/metricas/page.tsx

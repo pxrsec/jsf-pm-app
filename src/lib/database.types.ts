@@ -1942,6 +1942,13 @@ export type Database = {
           resolved_at: string
         }[]
       }
+      list_scoped_metrics_project_filter_options: {
+        Args: never
+        Returns: {
+          project_id: string
+          project_name: string
+        }[]
+      }
       list_scoped_operations_metric_trend: {
         Args: { p_from?: string; p_project_id?: string; p_to?: string }
         Returns: {

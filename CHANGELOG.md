@@ -1,5 +1,39 @@
 # JSF PM App Development Changelog
 
+## [2026-08-27 @ 10:01]
+
+**🚀 Features & 🛠 Architecture: S09-03 Métricas Tabs and Global PM Metrics Authority**
+
+- **URL-Derived Tabs Navigation (`src/components/shared/metrics/metrics-tab-navigation.tsx`):**
+  - Refactored `/admin/metricas` and `/pm/metricas` to feature dual URL-addressable tabs: **Project metrics** (`tab=projects`) and **User metrics** (`tab=users`).
+  - Created client-side tab navigation utilizing `@/components/ui/tabs` primitive with single mounted `TabsList` and trigger set.
+- **Global PM Metrics Authority & Membership De-gating:**
+  - Removed all legacy PM-only membership restrictions (`project_members`, `pm_lead`, `pm_watcher` gating, `fixedProjectId`, and empty "No authorized projects" early exit).
+  - Aligned PM metrics authority with company-owner permissions, granting full access to company-wide operational data and single-project filtering on both tabs.
+- **Server-Only Metrics Project Filter Options Adapter (`src/lib/operations-metrics/project-filter-options.ts`, `queries.ts`):**
+  - Created server query adapter wrapping `list_scoped_metrics_project_filter_options()` with fail-closed UUID validation, duplicate project ID rejection, and deterministic sorting.
+  - Defined explicit `MetricsProjectFilterOptionsResult` union (`{ status: "available", data } | { status: "unavailable", code: "UNAVAILABLE" }`) to prevent silent substitution of global metrics when selected-project validation fails.
+- **Active-Tab Isolation & Scope Control Ownership:**
+  - Isolated heavy-panel data requests so Project tab fetches aggregate/trend RPCs only, and User tab fetches user audit metrics RPC only.
+  - Dedicated `MetricsFilterBar` to Project tab with date presets, Mexico City calendar-day arithmetic synchronization, and project selector (`showProjectSelector=true`).
+  - Dedicated `UserMetricsScopeControl` to User tab for project and user filtering (`showProjectSelector=false` on filter bar).
+  - Ensured scope changes clear `userId` and delete `projectId` when "All projects" is selected.
+  - Removed duplicate scope badge on User metrics tab and guarded controlled select value while cleaning stale `userId` via `router.replace`.
+- **Localization Updates (`messages/en-US.json`, `messages/es-MX.json`):**
+  - Added plural metrics tab labels (`metrics.tabs.projects`, `metrics.tabs.users`, `metrics.tabs.ariaLabel`) and `metrics.filters.allProjects`.
+  - Updated PM operational overview titles and descriptions to reflect global company metrics authority.
+
+## [2026-08-27 @ 09:14]
+
+**🛠 Database & Architecture: S09 Metrics Project Filter Options Migration & TypeScript Generation**
+
+- **Database Migration Applied (`supabase/migrations/20260827102000_s09-metrics-project-filter-options.sql`):**
+  - Executed migration `20260827102000_s09_metrics_project_filter_options` via Supabase MCP `apply_migration`.
+  - Created `public.list_scoped_metrics_project_filter_options()` security definer RPC function returning non-deleted project IDs and names for active Admin and PM company-owner accounts.
+  - Granted execute permission to `authenticated` and revoked execute from `public` and `anon`.
+- **TypeScript Type Regeneration (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript types directly from Supabase schema using MCP `generate_typescript_types` and updated `src/lib/database.types.ts`.
+
 ## [2026-08-27 @ 08:11]
 
 **🛠 Database & Architecture: S09 PM Global User Metrics Authority Migration & TypeScript Generation**

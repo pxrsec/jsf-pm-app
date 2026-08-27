@@ -15,6 +15,7 @@ import type {
   ProjectStatusDistribution,
 } from "./types";
 import { adminMetricsQuerySchema, pmMetricsQuerySchema } from "./schemas";
+export { fetchScopedMetricsProjectFilterOptions } from "./project-filter-options";
 
 const KNOWN_PROJECT_STATUSES: readonly ProjectStatus[] = [
   "planning",
@@ -116,7 +117,7 @@ export async function fetchScopedOperationsMetrics(
     const { data, error } = await supabase.rpc(
       "get_scoped_operations_metrics",
       {
-        p_project_id: role === "pm" ? query.projectId : undefined,
+        p_project_id: query.projectId ?? undefined,
         p_from: query.from,
         p_to: query.to,
       },
@@ -286,7 +287,7 @@ export async function fetchScopedOperationsMetricTrend(
     const { data, error } = await supabase.rpc(
       "list_scoped_operations_metric_trend",
       {
-        p_project_id: role === "pm" ? query.projectId : undefined,
+        p_project_id: query.projectId ?? undefined,
         p_from: query.from,
         p_to: query.to,
       },

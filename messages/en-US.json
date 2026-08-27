@@ -1804,18 +1804,24 @@
   "metrics": {
     "adminTitle": "Operational Metrics",
     "adminDescription": "Global overview of operational activity, task attention, deliverable status, and project cycles.",
-    "pmTitle": "Project Metrics",
-    "pmDescription": "Operational overview and trends for the selected project within your authorized scope.",
+    "pmTitle": "Operational Metrics",
+    "pmDescription": "Operational overview and trends for company activity, task attention, deliverable status, and project cycles.",
     "globalScopeBadge": "Global scope (all projects)",
     "noAuthorizedProjectsTitle": "No authorized projects",
     "noAuthorizedProjectsDescription": "You currently have no assigned projects to display operational metrics.",
     "viewPmArchive": "View project archive",
     "viewPmLinkIncidents": "View link incidents",
+    "tabs": {
+      "projects": "Project metrics",
+      "users": "User metrics",
+      "ariaLabel": "Metrics tabs"
+    },
     "filters": {
       "rangeLabel": "Range",
       "preset30Days": "Last 30 days",
       "preset90Days": "Last 90 days",
       "projectLabel": "Project",
+      "allProjects": "All projects",
       "projectSelectAria": "Select project for metrics",
       "selectProjectPlaceholder": "Select project...",
       "customRangeLabel": "Custom range",

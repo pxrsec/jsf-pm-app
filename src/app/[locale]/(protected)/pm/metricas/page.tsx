@@ -5,21 +5,28 @@ import { Link } from "@/i18n/routing";
 import { requireSession } from "@/lib/auth/session";
 import { ROLE_DEFAULT_PATHS } from "@/lib/auth/routes";
 import { createClient } from "@/lib/supabase/server";
-import { fetchArchiveProjectFilterOptionsForPm } from "@/lib/archive/queries";
 import {
+  fetchScopedMetricsProjectFilterOptions,
   fetchScopedOperationsMetrics,
   fetchScopedOperationsMetricTrend,
 } from "@/lib/operations-metrics/queries";
 import { fetchScopedUserOperationsMetrics } from "@/lib/user-operations-metrics/queries";
-import type { UserOperationsMetricsQuery } from "@/lib/user-operations-metrics/types";
+import type {
+  OperationsMetricsQuery,
+  OperationsMetricsSectionResult,
+  OperationsMetricsSummaryDto,
+  OperationsMetricTrendPointDto,
+} from "@/lib/operations-metrics/types";
+import type { UserOperationsMetricsSectionResult } from "@/lib/user-operations-metrics/types";
 import { normalizeMetricsSearchState } from "@/lib/operations-metrics/date-utils";
+import { MetricsTabNavigation } from "@/components/shared/metrics/metrics-tab-navigation";
 import { MetricsFilterBar } from "@/components/shared/metrics/metrics-filter-bar";
 import { MetricCardsGrid } from "@/components/shared/metrics/metric-cards-grid";
 import { StatusDistributionSection } from "@/components/shared/metrics/status-distribution-section";
 import { TrendChartSection } from "@/components/shared/metrics/trend-chart-section";
 import { CycleDurationSummary } from "@/components/shared/metrics/cycle-duration-summary";
 import { UserOperationalAuditSection } from "@/components/shared/metrics/user-operational-audit-section";
-import { AlertCircle, Archive, FolderKanban, Radio } from "lucide-react";
+import { AlertCircle, Archive, FolderKanban, Globe, Radio } from "lucide-react";
 
 interface PmMetricsPageProps {
   searchParams: Promise<{
@@ -27,6 +34,7 @@ interface PmMetricsPageProps {
     to?: string;
     projectId?: string;
     userId?: string;
+    tab?: string;
   }>;
 }
 
@@ -40,84 +48,88 @@ export default async function PmMetricsPage({
     redirect(ROLE_DEFAULT_PATHS[session.role] ?? "/iniciar-sesion");
   }
 
+  const resolvedSearchParams = await searchParams;
+  const activeTab =
+    resolvedSearchParams.tab === "users" ? "users" : "projects";
+
+  const normalized = normalizeMetricsSearchState(resolvedSearchParams);
   const t = await getTranslations("metrics");
   const supabase = createClient(cookieStore);
 
-  // 1. Fetch authorized PM project options
-  const projectOptions = await fetchArchiveProjectFilterOptionsForPm(
-    supabase,
-    session.user.id,
-  );
+  const projectOptionsResult =
+    await fetchScopedMetricsProjectFilterOptions(supabase);
 
-  // 2. If no authorized projects exist, render localized empty state without calling M3/M5/UserAudit
-  if (!projectOptions || projectOptions.length === 0) {
-    return (
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        <header className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            {t("pmTitle")}
-          </h1>
-          <p className="text-sm text-muted-foreground">{t("pmDescription")}</p>
-        </header>
+  // If a project ID was requested but project-options validation is unavailable, fail-closed
+  const projectValidationFailed =
+    Boolean(normalized.projectId) &&
+    projectOptionsResult.status === "unavailable";
 
-        <div className="rounded-xl border border-border bg-card p-8 text-center space-y-3">
-          <FolderKanban
-            className="h-10 w-10 text-muted-foreground/50 mx-auto"
-            aria-hidden="true"
-          />
-          <h2 className="text-base font-semibold text-foreground">
-            {t("noAuthorizedProjectsTitle")}
-          </h2>
-          <p className="text-xs text-muted-foreground max-w-md mx-auto">
-            {t("noAuthorizedProjectsDescription")}
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const projectOptions =
+    projectOptionsResult.status === "available"
+      ? projectOptionsResult.data
+      : undefined;
 
-  // 3. Fallback: If raw projectId is missing, invalid, or not in options, select the first option in deterministic name order
-  const resolvedSearchParams = await searchParams;
-  const rawProjectId = resolvedSearchParams.projectId;
-  const matchedProject = projectOptions.find((p) => p.id === rawProjectId);
-  const selectedProject = matchedProject ?? projectOptions[0]!;
-  const selectedProjectId = selectedProject.id;
+  const matchedProject =
+    projectOptionsResult.status === "available" && normalized.projectId
+      ? projectOptionsResult.data.find((p) => p.id === normalized.projectId)
+      : undefined;
 
-  const currentQuery = normalizeMetricsSearchState(resolvedSearchParams, "pm", {
-    fixedProjectId: selectedProjectId,
-  });
+  const validatedProjectId = matchedProject ? matchedProject.id : undefined;
 
-  const userAuditRpcQuery: UserOperationsMetricsQuery = {
-    from: currentQuery.from,
-    to: currentQuery.to,
-    projectId: selectedProjectId,
-    userId: undefined, // Always query full user dataset for dashboard
+  const metricsQuery: OperationsMetricsQuery = {
+    from: normalized.from,
+    to: normalized.to,
+    projectId: validatedProjectId,
   };
 
-  // 4. Fetch metrics, trend, and user audit with independent section-level failure isolation
-  const [metricsSettled, trendSettled, userAuditSettled] =
-    await Promise.allSettled([
-      fetchScopedOperationsMetrics(supabase, currentQuery, "pm"),
-      fetchScopedOperationsMetricTrend(supabase, currentQuery, "pm"),
-      fetchScopedUserOperationsMetrics(supabase, userAuditRpcQuery, "pm"),
-    ]);
+  const unavailable = {
+    status: "unavailable" as const,
+    code: "UNAVAILABLE" as const,
+  };
+
+  // Branch-local active-tab data fetching
+  let metricsResult: OperationsMetricsSectionResult<OperationsMetricsSummaryDto> =
+    unavailable;
+  let trendResult: OperationsMetricsSectionResult<
+    readonly OperationsMetricTrendPointDto[]
+  > = unavailable;
+  let userAuditResult: UserOperationsMetricsSectionResult = unavailable;
+
+  if (activeTab === "projects") {
+    if (!projectValidationFailed) {
+      const [metricsSettled, trendSettled] = await Promise.allSettled([
+        fetchScopedOperationsMetrics(supabase, metricsQuery, session.role),
+        fetchScopedOperationsMetricTrend(supabase, metricsQuery, session.role),
+      ]);
+      metricsResult =
+        metricsSettled.status === "fulfilled"
+          ? metricsSettled.value
+          : unavailable;
+      trendResult =
+        trendSettled.status === "fulfilled"
+          ? trendSettled.value
+          : unavailable;
+    }
+  } else {
+    if (!projectValidationFailed) {
+      const [userAuditSettled] = await Promise.allSettled([
+        fetchScopedUserOperationsMetrics(
+          supabase,
+          { ...metricsQuery, userId: undefined },
+          session.role,
+        ),
+      ]);
+      userAuditResult =
+        userAuditSettled.status === "fulfilled"
+          ? userAuditSettled.value
+          : unavailable;
+    }
+  }
 
   const metricsAvailable =
-    metricsSettled.status === "fulfilled" &&
-    metricsSettled.value.status === "available"
-      ? metricsSettled.value.data
-      : null;
-
+    metricsResult.status === "available" ? metricsResult.data : null;
   const trendAvailable =
-    trendSettled.status === "fulfilled" &&
-    trendSettled.value.status === "available"
-      ? trendSettled.value.data
-      : null;
-
-  const userAuditResult =
-    userAuditSettled.status === "fulfilled"
-      ? userAuditSettled.value
-      : { status: "unavailable" as const, code: "UNAVAILABLE" as const };
+    trendResult.status === "available" ? trendResult.data : null;
 
   return (
     <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -128,66 +140,84 @@ export default async function PmMetricsPage({
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {t("pmTitle")}
             </h1>
-            <p className="text-sm text-muted-foreground">
-              {t("pmDescription")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("pmDescription")}</p>
           </div>
 
-          {/* Selected Project Badge */}
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-            <FolderKanban className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>{selectedProject.name}</span>
-          </div>
+          {/* Scope Badge (hidden on failed project validation to prevent false global scope display) */}
+          {projectValidationFailed ? null : validatedProjectId && matchedProject ? (
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+              <FolderKanban className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>{matchedProject.name}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+              <Globe className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>{t("globalScopeBadge")}</span>
+            </div>
+          )}
         </div>
       </header>
 
-      {/* Filter Bar */}
-      <MetricsFilterBar
-        currentFrom={currentQuery.from}
-        currentTo={currentQuery.to}
-        currentProjectId={selectedProjectId}
-        projects={projectOptions}
-        role="pm"
-      />
+      {/* Tabs Navigation */}
+      <MetricsTabNavigation activeTab={activeTab} />
 
-      {/* 1. Summary Cards, Distributions & Cycle Durations */}
-      {metricsAvailable ? (
+      {/* Tab Panels: Only mount active heavy panel */}
+      {activeTab === "projects" ? (
         <div className="space-y-6">
-          <MetricCardsGrid summary={metricsAvailable} />
-          <StatusDistributionSection summary={metricsAvailable} />
-          <CycleDurationSummary summary={metricsAvailable} />
+          <MetricsFilterBar
+            currentFrom={metricsQuery.from}
+            currentTo={metricsQuery.to}
+            currentProjectId={metricsQuery.projectId}
+            projects={projectOptions}
+            showProjectSelector={true}
+          />
+
+          {/* 1. Summary Cards, Distributions & Cycle Durations */}
+          {metricsAvailable ? (
+            <div className="space-y-6">
+              <MetricCardsGrid summary={metricsAvailable} />
+              <StatusDistributionSection summary={metricsAvailable} />
+              <CycleDurationSummary summary={metricsAvailable} />
+            </div>
+          ) : (
+            <div
+              role="alert"
+              className="rounded-xl border border-destructive/20 bg-destructive/10 p-5 flex items-center gap-3 text-sm text-destructive"
+            >
+              <AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
+              <p>{t("errors.summaryUnavailable")}</p>
+            </div>
+          )}
+
+          {/* 2. Operational Trend Section */}
+          {trendAvailable ? (
+            <TrendChartSection trendPoints={trendAvailable} />
+          ) : (
+            <div
+              role="alert"
+              className="rounded-xl border border-destructive/20 bg-destructive/10 p-5 flex items-center gap-3 text-sm text-destructive"
+            >
+              <AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
+              <p>{t("errors.trendUnavailable")}</p>
+            </div>
+          )}
         </div>
       ) : (
-        <div
-          role="alert"
-          className="rounded-xl border border-destructive/20 bg-destructive/10 p-5 flex items-center gap-3 text-sm text-destructive"
-        >
-          <AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
-          <p>{t("errors.summaryUnavailable")}</p>
+        <div className="space-y-6">
+          <MetricsFilterBar
+            currentFrom={metricsQuery.from}
+            currentTo={metricsQuery.to}
+            showProjectSelector={false}
+          />
+
+          <UserOperationalAuditSection
+            result={userAuditResult}
+            currentProjectId={metricsQuery.projectId}
+            currentUserId={resolvedSearchParams.userId}
+            projects={projectOptions}
+          />
         </div>
       )}
-
-      {/* 2. Operational Trend Section */}
-      {trendAvailable ? (
-        <TrendChartSection trendPoints={trendAvailable} />
-      ) : (
-        <div
-          role="alert"
-          className="rounded-xl border border-destructive/20 bg-destructive/10 p-5 flex items-center gap-3 text-sm text-destructive"
-        >
-          <AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
-          <p>{t("errors.trendUnavailable")}</p>
-        </div>
-      )}
-
-      {/* 3. User Operational Audit Section */}
-      <UserOperationalAuditSection
-        role="pm"
-        result={userAuditResult}
-        currentProjectId={selectedProjectId}
-        currentUserId={resolvedSearchParams.userId}
-        projectName={selectedProject.name}
-      />
 
       {/* Generic PM Navigation Links */}
       <div className="pt-2 flex flex-wrap items-center gap-4 text-xs">

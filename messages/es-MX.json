@@ -1804,18 +1804,24 @@
   "metrics": {
     "adminTitle": "Métricas Operativas",
     "adminDescription": "Resumen global de actividad operativa, atención de tareas, entregables y ciclos de proyectos.",
-    "pmTitle": "Métricas del Proyecto",
-    "pmDescription": "Resumen operativo y tendencias del proyecto seleccionado dentro de tu alcance autorizado.",
+    "pmTitle": "Métricas Operativas",
+    "pmDescription": "Resumen operativo y tendencias de actividad de la empresa, atención de tareas, entregables y ciclos de proyectos.",
     "globalScopeBadge": "Alcance global (todos los proyectos)",
     "noAuthorizedProjectsTitle": "Sin proyectos autorizados",
     "noAuthorizedProjectsDescription": "No tienes proyectos asignados actualmente para visualizar métricas operativas.",
     "viewPmArchive": "Ver archivo del proyecto",
     "viewPmLinkIncidents": "Ver incidentes de enlaces",
+    "tabs": {
+      "projects": "Métricas de proyectos",
+      "users": "Métricas de usuarios",
+      "ariaLabel": "Pestañas de métricas"
+    },
     "filters": {
       "rangeLabel": "Rango",
       "preset30Days": "Últimos 30 días",
       "preset90Days": "Últimos 90 días",
       "projectLabel": "Proyecto",
+      "allProjects": "Todos los proyectos",
       "projectSelectAria": "Seleccionar proyecto para métricas",
       "selectProjectPlaceholder": "Seleccionar proyecto...",
       "customRangeLabel": "Rango personalizado",

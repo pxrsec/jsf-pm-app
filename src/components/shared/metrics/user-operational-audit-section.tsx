@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
 import {
   AlertCircle,
   ChevronDown,
-  FolderKanban,
-  Globe,
   HelpCircle,
   Users,
 } from "lucide-react";
@@ -25,21 +23,18 @@ import { UserMetricsCardList } from "./user-metrics-card-list";
 import { UserMetricsDetailPanel } from "./user-metrics-detail-panel";
 
 interface UserOperationalAuditSectionProps {
-  role: "admin" | "pm";
   result: UserOperationsMetricsSectionResult;
   currentProjectId?: string;
   currentUserId?: string;
   projects?: readonly { id: string; name: string }[];
-  projectName?: string;
+  role?: "admin" | "pm" | string;
 }
 
 export function UserOperationalAuditSection({
-  role,
   result,
   currentProjectId,
   currentUserId,
   projects,
-  projectName,
 }: UserOperationalAuditSectionProps) {
   const t = useTranslations("metrics.userAudit");
   const tSemantics = useTranslations("metrics.userAudit.semantics");
@@ -112,27 +107,28 @@ export function UserOperationalAuditSection({
     return allRows.find((r) => r.userId === currentUserId) ?? null;
   }, [allRows, currentUserId]);
 
+  // Client-side synchronization: Remove stale userId when successfully returned rows prove user is absent
+  useEffect(() => {
+    if (result.status !== "available" || !currentUserId || selectedUser) {
+      return;
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("userId");
+    router.replace(`${pathname}?${params.toString()}`);
+  }, [
+    result.status,
+    currentUserId,
+    selectedUser,
+    searchParams,
+    router,
+    pathname,
+  ]);
+
   // Display rows: if a valid user is selected, filter table/cards to that user, otherwise show sorted allRows
   const displayRows = useMemo(() => {
     const sourceRows = selectedUser ? [selectedUser] : allRows;
     return sortUserOperationsMetrics(sourceRows, sortField, sortDirection);
   }, [allRows, selectedUser, sortField, sortDirection]);
-
-  // Determine current scope label
-  const scopeLabel = useMemo(() => {
-    if (role === "pm") {
-      return projectName
-        ? t("scope.selectedProject", { name: projectName })
-        : t("scope.allProjects");
-    }
-    if (currentProjectId && projects) {
-      const matched = projects.find((p) => p.id === currentProjectId);
-      if (matched) {
-        return t("scope.selectedProject", { name: matched.name });
-      }
-    }
-    return t("scope.allProjects");
-  }, [role, projectName, currentProjectId, projects, t]);
 
   return (
     <section
@@ -144,37 +140,22 @@ export function UserOperationalAuditSection({
         {liveAnnouncement}
       </div>
 
-      {/* Section Header */}
+      {/* Section Header (Single visible scope badge is owned by page header) */}
       <header className="space-y-1">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2
-              id="user-operational-audit-title"
-              className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2"
-            >
-              <Users className="h-5 w-5 text-primary" aria-hidden="true" />
-              <span>{t("title")}</span>
-            </h2>
-            <p className="text-sm text-muted-foreground">{t("description")}</p>
-          </div>
-
-          {/* Scope Badge */}
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-            {role === "admin" && !currentProjectId ? (
-              <Globe className="h-3.5 w-3.5" aria-hidden="true" />
-            ) : (
-              <FolderKanban className="h-3.5 w-3.5" aria-hidden="true" />
-            )}
-            <span>{scopeLabel}</span>
-          </div>
-        </div>
+        <h2
+          id="user-operational-audit-title"
+          className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2"
+        >
+          <Users className="h-5 w-5 text-primary" aria-hidden="true" />
+          <span>{t("title")}</span>
+        </h2>
+        <p className="text-sm text-muted-foreground">{t("description")}</p>
       </header>
 
       {/* Scope Control Bar (Project and User selection) */}
       <UserMetricsScopeControl
-        role={role}
         currentProjectId={currentProjectId}
-        currentUserId={selectedUser ? currentUserId : undefined}
+        currentUserId={selectedUser ? selectedUser.userId : undefined}
         projects={projects}
         users={userOptions}
         onFilterChangeAnnouncement={(msg) => setLiveAnnouncement(msg)}
