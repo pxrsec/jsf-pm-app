@@ -80,6 +80,31 @@ describe("Deliverable Server Actions", () => {
   describe("createDeliverableAction", () => {
     it("rejects when actor is PM Watcher in target project", async () => {
       mockSupabase.from.mockImplementation((table: string) => {
+        if (table === "tasks") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  is: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({
+                      data: {
+                        id: validTaskId,
+                        project_id: validProjectId,
+                        task_type: "internal_work",
+                        projects: {
+                          id: validProjectId,
+                          project_type: "internal",
+                          status: "in_progress",
+                          client_id: null,
+                        },
+                      },
+                    }),
+                  }),
+                }),
+              }),
+            }),
+          };
+        }
         if (table === "project_members") {
           const chain: MockChain = {
             eq: vi.fn(() => chain),
@@ -101,7 +126,7 @@ describe("Deliverable Server Actions", () => {
         assignee_id: validAssigneeId,
         title: "Test Deliverable",
         specifications: "Specs",
-        workflow_type: "production",
+        internal_review_deadline_at: "2026-09-01T12:00:00Z",
       });
 
       expect(result.ok).toBe(false);
@@ -110,20 +135,8 @@ describe("Deliverable Server Actions", () => {
       }
     });
 
-    it("rejects when project is not client type or lacks client organization", async () => {
+    it("creates deliverable successfully on internal project when PM Lead and valid deadlines pass", async () => {
       mockSupabase.from.mockImplementation((table: string) => {
-        if (table === "project_members") {
-          const chain: MockChain = {
-            eq: vi.fn(() => chain),
-            is: vi.fn(() => chain),
-            maybeSingle: vi.fn().mockResolvedValue({
-              data: { member_type: "pm_lead" },
-            }),
-          };
-          return {
-            select: vi.fn().mockReturnValue(chain),
-          };
-        }
         if (table === "projects") {
           return {
             select: vi.fn().mockReturnValue({
@@ -142,26 +155,26 @@ describe("Deliverable Server Actions", () => {
             }),
           };
         }
-        return {};
-      });
-
-      const result = await createDeliverableAction({
-        project_id: validProjectId,
-        task_id: validTaskId,
-        assignee_id: validAssigneeId,
-        title: "Test Deliverable",
-        specifications: "Specs",
-        workflow_type: "production",
-      });
-
-      expect(result.ok).toBe(false);
-      if (!result.ok) {
-        expect(result.error.code).toBe("INVARIANT_VIOLATION");
-      }
-    });
-
-    it("creates deliverable successfully when all eligibility gates pass", async () => {
-      mockSupabase.from.mockImplementation((table: string) => {
+        if (table === "tasks") {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  is: vi.fn().mockReturnValue({
+                    maybeSingle: vi.fn().mockResolvedValue({
+                      data: {
+                        id: validTaskId,
+                        project_id: validProjectId,
+                        task_type: "internal_work",
+                        assignee_id: validAssigneeId,
+                      },
+                    }),
+                  }),
+                }),
+              }),
+            }),
+          };
+        }
         if (table === "project_members") {
           return {
             select: vi.fn().mockImplementation(() => {
@@ -185,50 +198,8 @@ describe("Deliverable Server Actions", () => {
                     },
                   };
                 }),
-                then: vi.fn((resolve: (val: unknown) => void) =>
-                  resolve({
-                    data: [{ id: "client-member-1" }],
-                  }),
-                ),
               };
               return chain;
-            }),
-          };
-        }
-        if (table === "projects") {
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                is: vi.fn().mockReturnValue({
-                  maybeSingle: vi.fn().mockResolvedValue({
-                    data: {
-                      id: validProjectId,
-                      project_type: "client",
-                      status: "in_progress",
-                      client_id: "client-org-1",
-                    },
-                  }),
-                }),
-              }),
-            }),
-          };
-        }
-        if (table === "tasks") {
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                eq: vi.fn().mockReturnValue({
-                  is: vi.fn().mockReturnValue({
-                    maybeSingle: vi.fn().mockResolvedValue({
-                      data: {
-                        id: validTaskId,
-                        project_id: validProjectId,
-                        has_deliverables: true,
-                      },
-                    }),
-                  }),
-                }),
-              }),
             }),
           };
         }
@@ -243,6 +214,7 @@ describe("Deliverable Server Actions", () => {
                     task_id: validTaskId,
                     title: "Test Deliverable",
                     status: "pending",
+                    workflow_type: "production",
                   },
                   error: null,
                 }),
@@ -259,7 +231,7 @@ describe("Deliverable Server Actions", () => {
         assignee_id: validAssigneeId,
         title: "Test Deliverable",
         specifications: "Specs",
-        workflow_type: "production",
+        internal_review_deadline_at: "2026-09-01T12:00:00Z",
       });
 
       expect(result.ok).toBe(true);
@@ -290,7 +262,13 @@ describe("Deliverable Server Actions", () => {
                     maybeSingle: vi.fn().mockResolvedValue({
                       data: {
                         id: validDeliverableId,
+                        project_id: validProjectId,
+                        task_id: validTaskId,
                         status: "awaiting_internal_review",
+                        title: "Original Title",
+                        specifications: "Original Specs",
+                        workflow_type: "production",
+                        internal_review_deadline_at: "2026-09-01T12:00:00Z",
                       },
                     }),
                   }),
@@ -374,6 +352,7 @@ describe("Deliverable Server Actions", () => {
                       project_id: validProjectId,
                       assignee_id: validAssigneeId,
                       status: "pending",
+                      workflow_type: "production",
                     },
                   }),
                 }),
@@ -630,6 +609,7 @@ describe("Deliverable Server Actions", () => {
                       id: validDeliverableId,
                       project_id: validProjectId,
                       status: "awaiting_internal_review",
+                      workflow_type: "production",
                     },
                   }),
                 }),
@@ -682,6 +662,7 @@ describe("Deliverable Server Actions", () => {
                       id: validDeliverableId,
                       project_id: validProjectId,
                       status: "awaiting_internal_review",
+                      workflow_type: "production",
                     },
                   }),
                 }),
@@ -753,6 +734,7 @@ describe("Deliverable Server Actions", () => {
                       id: validDeliverableId,
                       project_id: validProjectId,
                       status: "awaiting_internal_review",
+                      workflow_type: "production",
                     },
                   }),
                 }),
@@ -818,6 +800,7 @@ describe("Deliverable Server Actions", () => {
                       id: validDeliverableId,
                       project_id: validProjectId,
                       status: "awaiting_internal_review",
+                      workflow_type: "production",
                     },
                   }),
                 }),
@@ -935,6 +918,7 @@ describe("Deliverable Server Actions", () => {
                         id: validDeliverableId,
                         project_id: validProjectId,
                         status: "awaiting_internal_review",
+                        workflow_type: "production",
                       },
                     }),
                   }),
@@ -989,6 +973,7 @@ describe("Deliverable Server Actions", () => {
                         id: validDeliverableId,
                         project_id: validProjectId,
                         status: "approved",
+                        workflow_type: "production",
                       },
                     }),
                   }),

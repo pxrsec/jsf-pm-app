@@ -85,13 +85,13 @@ export async function createDeliverableAction(
   if (!eligibility.ok) {
     return {
       ok: false,
-      error: { code: "INVARIANT_VIOLATION", message: eligibility.message },
+      error: { code: eligibility.code, message: eligibility.message },
     };
   }
 
   const result = await createDeliverable(
     supabase,
-    parsed.data,
+    { ...parsed.data, workflow_type: eligibility.workflowType },
     session.user.id,
   );
   if (result.ok) revalidateProjectWorkspaces(parsed.data.project_id);
@@ -134,15 +134,17 @@ export async function updateDeliverableAction(params: {
     };
   }
 
-  const { data: deliverable } = await supabase
+  const { data: existing } = await supabase
     .from("deliverables")
-    .select("id, status")
+    .select(
+      "id, project_id, task_id, workflow_type, status, assignee_id, title, specifications, submission_deadline_at, internal_review_deadline_at, client_delivery_deadline_at",
+    )
     .eq("id", params.deliverableId)
     .eq("project_id", params.projectId)
     .is("deleted_at", null)
     .maybeSingle();
 
-  if (!deliverable) {
+  if (!existing) {
     return {
       ok: false,
       error: { code: "NOT_FOUND", message: "Deliverable not found" },
@@ -150,8 +152,8 @@ export async function updateDeliverableAction(params: {
   }
 
   if (
-    deliverable.status !== "pending" &&
-    deliverable.status !== "changes_requested"
+    existing.status !== "pending" &&
+    existing.status !== "changes_requested"
   ) {
     return {
       ok: false,
@@ -163,18 +165,150 @@ export async function updateDeliverableAction(params: {
     };
   }
 
-  if (parsed.data.assignee_id) {
+  const resolved = {
+    title: parsed.data.title ?? existing.title,
+    specifications: parsed.data.specifications ?? existing.specifications,
+    assignee_id: parsed.data.assignee_id ?? existing.assignee_id,
+    submission_deadline_at:
+      parsed.data.submission_deadline_at !== undefined
+        ? parsed.data.submission_deadline_at
+        : existing.submission_deadline_at,
+    internal_review_deadline_at:
+      parsed.data.internal_review_deadline_at !== undefined
+        ? parsed.data.internal_review_deadline_at
+        : existing.internal_review_deadline_at,
+    client_delivery_deadline_at:
+      parsed.data.client_delivery_deadline_at !== undefined
+        ? parsed.data.client_delivery_deadline_at
+        : existing.client_delivery_deadline_at,
+  };
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id, project_type, client_id")
+    .eq("id", params.projectId)
+    .maybeSingle();
+  if (!project)
+    return {
+      ok: false,
+      error: { code: "NOT_FOUND", message: "Project not found" },
+    };
+
+  if (existing.workflow_type === "client_submission") {
+    if (!resolved.submission_deadline_at) {
+      return {
+        ok: false,
+        error: {
+          code: "INVARIANT_VIOLATION",
+          message: "Submission deadline is required for client submission",
+        },
+      };
+    }
+    if (
+      resolved.internal_review_deadline_at ||
+      resolved.client_delivery_deadline_at
+    ) {
+      return {
+        ok: false,
+        error: {
+          code: "INVARIANT_VIOLATION",
+          message:
+            "Client submission deliverables forbid review and delivery deadlines",
+        },
+      };
+    }
+  } else if (existing.workflow_type === "production") {
+    if (!resolved.internal_review_deadline_at) {
+      return {
+        ok: false,
+        error: {
+          code: "INVARIANT_VIOLATION",
+          message:
+            "Internal review deadline is required for production deliverables",
+        },
+      };
+    }
+    if (resolved.submission_deadline_at) {
+      return {
+        ok: false,
+        error: {
+          code: "INVARIANT_VIOLATION",
+          message: "Production deliverables forbid submission deadline",
+        },
+      };
+    }
+    if (project.project_type === "client") {
+      if (!resolved.client_delivery_deadline_at) {
+        return {
+          ok: false,
+          error: {
+            code: "INVARIANT_VIOLATION",
+            message:
+              "Client delivery deadline is required for client project production deliverables",
+          },
+        };
+      }
+      if (
+        new Date(resolved.client_delivery_deadline_at) <
+        new Date(resolved.internal_review_deadline_at)
+      ) {
+        return {
+          ok: false,
+          error: {
+            code: "INVARIANT_VIOLATION",
+            message:
+              "Client delivery deadline must be on or after internal review deadline",
+          },
+        };
+      }
+    } else if (resolved.client_delivery_deadline_at) {
+      return {
+        ok: false,
+        error: {
+          code: "INVARIANT_VIOLATION",
+          message: "Internal projects forbid client delivery deadline",
+        },
+      };
+    }
+  }
+
+  if (
+    parsed.data.assignee_id &&
+    parsed.data.assignee_id !== existing.assignee_id
+  ) {
     const { data: assigneeMember } = await supabase
       .from("project_members")
-      .select("member_type, profiles!inner(is_active)")
+      .select("member_type, profiles!inner(is_active, deleted_at)")
       .eq("project_id", params.projectId)
       .eq("user_id", parsed.data.assignee_id)
       .is("deleted_at", null)
       .eq("profiles.is_active", true)
+      .is("profiles.deleted_at", null)
       .maybeSingle();
 
+    if (!assigneeMember) {
+      return {
+        ok: false,
+        error: {
+          code: "INVARIANT_VIOLATION",
+          message: "Assignee is not an active member of this project",
+        },
+      };
+    }
     if (
-      !assigneeMember ||
+      existing.workflow_type === "client_submission" &&
+      assigneeMember.member_type !== "client"
+    ) {
+      return {
+        ok: false,
+        error: {
+          code: "INVARIANT_VIOLATION",
+          message: "Assignee for a client submission must be a Client contact",
+        },
+      };
+    }
+    if (
+      existing.workflow_type === "production" &&
       !["pm_lead", "pm_watcher", "operator"].includes(
         assigneeMember.member_type,
       )
@@ -183,7 +317,8 @@ export async function updateDeliverableAction(params: {
         ok: false,
         error: {
           code: "INVARIANT_VIOLATION",
-          message: "Assignee must be an active compatible project member",
+          message:
+            "Assignee for production deliverable must be a PM Lead, PM Watcher, or Operator",
         },
       };
     }
@@ -253,7 +388,7 @@ export async function submitDeliverableVersionAction(
 
   const { data: deliverable } = await supabase
     .from("deliverables")
-    .select("id, project_id, assignee_id, status")
+    .select("id, project_id, assignee_id, status, workflow_type")
     .eq("id", parsed.data.deliverable_id)
     .is("deleted_at", null)
     .maybeSingle();
@@ -262,6 +397,17 @@ export async function submitDeliverableVersionAction(
     return {
       ok: false,
       error: { code: "NOT_FOUND", message: "Deliverable not found" },
+    };
+  }
+
+  if (deliverable.workflow_type !== "production") {
+    return {
+      ok: false,
+      error: {
+        code: "INVARIANT_VIOLATION",
+        message:
+          "Only production deliverables can submit versions through this action",
+      },
     };
   }
 

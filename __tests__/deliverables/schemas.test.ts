@@ -18,26 +18,26 @@ describe("Deliverable Domain Schemas", () => {
   const validDriveUrl = "https://drive.google.com/file/d/12345/view";
 
   describe("CreateDeliverableSchema", () => {
-    it("accepts valid production deliverable", () => {
+    it("accepts valid deliverable input without workflow_type", () => {
       const result = CreateDeliverableSchema.safeParse({
         project_id: validProjectId,
         task_id: validTaskId,
         assignee_id: validAssigneeId,
         title: "Brand Logo Animation",
         specifications: "1080p ProRes 422 render with alpha channel",
-        workflow_type: "production",
+        internal_review_deadline_at: "2026-09-01T12:00:00Z",
+        client_delivery_deadline_at: "2026-09-05T12:00:00Z",
       });
       expect(result.success).toBe(true);
     });
 
-    it("rejects non-production workflow types in Sprint 04", () => {
+    it("rejects title exceeding 180 characters", () => {
       const result = CreateDeliverableSchema.safeParse({
         project_id: validProjectId,
         task_id: validTaskId,
         assignee_id: validAssigneeId,
-        title: "Client assets",
+        title: "a".repeat(181),
         specifications: "Specs",
-        workflow_type: "client_submission",
       });
       expect(result.success).toBe(false);
     });

@@ -57,17 +57,22 @@ export function DeliverableDetailSheet({
 
   if (!deliverable) return null;
 
+  const isProduction = deliverable.workflow_type === "production";
   const isWatcher = effectiveCapacity === "pm_watcher";
   const isAssignee = deliverable.assignee_id === currentUserId;
   const isLeadOrAdmin =
     effectiveCapacity === "admin" || effectiveCapacity === "pm_lead";
   const canSubmit =
+    isProduction &&
     (isAssignee || isLeadOrAdmin) &&
     (deliverable.status === "pending" ||
       deliverable.status === "changes_requested");
   const canReview =
-    isLeadOrAdmin && deliverable.status === "awaiting_internal_review";
-  const canDeliver = isLeadOrAdmin && deliverable.status === "approved";
+    isProduction &&
+    isLeadOrAdmin &&
+    deliverable.status === "awaiting_internal_review";
+  const canDeliver =
+    isProduction && isLeadOrAdmin && deliverable.status === "approved";
   const isAwaitingClientReview =
     deliverable.status === "awaiting_client_review";
   const isDelivered = deliverable.status === "delivered";
@@ -104,6 +109,11 @@ export function DeliverableDetailSheet({
         <SheetHeader className="space-y-2 border-b border-border/60 pb-4 text-left">
           <div className="flex flex-wrap items-center gap-2">
             <DeliverableStatusBadge status={deliverable.status} />
+            <Badge variant="outline" className="text-[11px] font-medium">
+              {deliverable.workflow_type === "client_submission"
+                ? t("workflowType.clientSubmission")
+                : t("workflowType.production")}
+            </Badge>
             <Badge
               variant="secondary"
               className="font-mono text-xs px-2 py-0.5"

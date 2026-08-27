@@ -13,6 +13,8 @@ import {
 import type { ProjectDetail } from "@/lib/projects/queries";
 import type { DeliverableStatus } from "@/lib/deliverables/queries";
 
+import { DELIVERABLE_STATUS_TRANSLATION_KEYS } from "@/lib/status-maps";
+
 interface DeliverablesFilterBarProps {
   project: ProjectDetail;
   statusFilter: string;
@@ -22,7 +24,7 @@ interface DeliverablesFilterBarProps {
   viewMode: "table" | "cards";
   setViewMode: (mode: "table" | "cards") => void;
   isLeadOrAdmin: boolean;
-  isClientReady: boolean;
+  hasTasks: boolean;
   onOpenCreate: () => void;
 }
 
@@ -35,7 +37,7 @@ export function DeliverablesFilterBar({
   viewMode,
   setViewMode,
   isLeadOrAdmin,
-  isClientReady,
+  hasTasks,
   onOpenCreate,
 }: DeliverablesFilterBarProps) {
   const t = useTranslations("projects.workspace.deliverables");
@@ -47,6 +49,7 @@ export function DeliverablesFilterBar({
     "approved",
     "changes_requested",
     "delivered",
+    "submitted",
   ];
 
   return (
@@ -62,7 +65,7 @@ export function DeliverablesFilterBar({
             ...statuses.map((s) => ({
               value: s,
               label: t(
-                `status.${s === "awaiting_internal_review" ? "awaitingInternalReview" : s === "awaiting_client_review" ? "awaitingClientReview" : s === "changes_requested" ? "changesRequested" : s}` as "status.pending",
+                `status.${DELIVERABLE_STATUS_TRANSLATION_KEYS[s]}` as "status.pending",
               ),
             })),
           ]}
@@ -77,7 +80,7 @@ export function DeliverablesFilterBar({
             {statuses.map((s) => (
               <SelectItem key={s} value={s} className="text-xs">
                 {t(
-                  `status.${s === "awaiting_internal_review" ? "awaitingInternalReview" : s === "awaiting_client_review" ? "awaitingClientReview" : s === "changes_requested" ? "changesRequested" : s}` as "status.pending",
+                  `status.${DELIVERABLE_STATUS_TRANSLATION_KEYS[s]}` as "status.pending",
                 )}
               </SelectItem>
             ))}
@@ -158,7 +161,7 @@ export function DeliverablesFilterBar({
           </Button>
         </div>
 
-        {isLeadOrAdmin && isClientReady && (
+        {isLeadOrAdmin && hasTasks && (
           <Button
             onClick={onOpenCreate}
             size="sm"

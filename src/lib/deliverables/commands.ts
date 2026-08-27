@@ -34,9 +34,13 @@ export type BrokenLinkResult = {
   status: string;
 };
 
+export type CreateResolvedDeliverableInput = CreateDeliverableInput & {
+  workflow_type: Database["public"]["Enums"]["deliverable_workflow_type"];
+};
+
 export async function createDeliverable(
   supabase: TypedSupabase,
-  input: CreateDeliverableInput,
+  input: CreateResolvedDeliverableInput,
   actorId: string,
 ): Promise<CommandResult<Deliverable>> {
   try {
@@ -48,7 +52,7 @@ export async function createDeliverable(
         assignee_id: input.assignee_id,
         title: input.title,
         specifications: input.specifications,
-        workflow_type: "production",
+        workflow_type: input.workflow_type,
         submission_deadline_at: input.submission_deadline_at ?? null,
         internal_review_deadline_at: input.internal_review_deadline_at ?? null,
         client_delivery_deadline_at: input.client_delivery_deadline_at ?? null,

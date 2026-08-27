@@ -134,6 +134,128 @@ export const CreateTaskSchema = z.object({
 
 export type CreateTaskInput = z.infer<typeof CreateTaskSchema>;
 
+export const CreateTaskDeliverableDraftSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, "Title is required")
+    .max(180, "Title is too long"),
+  specifications: z
+    .string()
+    .trim()
+    .min(1, "Specifications are required")
+    .max(30000, "Specifications are too long"),
+  assignee_id: z.string().uuid("Invalid assignee ID"),
+  submission_deadline_at: z
+    .string()
+    .datetime({ offset: true })
+    .nullable()
+    .optional(),
+  internal_review_deadline_at: z
+    .string()
+    .datetime({ offset: true })
+    .nullable()
+    .optional(),
+  client_delivery_deadline_at: z
+    .string()
+    .datetime({ offset: true })
+    .nullable()
+    .optional(),
+});
+
+export type CreateTaskDeliverableDraftInput = z.infer<
+  typeof CreateTaskDeliverableDraftSchema
+>;
+
+export const CreateTaskWithDeliverablesSchema = z
+  .object({
+    project_id: z.string().uuid("Invalid project ID"),
+    title: z
+      .string()
+      .trim()
+      .min(1, "Title is required")
+      .max(200, "Title is too long"),
+    description: z
+      .string()
+      .trim()
+      .min(1, "Description is required")
+      .max(5000, "Description is too long"),
+    task_type: z.enum(["internal_work", "client_request"]),
+    priority: z.enum(["low", "medium", "high", "blocking"]),
+    deadline_at: z
+      .string()
+      .datetime({ offset: true, message: "Valid ISO datetime required" }),
+    assignee_id: z.string().uuid("Invalid assignee ID"),
+    deliverables: z
+      .array(CreateTaskDeliverableDraftSchema)
+      .max(20, "A task may be created with at most 20 deliverables")
+      .default([]),
+  })
+  .superRefine((data, ctx) => {
+    for (let i = 0; i < data.deliverables.length; i++) {
+      const d = data.deliverables[i];
+      if (data.task_type === "internal_work") {
+        if (!d.internal_review_deadline_at) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message:
+              "Internal review deadline is required for production deliverables",
+            path: ["deliverables", i, "internal_review_deadline_at"],
+          });
+        }
+        if (d.submission_deadline_at) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Production deliverables forbid submission deadline",
+            path: ["deliverables", i, "submission_deadline_at"],
+          });
+        }
+        if (d.client_delivery_deadline_at && d.internal_review_deadline_at) {
+          if (
+            new Date(d.client_delivery_deadline_at) <
+            new Date(d.internal_review_deadline_at)
+          ) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message:
+                "Client delivery deadline must be on or after internal review deadline",
+              path: ["deliverables", i, "client_delivery_deadline_at"],
+            });
+          }
+        }
+      } else if (data.task_type === "client_request") {
+        if (!d.submission_deadline_at) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message:
+              "Submission deadline is required for client submission deliverables",
+            path: ["deliverables", i, "submission_deadline_at"],
+          });
+        }
+        if (d.internal_review_deadline_at) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message:
+              "Client submission deliverables forbid internal review deadline",
+            path: ["deliverables", i, "internal_review_deadline_at"],
+          });
+        }
+        if (d.client_delivery_deadline_at) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message:
+              "Client submission deliverables forbid client delivery deadline",
+            path: ["deliverables", i, "client_delivery_deadline_at"],
+          });
+        }
+      }
+    }
+  });
+
+export type CreateTaskWithDeliverablesInput = z.infer<
+  typeof CreateTaskWithDeliverablesSchema
+>;
+
 export const UpdateTaskSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
   description: z.string().trim().min(1).max(5000).optional(),

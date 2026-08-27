@@ -190,10 +190,10 @@ export const DELIVERABLE_STATUS_MAP: Record<DeliverableStatus, StatusConfig> = {
     labelKey: "deliverableStatus.delivered",
   },
   submitted: {
-    badgeBg: "bg-indigo-100 dark:bg-indigo-950/60",
-    badgeFg: "text-indigo-800 dark:text-indigo-200",
-    icon: Clock,
-    labelKey: "deliverableStatus.awaitingInternalReview",
+    badgeBg: "bg-sky-100 dark:bg-sky-950/60",
+    badgeFg: "text-sky-800 dark:text-sky-200",
+    icon: Send,
+    labelKey: "deliverableStatus.submitted",
   },
 };
 
@@ -205,6 +205,7 @@ export const DELIVERABLE_STATUS_TRANSLATION_KEYS: Record<
   | "approved"
   | "changesRequested"
   | "delivered"
+  | "submitted"
 > = {
   pending: "pending",
   awaiting_internal_review: "awaitingInternalReview",
@@ -212,7 +213,7 @@ export const DELIVERABLE_STATUS_TRANSLATION_KEYS: Record<
   approved: "approved",
   changes_requested: "changesRequested",
   delivered: "delivered",
-  submitted: "awaitingInternalReview",
+  submitted: "submitted",
 };
 
 // ── Project membership capacity ───────────────────────────────────────────────

@@ -11,6 +11,7 @@ export async function verifyPmLeadCapacity(
   projectId: string,
 ): Promise<boolean> {
   if (userRole === "admin") return true;
+  if (userRole !== "pm") return false;
 
   const { data: member } = await supabase
     .from("project_members")
@@ -46,89 +47,137 @@ export async function verifyProjectMemberAccess(
   return Boolean(member);
 }
 
-export type EligibilityCheckResult =
-  { ok: true } | { ok: false; message: string };
+export type DeliverableEligibilityResult =
+  | {
+      ok: true;
+      taskType: "internal_work" | "client_request";
+      workflowType: "production" | "client_submission";
+      projectType: "internal" | "client";
+      taskAssigneeId: string;
+    }
+  | {
+      ok: false;
+      code: "NOT_FOUND" | "INVARIANT_VIOLATION";
+      message: string;
+    };
 
 export async function verifyDeliverableEligibility(
   supabase: TypedSupabase,
   projectId: string,
   taskId: string,
   assigneeId: string,
-): Promise<EligibilityCheckResult> {
-  // 1. Project exists, client type, not cancelled, has client_id
+): Promise<DeliverableEligibilityResult> {
   const { data: project } = await supabase
     .from("projects")
     .select("id, project_type, status, client_id")
     .eq("id", projectId)
-    .is("deleted_at", null)
+    .is("archived_at", null)
     .maybeSingle();
 
   if (!project || project.status === "cancelled") {
-    return { ok: false, message: "Project is invalid or cancelled" };
-  }
-
-  if (project.project_type !== "client" || !project.client_id) {
     return {
       ok: false,
-      message:
-        "Production deliverables require a client project with linked client organization",
+      code: "NOT_FOUND",
+      message: "Project is invalid or cancelled",
     };
   }
 
-  // 2. Project has at least one active, non-deleted Client member
-  const { data: clientMembers } = await supabase
-    .from("project_members")
-    .select("id, profiles!inner(is_active)")
-    .eq("project_id", projectId)
-    .eq("member_type", "client")
-    .is("deleted_at", null)
-    .eq("profiles.is_active", true);
-
-  if (!clientMembers || clientMembers.length === 0) {
-    return {
-      ok: false,
-      message:
-        "Project must have at least one active client member before planning deliverables",
-    };
-  }
-
-  // 3. Task belongs to project, not deleted, has_deliverables === true
   const { data: task } = await supabase
     .from("tasks")
-    .select("id, project_id, has_deliverables")
+    .select("id, project_id, task_type, assignee_id")
     .eq("id", taskId)
     .eq("project_id", projectId)
     .is("deleted_at", null)
     .maybeSingle();
 
-  if (!task || !task.has_deliverables) {
+  if (!task) {
     return {
       ok: false,
+      code: "NOT_FOUND",
       message:
-        "Selected task does not belong to this project or does not admit deliverables",
+        "Selected task does not belong to this project or has been deleted",
     };
   }
 
-  // 4. Assignee is active, non-deleted project member (pm_lead, pm_watcher, or operator)
   const { data: assigneeMember } = await supabase
     .from("project_members")
-    .select("member_type, profiles!inner(is_active)")
+    .select("member_type, profiles!inner(is_active, deleted_at)")
     .eq("project_id", projectId)
     .eq("user_id", assigneeId)
     .is("deleted_at", null)
     .eq("profiles.is_active", true)
+    .is("profiles.deleted_at", null)
     .maybeSingle();
 
-  if (
-    !assigneeMember ||
-    !["pm_lead", "pm_watcher", "operator"].includes(assigneeMember.member_type)
-  ) {
+  if (!assigneeMember) {
     return {
       ok: false,
-      message:
-        "Assignee must be an active project PM Lead, PM Watcher, or Operator",
+      code: "INVARIANT_VIOLATION",
+      message: "Assignee is not an active member of this project",
     };
   }
 
-  return { ok: true };
+  if (task.task_type === "client_request") {
+    if (project.project_type !== "client" || !project.client_id) {
+      return {
+        ok: false,
+        code: "INVARIANT_VIOLATION",
+        message:
+          "Client request deliverables require a client project with a linked client organization",
+      };
+    }
+    if (assigneeMember.member_type !== "client") {
+      return {
+        ok: false,
+        code: "INVARIANT_VIOLATION",
+        message:
+          "Assignee for a client request deliverable must be an active Client contact",
+      };
+    }
+
+    return {
+      ok: true,
+      taskType: "client_request",
+      workflowType: "client_submission",
+      projectType: project.project_type,
+      taskAssigneeId: task.assignee_id,
+    };
+  }
+
+  if (task.task_type === "internal_work") {
+    if (project.project_type === "client" && !project.client_id) {
+      return {
+        ok: false,
+        code: "INVARIANT_VIOLATION",
+        message:
+          "Production deliverables on client projects require a linked client organization",
+      };
+    }
+    if (
+      !["pm_lead", "pm_watcher", "operator"].includes(
+        assigneeMember.member_type,
+      )
+    ) {
+      return {
+        ok: false,
+        code: "INVARIANT_VIOLATION",
+        message:
+          "Assignee must be an active project PM Lead, PM Watcher, or Operator",
+      };
+    }
+
+    return {
+      ok: true,
+      taskType: "internal_work",
+      workflowType: "production",
+      projectType: project.project_type,
+      taskAssigneeId: task.assignee_id,
+    };
+  }
+
+  return {
+    ok: false,
+    code: "INVARIANT_VIOLATION",
+    message: "Unknown task type",
+  };
 }

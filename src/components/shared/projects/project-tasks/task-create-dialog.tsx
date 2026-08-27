@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, Controller, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, AlertCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -15,35 +14,30 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { DraftDeliverableCard } from "./draft-deliverable-card";
+import { TaskTypeToggle } from "./task-type-toggle";
+import { TaskTypeChangeAlert } from "./task-type-change-alert";
+import { TaskDetailsFields } from "./task-details-fields";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  useTaskDeliverableDrafts,
+  type TaskDeliverableDraftFormValue,
+} from "./use-task-deliverable-drafts";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { TaskAssigneeSelect } from "./task-assignee-select";
-import { TaskPriorityBadge } from "./task-priority-badge";
-import { CreateTaskSchema, type CreateTaskInput } from "@/lib/projects/schemas";
-import { createTaskAction } from "@/lib/projects/task-actions";
+  createTaskAction,
+  createTaskWithDeliverablesAction,
+} from "@/lib/projects/task-actions";
 import type { ProjectDetail, TaskPriority } from "@/lib/projects/queries";
+import type { MemberCapacity } from "@/lib/status-maps";
 
-function formatDateForInput(dateStr?: string | null): string {
-  if (!dateStr) return "";
-  try {
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 16);
-  } catch {
-    return "";
-  }
+interface TaskFormData {
+  project_id: string;
+  task_type: "internal_work" | "client_request";
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  assignee_id: string;
+  deadline_at: string;
+  deliverables: TaskDeliverableDraftFormValue[];
 }
 
 interface TaskCreateDialogProps {
@@ -60,60 +54,150 @@ export function TaskCreateDialog({
   onSuccess,
 }: TaskCreateDialogProps) {
   const t = useTranslations("projects.tasks.create");
-  const tType = useTranslations("projects.tasks.taskType");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingTypeChange, setPendingTypeChange] = useState<
+    "internal_work" | "client_request" | null
+  >(null);
 
   const isInternalProject = project.project_type === "internal";
 
-  // Find a default active member to pre-select
-  const defaultMember = project.members.find(
-    (m) => !m.deleted_at && m.profile?.is_active,
-  );
+  const getFirstCompatibleMember = (
+    type: "internal_work" | "client_request",
+  ) => {
+    const allowed: MemberCapacity[] =
+      type === "internal_work"
+        ? ["pm_lead", "pm_watcher", "operator"]
+        : ["client"];
+    return project.members.find(
+      (m) =>
+        !m.deleted_at &&
+        m.profile?.is_active &&
+        allowed.includes(m.member_type as MemberCapacity),
+    );
+  };
 
   const {
     register,
     handleSubmit,
     control,
     setValue,
+    getValues,
     reset,
+    watch,
     formState: { errors },
-  } = useForm<CreateTaskInput>({
-    resolver: zodResolver(CreateTaskSchema),
+  } = useForm<TaskFormData>({
     defaultValues: {
       project_id: project.id,
       task_type: "internal_work",
       title: "",
       description: "",
       priority: "medium",
-      assignee_id: defaultMember?.user_id ?? "",
+      assignee_id: getFirstCompatibleMember("internal_work")?.user_id ?? "",
       deadline_at: "",
+      deliverables: [],
     },
   });
 
-  const selectedType = useWatch({
-    control,
-    name: "task_type",
-    defaultValue: "internal_work",
-  });
+  const {
+    fields,
+    addDraft,
+    removeDraft,
+    clearDrafts,
+    syncTaskAssigneeChange,
+    draftCount,
+    canAddMore,
+  } = useTaskDeliverableDrafts(control, setValue, getValues);
 
-  const onSubmit = async (data: CreateTaskInput) => {
+  const selectedType = useWatch({ control, name: "task_type" });
+  const taskAssigneeId = useWatch({ control, name: "assignee_id" });
+
+  const allowedMemberTypes: MemberCapacity[] =
+    selectedType === "internal_work"
+      ? ["pm_lead", "pm_watcher", "operator"]
+      : ["client"];
+
+  const handleTypeChangeRequest = (
+    nextType: "internal_work" | "client_request",
+  ) => {
+    if (nextType === selectedType) return;
+    if (draftCount > 0) {
+      setPendingTypeChange(nextType);
+    } else {
+      applyTypeChange(nextType);
+    }
+  };
+
+  const applyTypeChange = (nextType: "internal_work" | "client_request") => {
+    clearDrafts();
+    setValue("task_type", nextType);
+    const compatible = getFirstCompatibleMember(nextType);
+    setValue("assignee_id", compatible?.user_id ?? "", {
+      shouldValidate: true,
+    });
+    setPendingTypeChange(null);
+  };
+
+  const handleFormResetAndClose = () => {
+    reset();
+    clearDrafts();
+    onClose();
+  };
+
+  const onSubmit = async (data: TaskFormData) => {
     setIsSubmitting(true);
     try {
-      // Ensure deadline is ISO formatted
       const isoDeadline = new Date(data.deadline_at).toISOString();
-      const payload: CreateTaskInput = {
-        ...data,
-        deadline_at: isoDeadline,
-      };
 
-      const result = await createTaskAction(payload);
-      if (!result.ok) {
-        toast.error(result.error.message || t("errorToast"));
+      if (draftCount === 0) {
+        const result = await createTaskAction({
+          project_id: data.project_id,
+          task_type: data.task_type,
+          title: data.title,
+          description: data.description,
+          priority: data.priority,
+          assignee_id: data.assignee_id,
+          deadline_at: isoDeadline,
+        });
+
+        if (!result.ok) {
+          toast.error(result.error.message || t("errorToast"));
+        } else {
+          toast.success(t("successToast"));
+          handleFormResetAndClose();
+          onSuccess?.();
+        }
       } else {
-        toast.success(t("successToast"));
-        reset();
-        onClose();
-        onSuccess?.();
+        const cleanDeliverables = data.deliverables.map((d) => ({
+          title: d.title,
+          specifications: d.specifications,
+          assignee_id: d.sameAsTaskAssignee ? data.assignee_id : d.assignee_id,
+          submission_deadline_at: d.submission_deadline_at,
+          internal_review_deadline_at: d.internal_review_deadline_at,
+          client_delivery_deadline_at: d.client_delivery_deadline_at,
+        }));
+
+        const result = await createTaskWithDeliverablesAction({
+          project_id: data.project_id,
+          task_type: data.task_type,
+          title: data.title,
+          description: data.description,
+          priority: data.priority,
+          assignee_id: data.assignee_id,
+          deadline_at: isoDeadline,
+          deliverables: cleanDeliverables,
+        });
+
+        if (!result.ok) {
+          toast.error(result.error.message || t("errorToast"));
+        } else {
+          toast.success(
+            t("successCombinedToast", {
+              count: result.data.deliverable_ids.length,
+            }),
+          );
+          handleFormResetAndClose();
+          onSuccess?.();
+        }
       }
     } catch {
       toast.error(t("errorToast"));
@@ -123,218 +207,119 @@ export function TaskCreateDialog({
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        if (!open) {
-          reset();
-          onClose();
-        }
-      }}
-    >
-      <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
-          <DialogDescription>{t("description")}</DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (!open) handleFormResetAndClose();
+        }}
+      >
+        <DialogContent className="sm:max-w-[620px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t("title")}</DialogTitle>
+            <DialogDescription>{t("description")}</DialogDescription>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
-          {/* Task Type Toggle */}
-          <div className="space-y-2">
-            <Label>{t("typeLabel")}</Label>
-            <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-lg">
-              <Button
-                type="button"
-                variant={selectedType === "internal_work" ? "default" : "ghost"}
-                size="sm"
-                className="text-xs h-8"
-                onClick={() => setValue("task_type", "internal_work")}
-              >
-                {tType("internalWork")}
-              </Button>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
+            <TaskTypeToggle
+              selectedType={selectedType}
+              isInternalProject={isInternalProject}
+              onSelectType={handleTypeChangeRequest}
+              disabled={isSubmitting}
+            />
 
-              {isInternalProject ? (
-                <Tooltip>
-                  <TooltipTrigger
-                    type="button"
-                    disabled
-                    className="text-xs h-8 w-full opacity-50 cursor-not-allowed inline-flex items-center justify-center rounded-md font-medium"
-                  >
-                    {tType("clientRequest")}
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-xs">
-                      {tType("clientRequestOnlyForClientProjects")}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
+            <TaskDetailsFields
+              register={register}
+              control={control}
+              errors={errors}
+              selectedType={selectedType}
+              members={project.members}
+              allowedMemberTypes={allowedMemberTypes}
+              isSubmitting={isSubmitting}
+              onAssigneeChange={syncTaskAssigneeChange}
+            />
+
+            {/* Deliverables Section */}
+            <div className="pt-3 border-t border-border/60 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-semibold text-foreground">
+                    {t("deliverablesSectionTitle", { count: draftCount })}
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground">
+                    {selectedType === "internal_work"
+                      ? t("workflowDerivedProductionHint")
+                      : t("workflowDerivedClientSubmissionHint")}
+                  </p>
+                </div>
                 <Button
                   type="button"
-                  variant={
-                    selectedType === "client_request" ? "default" : "ghost"
-                  }
+                  variant="outline"
                   size="sm"
-                  className="text-xs h-8"
-                  onClick={() => setValue("task_type", "client_request")}
+                  onClick={() => addDraft(taskAssigneeId)}
+                  disabled={!canAddMore || !taskAssigneeId || isSubmitting}
+                  className="h-8 text-xs gap-1"
                 >
-                  {tType("clientRequest")}
+                  <Plus className="size-3.5" />
+                  <span>{t("addDeliverableAction")}</span>
                 </Button>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {selectedType === "internal_work"
-                ? tType("internalDescription")
-                : tType("clientRequestDescription")}
-            </p>
-          </div>
+              </div>
 
-          {/* Title */}
-          <div className="space-y-1.5">
-            <Label htmlFor="create-task-title">{t("titleLabel")}</Label>
-            <Input
-              id="create-task-title"
-              placeholder={t("titlePlaceholder")}
-              disabled={isSubmitting}
-              {...register("title")}
-            />
-            {errors.title && (
-              <p className="text-xs text-destructive">{errors.title.message}</p>
-            )}
-          </div>
-
-          {/* Description */}
-          <div className="space-y-1.5">
-            <Label htmlFor="create-task-desc">{t("descriptionLabel")}</Label>
-            <Textarea
-              id="create-task-desc"
-              rows={3}
-              placeholder={t("descriptionPlaceholder")}
-              disabled={isSubmitting}
-              {...register("description")}
-            />
-            {errors.description && (
-              <p className="text-xs text-destructive">
-                {errors.description.message}
-              </p>
-            )}
-          </div>
-
-          {/* Priority & Deadline Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Priority */}
-            <div className="space-y-1.5">
-              <Label>{t("priorityLabel")}</Label>
-              <Controller
-                control={control}
-                name="priority"
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={isSubmitting}
-                    items={(
-                      ["low", "medium", "high", "blocking"] as TaskPriority[]
-                    ).map((p) => ({
-                      value: p,
-                      label: <TaskPriorityBadge priority={p} />,
-                    }))}
-                  >
-                    <SelectTrigger className="h-10">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(
-                        ["low", "medium", "high", "blocking"] as TaskPriority[]
-                      ).map((p) => (
-                        <SelectItem key={p} value={p}>
-                          <TaskPriorityBadge priority={p} />
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.priority && (
-                <p className="text-xs text-destructive">
-                  {errors.priority.message}
+              {!canAddMore && (
+                <p className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                  <AlertCircle className="size-3 shrink-0" />
+                  <span>{t("maxDeliverablesReached")}</span>
                 </p>
               )}
-            </div>
 
-            {/* Deadline */}
-            <div className="space-y-1.5">
-              <Label htmlFor="create-task-deadline">{t("deadlineLabel")}</Label>
-              <Controller
-                control={control}
-                name="deadline_at"
-                render={({ field }) => (
-                  <Input
-                    id="create-task-deadline"
-                    type="datetime-local"
-                    disabled={isSubmitting}
-                    value={field.value ? formatDateForInput(field.value) : ""}
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value
-                          ? new Date(e.target.value).toISOString()
-                          : "",
-                      )
-                    }
-                  />
-                )}
-              />
-              {errors.deadline_at && (
-                <p className="text-xs text-destructive">
-                  {errors.deadline_at.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Assignee */}
-          <div className="space-y-1.5">
-            <Label>{t("assigneeLabel")}</Label>
-            <Controller
-              control={control}
-              name="assignee_id"
-              render={({ field }) => (
-                <TaskAssigneeSelect
+              {fields.map((field, idx) => (
+                <DraftDeliverableCard
+                  key={field.id}
+                  index={idx}
+                  taskType={selectedType}
+                  projectType={project.project_type}
                   members={project.members}
-                  value={field.value}
-                  onChange={field.onChange}
-                  disabled={isSubmitting}
-                  error={errors.assignee_id?.message}
+                  taskAssigneeId={taskAssigneeId}
+                  register={register}
+                  setValue={setValue}
+                  watch={watch}
+                  errors={errors}
+                  onRemove={() => removeDraft(idx)}
                 />
-              )}
-            />
-          </div>
+              ))}
+            </div>
 
-          <DialogFooter className="pt-3 gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                reset();
-                onClose();
-              }}
-              disabled={isSubmitting}
-            >
-              {t("cancelAction")}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  {t("submitting")}
-                </>
-              ) : (
-                t("submitAction")
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <DialogFooter className="pt-3 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleFormResetAndClose}
+                disabled={isSubmitting}
+              >
+                {t("cancelAction")}
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    {t("submitting")}
+                  </>
+                ) : (
+                  t("submitAction")
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <TaskTypeChangeAlert
+        open={Boolean(pendingTypeChange)}
+        onCancel={() => setPendingTypeChange(null)}
+        onConfirm={() => {
+          if (pendingTypeChange) applyTypeChange(pendingTypeChange);
+        }}
+      />
+    </>
   );
 }

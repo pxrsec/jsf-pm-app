@@ -290,4 +290,4 @@ The Project Owner separately verifies the migration in `jsf-pm-dev`: function ow
 6. Add locale parity and focused tests.
 7. Run required checks and the five manual journeys.
 
-Until Step 2 is explicitly authorized, this specification and migration are planning artifacts only; no remote database state has been changed.
+Step 2 is explicitly authorized, the migration has been applied and the types regenerated..
