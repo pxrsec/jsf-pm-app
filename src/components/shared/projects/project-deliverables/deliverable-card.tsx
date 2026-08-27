@@ -52,18 +52,23 @@ export function DeliverableCard({
 
   const isLeadOrAdmin =
     effectiveCapacity === "admin" || effectiveCapacity === "pm_lead";
+  const isProduction = deliverable.workflow_type === "production";
   const isAssignee = deliverable.assignee_id === currentUserId;
   const canEdit =
     isLeadOrAdmin &&
     (deliverable.status === "pending" ||
       deliverable.status === "changes_requested");
   const canSubmit =
+    isProduction &&
     (isAssignee || isLeadOrAdmin) &&
     (deliverable.status === "pending" ||
       deliverable.status === "changes_requested");
   const canReview =
-    isLeadOrAdmin && deliverable.status === "awaiting_internal_review";
-  const canDeliver = isLeadOrAdmin && deliverable.status === "approved";
+    isProduction &&
+    isLeadOrAdmin &&
+    deliverable.status === "awaiting_internal_review";
+  const canDeliver =
+    isProduction && isLeadOrAdmin && deliverable.status === "approved";
   const canArchive = isLeadOrAdmin && deliverable.status !== "delivered";
 
   const assigneeName = deliverable.assignee?.full_name || t("unassigned");
@@ -74,8 +79,13 @@ export function DeliverableCard({
     .slice(0, 2)
     .toUpperCase();
 
-  const deadline = deliverable.submission_deadline_at
-    ? format.dateTime(new Date(deliverable.submission_deadline_at), {
+  const rawDeadline =
+    deliverable.workflow_type === "client_submission"
+      ? deliverable.submission_deadline_at
+      : deliverable.internal_review_deadline_at;
+
+  const deadline = rawDeadline
+    ? format.dateTime(new Date(rawDeadline), {
         month: "short",
         day: "numeric",
       })

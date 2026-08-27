@@ -7,6 +7,7 @@ import {
   AddProjectMemberSchema,
   UpdateProjectMemberSchema,
   CreateTaskSchema,
+  CreateTaskWithDeliverablesSchema,
   UpdateTaskSchema,
   TransitionTaskStatusSchema,
 } from "@/lib/projects/schemas";
@@ -197,6 +198,72 @@ describe("Project Domain Schemas", () => {
       const result = TransitionTaskStatusSchema.safeParse({
         task_id: validTaskId,
         next_status: "in_review",
+      });
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe("CreateTaskWithDeliverablesSchema", () => {
+    it("accepts valid internal_work task with production deliverables", () => {
+      const result = CreateTaskWithDeliverablesSchema.safeParse({
+        project_id: validProjectId,
+        title: "Edit promotional reel",
+        description: "Cut and color grade 60s reel",
+        task_type: "internal_work",
+        priority: "high",
+        deadline_at: validIsoDate,
+        assignee_id: validUserId,
+        deliverables: [
+          {
+            title: "First cut 4K",
+            specifications: "ProRes 422 3840x2160",
+            assignee_id: validUserId,
+            internal_review_deadline_at: validIsoDate,
+            client_delivery_deadline_at: validIsoDate,
+          },
+        ],
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("rejects internal_work task deliverable with submission_deadline_at", () => {
+      const result = CreateTaskWithDeliverablesSchema.safeParse({
+        project_id: validProjectId,
+        title: "Edit promotional reel",
+        description: "Cut and color grade 60s reel",
+        task_type: "internal_work",
+        priority: "high",
+        deadline_at: validIsoDate,
+        assignee_id: validUserId,
+        deliverables: [
+          {
+            title: "First cut 4K",
+            specifications: "ProRes 422",
+            assignee_id: validUserId,
+            submission_deadline_at: validIsoDate,
+          },
+        ],
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it("accepts valid client_request task with client submission deliverables", () => {
+      const result = CreateTaskWithDeliverablesSchema.safeParse({
+        project_id: validProjectId,
+        title: "Collect client raw assets",
+        description: "Gather 4K raw footage from client",
+        task_type: "client_request",
+        priority: "medium",
+        deadline_at: validIsoDate,
+        assignee_id: validUserId,
+        deliverables: [
+          {
+            title: "Raw footage folder",
+            specifications: "Upload all B-roll to Drive",
+            assignee_id: validUserId,
+            submission_deadline_at: validIsoDate,
+          },
+        ],
       });
       expect(result.success).toBe(true);
     });

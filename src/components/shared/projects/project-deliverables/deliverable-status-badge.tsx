@@ -21,6 +21,7 @@ export const DELIVERABLE_STATUS_TRANSLATION_KEYS: Record<
   | "approved"
   | "changesRequested"
   | "delivered"
+  | "submitted"
 > = {
   pending: "pending",
   awaiting_internal_review: "awaitingInternalReview",
@@ -28,7 +29,7 @@ export const DELIVERABLE_STATUS_TRANSLATION_KEYS: Record<
   approved: "approved",
   changes_requested: "changesRequested",
   delivered: "delivered",
-  submitted: "awaitingInternalReview",
+  submitted: "submitted",
 };
 
 export function DeliverableStatusBadge({

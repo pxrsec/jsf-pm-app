@@ -9,13 +9,12 @@ export const CreateDeliverableSchema = z.object({
     .string()
     .trim()
     .min(1, "Title is required")
-    .max(200, "Title is too long"),
+    .max(180, "Title is too long"),
   specifications: z
     .string()
     .trim()
     .min(1, "Specifications are required")
-    .max(5000, "Specifications are too long"),
-  workflow_type: z.enum(["production"]),
+    .max(30000, "Specifications are too long"),
   submission_deadline_at: z
     .string()
     .datetime({ offset: true })
@@ -36,8 +35,8 @@ export const CreateDeliverableSchema = z.object({
 export type CreateDeliverableInput = z.infer<typeof CreateDeliverableSchema>;
 
 export const UpdateDeliverableSchema = z.object({
-  title: z.string().trim().min(1).max(200).optional(),
-  specifications: z.string().trim().min(1).max(5000).optional(),
+  title: z.string().trim().min(1).max(180).optional(),
+  specifications: z.string().trim().min(1).max(30000).optional(),
   assignee_id: z.string().uuid().optional(),
   submission_deadline_at: z
     .string()

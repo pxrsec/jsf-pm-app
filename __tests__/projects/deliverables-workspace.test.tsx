@@ -407,26 +407,29 @@ describe("Deliverables Workspace UI", () => {
     },
   ];
 
-  it("renders internal project guard notice when project_type is internal", () => {
+  it("renders deliverables workspace for internal projects without client warning banner", () => {
     const html = renderToStaticMarkup(
       <DeliverablesTab
         project={mockInternalProject}
         initialDeliverables={[]}
-        tasks={[]}
+        tasks={mockTasks}
         effectiveCapacity="pm_lead"
       />,
     );
 
-    expect(html).toContain("Entregables no disponibles");
-    expect(html).toContain(
-      "Los proyectos internos no admiten entregables de producción.",
-    );
+    expect(html).toContain("No hay entregables planificados");
+    expect(html).toContain("Planificar primer entregable");
+    expect(html).not.toContain("Configuración de cliente pendiente");
   });
 
-  it("renders client setup warning banner when client membership is incomplete", () => {
+  it("renders client setup warning banner when client project lacks client organization", () => {
+    const clientProjectWithoutOrg: ProjectDetail = {
+      ...mockIncompleteClientProject,
+      client_id: null,
+    };
     const html = renderToStaticMarkup(
       <DeliverablesTab
-        project={mockIncompleteClientProject}
+        project={clientProjectWithoutOrg}
         initialDeliverables={[]}
         tasks={[]}
         effectiveCapacity="pm_lead"

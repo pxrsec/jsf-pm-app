@@ -4,7 +4,7 @@ import { useState, useMemo, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Building2, FolderLock, Layers, FilterX, Plus } from "lucide-react";
+import { Building2, Layers, FilterX, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DeliverablesFilterBar } from "./deliverables-filter-bar";
 import { DeliverableList } from "./deliverable-list";
@@ -68,15 +68,9 @@ export function DeliverablesTab({
   const [reportingVersion, setReportingVersion] =
     useState<DeliverableVersionView | null>(null);
 
-  const isInternal = project.project_type === "internal";
-  const hasClientOrg = Boolean(project.client_id);
-  const hasActiveClientMember = project.members.some(
-    (m) =>
-      !m.deleted_at &&
-      m.member_type === "client" &&
-      m.profile?.is_active === true,
-  );
-  const isClientReady = hasClientOrg && hasActiveClientMember;
+  const hasTasks = tasks.some((t) => !t.deleted_at);
+  const isMissingClientOrg =
+    project.project_type === "client" && !project.client_id;
   const isLeadOrAdmin =
     effectiveCapacity === "admin" || effectiveCapacity === "pm_lead";
 
@@ -138,27 +132,9 @@ export function DeliverablesTab({
     }
   };
 
-  if (isInternal) {
-    return (
-      <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-dashed border-border/80 bg-muted/20 space-y-3">
-        <div className="size-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-          <FolderLock className="size-6" />
-        </div>
-        <div className="space-y-1 max-w-md">
-          <h3 className="text-base font-semibold text-foreground">
-            {t("internalIneligibleTitle")}
-          </h3>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {t("internalIneligibleDescription")}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {!isClientReady && (
+      {isMissingClientOrg && (
         <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200">
           <Building2 className="size-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
           <div className="space-y-0.5 text-xs">
@@ -179,7 +155,7 @@ export function DeliverablesTab({
         viewMode={viewMode}
         setViewMode={setViewMode}
         isLeadOrAdmin={isLeadOrAdmin}
-        isClientReady={isClientReady}
+        hasTasks={hasTasks}
         onOpenCreate={() => setIsCreateOpen(true)}
       />
 
@@ -196,7 +172,7 @@ export function DeliverablesTab({
               {t("emptyStateDescription")}
             </p>
           </div>
-          {isLeadOrAdmin && isClientReady && (
+          {isLeadOrAdmin && hasTasks && (
             <Button
               onClick={() => setIsCreateOpen(true)}
               size="sm"

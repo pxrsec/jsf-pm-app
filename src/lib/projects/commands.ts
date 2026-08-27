@@ -10,6 +10,7 @@ import type {
   AddProjectMemberInput,
   UpdateProjectMemberInput,
   CreateTaskInput,
+  CreateTaskWithDeliverablesInput,
   UpdateTaskInput,
   TransitionTaskStatusInput,
 } from "./schemas";
@@ -43,6 +44,19 @@ export type TransitionResult = {
   old_status: string;
   new_status: string;
 };
+export type CreateTaskWithDeliverablesResult = {
+  task: Task;
+  deliverable_ids: string[];
+};
+export type DeliverableDraftPayload = {
+  title: string;
+  specifications: string;
+  assignee_id: string;
+  workflow_type: Database["public"]["Enums"]["deliverable_workflow_type"];
+  submission_deadline_at?: string | null;
+  internal_review_deadline_at?: string | null;
+  client_delivery_deadline_at?: string | null;
+};
 
 // ── Project Commands ─────────────────────────────────────────────────────────
 
@@ -66,7 +80,6 @@ export async function createProject(
       })
       .select("*")
       .single();
-
     if (error || !data) return { ok: false, error: mapSupabaseError(error) };
     return { ok: true, data };
   } catch (err) {
@@ -83,9 +96,7 @@ export async function updateProject(
   try {
     const updatePayload: Partial<
       Database["public"]["Tables"]["projects"]["Update"]
-    > = {
-      updated_by: actorId,
-    };
+    > = { updated_by: actorId };
     if (input.name !== undefined) updatePayload.name = input.name;
     if (input.internal_description !== undefined)
       updatePayload.internal_description = input.internal_description;
@@ -124,7 +135,6 @@ export async function archiveProject(
       p_entity_type: "project",
       p_reason: reason,
     });
-
     if (error) return { ok: false, error: mapSupabaseError(error) };
     return { ok: true, data: { success: Boolean(data) } };
   } catch (err) {
@@ -143,7 +153,6 @@ export async function restoreProject(
       p_entity_type: "project",
       p_reason: reason,
     });
-
     if (error) return { ok: false, error: mapSupabaseError(error) };
     return { ok: true, data: { success: Boolean(data) } };
   } catch (err) {
@@ -162,7 +171,6 @@ export async function transitionProjectStatus(
       p_confirm_unfinished: input.confirm_unfinished ?? false,
       p_reopen_reason: input.reopen_reason ?? undefined,
     });
-
     if (error) return { ok: false, error: mapSupabaseError(error) };
     return { ok: true, data: data as unknown as TransitionResult };
   } catch (err) {
@@ -180,7 +188,6 @@ export async function recoverProjectStatus(
       p_target_status: input.target_status,
       p_reason: input.reason,
     });
-
     if (error) return { ok: false, error: mapSupabaseError(error) };
     return { ok: true, data: data as unknown as TransitionResult };
   } catch (err) {
@@ -195,11 +202,8 @@ export async function getCompletionReadiness(
   try {
     const { data, error } = await supabase.rpc(
       "get_project_completion_readiness",
-      {
-        p_project_id: projectId,
-      },
+      { p_project_id: projectId },
     );
-
     if (error) return { ok: false, error: mapSupabaseError(error) };
     return { ok: true, data: data as unknown as ProjectCompletionReadiness };
   } catch (err) {
@@ -276,7 +280,6 @@ export async function removeProjectMember(
       p_entity_type: "project_member",
       p_reason: reason,
     });
-
     if (error) return { ok: false, error: mapSupabaseError(error) };
     return { ok: true, data: { success: Boolean(data) } };
   } catch (err) {
@@ -317,9 +320,70 @@ export async function createTask(
       })
       .select("*")
       .single();
-
     if (error || !data) return { ok: false, error: mapSupabaseError(error) };
     return { ok: true, data };
+  } catch (err) {
+    return { ok: false, error: mapSupabaseError(err as { message?: string }) };
+  }
+}
+
+export async function createTaskWithDeliverables(
+  supabase: TypedSupabase,
+  input: CreateTaskWithDeliverablesInput,
+  deliverablesPayload: DeliverableDraftPayload[],
+): Promise<CommandResult<CreateTaskWithDeliverablesResult>> {
+  try {
+    const { data, error } = await supabase.rpc(
+      "create_task_with_deliverables",
+      {
+        p_project_id: input.project_id,
+        p_title: input.title,
+        p_description: input.description,
+        p_task_type: input.task_type,
+        p_priority: input.priority,
+        p_deadline_at: input.deadline_at,
+        p_assignee_id: input.assignee_id,
+        p_deliverables: deliverablesPayload,
+      },
+    );
+
+    if (error) return { ok: false, error: mapSupabaseError(error) };
+    if (!data || typeof data !== "object") {
+      return {
+        ok: false,
+        error: {
+          code: "UNKNOWN",
+          message: "Malformed response from server command.",
+        },
+      };
+    }
+
+    const payload = data as Record<string, unknown>;
+    const rawTask = payload.task as Record<string, unknown> | undefined;
+    const rawIds = payload.deliverable_ids;
+
+    if (
+      !rawTask ||
+      typeof rawTask.id !== "string" ||
+      !Array.isArray(rawIds) ||
+      rawIds.length !== deliverablesPayload.length
+    ) {
+      return {
+        ok: false,
+        error: {
+          code: "UNKNOWN",
+          message: "Malformed response from server command.",
+        },
+      };
+    }
+
+    return {
+      ok: true,
+      data: {
+        task: rawTask as unknown as Task,
+        deliverable_ids: rawIds as string[],
+      },
+    };
   } catch (err) {
     return { ok: false, error: mapSupabaseError(err as { message?: string }) };
   }
@@ -369,7 +433,6 @@ export async function transitionTaskStatus(
       p_next_status: input.next_status,
       p_reopen_reason: input.reopen_reason ?? undefined,
     });
-
     if (error) return { ok: false, error: mapSupabaseError(error) };
     return { ok: true, data: data as unknown as TransitionResult };
   } catch (err) {
@@ -388,7 +451,6 @@ export async function archiveTask(
       p_entity_type: "task",
       p_reason: reason,
     });
-
     if (error) return { ok: false, error: mapSupabaseError(error) };
     return { ok: true, data: { success: Boolean(data) } };
   } catch (err) {

@@ -46,7 +46,7 @@ export async function reviewDeliverableAction(
 
   const { data: deliverable } = await supabase
     .from("deliverables")
-    .select("id, project_id, status")
+    .select("id, project_id, status, workflow_type")
     .eq("id", parsed.data.deliverable_id)
     .is("deleted_at", null)
     .maybeSingle();
@@ -55,6 +55,16 @@ export async function reviewDeliverableAction(
     return {
       ok: false,
       error: { code: "NOT_FOUND", message: "Deliverable not found" },
+    };
+  }
+
+  if (deliverable.workflow_type !== "production") {
+    return {
+      ok: false,
+      error: {
+        code: "INVARIANT_VIOLATION",
+        message: "Only production deliverables can be reviewed",
+      },
     };
   }
 
@@ -123,7 +133,7 @@ export async function markDeliverableDeliveredAction(
 
   const { data: deliverable } = await supabase
     .from("deliverables")
-    .select("id, status, project_id")
+    .select("id, status, project_id, workflow_type")
     .eq("id", parsed.data.deliverable_id)
     .eq("project_id", parsed.data.project_id)
     .is("deleted_at", null)
@@ -133,6 +143,16 @@ export async function markDeliverableDeliveredAction(
     return {
       ok: false,
       error: { code: "NOT_FOUND", message: "Deliverable not found" },
+    };
+  }
+
+  if (deliverable.workflow_type !== "production") {
+    return {
+      ok: false,
+      error: {
+        code: "INVARIANT_VIOLATION",
+        message: "Only production deliverables can be marked delivered",
+      },
     };
   }
 

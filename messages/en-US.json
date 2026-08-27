@@ -85,7 +85,8 @@
       "awaitingClientReview": "Awaiting Client Review",
       "approved": "Approved",
       "changesRequested": "Changes Requested",
-      "delivered": "Delivered"
+      "delivered": "Delivered",
+      "submitted": "Submitted"
     },
     "deliverableStatus": {
       "pending": "Pending",
@@ -93,7 +94,8 @@
       "awaitingClientReview": "Awaiting Client Review",
       "approved": "Approved",
       "changesRequested": "Changes Requested",
-      "delivered": "Delivered"
+      "delivered": "Delivered",
+      "submitted": "Submitted"
     },
     "priority": {
       "low": "Low",
@@ -432,7 +434,19 @@
           "awaitingClientReview": "Awaiting Client Review",
           "approved": "Approved",
           "changesRequested": "Changes Requested",
-          "delivered": "Delivered"
+          "delivered": "Delivered",
+          "submitted": "Submitted"
+        },
+        "workflowType": {
+          "production": "Production Deliverable",
+          "clientSubmission": "Client Submission"
+        },
+        "form": {
+          "assigneeInternalPlaceholder": "Select internal assignee...",
+          "assigneeClientPlaceholder": "Select client contact...",
+          "submissionDeadlineLabel": "Submission deadline",
+          "internalReviewDeadlineLabel": "Internal review deadline",
+          "clientDeliveryDeadlineLabel": "Client delivery deadline"
         },
         "deadlines": {
           "submission": "Submission: {date}",
@@ -623,7 +637,9 @@
         "pmWatcher": "PM Watcher",
         "pm_watcher": "PM Watcher",
         "operator": "Operator",
-        "client": "Client"
+        "client": "Client",
+        "pm": "Project Manager",
+        "admin": "Admin"
       }
     },
     "members": {
@@ -658,7 +674,9 @@
         "pmWatcher": "PM Watcher",
         "pm_watcher": "PM Watcher",
         "operator": "Operator",
-        "client": "Client"
+        "client": "Client",
+        "pm": "Project Manager",
+        "admin": "Admin"
       },
       "addDialog": {
         "title": "Add Project Member",
@@ -790,12 +808,36 @@
         "priorityLabel": "Priority",
         "assigneeLabel": "Assigned to",
         "assigneePlaceholder": "Select a team member...",
+        "taskAssigneeLabel": "Task assignee",
+        "deliverableAssigneeLabel": "Deliverable assignee",
         "deadlineLabel": "Deadline date and time",
+        "deliverablesSectionTitle": "Linked Deliverables ({count})",
+        "addDeliverableAction": "Add deliverable",
+        "maxDeliverablesReached": "Maximum of 20 deliverables reached.",
+        "linkedToTaskNotice": "Will be linked to this task",
+        "removeDeliverableAria": "Remove deliverable #{number}",
+        "draftTitleLabel": "Deliverable title",
+        "draftTitlePlaceholder": "e.g. Rough Cut v1",
+        "draftSpecificationsLabel": "Specifications & requirements",
+        "draftSpecificationsPlaceholder": "Describe specifications, formats, requirements...",
+        "sameAsTaskAssignee": "Same as task assignee",
+        "noCompatibleMembers": "No compatible internal team members found.",
+        "noCompatibleClientMembers": "No compatible client contacts found.",
+        "workflowDerivedProductionHint": "Task is internal work: deliverables will follow the production workflow.",
+        "workflowDerivedClientSubmissionHint": "Task is a client request: deliverables will follow the client submission workflow.",
+        "submissionDeadlineHelp": "Client submissions require only a submission deadline.",
+        "typeChangeWarningTitle": "Discard drafted deliverables?",
+        "typeChangeWarningDescription": "Changing the task type will discard all drafted deliverables and reset assignee selections. This action cannot be undone.",
+        "typeChangeConfirmAction": "Change type and discard",
+        "typeChangeCancelAction": "Keep current type",
         "submitAction": "Create Task",
         "cancelAction": "Cancel",
         "submitting": "Creating...",
         "successToast": "Task created successfully.",
-        "errorToast": "Could not create the task. Please check the entered data."
+        "successCombinedToast": "Task and {count} deliverable(s) created successfully.",
+        "errorToast": "Could not create the task. Please check the entered data.",
+        "noEligibleTasksDescription": "No active tasks found in this project. Create a task first.",
+        "incompleteClientSetupForClientRequest": "Client requests require a linked client organization and active client contact."
       },
       "edit": {
         "title": "Edit Task",
@@ -806,6 +848,8 @@
         "priorityLabel": "Priority",
         "assigneeLabel": "Assigned to",
         "deadlineLabel": "Deadline date and time",
+        "noCompatibleMembers": "No compatible internal team members found.",
+        "noCompatibleClientMembers": "No compatible client contacts found.",
         "submitAction": "Save changes",
         "cancelAction": "Cancel",
         "submitting": "Saving...",

@@ -1754,6 +1754,19 @@ export type Database = {
         }
         Returns: Json
       }
+      create_task_with_deliverables: {
+        Args: {
+          p_assignee_id: string
+          p_deadline_at: string
+          p_deliverables?: Json
+          p_description: string
+          p_priority: Database["public"]["Enums"]["task_priority"]
+          p_project_id: string
+          p_task_type: Database["public"]["Enums"]["task_type"]
+          p_title: string
+        }
+        Returns: Json
+      }
       evaluate_notification_alerts: {
         Args: { p_project_id?: string }
         Returns: Json

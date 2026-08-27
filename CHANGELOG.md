@@ -1,5 +1,40 @@
 # JSF PM App Development Changelog
 
+## [2026-08-27 @ 13:27]
+
+**🐛 Hotfixes: Missing Localization Keys in Project Tasks & Member Capacities**
+
+- **Project Tasks Edit Dialog (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Added missing `noCompatibleMembers` and `noCompatibleClientMembers` translation keys under `projects.tasks.edit` namespace to support compatible member fallbacks in task editing.
+- **Member Capacities & Task Kanban Cards (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Added `pm` and `admin` keys under `projects.members.capacities` and `projects.roster.capacities` to resolve system role capacity displays in `task-kanban-card.tsx` assignee tooltips.
+- **Verification:**
+  - Validated with `npm run typecheck` and `npx vitest run __tests__/i18n` (all 27 tests passing).
+
+## [2026-08-27 @ 13:00]
+
+**🚀 Features & 🛠 Architecture: S09-04 Task Deliverables Refinement & Atomic Bundling**
+
+- **Atomic Task & Deliverables Bundle Creation (`src/lib/projects/task-actions.ts`, `src/lib/projects/commands.ts`, `src/lib/projects/schemas.ts`):**
+  - Added `createTaskWithDeliverablesAction` and `createTaskWithDeliverables` RPC adapter executing transactional bundling via Supabase RPC `create_task_with_deliverables`.
+  - Implemented `CreateTaskWithDeliverablesSchema` and `CreateTaskDeliverableDraftSchema` with workflow-type validation, max 20 draft cap, and capacity checks.
+  - Enforced PM Lead capacity verification on both single task creation (`createTaskAction`) and bundled creation (`createTaskWithDeliverablesAction`).
+- **Server-Derived Workflow Types & Eligibility Refactoring (`src/lib/deliverables/auth-checks.ts`, `src/lib/deliverables/actions.ts`, `src/lib/deliverables/commands.ts`):**
+  - Removed client-controlled `workflow_type` from `CreateDeliverableSchema`; derived workflow type deterministically on server from parent task type (`internal_work` -> `production`, `client_request` -> `client_submission`).
+  - Refactored `verifyDeliverableEligibility` to execute a single performant joined query returning `DeliverableEligibilityResult`.
+  - Enabled production deliverables on internal projects (requiring internal review deadline; omitting client delivery and submission deadlines).
+  - Updated `updateDeliverableAction` to merge existing record title and specifications before validating full deliverable state.
+  - Gated version submission, review actions, and delivery actions to `workflow_type === "production"`.
+- **UI Workspace & Dialog Modernization (`src/components/shared/projects/`):**
+  - Refactored `TaskCreateDialog` with inline draft deliverables management (`useTaskDeliverableDrafts`), dynamic task type toggle (`TaskTypeToggle`), and destructive type switch confirmation dialog (`TaskTypeChangeAlert`).
+  - Created shared `ProjectAssigneeSelect` component filtering active members by capacity.
+  - Updated `DeliverableCreateDialog` and `DeliverableEditDialog` with task-driven workflow derivation, blocked states, and `DeliverableDeadlinesSection`.
+  - Updated `DeliverablesTab` and `DeliverablesFilterBar` to remove internal project blockage, replaced `isClientReady` with `hasTasks: boolean`, and added `submitted` status filtering and badge styling.
+- **Testing & Verification (`__tests__/projects/`, `__tests__/deliverables/`):**
+  - Added unit test suites for `CreateTaskWithDeliverablesSchema`, `createTaskWithDeliverablesAction`, and updated `createDeliverableAction` and workspace eligibility test fixtures.
+  - Verified clean compilation with `npm run typecheck` and `npm run lint`.
+
+
 ## [2026-08-27 @ 11:31]
 
 **🐛 Hotfixes: Metrics Unit Tests & Navigation Mock Alignment**

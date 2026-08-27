@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit3, Loader2 } from "lucide-react";
 import {
@@ -18,21 +18,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ProjectAssigneeSelect } from "@/components/shared/projects/project-tasks/project-assignee-select";
+import { DeliverableDeadlinesSection } from "./deliverable-deadlines-section";
+import { DeliverableStatusBadge } from "./deliverable-status-badge";
 import {
   UpdateDeliverableSchema,
   type UpdateDeliverableInput,
 } from "@/lib/deliverables/schemas";
 import { updateDeliverableAction } from "@/lib/deliverables/actions";
-import { DeliverableStatusBadge } from "./deliverable-status-badge";
 import type { ProjectDetail } from "@/lib/projects/queries";
 import type { DeliverableListItem } from "@/lib/deliverables/queries";
+import type { MemberCapacity } from "@/lib/status-maps";
 
 interface DeliverableEditDialogProps {
   project: ProjectDetail;
@@ -50,14 +46,19 @@ export function DeliverableEditDialog({
   onSuccess,
 }: DeliverableEditDialogProps) {
   const t = useTranslations("projects.workspace.deliverables.editDialog");
+  const tTasks = useTranslations("projects.tasks");
+  const tDeliverables = useTranslations("projects.workspace.deliverables");
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const eligibleAssignees = project.members.filter(
-    (m) =>
-      !m.deleted_at &&
-      m.profile?.is_active &&
-      ["pm_lead", "pm_watcher", "operator"].includes(m.member_type),
-  );
+  const isClientProject = project.project_type === "client";
+  const workflowType = deliverable?.workflow_type ?? "production";
+  const taskType =
+    workflowType === "production" ? "internal_work" : "client_request";
+
+  const allowedMemberTypes: MemberCapacity[] =
+    workflowType === "production"
+      ? ["pm_lead", "pm_watcher", "operator"]
+      : ["client"];
 
   const form = useForm<UpdateDeliverableInput>({
     resolver: zodResolver(UpdateDeliverableSchema),
@@ -74,7 +75,6 @@ export function DeliverableEditDialog({
   const {
     register,
     handleSubmit,
-    setValue,
     control,
     reset,
     formState: { errors, isSubmitting },
@@ -92,8 +92,6 @@ export function DeliverableEditDialog({
       });
     }
   }, [deliverable, reset]);
-
-  const selectedAssigneeId = useWatch({ control, name: "assignee_id" });
 
   if (!deliverable) return null;
 
@@ -140,11 +138,18 @@ export function DeliverableEditDialog({
           </div>
         </DialogHeader>
 
-        {/* Read-Only Status & Version Context */}
-        <div className="flex items-center gap-3 bg-muted/40 p-3 rounded-lg border border-border/60">
+        {/* Read-Only Status, Workflow & Version Context */}
+        <div className="flex flex-wrap items-center gap-2.5 bg-muted/40 p-3 rounded-lg border border-border/60">
           <div className="flex items-center gap-1.5 text-xs">
             <span className="text-muted-foreground">{t("statusLabel")}</span>
             <DeliverableStatusBadge status={deliverable.status} />
+          </div>
+          <div className="flex items-center gap-1.5 text-xs">
+            <Badge variant="outline" className="text-[11px]">
+              {deliverable.workflow_type === "client_submission"
+                ? tDeliverables("workflowType.clientSubmission")
+                : tDeliverables("workflowType.production")}
+            </Badge>
           </div>
           <div className="flex items-center gap-1.5 text-xs">
             <span className="text-muted-foreground">{t("versionLabel")}</span>
@@ -160,7 +165,12 @@ export function DeliverableEditDialog({
             <Label htmlFor="edit-title" className="text-xs font-medium">
               {t("titleLabel")} <span className="text-destructive">*</span>
             </Label>
-            <Input id="edit-title" {...register("title")} className="text-xs" />
+            <Input
+              id="edit-title"
+              maxLength={180}
+              {...register("title")}
+              className="text-xs h-10"
+            />
             {errors.title && (
               <p className="text-[11px] text-destructive">
                 {errors.title.message}
@@ -170,40 +180,31 @@ export function DeliverableEditDialog({
 
           {/* Assignee Selection */}
           <div className="space-y-1.5">
-            <Label htmlFor="edit-assignee" className="text-xs font-medium">
-              {t("assigneeLabel")}
-            </Label>
-            <Select
-              value={selectedAssigneeId}
-              onValueChange={(val) => {
-                if (val) setValue("assignee_id", val);
-              }}
-              items={eligibleAssignees.map((member) => ({
-                value: member.user_id,
-                label: `${member.profile?.full_name || t("userFallback")} (${member.member_type})`,
-              }))}
-            >
-              <SelectTrigger id="edit-assignee" className="text-xs">
-                <SelectValue placeholder={t("assigneePlaceholder")} />
-              </SelectTrigger>
-              <SelectContent>
-                {eligibleAssignees.map((member) => (
-                  <SelectItem
-                    key={member.user_id}
-                    value={member.user_id}
-                    className="text-xs"
-                  >
-                    {member.profile?.full_name || t("userFallback")} (
-                    {member.member_type})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.assignee_id && (
-              <p className="text-[11px] text-destructive">
-                {errors.assignee_id.message}
-              </p>
-            )}
+            <Controller
+              control={control}
+              name="assignee_id"
+              render={({ field }) => (
+                <ProjectAssigneeSelect
+                  members={project.members}
+                  allowedMemberTypes={allowedMemberTypes}
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={isSubmitting}
+                  label={t("assigneeLabel")}
+                  placeholder={
+                    workflowType === "client_submission"
+                      ? tDeliverables("form.assigneeClientPlaceholder")
+                      : tDeliverables("form.assigneeInternalPlaceholder")
+                  }
+                  noCompatibleMembersText={
+                    workflowType === "client_submission"
+                      ? tTasks("create.noCompatibleClientMembers")
+                      : tTasks("create.noCompatibleMembers")
+                  }
+                  error={errors.assignee_id?.message}
+                />
+              )}
+            />
           </div>
 
           {/* Specifications */}
@@ -216,9 +217,10 @@ export function DeliverableEditDialog({
             </Label>
             <Textarea
               id="edit-specifications"
+              maxLength={30000}
               {...register("specifications")}
-              rows={4}
-              className="text-xs resize-none"
+              rows={3}
+              className="text-xs resize-y"
             />
             {errors.specifications && (
               <p className="text-[11px] text-destructive">
@@ -227,95 +229,13 @@ export function DeliverableEditDialog({
             )}
           </div>
 
-          {/* Deadlines Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="edit-sub-deadline"
-                className="text-[11px] font-medium"
-              >
-                {t("submissionDeadlineLabel")}
-              </Label>
-              <Input
-                id="edit-sub-deadline"
-                type="datetime-local"
-                defaultValue={
-                  deliverable.submission_deadline_at
-                    ? new Date(deliverable.submission_deadline_at)
-                        .toISOString()
-                        .slice(0, 16)
-                    : ""
-                }
-                onChange={(e) =>
-                  setValue(
-                    "submission_deadline_at",
-                    e.target.value
-                      ? new Date(e.target.value).toISOString()
-                      : null,
-                  )
-                }
-                className="text-xs"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="edit-rev-deadline"
-                className="text-[11px] font-medium"
-              >
-                {t("internalReviewDeadlineLabel")}
-              </Label>
-              <Input
-                id="edit-rev-deadline"
-                type="datetime-local"
-                defaultValue={
-                  deliverable.internal_review_deadline_at
-                    ? new Date(deliverable.internal_review_deadline_at)
-                        .toISOString()
-                        .slice(0, 16)
-                    : ""
-                }
-                onChange={(e) =>
-                  setValue(
-                    "internal_review_deadline_at",
-                    e.target.value
-                      ? new Date(e.target.value).toISOString()
-                      : null,
-                  )
-                }
-                className="text-xs"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="edit-del-deadline"
-                className="text-[11px] font-medium"
-              >
-                {t("clientDeliveryDeadlineLabel")}
-              </Label>
-              <Input
-                id="edit-del-deadline"
-                type="datetime-local"
-                defaultValue={
-                  deliverable.client_delivery_deadline_at
-                    ? new Date(deliverable.client_delivery_deadline_at)
-                        .toISOString()
-                        .slice(0, 16)
-                    : ""
-                }
-                onChange={(e) =>
-                  setValue(
-                    "client_delivery_deadline_at",
-                    e.target.value
-                      ? new Date(e.target.value).toISOString()
-                      : null,
-                  )
-                }
-                className="text-xs"
-              />
-            </div>
-          </div>
+          {/* Deadlines Section */}
+          <DeliverableDeadlinesSection
+            control={control}
+            taskType={taskType}
+            isClientProject={isClientProject}
+            disabled={isSubmitting}
+          />
 
           {serverError && (
             <p className="text-xs text-destructive bg-destructive/10 p-2.5 rounded-md">

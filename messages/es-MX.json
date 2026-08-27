@@ -85,7 +85,8 @@
       "awaitingClientReview": "Esperando revisión del cliente",
       "approved": "Aprobado",
       "changesRequested": "Cambios solicitados",
-      "delivered": "Entregado"
+      "delivered": "Entregado",
+      "submitted": "Enviado"
     },
     "deliverableStatus": {
       "pending": "Pendiente",
@@ -93,7 +94,8 @@
       "awaitingClientReview": "Esperando revisión del cliente",
       "approved": "Aprobado",
       "changesRequested": "Cambios solicitados",
-      "delivered": "Entregado"
+      "delivered": "Entregado",
+      "submitted": "Enviado"
     },
     "priority": {
       "low": "Baja",
@@ -432,7 +434,19 @@
           "awaitingClientReview": "Esperando Revisión de Cliente",
           "approved": "Aprobado",
           "changesRequested": "Cambios Solicitados",
-          "delivered": "Entregado"
+          "delivered": "Entregado",
+          "submitted": "Enviado"
+        },
+        "workflowType": {
+          "production": "Entregable de producción",
+          "clientSubmission": "Entrega de cliente"
+        },
+        "form": {
+          "assigneeInternalPlaceholder": "Seleccionar asignado interno...",
+          "assigneeClientPlaceholder": "Seleccionar contacto de cliente...",
+          "submissionDeadlineLabel": "Fecha límite de entrega",
+          "internalReviewDeadlineLabel": "Fecha límite de revisión interna",
+          "clientDeliveryDeadlineLabel": "Fecha límite de entrega a cliente"
         },
         "deadlines": {
           "submission": "Envío: {date}",
@@ -623,7 +637,9 @@
         "pmWatcher": "PM Observador",
         "pm_watcher": "PM Observador",
         "operator": "Operador",
-        "client": "Cliente"
+        "client": "Cliente",
+        "pm": "Project Manager",
+        "admin": "Administrador"
       }
     },
     "members": {
@@ -658,7 +674,9 @@
         "pmWatcher": "PM Observador",
         "pm_watcher": "PM Observador",
         "operator": "Operador",
-        "client": "Cliente"
+        "client": "Cliente",
+        "pm": "Project Manager",
+        "admin": "Administrador"
       },
       "addDialog": {
         "title": "Agregar Miembro al Proyecto",
@@ -790,12 +808,36 @@
         "priorityLabel": "Prioridad",
         "assigneeLabel": "Asignado a",
         "assigneePlaceholder": "Selecciona un miembro del equipo...",
+        "taskAssigneeLabel": "Asignado de la tarea",
+        "deliverableAssigneeLabel": "Asignado del entregable",
         "deadlineLabel": "Fecha y hora límite",
+        "deliverablesSectionTitle": "Entregables vinculados ({count})",
+        "addDeliverableAction": "Agregar entregable",
+        "maxDeliverablesReached": "Se ha alcanzado el límite máximo de 20 entregables.",
+        "linkedToTaskNotice": "Se vinculará a esta tarea",
+        "removeDeliverableAria": "Eliminar entregable #{number}",
+        "draftTitleLabel": "Título del entregable",
+        "draftTitlePlaceholder": "ej. Primer corte v1",
+        "draftSpecificationsLabel": "Especificaciones y requisitos",
+        "draftSpecificationsPlaceholder": "Describe especificaciones, formatos, requisitos...",
+        "sameAsTaskAssignee": "Mismo asignado que la tarea",
+        "noCompatibleMembers": "No se encontraron miembros de equipo internos compatibles.",
+        "noCompatibleClientMembers": "No se encontraron contactos de cliente compatibles.",
+        "workflowDerivedProductionHint": "La tarea es trabajo interno: los entregables seguirán el flujo de producción.",
+        "workflowDerivedClientSubmissionHint": "La tarea es solicitud de cliente: los entregables seguirán el flujo de entrega de cliente.",
+        "submissionDeadlineHelp": "Las entregas de cliente requieren únicamente fecha límite de entrega.",
+        "typeChangeWarningTitle": "¿Descartar entregables en borrador?",
+        "typeChangeWarningDescription": "Cambiar el tipo de tarea descartará todos los entregables en borrador y restablecerá los asignados. Esta acción no se puede deshacer.",
+        "typeChangeConfirmAction": "Cambiar tipo y descartar",
+        "typeChangeCancelAction": "Mantener tipo actual",
         "submitAction": "Crear Tarea",
         "cancelAction": "Cancelar",
         "submitting": "Creando...",
         "successToast": "Tarea creada exitosamente.",
-        "errorToast": "No se pudo crear la tarea. Verifica los datos ingresados."
+        "successCombinedToast": "Tarea y {count} entregable(s) creados exitosamente.",
+        "errorToast": "No se pudo crear la tarea. Verifica los datos ingresados.",
+        "noEligibleTasksDescription": "No hay tareas activas en este proyecto. Crea una tarea primero.",
+        "incompleteClientSetupForClientRequest": "Las solicitudes de cliente requieren una organización de cliente vinculada y un contacto de cliente activo."
       },
       "edit": {
         "title": "Editar Tarea",
@@ -806,6 +848,8 @@
         "priorityLabel": "Prioridad",
         "assigneeLabel": "Asignado a",
         "deadlineLabel": "Fecha y hora límite",
+        "noCompatibleMembers": "No se encontraron miembros de equipo internos compatibles.",
+        "noCompatibleClientMembers": "No se encontraron contactos de cliente compatibles.",
         "submitAction": "Guardar cambios",
         "cancelAction": "Cancelar",
         "submitting": "Guardando...",

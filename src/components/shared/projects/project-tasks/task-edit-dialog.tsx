@@ -25,15 +25,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TaskAssigneeSelect } from "./task-assignee-select";
+import { ProjectAssigneeSelect } from "./project-assignee-select";
 import { TaskPriorityBadge } from "./task-priority-badge";
 import { UpdateTaskSchema, type UpdateTaskInput } from "@/lib/projects/schemas";
 import { updateTaskAction } from "@/lib/projects/task-actions";
+import { formatDateForInput } from "@/lib/utils/date-helpers";
 import type {
   ProjectDetail,
   TaskPriority,
   TaskWithAssignee,
 } from "@/lib/projects/queries";
+import type { MemberCapacity } from "@/lib/status-maps";
 
 interface TaskEditDialogProps {
   project: ProjectDetail;
@@ -41,17 +43,6 @@ interface TaskEditDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-}
-
-function formatDateForInput(isoString?: string | null): string {
-  if (!isoString) return "";
-  try {
-    const d = new Date(isoString);
-    if (isNaN(d.getTime())) return "";
-    return d.toISOString().slice(0, 16);
-  } catch {
-    return "";
-  }
 }
 
 export function TaskEditDialog({
@@ -63,7 +54,13 @@ export function TaskEditDialog({
 }: TaskEditDialogProps) {
   const t = useTranslations("projects.tasks.edit");
   const tType = useTranslations("projects.tasks.taskType");
+  const tDeliverables = useTranslations("projects.workspace.deliverables");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const allowedMemberTypes: MemberCapacity[] =
+    task?.task_type === "internal_work"
+      ? ["pm_lead", "pm_watcher", "operator"]
+      : ["client"];
 
   const {
     register,
@@ -260,16 +257,27 @@ export function TaskEditDialog({
 
           {/* Assignee */}
           <div className="space-y-1.5">
-            <Label>{t("assigneeLabel")}</Label>
             <Controller
               control={control}
               name="assignee_id"
               render={({ field }) => (
-                <TaskAssigneeSelect
+                <ProjectAssigneeSelect
                   members={project.members}
+                  allowedMemberTypes={allowedMemberTypes}
                   value={field.value}
                   onChange={field.onChange}
                   disabled={isSubmitting}
+                  label={t("assigneeLabel")}
+                  placeholder={
+                    task?.task_type === "client_request"
+                      ? tDeliverables("form.assigneeClientPlaceholder")
+                      : tDeliverables("form.assigneeInternalPlaceholder")
+                  }
+                  noCompatibleMembersText={
+                    task?.task_type === "client_request"
+                      ? t("noCompatibleClientMembers")
+                      : t("noCompatibleMembers")
+                  }
                   error={errors.assignee_id?.message}
                 />
               )}

@@ -64,6 +64,34 @@ const { mockSupabase, mockSession, mockRpc } = vi.hoisted(() => {
         error: null,
       });
     }
+    if (proc === "create_task_with_deliverables") {
+      return Promise.resolve({
+        data: {
+          task: {
+            id: "00000000-0000-0000-0000-000000000004",
+            project_id: "00000000-0000-0000-0000-000000000001",
+            title: "Bundle Task",
+            description: "Task with deliverables",
+            task_type: "internal_work",
+            priority: "medium",
+            status: "pending",
+            deadline_at: "2026-11-30T12:00:00.000Z",
+            assignee_id: "00000000-0000-0000-0000-000000000002",
+            created_by: "00000000-0000-0000-0000-000000000003",
+            created_at: "2026-08-27T12:00:00.000Z",
+            updated_at: "2026-08-27T12:00:00.000Z",
+            started_at: null,
+            completed_at: null,
+            deleted_at: null,
+            updated_by: null,
+            assigned_at: null,
+            has_deliverables: true,
+          },
+          deliverable_ids: ["00000000-0000-0000-0000-000000000005"],
+        },
+        error: null,
+      });
+    }
     return Promise.resolve({ data: null, error: null });
   });
 
@@ -105,6 +133,22 @@ const { mockSupabase, mockSession, mockRpc } = vi.hoisted(() => {
       if (table === "collaboration_comments") {
         return {
           select: mockSelect,
+        };
+      }
+      if (table === "project_members") {
+        const chain: {
+          eq: ReturnType<typeof vi.fn>;
+          is: ReturnType<typeof vi.fn>;
+          maybeSingle: ReturnType<typeof vi.fn>;
+        } = {
+          eq: vi.fn(() => chain),
+          is: vi.fn(() => chain),
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: { member_type: "pm_lead" },
+          }),
+        };
+        return {
+          select: vi.fn(() => chain),
         };
       }
       return {};
@@ -165,6 +209,7 @@ vi.mock("@/lib/supabase/server", () => ({
 
 import {
   createTaskAction,
+  createTaskWithDeliverablesAction,
   updateTaskAction,
   transitionTaskStatusAction,
   archiveTaskAction,
@@ -368,6 +413,62 @@ describe("Task Server Actions", () => {
       );
       expect(comments).toHaveLength(1);
       expect(comments[0]?.body).toBe("First comment");
+    });
+  });
+
+  describe("createTaskWithDeliverablesAction", () => {
+    it("creates bundled task with deliverables via RPC adapter", async () => {
+      const result = await createTaskWithDeliverablesAction({
+        project_id: "00000000-0000-0000-0000-000000000001",
+        title: "Bundle Task",
+        description: "Task with deliverables",
+        task_type: "internal_work",
+        priority: "medium",
+        deadline_at: "2026-11-30T12:00:00.000Z",
+        assignee_id: "00000000-0000-0000-0000-000000000002",
+        deliverables: [
+          {
+            title: "Draft 1",
+            specifications: "Specs 1",
+            assignee_id: "00000000-0000-0000-0000-000000000002",
+            internal_review_deadline_at: "2026-11-30T12:00:00.000Z",
+          },
+        ],
+      });
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.task.id).toBe(
+          "00000000-0000-0000-0000-000000000004",
+        );
+        expect(result.data.deliverable_ids).toHaveLength(1);
+      }
+    });
+
+    it("rejects unauthorized role actor", async () => {
+      mockSession.role = "operator";
+      const result = await createTaskWithDeliverablesAction({
+        project_id: "00000000-0000-0000-0000-000000000001",
+        title: "Bundle Task",
+        description: "Task with deliverables",
+        task_type: "internal_work",
+        priority: "medium",
+        deadline_at: "2026-11-30T12:00:00.000Z",
+        assignee_id: "00000000-0000-0000-0000-000000000002",
+        deliverables: [
+          {
+            title: "Draft 1",
+            specifications: "Specs 1",
+            assignee_id: "00000000-0000-0000-0000-000000000002",
+            internal_review_deadline_at: "2026-11-30T12:00:00.000Z",
+          },
+        ],
+      });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("UNAUTHORIZED");
+      }
     });
   });
 });
