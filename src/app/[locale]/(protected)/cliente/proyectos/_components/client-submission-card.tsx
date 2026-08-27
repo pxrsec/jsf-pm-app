@@ -276,7 +276,14 @@ export function ClientSubmissionCard({
                               : `Versión ${entry.versionNumber}`}
                           </span>
                           <span className="text-[11px] text-muted-foreground">
-                            {new Date(entry.submittedAt).toLocaleDateString()}
+                            {translations?.historySubmittedAt
+                              ? translations.historySubmittedAt.replace(
+                                  "{date}",
+                                  new Date(
+                                    entry.submittedAt,
+                                  ).toLocaleDateString(),
+                                )
+                              : new Date(entry.submittedAt).toLocaleDateString()}
                           </span>
                         </div>
                         <a
@@ -310,7 +317,14 @@ export function ClientSubmissionCard({
                               "Reabierto para corrección"}
                           </span>
                           <span className="text-[11px] text-muted-foreground">
-                            {new Date(entry.reopenedAt).toLocaleDateString()}
+                            {translations?.historyReopenedAt
+                              ? translations.historyReopenedAt.replace(
+                                  "{date}",
+                                  new Date(
+                                    entry.reopenedAt,
+                                  ).toLocaleDateString(),
+                                )
+                              : new Date(entry.reopenedAt).toLocaleDateString()}
                           </span>
                         </div>
                         <p className="text-[11px] text-muted-foreground mt-0.5">

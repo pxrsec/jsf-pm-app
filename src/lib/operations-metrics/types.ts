@@ -61,4 +61,3 @@ export type MetricsProjectFilterOptionsResult =
       status: "unavailable";
       code: "UNAVAILABLE";
     };
-

@@ -4,12 +4,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
-import {
-  AlertCircle,
-  ChevronDown,
-  HelpCircle,
-  Users,
-} from "lucide-react";
+import { AlertCircle, ChevronDown, HelpCircle, Users } from "lucide-react";
 import type {
   SortDirection,
   UserOperationsMetricsSectionResult,

@@ -1,5 +1,14 @@
 # JSF PM App Development Changelog
 
+## [2026-08-27 @ 10:38]
+
+**🐛 Hotfixes: Client Request Detail ICU Translation Parameter Formatting**
+
+- **Client Request Detail View (`src/app/[locale]/(protected)/cliente/tareas/_components/client-request-detail.tsx`):**
+  - Resolved `FORMATTING_ERROR` exceptions for ICU parameterized translation keys (`history.versionEntry`, `history.submittedAt`, `history.reopenedAt`, and `externalLink.openLinkAria`) by supplying placeholder parameters (`{versionNumber}`, `{date}`, `{title}`) during server-side `getTranslations` lookup.
+- **Client Submission Card (`src/app/[locale]/(protected)/cliente/proyectos/_components/client-submission-card.tsx`):**
+  - Added formatted date replacement support for `translations.historySubmittedAt` and `translations.historyReopenedAt` matching the existing `historyVersionEntry` and `openLinkAria` placeholder interpolation pattern.
+
 ## [2026-08-27 @ 10:01]
 
 **🚀 Features & 🛠 Architecture: S09-03 Métricas Tabs and Global PM Metrics Authority**

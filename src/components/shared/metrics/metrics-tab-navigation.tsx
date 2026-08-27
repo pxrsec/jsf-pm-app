@@ -11,9 +11,7 @@ interface MetricsTabNavigationProps {
   activeTab: "projects" | "users";
 }
 
-export function MetricsTabNavigation({
-  activeTab,
-}: MetricsTabNavigationProps) {
+export function MetricsTabNavigation({ activeTab }: MetricsTabNavigationProps) {
   const t = useTranslations("metrics.tabs");
   const router = useRouter();
   const pathname = usePathname();

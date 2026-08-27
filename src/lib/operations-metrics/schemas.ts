@@ -50,4 +50,3 @@ export const adminMetricsQuerySchema = metricsDateRangeSchema.and(
     projectId: z.string().uuid("projectId must be a valid UUID").optional(),
   }),
 );
-

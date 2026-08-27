@@ -52,4 +52,3 @@ export const pmUserMetricsQuerySchema = userMetricsDateRangeSchema.and(
     userId: z.string().uuid("userId must be a valid UUID").optional(),
   }),
 );
-

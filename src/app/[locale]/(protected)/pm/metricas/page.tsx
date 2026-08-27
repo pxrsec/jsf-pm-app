@@ -49,8 +49,7 @@ export default async function PmMetricsPage({
   }
 
   const resolvedSearchParams = await searchParams;
-  const activeTab =
-    resolvedSearchParams.tab === "users" ? "users" : "projects";
+  const activeTab = resolvedSearchParams.tab === "users" ? "users" : "projects";
 
   const normalized = normalizeMetricsSearchState(resolvedSearchParams);
   const t = await getTranslations("metrics");
@@ -106,9 +105,7 @@ export default async function PmMetricsPage({
           ? metricsSettled.value
           : unavailable;
       trendResult =
-        trendSettled.status === "fulfilled"
-          ? trendSettled.value
-          : unavailable;
+        trendSettled.status === "fulfilled" ? trendSettled.value : unavailable;
     }
   } else {
     if (!projectValidationFailed) {
@@ -140,11 +137,14 @@ export default async function PmMetricsPage({
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {t("pmTitle")}
             </h1>
-            <p className="text-sm text-muted-foreground">{t("pmDescription")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("pmDescription")}
+            </p>
           </div>
 
           {/* Scope Badge (hidden on failed project validation to prevent false global scope display) */}
-          {projectValidationFailed ? null : validatedProjectId && matchedProject ? (
+          {projectValidationFailed ? null : validatedProjectId &&
+            matchedProject ? (
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
               <FolderKanban className="h-3.5 w-3.5" aria-hidden="true" />
               <span>{matchedProject.name}</span>

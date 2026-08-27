@@ -96,10 +96,7 @@ export function MetricsFilterBar({
   }
 
   const updateFilters = useCallback(
-    (updates: {
-      from?: string;
-      to?: string;
-    }) => {
+    (updates: { from?: string; to?: string }) => {
       const params = new URLSearchParams(searchParams.toString());
 
       if (updates.from !== undefined) {
