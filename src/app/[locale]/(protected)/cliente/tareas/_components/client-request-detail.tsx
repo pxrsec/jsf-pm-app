@@ -42,16 +42,24 @@ export async function ClientRequestDetailView({
     reopenReasonHeading: subT("correction.reopenReasonHeading"),
     replacementExplanation: subT("correction.replacementExplanation"),
     historyTitle: subT("history.title"),
-    historyVersionEntry: subT("history.versionEntry"),
+    historyVersionEntry: subT("history.versionEntry", {
+      versionNumber: "{versionNumber}",
+    }),
     historyReopenedEntry: subT("history.reopenedEntry"),
-    historySubmittedAt: subT("history.submittedAt"),
-    historyReopenedAt: subT("history.reopenedAt"),
+    historySubmittedAt: subT("history.submittedAt", {
+      date: "{date}",
+    }),
+    historyReopenedAt: subT("history.reopenedAt", {
+      date: "{date}",
+    }),
     historyReasonLabel: subT("history.reasonLabel"),
     historyNoteLabel: subT("history.noteLabel"),
     historyEmpty: subT("history.emptyHistory"),
     historyUnavailable: subT("history.unavailable"),
     openLink: subT("externalLink.openLink"),
-    openLinkAria: subT("externalLink.openLinkAria"),
+    openLinkAria: subT("externalLink.openLinkAria", {
+      title: "{title}",
+    }),
     currentUrlLabel: subT("externalLink.registeredLinkLabel"),
     providerGoogleDrive: subT("providers.googleDrive"),
     providerDropbox: subT("providers.dropbox"),

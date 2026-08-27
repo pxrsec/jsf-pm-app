@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-const ISO_OFFSET_DATETIME_REGEX =
+export const ISO_OFFSET_DATETIME_REGEX =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})$/;
 
-const MAX_RANGE_MS = 93 * 24 * 60 * 60 * 1000;
+export const MAX_RANGE_MS = 93 * 24 * 60 * 60 * 1000;
 
-export const metricsDateRangeSchema = z
+export const userMetricsDateRangeSchema = z
   .object({
     from: z
       .string()
@@ -39,14 +39,16 @@ export const metricsDateRangeSchema = z
     { message: "Metrics range must not exceed 93 days", path: ["to"] },
   );
 
-export const pmMetricsQuerySchema = metricsDateRangeSchema.and(
+export const adminUserMetricsQuerySchema = userMetricsDateRangeSchema.and(
   z.object({
     projectId: z.string().uuid("projectId must be a valid UUID").optional(),
+    userId: z.string().uuid("userId must be a valid UUID").optional(),
   }),
 );
 
-export const adminMetricsQuerySchema = metricsDateRangeSchema.and(
+export const pmUserMetricsQuerySchema = userMetricsDateRangeSchema.and(
   z.object({
     projectId: z.string().uuid("projectId must be a valid UUID").optional(),
+    userId: z.string().uuid("userId must be a valid UUID").optional(),
   }),
 );

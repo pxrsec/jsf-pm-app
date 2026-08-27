@@ -4,7 +4,6 @@ import {
   formatIsoWithOffset,
 } from "@/lib/calendar/date-utils";
 import type { OperationsMetricsQuery } from "./types";
-import type { AppRole } from "@/lib/auth/routes";
 
 export { CALENDAR_TIME_ZONE, formatIsoWithOffset };
 
@@ -119,8 +118,6 @@ export function convertLocalDateToMexicoCityRange(
  */
 export function normalizeMetricsSearchState(
   rawParams: Record<string, string | undefined | string[]>,
-  role: AppRole,
-  options?: { fixedProjectId?: string },
 ): OperationsMetricsQuery {
   const getParam = (key: string): string | undefined => {
     const val = rawParams[key];
@@ -129,7 +126,7 @@ export function normalizeMetricsSearchState(
 
   const rawFrom = getParam("from");
   const rawTo = getParam("to");
-  const rawProjectId = options?.fixedProjectId ?? getParam("projectId");
+  const rawProjectId = getParam("projectId");
 
   const defaultRange = getDefaultMetricsRange();
   let from = defaultRange.from;
@@ -140,10 +137,8 @@ export function normalizeMetricsSearchState(
     to = rawTo;
   }
 
-  let projectId: string | undefined = undefined;
-  if (role === "pm" && rawProjectId && UUID_REGEX.test(rawProjectId)) {
-    projectId = rawProjectId;
-  }
+  const projectId =
+    rawProjectId && UUID_REGEX.test(rawProjectId) ? rawProjectId : undefined;
 
   return {
     from,

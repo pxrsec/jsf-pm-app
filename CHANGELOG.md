@@ -1,5 +1,120 @@
 # JSF PM App Development Changelog
 
+## [2026-08-27 @ 11:31]
+
+**🐛 Hotfixes: Metrics Unit Tests & Navigation Mock Alignment**
+
+- **User Operations Metrics Test Suite (`src/lib/user-operations-metrics/__tests__/schemas.test.ts`, `queries.test.ts`):**
+  - Updated PM Query Schema tests and RPC argument construction tests to reflect global PM metrics authority (optional `projectId` / `p_project_id: undefined` by default) introduced in S09-03.
+- **User Operational Audit Section Tests (`src/components/shared/metrics/__tests__/user-operational-audit-section.test.tsx`):**
+  - Added `replace` mock to `useRouter` stub to properly support client-side stale `userId` URL parameter cleanup.
+- **Admin & PM Metrics Page Tests (`src/app/[locale]/(protected)/admin/metricas/page.test.tsx`, `src/app/[locale]/(protected)/pm/metricas/page.test.tsx`):**
+  - Updated mocks and assertions to use `fetchScopedMetricsProjectFilterOptions` from `@/lib/operations-metrics/queries` instead of obsolete archive helpers.
+  - Added tab-specific assertions verifying that aggregate project metrics and user operational audit RPCs are executed exclusively on their respective active tabs (`tab=projects` vs `tab=users`).
+  - Added `replace` mock to `useRouter` stub in page test harnesses.
+
+## [2026-08-27 @ 10:38]
+
+**🐛 Hotfixes: Client Request Detail ICU Translation Parameter Formatting**
+
+- **Client Request Detail View (`src/app/[locale]/(protected)/cliente/tareas/_components/client-request-detail.tsx`):**
+  - Resolved `FORMATTING_ERROR` exceptions for ICU parameterized translation keys (`history.versionEntry`, `history.submittedAt`, `history.reopenedAt`, and `externalLink.openLinkAria`) by supplying placeholder parameters (`{versionNumber}`, `{date}`, `{title}`) during server-side `getTranslations` lookup.
+- **Client Submission Card (`src/app/[locale]/(protected)/cliente/proyectos/_components/client-submission-card.tsx`):**
+  - Added formatted date replacement support for `translations.historySubmittedAt` and `translations.historyReopenedAt` matching the existing `historyVersionEntry` and `openLinkAria` placeholder interpolation pattern.
+
+## [2026-08-27 @ 10:01]
+
+**🚀 Features & 🛠 Architecture: S09-03 Métricas Tabs and Global PM Metrics Authority**
+
+- **URL-Derived Tabs Navigation (`src/components/shared/metrics/metrics-tab-navigation.tsx`):**
+  - Refactored `/admin/metricas` and `/pm/metricas` to feature dual URL-addressable tabs: **Project metrics** (`tab=projects`) and **User metrics** (`tab=users`).
+  - Created client-side tab navigation utilizing `@/components/ui/tabs` primitive with single mounted `TabsList` and trigger set.
+- **Global PM Metrics Authority & Membership De-gating:**
+  - Removed all legacy PM-only membership restrictions (`project_members`, `pm_lead`, `pm_watcher` gating, `fixedProjectId`, and empty "No authorized projects" early exit).
+  - Aligned PM metrics authority with company-owner permissions, granting full access to company-wide operational data and single-project filtering on both tabs.
+- **Server-Only Metrics Project Filter Options Adapter (`src/lib/operations-metrics/project-filter-options.ts`, `queries.ts`):**
+  - Created server query adapter wrapping `list_scoped_metrics_project_filter_options()` with fail-closed UUID validation, duplicate project ID rejection, and deterministic sorting.
+  - Defined explicit `MetricsProjectFilterOptionsResult` union (`{ status: "available", data } | { status: "unavailable", code: "UNAVAILABLE" }`) to prevent silent substitution of global metrics when selected-project validation fails.
+- **Active-Tab Isolation & Scope Control Ownership:**
+  - Isolated heavy-panel data requests so Project tab fetches aggregate/trend RPCs only, and User tab fetches user audit metrics RPC only.
+  - Dedicated `MetricsFilterBar` to Project tab with date presets, Mexico City calendar-day arithmetic synchronization, and project selector (`showProjectSelector=true`).
+  - Dedicated `UserMetricsScopeControl` to User tab for project and user filtering (`showProjectSelector=false` on filter bar).
+  - Ensured scope changes clear `userId` and delete `projectId` when "All projects" is selected.
+  - Removed duplicate scope badge on User metrics tab and guarded controlled select value while cleaning stale `userId` via `router.replace`.
+- **Localization Updates (`messages/en-US.json`, `messages/es-MX.json`):**
+  - Added plural metrics tab labels (`metrics.tabs.projects`, `metrics.tabs.users`, `metrics.tabs.ariaLabel`) and `metrics.filters.allProjects`.
+  - Updated PM operational overview titles and descriptions to reflect global company metrics authority.
+
+## [2026-08-27 @ 09:14]
+
+**🛠 Database & Architecture: S09 Metrics Project Filter Options Migration & TypeScript Generation**
+
+- **Database Migration Applied (`supabase/migrations/20260827102000_s09-metrics-project-filter-options.sql`):**
+  - Executed migration `20260827102000_s09_metrics_project_filter_options` via Supabase MCP `apply_migration`.
+  - Created `public.list_scoped_metrics_project_filter_options()` security definer RPC function returning non-deleted project IDs and names for active Admin and PM company-owner accounts.
+  - Granted execute permission to `authenticated` and revoked execute from `public` and `anon`.
+- **TypeScript Type Regeneration (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript types directly from Supabase schema using MCP `generate_typescript_types` and updated `src/lib/database.types.ts`.
+
+## [2026-08-27 @ 08:11]
+
+**🛠 Database & Architecture: S09 PM Global User Metrics Authority Migration & TypeScript Generation**
+
+- **Database Migration Applied (`supabase/migrations/20260827101000_s09-pm-global-user-metrics-authority.sql`):**
+  - Executed migration `20260827101000_s09_pm_global_user_metrics_authority` via Supabase MCP `apply_migration`.
+  - Replaced `public.list_scoped_user_operations_metrics` security definer RPC function body to permit active Admin and PM profiles to query user operations metrics across all projects or scoped to a selected project.
+- **TypeScript Type Regeneration (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript types directly from Supabase schema using MCP `generate_typescript_types` and updated `src/lib/database.types.ts`.
+
+## [2026-08-27 @ 08:08]
+
+**🛠 Database & Architecture: S09 Project Metrics Scope Filter Migration & TypeScript Generation**
+
+- **Database Migration Applied (`supabase/migrations/20260827100000_s09-project-metrics-scope-filter.sql`):**
+  - Executed migration `20260827100000_s09_project_metrics_scope_filter` via Supabase MCP `apply_migration`.
+  - Replaced `public.get_scoped_operations_metrics` and `public.list_scoped_operations_metric_trend` security definer RPC bodies to permit active Admin and PM company-owner accounts to query metrics globally or for a specific project scope.
+- **TypeScript Type Regeneration (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript types directly from Supabase schema using MCP `generate_typescript_types` and updated `src/lib/database.types.ts`.
+
+## [2026-08-26 @ 14:05]
+
+**🚀 Features & 🛠 Architecture: S09-02 User and Project Operational Audit Metrics Implementation**
+
+- **Server-Only User Operations Metrics Module (`src/lib/user-operations-metrics/`):**
+  - Implemented typed DTOs, sort unions, and query contracts in `types.ts`.
+  - Created strict validation schemas with 93-day window checks (`from < to`) and role-specific query schemas (`adminUserMetricsQuerySchema`, `pmUserMetricsQuerySchema`) in `schemas.ts`.
+  - Built time zone and search state normalization helpers in `date-utils.ts`.
+  - Implemented server-only query adapter `fetchScopedUserOperationsMetrics` in `queries.ts` enforcing a fail-closed role authorization guard at entry, runtime data validation from `unknown` preserving `null` values for accurate review/completion averages, instant comparison for range boundaries, and sanitized debug logging.
+- **Shared Operational Audit UI Components (`src/components/shared/metrics/`):**
+  - `metrics-filter-bar.tsx`: Enhanced filter bar to support `clearUserId` upon PM project selection change.
+  - `user-metrics-sort-utils.ts`: Deterministic client-side sorting across 10 metric fields (nulls always sort last in both asc/desc) and `Intl` number/hour/timestamp formatters in `America/Mexico_City`.
+  - `user-metrics-attention-cues.tsx`: Operational attention cues card replacing browser-side aggregates with clear triage guidance.
+  - `user-metrics-scope-control.tsx`: Responsive project and user selectors with minimum 44px touch targets.
+  - `user-metrics-table.tsx`: Desktop and tablet sortable table with semantic `aria-sort` on active column only, screen-reader status, and accessible "Ver detalles" button.
+  - `user-metrics-card-list.tsx`: Mobile stacked card list with accessible metric rows and detail buttons.
+  - `user-metrics-detail-panel.tsx`: Accessible inline detail panel (`role="region"`) displaying full user operational breakdown.
+  - `user-operational-audit-section.tsx`: Orchestrator handling unavailable, zero-data, and populated states with search parameter synchronization.
+- **Page Integration & Localization:**
+  - `src/app/[locale]/(protected)/admin/metricas/page.tsx`: Integrated `UserOperationalAuditSection` with Admin scope options and failure isolation.
+  - `src/app/[locale]/(protected)/pm/metricas/page.tsx`: Integrated `UserOperationalAuditSection` with PM resolved authorized project scope and failure isolation.
+  - Added complete `metrics.userAudit` translation dictionaries in `messages/es-MX.json` and `messages/en-US.json` with strict parity testing.
+- **Comprehensive Test Suite & Verification:**
+  - Unit and integration tests in `src/lib/user-operations-metrics/__tests__/` (29 tests).
+  - UI component tests in `src/components/shared/metrics/__tests__/` (15 tests).
+  - Page orchestration tests in `admin/metricas/page.test.tsx` and `pm/metricas/page.test.tsx` (6 tests).
+  - Whole repository verification: `npm run typecheck` (0 errors), `npm run lint` (0 errors, 0 warnings), `npm run test` (839/839 passed across 90 files), `npm run build` (33 routes generated cleanly), `npm run audit:prod` (0 vulnerabilities).
+
+## [2026-08-26 @ 13:14]
+
+**🛠 Database & Architecture: S09 User-Scoped Operations Metrics Migration & TypeScript Generation**
+
+- **Database Migration Applied (`supabase/migrations/20260826110000_s09_user-scoped-operations-metrics.sql`):**
+  - Executed migration `20260826110000_s09_user_scoped_operations_metrics` via Supabase MCP `apply_migration`.
+  - Added indexes on `audit_logs`, `tasks`, `notification_events`, and `notification_recipients` supporting actor, assignment, and in-app acknowledgement query paths.
+  - Deployed `public.list_scoped_user_operations_metrics` security definer RPC function with bounded interval validation, role authorization, and operational metric aggregations.
+- **TypeScript Type Regeneration (`src/lib/database.types.ts`):**
+  - Generated updated TypeScript definitions directly from Supabase schema via MCP `generate_typescript_types`, adding full parameter and return typings for `list_scoped_user_operations_metrics`.
+
 ## [2026-08-26 @ 10:21]
 
 **🚀 Features & 🛠 Architecture: S09-01 Mobile Bottom Quick-Access Navigation & Responsive App Shell**

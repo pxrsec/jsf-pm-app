@@ -1804,18 +1804,24 @@
   "metrics": {
     "adminTitle": "Operational Metrics",
     "adminDescription": "Global overview of operational activity, task attention, deliverable status, and project cycles.",
-    "pmTitle": "Project Metrics",
-    "pmDescription": "Operational overview and trends for the selected project within your authorized scope.",
+    "pmTitle": "Operational Metrics",
+    "pmDescription": "Operational overview and trends for company activity, task attention, deliverable status, and project cycles.",
     "globalScopeBadge": "Global scope (all projects)",
     "noAuthorizedProjectsTitle": "No authorized projects",
     "noAuthorizedProjectsDescription": "You currently have no assigned projects to display operational metrics.",
     "viewPmArchive": "View project archive",
     "viewPmLinkIncidents": "View link incidents",
+    "tabs": {
+      "projects": "Project metrics",
+      "users": "User metrics",
+      "ariaLabel": "Metrics tabs"
+    },
     "filters": {
       "rangeLabel": "Range",
       "preset30Days": "Last 30 days",
       "preset90Days": "Last 90 days",
       "projectLabel": "Project",
+      "allProjects": "All projects",
       "projectSelectAria": "Select project for metrics",
       "selectProjectPlaceholder": "Select project...",
       "customRangeLabel": "Custom range",
@@ -1932,6 +1938,108 @@
         "average": "Average duration",
         "reopened": "Reopened",
         "note": "Based on projects completed in the selected date range."
+      }
+    },
+    "userAudit": {
+      "title": "User Operational Audit",
+      "description": "Oversight of task execution, deliverable submissions, notification responsiveness, and operational cycle times per user.",
+      "noRecordsDescription": "No operational audit records found for the selected filter criteria and date range.",
+      "scope": {
+        "allProjects": "Scope: All projects",
+        "selectedProject": "Project: {name}"
+      },
+      "cues": {
+        "title": "Operational Attention Cues",
+        "description": "The table is sorted by default prioritizing users with unstarted assigned tasks and notifications unread for more than 24 hours.",
+        "unstartedTitle": "Unstarted Tasks at Period End",
+        "unstartedDescription": "Directly assigned tasks that have not recorded a start transition by the end of the selected period.",
+        "unreadTitle": "Notifications Unread 24h+",
+        "unreadDescription": "In-app notifications unread after 24 hours from arrival within the period."
+      },
+      "filters": {
+        "project": "Project",
+        "allProjects": "All projects",
+        "selectedProjectAria": "Filter audit by project",
+        "user": "User",
+        "allUsers": "All users",
+        "selectedUserAria": "Filter by specific user",
+        "clearUserSelection": "Clear user selection",
+        "projectUpdatedAnnouncement": "Project filter updated",
+        "userUpdatedAnnouncement": "User filter updated",
+        "userClearedAnnouncement": "User filter cleared",
+        "updating": "Updating audit..."
+      },
+      "table": {
+        "caption": "User operational audit and performance metrics",
+        "user": "User",
+        "role": "Role",
+        "activeState": "Status",
+        "currentTasks": "Active Tasks",
+        "assignedInRange": "Assigned in Range",
+        "startsRecorded": "Starts Recorded",
+        "completionsRecorded": "Completed",
+        "avgStartHours": "Avg Assignment to Start",
+        "unstartedEnd": "Unstarted at End",
+        "prodSubmissions": "Prod Deliverables",
+        "clientSubmissions": "Client Deliverables",
+        "reviewsRecorded": "Reviews Recorded",
+        "deliveredHandoffs": "Delivered Handoffs",
+        "inAppReceived": "In-App Received",
+        "markedRead": "Marked Read",
+        "unreadEnd": "Unread at End",
+        "unread24h": "Unread 24h+",
+        "avgReadHours": "Avg Read Time",
+        "lastAction": "Last Workflow Action",
+        "actions": "Actions",
+        "hoursUnit": "hrs"
+      },
+      "sorting": {
+        "sortBy": "Sort by {column}",
+        "sortedAscendingBy": "Sorted ascending by {column}",
+        "sortedDescendingBy": "Sorted descending by {column}"
+      },
+      "roles": {
+        "admin": "Admin",
+        "pm": "Project Manager",
+        "operator": "Operator",
+        "client": "Client"
+      },
+      "states": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "unavailable": "Unable to load user operational audit metrics at this time.",
+        "noOperationalRecords": "No operational records in this period",
+        "noMeasuredObservations": "No observations",
+        "noRecordedAction": "No recorded action",
+        "detailsShownBelow": "Details shown below"
+      },
+      "actions": {
+        "viewDetails": "View details",
+        "viewDetailsAria": "View details for {name}",
+        "closeDetails": "Close details",
+        "closeDetailsAria": "Close user detail breakdown"
+      },
+      "detail": {
+        "sectionLabel": "User Operational Breakdown",
+        "taskExecutionHeading": "Task Execution & Response Times",
+        "deliverablesHeading": "Deliverables & Review Workload",
+        "notificationsHeading": "In-App Notification Responsiveness",
+        "lastActionLabel": "Last recorded workflow action"
+      },
+      "semantics": {
+        "disclosureTitle": "Methodological notes on audit data",
+        "markedReadExplanation": "Notification read counts are computed solely from explicit in-app read actions.",
+        "directAssigneeStart": "Task start corresponds to the first status transition by the direct assignee.",
+        "noRecordedDirectStartByRangeEnd": "Unstarted tasks at period end are those assigned within the period that did not transition to 'in progress' before range end.",
+        "notAttendanceSignal": "Last workflow action reflects auditable system activity and does not constitute a clock-in or attendance signal.",
+        "currentSnapshot": "Current active tasks reflects the live real-time state at query time.",
+        "assignmentCohort": "Response averages correspond to tasks assigned within the selected date range.",
+        "inAppOnly": "Notification metrics apply exclusively to web application in-app channels."
+      },
+      "liveRegion": {
+        "sortUpdated": "Table sorted by {field} in {direction} order",
+        "detailOpened": "User detail breakdown opened",
+        "detailClosed": "User detail closed"
       }
     },
     "errors": {

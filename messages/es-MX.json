@@ -1804,18 +1804,24 @@
   "metrics": {
     "adminTitle": "Métricas Operativas",
     "adminDescription": "Resumen global de actividad operativa, atención de tareas, entregables y ciclos de proyectos.",
-    "pmTitle": "Métricas del Proyecto",
-    "pmDescription": "Resumen operativo y tendencias del proyecto seleccionado dentro de tu alcance autorizado.",
+    "pmTitle": "Métricas Operativas",
+    "pmDescription": "Resumen operativo y tendencias de actividad de la empresa, atención de tareas, entregables y ciclos de proyectos.",
     "globalScopeBadge": "Alcance global (todos los proyectos)",
     "noAuthorizedProjectsTitle": "Sin proyectos autorizados",
     "noAuthorizedProjectsDescription": "No tienes proyectos asignados actualmente para visualizar métricas operativas.",
     "viewPmArchive": "Ver archivo del proyecto",
     "viewPmLinkIncidents": "Ver incidentes de enlaces",
+    "tabs": {
+      "projects": "Métricas de proyectos",
+      "users": "Métricas de usuarios",
+      "ariaLabel": "Pestañas de métricas"
+    },
     "filters": {
       "rangeLabel": "Rango",
       "preset30Days": "Últimos 30 días",
       "preset90Days": "Últimos 90 días",
       "projectLabel": "Proyecto",
+      "allProjects": "Todos los proyectos",
       "projectSelectAria": "Seleccionar proyecto para métricas",
       "selectProjectPlaceholder": "Seleccionar proyecto...",
       "customRangeLabel": "Rango personalizado",
@@ -1932,6 +1938,108 @@
         "average": "Duración promedio",
         "reopened": "Reabiertos",
         "note": "Basado en proyectos completados en el rango seleccionado."
+      }
+    },
+    "userAudit": {
+      "title": "Auditoría Operativa de Usuarios",
+      "description": "Supervisión de ejecución de tareas, entregables, acuse de notificaciones y tiempos de respuesta por usuario.",
+      "noRecordsDescription": "No se encontraron registros de auditoría operativa para los criterios de búsqueda y período seleccionados.",
+      "scope": {
+        "allProjects": "Alcance: Todos los proyectos",
+        "selectedProject": "Proyecto: {name}"
+      },
+      "cues": {
+        "title": "Criterios de Atención Operativa",
+        "description": "La tabla se ordena de forma predeterminada priorizando usuarios con tareas asignadas pendientes de iniciar y notificaciones acumuladas por más de 24 horas sin leer.",
+        "unstartedTitle": "Tareas sin Iniciar al Cierre",
+        "unstartedDescription": "Tareas asignadas directamente que aún no registran inicio al finalizar el período.",
+        "unreadTitle": "Notificaciones +24h sin Leer",
+        "unreadDescription": "Notificaciones dentro de la app sin acuse de lectura tras 24 horas de haber sido recibidas."
+      },
+      "filters": {
+        "project": "Proyecto",
+        "allProjects": "Todos los proyectos",
+        "selectedProjectAria": "Filtrar auditoría por proyecto",
+        "user": "Usuario",
+        "allUsers": "Todos los usuarios",
+        "selectedUserAria": "Filtrar por usuario específico",
+        "clearUserSelection": "Limpiar selección de usuario",
+        "projectUpdatedAnnouncement": "Filtro de proyecto actualizado",
+        "userUpdatedAnnouncement": "Filtro de usuario actualizado",
+        "userClearedAnnouncement": "Selección de usuario restablecida",
+        "updating": "Actualizando auditoría..."
+      },
+      "table": {
+        "caption": "Auditoría operativa y métricas de desempeño por usuario",
+        "user": "Usuario",
+        "role": "Rol",
+        "activeState": "Estado",
+        "currentTasks": "Tareas Activas",
+        "assignedInRange": "Asignadas en Rango",
+        "startsRecorded": "Inicios Registrados",
+        "completionsRecorded": "Completadas",
+        "avgStartHours": "Prom. Asignación a Inicio",
+        "unstartedEnd": "Sin Iniciar al Cierre",
+        "prodSubmissions": "Entregas Producción",
+        "clientSubmissions": "Entregas Cliente",
+        "reviewsRecorded": "Revisiones Registradas",
+        "deliveredHandoffs": "Entregas Realizadas",
+        "inAppReceived": "Notif. Recibidas",
+        "markedRead": "Notif. Leídas",
+        "unreadEnd": "No Leídas al Cierre",
+        "unread24h": "No Leídas +24h",
+        "avgReadHours": "Prom. Lectura Notif.",
+        "lastAction": "Última Acción Operativa",
+        "actions": "Acciones",
+        "hoursUnit": "hrs"
+      },
+      "sorting": {
+        "sortBy": "Ordenar por {column}",
+        "sortedAscendingBy": "Ordenado ascendentemente por {column}",
+        "sortedDescendingBy": "Ordenado descendentemente por {column}"
+      },
+      "roles": {
+        "admin": "Administrador",
+        "pm": "Project Manager",
+        "operator": "Operador",
+        "client": "Cliente"
+      },
+      "states": {
+        "active": "Activo",
+        "inactive": "Inactivo",
+        "unavailable": "No fue posible cargar las métricas de auditoría operativa de usuarios.",
+        "noOperationalRecords": "Sin registros operativos en este período",
+        "noMeasuredObservations": "Sin observaciones",
+        "noRecordedAction": "Sin acciones registradas",
+        "detailsShownBelow": "Detalles mostrados abajo"
+      },
+      "actions": {
+        "viewDetails": "Ver detalles",
+        "viewDetailsAria": "Ver detalles de {name}",
+        "closeDetails": "Cerrar detalles",
+        "closeDetailsAria": "Cerrar desglose de detalles del usuario"
+      },
+      "detail": {
+        "sectionLabel": "Desglose Operativo de Usuario",
+        "taskExecutionHeading": "Ejecución y Tiempos de Tareas",
+        "deliverablesHeading": "Entregables y Revisiones",
+        "notificationsHeading": "Atención de Notificaciones",
+        "lastActionLabel": "Última acción registrada en flujo de trabajo"
+      },
+      "semantics": {
+        "disclosureTitle": "Precisiones metodológicas sobre los datos de auditoría",
+        "markedReadExplanation": "La lectura de notificaciones se computa únicamente a partir de lecturas explícitas dentro de la aplicación.",
+        "directAssigneeStart": "El inicio de tareas corresponde a la primera transición de estado por el responsable directo.",
+        "noRecordedDirectStartByRangeEnd": "Las tareas sin iniciar al cierre son aquellas asignadas en el período que no registraron transición a 'en progreso' antes del fin del rango.",
+        "notAttendanceSignal": "La última acción operativa refleja eventos auditables del sistema y no constituye un registro de asistencia laboral.",
+        "currentSnapshot": "El conteo de tareas activas refleja el estado actual en tiempo real al momento de la consulta.",
+        "assignmentCohort": "Los promedios de respuesta corresponden a las tareas asignadas dentro del rango seleccionado.",
+        "inAppOnly": "Las métricas de notificaciones corresponden exclusivamente a canales dentro del sistema web."
+      },
+      "liveRegion": {
+        "sortUpdated": "Tabla ordenada por {field} en sentido {direction}",
+        "detailOpened": "Desglose de detalles de usuario abierto",
+        "detailClosed": "Desglose de detalles de usuario cerrado"
       }
     },
     "errors": {

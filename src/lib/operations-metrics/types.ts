@@ -46,3 +46,18 @@ export type OperationsMetricsQuery = Readonly<{
 export type OperationsMetricsSectionResult<T> =
   | { status: "available"; data: T }
   | { status: "unavailable"; code: "UNAVAILABLE" };
+
+export type MetricsProjectFilterOption = Readonly<{
+  id: string;
+  name: string;
+}>;
+
+export type MetricsProjectFilterOptionsResult =
+  | {
+      status: "available";
+      data: readonly MetricsProjectFilterOption[];
+    }
+  | {
+      status: "unavailable";
+      code: "UNAVAILABLE";
+    };

@@ -378,6 +378,31 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
     expect(esOpsKeys).toHaveLength(43);
   });
 
+  it("both catalogs contain active metrics.userAudit with complete structure", () => {
+    const esMetrics = esCatalog.metrics as Record<string, unknown>;
+    const enMetrics = enCatalog.metrics as Record<string, unknown>;
+
+    expect(esMetrics).toHaveProperty("userAudit");
+    expect(enMetrics).toHaveProperty("userAudit");
+
+    const esAudit = esMetrics.userAudit as Record<string, unknown>;
+    const enAudit = enMetrics.userAudit as Record<string, unknown>;
+
+    function collectKeys(obj: Record<string, unknown>, prefix = ""): string[] {
+      return Object.entries(obj).flatMap(([k, v]) => {
+        const fullKey = prefix ? `${prefix}.${k}` : k;
+        if (typeof v === "object" && v !== null && !Array.isArray(v)) {
+          return collectKeys(v as Record<string, unknown>, fullKey);
+        }
+        return [fullKey];
+      });
+    }
+
+    const esAuditKeys = collectKeys(esAudit).sort();
+    const enAuditKeys = collectKeys(enAudit).sort();
+    expect(esAuditKeys).toEqual(enAuditKeys);
+  });
+
   it("no missing keys in either catalog (complete key sets)", () => {
     // Deep check: every key path in es-MX must exist in en-US and vice versa
     function collectKeys(obj: Record<string, unknown>, prefix = ""): string[] {
