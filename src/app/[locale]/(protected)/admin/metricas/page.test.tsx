@@ -5,8 +5,8 @@ import { render, cleanup } from "@testing-library/react";
 import AdminMetricsPage from "./page";
 import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
-import { fetchArchiveProjectFilterOptionsForAdmin } from "@/lib/archive/queries";
 import {
+  fetchScopedMetricsProjectFilterOptions,
   fetchScopedOperationsMetrics,
   fetchScopedOperationsMetricTrend,
 } from "@/lib/operations-metrics/queries";
@@ -26,7 +26,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/i18n/routing", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
   usePathname: () => "/admin/metricas",
   Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
     <a href={href}>{children}</a>
@@ -50,11 +50,8 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn().mockReturnValue({}),
 }));
 
-vi.mock("@/lib/archive/queries", () => ({
-  fetchArchiveProjectFilterOptionsForAdmin: vi.fn(),
-}));
-
 vi.mock("@/lib/operations-metrics/queries", () => ({
+  fetchScopedMetricsProjectFilterOptions: vi.fn(),
   fetchScopedOperationsMetrics: vi.fn(),
   fetchScopedOperationsMetricTrend: vi.fn(),
 }));
@@ -124,15 +121,16 @@ describe("AdminMetricsPage (admin/metricas/page.tsx)", () => {
     expect(redirect).toHaveBeenCalledWith("/pm");
   });
 
-  it("2. Preserves global scope for M3/M5 and validates project filter for User Audit", async () => {
+  it("2. Preserves selected project scope for M3/M5 on projects tab without invoking User Audit", async () => {
     vi.mocked(requireSession).mockResolvedValueOnce({
       user: { id: "u-admin" },
       role: "admin",
     } as unknown as Awaited<ReturnType<typeof requireSession>>);
 
-    vi.mocked(fetchArchiveProjectFilterOptionsForAdmin).mockResolvedValueOnce([
-      { id: validProjectId, name: "Project Alpha" },
-    ]);
+    vi.mocked(fetchScopedMetricsProjectFilterOptions).mockResolvedValueOnce({
+      status: "available",
+      data: [{ id: validProjectId, name: "Project Alpha" }],
+    });
 
     vi.mocked(fetchScopedOperationsMetrics).mockResolvedValueOnce({
       status: "available",
@@ -144,29 +142,22 @@ describe("AdminMetricsPage (admin/metricas/page.tsx)", () => {
       data: [],
     });
 
-    vi.mocked(fetchScopedUserOperationsMetrics).mockResolvedValueOnce({
-      status: "available",
-      data: [],
-    });
-
     const pageElement = await AdminMetricsPage({
       searchParams: Promise.resolve({
         from: validFrom,
         to: validTo,
         projectId: validProjectId,
-        userId: "b0000000-0000-0000-0000-000000000002",
       }),
     });
 
     render(pageElement);
 
-    // M3 and M5 must remain global (no projectId)
     expect(fetchScopedOperationsMetrics).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         from: validFrom,
         to: validTo,
-        projectId: undefined,
+        projectId: validProjectId,
       }),
       "admin",
     );
@@ -176,12 +167,42 @@ describe("AdminMetricsPage (admin/metricas/page.tsx)", () => {
       expect.objectContaining({
         from: validFrom,
         to: validTo,
-        projectId: undefined,
+        projectId: validProjectId,
       }),
       "admin",
     );
 
-    // User Audit must pass validated projectId and userId = undefined (full dataset)
+    expect(fetchScopedUserOperationsMetrics).not.toHaveBeenCalled();
+  });
+
+  it("3. Fetches User Audit with validated projectId on users tab without invoking M3/M5", async () => {
+    vi.mocked(requireSession).mockResolvedValueOnce({
+      user: { id: "u-admin" },
+      role: "admin",
+    } as unknown as Awaited<ReturnType<typeof requireSession>>);
+
+    vi.mocked(fetchScopedMetricsProjectFilterOptions).mockResolvedValueOnce({
+      status: "available",
+      data: [{ id: validProjectId, name: "Project Alpha" }],
+    });
+
+    vi.mocked(fetchScopedUserOperationsMetrics).mockResolvedValueOnce({
+      status: "available",
+      data: [],
+    });
+
+    const pageElement = await AdminMetricsPage({
+      searchParams: Promise.resolve({
+        tab: "users",
+        from: validFrom,
+        to: validTo,
+        projectId: validProjectId,
+        userId: "b0000000-0000-0000-0000-000000000002",
+      }),
+    });
+
+    render(pageElement);
+
     expect(fetchScopedUserOperationsMetrics).toHaveBeenCalledWith(
       expect.anything(),
       {
@@ -192,26 +213,20 @@ describe("AdminMetricsPage (admin/metricas/page.tsx)", () => {
       },
       "admin",
     );
+
+    expect(fetchScopedOperationsMetrics).not.toHaveBeenCalled();
+    expect(fetchScopedOperationsMetricTrend).not.toHaveBeenCalled();
   });
 
-  it("3. Unmatched projectId falls back to undefined for User Audit without redirect", async () => {
+  it("4. Unmatched projectId falls back to undefined for User Audit without redirect", async () => {
     vi.mocked(requireSession).mockResolvedValueOnce({
       user: { id: "u-admin" },
       role: "admin",
     } as unknown as Awaited<ReturnType<typeof requireSession>>);
 
-    vi.mocked(fetchArchiveProjectFilterOptionsForAdmin).mockResolvedValueOnce([
-      { id: validProjectId, name: "Project Alpha" },
-    ]);
-
-    vi.mocked(fetchScopedOperationsMetrics).mockResolvedValueOnce({
+    vi.mocked(fetchScopedMetricsProjectFilterOptions).mockResolvedValueOnce({
       status: "available",
-      data: mockMetricsSummary,
-    });
-
-    vi.mocked(fetchScopedOperationsMetricTrend).mockResolvedValueOnce({
-      status: "available",
-      data: [],
+      data: [{ id: validProjectId, name: "Project Alpha" }],
     });
 
     vi.mocked(fetchScopedUserOperationsMetrics).mockResolvedValueOnce({
@@ -221,6 +236,7 @@ describe("AdminMetricsPage (admin/metricas/page.tsx)", () => {
 
     const pageElement = await AdminMetricsPage({
       searchParams: Promise.resolve({
+        tab: "users",
         from: validFrom,
         to: validTo,
         projectId: "unmatched-project-uuid",

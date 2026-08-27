@@ -7,11 +7,12 @@ import { UserOperationalAuditSection } from "../user-operational-audit-section";
 import type { UserOperationsMetricDto } from "@/lib/user-operations-metrics/types";
 
 const mockPush = vi.fn();
+const mockReplace = vi.fn();
 const mockPathname = "/admin/metricas";
 let mockSearchParams = new URLSearchParams();
 
 vi.mock("@/i18n/routing", () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace }),
   usePathname: () => mockPathname,
 }));
 

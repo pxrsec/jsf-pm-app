@@ -139,7 +139,29 @@ describe("User Operations Metrics Adapter (queries.ts)", () => {
       );
     });
 
-    it("PM call requires and passes p_project_id", async () => {
+    it("PM global call passes p_project_id = undefined and p_user_id = undefined", async () => {
+      const { client, mockRpc } = createMockSupabase();
+      mockRpc.mockResolvedValue({ data: [validRow], error: null });
+
+      const result = await fetchScopedUserOperationsMetrics(
+        client,
+        { from: validFrom, to: validTo },
+        "pm",
+      );
+
+      expect(result.status).toBe("available");
+      expect(mockRpc).toHaveBeenCalledWith(
+        "list_scoped_user_operations_metrics",
+        {
+          p_project_id: undefined,
+          p_user_id: undefined,
+          p_from: validFrom,
+          p_to: validTo,
+        },
+      );
+    });
+
+    it("PM with project filter passes p_project_id and p_user_id = undefined", async () => {
       const { client, mockRpc } = createMockSupabase();
       mockRpc.mockResolvedValue({ data: [validRow], error: null });
 
@@ -159,19 +181,6 @@ describe("User Operations Metrics Adapter (queries.ts)", () => {
           p_to: validTo,
         },
       );
-    });
-
-    it("PM call without projectId fails closed before RPC", async () => {
-      const { client, mockRpc } = createMockSupabase();
-
-      const result = await fetchScopedUserOperationsMetrics(
-        client,
-        { from: validFrom, to: validTo },
-        "pm",
-      );
-
-      expect(result).toEqual({ status: "unavailable", code: "UNAVAILABLE" });
-      expect(mockRpc).not.toHaveBeenCalled();
     });
   });
 

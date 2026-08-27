@@ -82,21 +82,31 @@ describe("User Operations Metrics Schemas (schemas.ts)", () => {
   });
 
   describe("3. PM Query Schema", () => {
-    it("requires projectId", () => {
+    it("accepts valid query without projectId or userId", () => {
       const parsed = pmUserMetricsQuerySchema.safeParse({
         from: validFrom,
         to: validTo,
       });
-      expect(parsed.success).toBe(false);
+      expect(parsed.success).toBe(true);
     });
 
-    it("accepts valid query with required projectId", () => {
+    it("accepts valid query with optional projectId and userId", () => {
       const parsed = pmUserMetricsQuerySchema.safeParse({
         from: validFrom,
         to: validTo,
         projectId: validUuid,
+        userId: validUuid,
       });
       expect(parsed.success).toBe(true);
+    });
+
+    it("rejects invalid UUID for projectId", () => {
+      const parsed = pmUserMetricsQuerySchema.safeParse({
+        from: validFrom,
+        to: validTo,
+        projectId: "not-a-uuid",
+      });
+      expect(parsed.success).toBe(false);
     });
   });
 });

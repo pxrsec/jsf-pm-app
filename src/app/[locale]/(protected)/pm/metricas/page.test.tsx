@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, cleanup } from "@testing-library/react";
 import PmMetricsPage from "./page";
 import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
-import { fetchArchiveProjectFilterOptionsForPm } from "@/lib/archive/queries";
 import {
+  fetchScopedMetricsProjectFilterOptions,
   fetchScopedOperationsMetrics,
   fetchScopedOperationsMetricTrend,
 } from "@/lib/operations-metrics/queries";
@@ -26,7 +26,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/i18n/routing", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
   usePathname: () => "/pm/metricas",
   Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
     <a href={href}>{children}</a>
@@ -50,11 +50,8 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn().mockReturnValue({}),
 }));
 
-vi.mock("@/lib/archive/queries", () => ({
-  fetchArchiveProjectFilterOptionsForPm: vi.fn(),
-}));
-
 vi.mock("@/lib/operations-metrics/queries", () => ({
+  fetchScopedMetricsProjectFilterOptions: vi.fn(),
   fetchScopedOperationsMetrics: vi.fn(),
   fetchScopedOperationsMetricTrend: vi.fn(),
 }));
@@ -125,36 +122,19 @@ describe("PmMetricsPage (pm/metricas/page.tsx)", () => {
     expect(redirect).toHaveBeenCalledWith("/admin");
   });
 
-  it("2. Renders empty state without calling M3/M5/UserAudit when no authorized projects exist", async () => {
+  it("2. Queries global scope across M3 and M5 by default without requiring project membership", async () => {
     vi.mocked(requireSession).mockResolvedValueOnce({
       user: { id: "u-pm" },
       role: "pm",
     } as unknown as Awaited<ReturnType<typeof requireSession>>);
 
-    vi.mocked(fetchArchiveProjectFilterOptionsForPm).mockResolvedValueOnce([]);
-
-    const pageElement = await PmMetricsPage({
-      searchParams: Promise.resolve({}),
+    vi.mocked(fetchScopedMetricsProjectFilterOptions).mockResolvedValueOnce({
+      status: "available",
+      data: [
+        { id: projectAId, name: "Project Alpha" },
+        { id: projectBId, name: "Project Beta" },
+      ],
     });
-
-    render(pageElement);
-
-    expect(fetchScopedOperationsMetrics).not.toHaveBeenCalled();
-    expect(fetchScopedOperationsMetricTrend).not.toHaveBeenCalled();
-    expect(fetchScopedUserOperationsMetrics).not.toHaveBeenCalled();
-    expect(screen.getByText("noAuthorizedProjectsTitle")).toBeInTheDocument();
-  });
-
-  it("3. Uses single resolved authorized project across M3, M5, and User Audit", async () => {
-    vi.mocked(requireSession).mockResolvedValueOnce({
-      user: { id: "u-pm" },
-      role: "pm",
-    } as unknown as Awaited<ReturnType<typeof requireSession>>);
-
-    vi.mocked(fetchArchiveProjectFilterOptionsForPm).mockResolvedValueOnce([
-      { id: projectAId, name: "Project Alpha" },
-      { id: projectBId, name: "Project Beta" },
-    ]);
 
     vi.mocked(fetchScopedOperationsMetrics).mockResolvedValueOnce({
       status: "available",
@@ -166,7 +146,58 @@ describe("PmMetricsPage (pm/metricas/page.tsx)", () => {
       data: [],
     });
 
-    vi.mocked(fetchScopedUserOperationsMetrics).mockResolvedValueOnce({
+    const pageElement = await PmMetricsPage({
+      searchParams: Promise.resolve({
+        from: validFrom,
+        to: validTo,
+      }),
+    });
+
+    render(pageElement);
+
+    expect(fetchScopedOperationsMetrics).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        from: validFrom,
+        to: validTo,
+        projectId: undefined,
+      }),
+      "pm",
+    );
+
+    expect(fetchScopedOperationsMetricTrend).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        from: validFrom,
+        to: validTo,
+        projectId: undefined,
+      }),
+      "pm",
+    );
+
+    expect(fetchScopedUserOperationsMetrics).not.toHaveBeenCalled();
+  });
+
+  it("3. Uses single resolved authorized project across M3 and M5 on projects tab", async () => {
+    vi.mocked(requireSession).mockResolvedValueOnce({
+      user: { id: "u-pm" },
+      role: "pm",
+    } as unknown as Awaited<ReturnType<typeof requireSession>>);
+
+    vi.mocked(fetchScopedMetricsProjectFilterOptions).mockResolvedValueOnce({
+      status: "available",
+      data: [
+        { id: projectAId, name: "Project Alpha" },
+        { id: projectBId, name: "Project Beta" },
+      ],
+    });
+
+    vi.mocked(fetchScopedOperationsMetrics).mockResolvedValueOnce({
+      status: "available",
+      data: mockMetricsSummary,
+    });
+
+    vi.mocked(fetchScopedOperationsMetricTrend).mockResolvedValueOnce({
       status: "available",
       data: [],
     });
@@ -176,7 +207,6 @@ describe("PmMetricsPage (pm/metricas/page.tsx)", () => {
         from: validFrom,
         to: validTo,
         projectId: projectBId,
-        userId: "b0000000-0000-0000-0000-000000000002",
       }),
     });
 
@@ -202,6 +232,40 @@ describe("PmMetricsPage (pm/metricas/page.tsx)", () => {
       "pm",
     );
 
+    expect(fetchScopedUserOperationsMetrics).not.toHaveBeenCalled();
+  });
+
+  it("4. Queries User Audit with resolved projectId on users tab without invoking M3/M5", async () => {
+    vi.mocked(requireSession).mockResolvedValueOnce({
+      user: { id: "u-pm" },
+      role: "pm",
+    } as unknown as Awaited<ReturnType<typeof requireSession>>);
+
+    vi.mocked(fetchScopedMetricsProjectFilterOptions).mockResolvedValueOnce({
+      status: "available",
+      data: [
+        { id: projectAId, name: "Project Alpha" },
+        { id: projectBId, name: "Project Beta" },
+      ],
+    });
+
+    vi.mocked(fetchScopedUserOperationsMetrics).mockResolvedValueOnce({
+      status: "available",
+      data: [],
+    });
+
+    const pageElement = await PmMetricsPage({
+      searchParams: Promise.resolve({
+        tab: "users",
+        from: validFrom,
+        to: validTo,
+        projectId: projectBId,
+        userId: "b0000000-0000-0000-0000-000000000002",
+      }),
+    });
+
+    render(pageElement);
+
     expect(fetchScopedUserOperationsMetrics).toHaveBeenCalledWith(
       expect.anything(),
       {
@@ -212,5 +276,8 @@ describe("PmMetricsPage (pm/metricas/page.tsx)", () => {
       },
       "pm",
     );
+
+    expect(fetchScopedOperationsMetrics).not.toHaveBeenCalled();
+    expect(fetchScopedOperationsMetricTrend).not.toHaveBeenCalled();
   });
 });

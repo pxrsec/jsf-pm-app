@@ -1,5 +1,18 @@
 # JSF PM App Development Changelog
 
+## [2026-08-27 @ 11:31]
+
+**🐛 Hotfixes: Metrics Unit Tests & Navigation Mock Alignment**
+
+- **User Operations Metrics Test Suite (`src/lib/user-operations-metrics/__tests__/schemas.test.ts`, `queries.test.ts`):**
+  - Updated PM Query Schema tests and RPC argument construction tests to reflect global PM metrics authority (optional `projectId` / `p_project_id: undefined` by default) introduced in S09-03.
+- **User Operational Audit Section Tests (`src/components/shared/metrics/__tests__/user-operational-audit-section.test.tsx`):**
+  - Added `replace` mock to `useRouter` stub to properly support client-side stale `userId` URL parameter cleanup.
+- **Admin & PM Metrics Page Tests (`src/app/[locale]/(protected)/admin/metricas/page.test.tsx`, `src/app/[locale]/(protected)/pm/metricas/page.test.tsx`):**
+  - Updated mocks and assertions to use `fetchScopedMetricsProjectFilterOptions` from `@/lib/operations-metrics/queries` instead of obsolete archive helpers.
+  - Added tab-specific assertions verifying that aggregate project metrics and user operational audit RPCs are executed exclusively on their respective active tabs (`tab=projects` vs `tab=users`).
+  - Added `replace` mock to `useRouter` stub in page test harnesses.
+
 ## [2026-08-27 @ 10:38]
 
 **🐛 Hotfixes: Client Request Detail ICU Translation Parameter Formatting**

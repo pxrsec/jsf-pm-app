@@ -283,7 +283,9 @@ export function ClientSubmissionCard({
                                     entry.submittedAt,
                                   ).toLocaleDateString(),
                                 )
-                              : new Date(entry.submittedAt).toLocaleDateString()}
+                              : new Date(
+                                  entry.submittedAt,
+                                ).toLocaleDateString()}
                           </span>
                         </div>
                         <a
