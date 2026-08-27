@@ -32,6 +32,7 @@
       "links": {
         "home": "Inicio",
         "projects": "Proyectos",
+        "myProjects": "Mis Proyectos",
         "agenda": "Mi Agenda",
         "calendar": "Calendario",
         "archive": "Archivo",
@@ -49,6 +50,10 @@
       }
     },
     "landing": {
+      "quickAccess": "Acceso rápido",
+      "open": "Abrir",
+      "viewAll": "Ver todo",
+      "deadline": "Entrega: {date}",
       "admin": {
         "welcome": "Bienvenido, {name}",
         "recentProjects": "Proyectos recientes",
@@ -57,13 +62,18 @@
       "pm": {
         "welcome": "Bienvenido, {name}",
         "myProjects": "Mis proyectos asignados",
-        "emptyProjects": "No tienes proyectos asignados actualmente."
+        "emptyProjects": "No tienes proyectos asignados actualmente.",
+        "calendarDescription": "Revisa entregas e hitos de proyectos.",
+        "metricsDescription": "Abre las métricas operativas."
       },
       "operator": {
         "welcome": "Bienvenido, {name}",
         "myAgenda": "Mi agenda de tareas",
         "emptyAgenda": "No tienes tareas pendientes en tu agenda.",
-        "untitledTask": "Sin título"
+        "untitledTask": "Sin título",
+        "agendaDescription": "Abre tu cola de tareas asignadas.",
+        "projectsDescription": "Revisa proyectos con trabajo asignado.",
+        "calendarDescription": "Revisa el trabajo asignado programado."
       },
       "client": {
         "welcome": "Bienvenido, {name}",
@@ -338,6 +348,30 @@
         "quickStatsTitle": "Resumen de Trabajo",
         "tasksCount": "Tareas activas",
         "deliverablesCount": "Entregables",
+        "activeCount": "{count} activas",
+        "noTasks": "Aún no hay tareas",
+        "noDeliverables": "Aún no hay entregables",
+        "view": "Ver",
+        "openTasks": "Abrir tareas, {count} activas",
+        "openDeliverables": "Abrir entregables, {count} en total",
+        "copyProjectId": "Copiar ID del proyecto",
+        "copySuccess": "ID del proyecto copiado.",
+        "copyError": "No se pudo copiar el ID del proyecto.",
+        "taskStatus": {
+          "pending": "Pendientes",
+          "in_progress": "En progreso",
+          "in_review": "En revisión",
+          "blocked": "Bloqueadas",
+          "completed": "Completadas"
+        },
+        "deliverableStatus": {
+          "pending": "Pendientes",
+          "submitted": "Enviados",
+          "awaiting_internal_review": "En revisión interna",
+          "changes_requested": "Cambios solicitados",
+          "approved": "Aprobados",
+          "delivered": "Entregados"
+        },
         "teamSummaryTitle": "Equipo del Proyecto",
         "viewAllMembers": "Ver todos ({count})",
         "completionCyclesTitle": "Historial de Ciclos de Completado",
@@ -1681,6 +1715,17 @@
       "saveChanges": "Guardar Cambios",
       "close": "Cerrar",
       "retry": "Reintentar"
+    },
+    "detail": {
+      "title": "Detalles del hito",
+      "description": "Información del hito de solo lectura.",
+      "unavailable": "Los detalles del hito no están disponibles.",
+      "name": "Título",
+      "project": "Proyecto",
+      "starts": "Inicio",
+      "ends": "Fin",
+      "descriptionLabel": "Descripción",
+      "close": "Cerrar"
     },
     "form": {
       "createTitle": "Crear Hito de Calendario",

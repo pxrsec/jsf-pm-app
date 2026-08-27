@@ -6,6 +6,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import {
   CALENDAR_COLOR_CLASSES,
   getCalendarEventKey,
+  resolveCalendarEventDestination,
   type CalendarEventDto,
 } from "@/lib/calendar/types";
 import { formatCalendarDate } from "@/lib/calendar/date-utils";
@@ -20,6 +21,7 @@ export function CalendarListView({
   userRole,
   onEditMilestone,
   onDeleteMilestone,
+  onOpenMilestoneDetail,
 }: CalendarViewProps) {
   const t = useTranslations("calendar");
   const locale = useLocale();
@@ -74,7 +76,14 @@ export function CalendarListView({
           {events.map((event) => {
             const isMilestone = event.event_type === "milestone";
             const showActions = canManageMilestones && isMilestone;
-            const projectHref = getSafeProjectLink(event);
+            const destination = resolveCalendarEventDestination(
+              event,
+              userRole,
+            );
+            const projectHref =
+              "href" in destination
+                ? destination.href
+                : getSafeProjectLink(event);
 
             const colorStyles = event.color_override
               ? CALENDAR_COLOR_CLASSES[event.color_override]
@@ -115,9 +124,22 @@ export function CalendarListView({
                       className={`h-2 w-2 shrink-0 rounded-full ${colorStyles.dot}`}
                       aria-hidden="true"
                     />
-                    <span className="font-semibold text-foreground">
-                      {event.title}
-                    </span>
+                    {destination.kind === "milestone-detail" ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          onOpenMilestoneDetail?.(destination.eventId)
+                        }
+                        className="h-auto px-0 font-semibold hover:bg-transparent hover:underline"
+                      >
+                        {event.title}
+                      </Button>
+                    ) : (
+                      <span className="font-semibold text-foreground">
+                        {event.title}
+                      </span>
+                    )}
                   </div>
                 </td>
 

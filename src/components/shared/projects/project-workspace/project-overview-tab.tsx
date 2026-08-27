@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslations, useFormatter } from "next-intl";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import {
   ExternalLink,
   Copy,
@@ -17,13 +18,17 @@ import { CompletionCyclesCard } from "./completion-cycles-card";
 import type {
   ProjectDetail,
   ProjectCompletionCyclesView,
+  TaskWithAssignee,
 } from "@/lib/projects/queries";
+import type { DeliverableListItem } from "@/lib/deliverables/queries";
 import type { ClientListItem } from "@/lib/clients/queries";
 
 interface ProjectOverviewTabProps {
   project: ProjectDetail;
   clients: ClientListItem[];
   cycles: ProjectCompletionCyclesView[];
+  tasks: readonly TaskWithAssignee[];
+  deliverables: readonly DeliverableListItem[];
   onOpenEditDialog?: () => void;
   onSelectTab?: (tab: string) => void;
 }
@@ -32,6 +37,8 @@ export function ProjectOverviewTab({
   project,
   clients,
   cycles,
+  tasks,
+  deliverables,
   onOpenEditDialog,
   onSelectTab,
 }: ProjectOverviewTabProps) {
@@ -39,8 +46,55 @@ export function ProjectOverviewTab({
   const tOverview = useTranslations("projects.workspace.overview");
   const format = useFormatter();
   const [copied, setCopied] = useState(false);
+  const [copyMessage, setCopyMessage] = useState<string | null>(null);
+  const copyResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const clientOrg = clients.find((c) => c.id === project.client_id);
+  useEffect(
+    () => () => {
+      if (copyResetTimer.current) clearTimeout(copyResetTimer.current);
+    },
+    [],
+  );
+
+  const taskStatusOrder = [
+    "pending",
+    "in_progress",
+    "in_review",
+    "blocked",
+    "completed",
+  ] as const;
+  const deliverableStatusOrder = [
+    "pending",
+    "submitted",
+    "awaiting_internal_review",
+    "changes_requested",
+    "approved",
+    "delivered",
+  ] as const;
+  const activeTasks = tasks.filter((task) => task.status !== "completed");
+  const countByStatus = <T extends { status: string }>(
+    items: readonly T[],
+    order: readonly string[],
+  ) =>
+    order.flatMap((status) => {
+      const count = items.filter((item) => item.status === status).length;
+      return count ? [{ status, count }] : [];
+    });
+  const taskBreakdown = countByStatus(tasks, taskStatusOrder);
+  const deliverableBreakdown = countByStatus(
+    deliverables,
+    deliverableStatusOrder,
+  );
+
+  const handleCopyId = async () => {
+    const didCopy = await copyTextToClipboard(project.id);
+    setCopyMessage(tOverview(didCopy ? "copySuccess" : "copyError"));
+    if (!didCopy) return;
+    setCopied(true);
+    if (copyResetTimer.current) clearTimeout(copyResetTimer.current);
+    copyResetTimer.current = setTimeout(() => setCopied(false), 2000);
+  };
+  const clientOrg = clients.find((client) => client.id === project.client_id);
   const clientMembers = project.members.filter(
     (m) => m.member_type === "client",
   );
@@ -48,12 +102,6 @@ export function ProjectOverviewTab({
   const isClientProject = project.project_type === "client";
   const isMissingClientSetup =
     isClientProject && (!project.client_id || clientMembers.length === 0);
-
-  const handleCopyId = () => {
-    navigator.clipboard.writeText(project.id);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const createdDate = new Date(project.created_at);
   const deadlineDate = project.deadline_at
@@ -171,10 +219,15 @@ export function ProjectOverviewTab({
                 {tOverview("quickStatsTitle")}
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div
+            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => onSelectTab?.("tasks")}
-                className="flex items-center justify-between p-3.5 rounded-lg border border-border bg-muted/30 hover:bg-muted/60 transition-colors cursor-pointer"
+                className="h-auto min-h-[88px] justify-between whitespace-normal p-3.5 text-left hover:bg-muted/60"
+                aria-label={tOverview("openTasks", {
+                  count: activeTasks.length,
+                })}
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
@@ -184,19 +237,32 @@ export function ProjectOverviewTab({
                     <p className="text-xs font-medium text-muted-foreground">
                       {tOverview("tasksCount")}
                     </p>
-                    <p className="text-lg font-bold text-foreground">—</p>
+                    <p className="text-lg font-bold text-foreground">
+                      {tOverview("activeCount", { count: activeTasks.length })}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {taskBreakdown
+                        .map(
+                          ({ status, count }) =>
+                            `${tOverview(`taskStatus.${status}`)} ${count}`,
+                        )
+                        .join(" · ") || tOverview("noTasks")}
+                    </p>
                   </div>
                 </div>
-                <span className="text-xs text-primary font-medium">Ver</span>
-              </div>
+                <span className="text-xs font-medium text-primary">
+                  {tOverview("view")}
+                </span>
+              </Button>
 
-              <div
-                onClick={() => isClientProject && onSelectTab?.("deliverables")}
-                className={`flex items-center justify-between p-3.5 rounded-lg border border-border bg-muted/30 ${
-                  isClientProject
-                    ? "hover:bg-muted/60 cursor-pointer"
-                    : "opacity-60 cursor-not-allowed"
-                } transition-colors`}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onSelectTab?.("deliverables")}
+                className="h-auto min-h-[88px] justify-between whitespace-normal p-3.5 text-left hover:bg-muted/60"
+                aria-label={tOverview("openDeliverables", {
+                  count: deliverables.length,
+                })}
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400">
@@ -207,14 +273,22 @@ export function ProjectOverviewTab({
                       {tOverview("deliverablesCount")}
                     </p>
                     <p className="text-lg font-bold text-foreground">
-                      {isClientProject ? "—" : "N/A"}
+                      {deliverables.length}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {deliverableBreakdown
+                        .map(
+                          ({ status, count }) =>
+                            `${tOverview(`deliverableStatus.${status}`)} ${count}`,
+                        )
+                        .join(" · ") || tOverview("noDeliverables")}
                     </p>
                   </div>
                 </div>
-                {isClientProject && (
-                  <span className="text-xs text-primary font-medium">Ver</span>
-                )}
-              </div>
+                <span className="text-xs font-medium text-primary">
+                  {tOverview("view")}
+                </span>
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -241,7 +315,7 @@ export function ProjectOverviewTab({
                     size="icon"
                     onClick={handleCopyId}
                     className="h-6 w-6 shrink-0"
-                    aria-label="Copy project ID"
+                    aria-label={tOverview("copyProjectId")}
                   >
                     {copied ? (
                       <Check className="h-3.5 w-3.5 text-green-600" />
@@ -250,6 +324,9 @@ export function ProjectOverviewTab({
                     )}
                   </Button>
                 </div>
+                <span className="sr-only" role="status" aria-live="polite">
+                  {copyMessage}
+                </span>
               </div>
 
               <div className="flex items-center justify-between border-t border-border pt-2.5">

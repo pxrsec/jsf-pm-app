@@ -22,6 +22,7 @@ import { CalendarAgendaView } from "./views/calendar-agenda-view";
 import { CalendarListView } from "./views/calendar-list-view";
 import { MilestoneDialog } from "./milestone-dialog";
 import { DeleteMilestoneDialog } from "./delete-milestone-dialog";
+import { MilestoneDetailDialog } from "./milestone-detail-dialog";
 
 export function CalendarCoordinator({
   initialEvents,
@@ -45,6 +46,9 @@ export function CalendarCoordinator({
   const [deleteDialog, setDeleteDialog] = useState<DeleteDialogState>({
     isOpen: false,
   });
+  const [milestoneDetailEventId, setMilestoneDetailEventId] = useState<
+    string | undefined
+  >();
 
   const updateRange = (newRange: CalendarRangeState) => {
     if (onRangeChange) {
@@ -228,6 +232,8 @@ export function CalendarCoordinator({
     userRole,
     onEditMilestone: canManageMilestones ? handleEditMilestone : undefined,
     onDeleteMilestone: canManageMilestones ? handleDeleteMilestone : undefined,
+    onOpenMilestoneDetail: (eventId: string) =>
+      setMilestoneDetailEventId(eventId),
   };
 
   return (
@@ -254,6 +260,12 @@ export function CalendarCoordinator({
       {initialRange.view === "week" && <CalendarWeekView {...viewProps} />}
       {initialRange.view === "agenda" && <CalendarAgendaView {...viewProps} />}
       {initialRange.view === "list" && <CalendarListView {...viewProps} />}
+
+      <MilestoneDetailDialog
+        eventId={milestoneDetailEventId}
+        isOpen={Boolean(milestoneDetailEventId)}
+        onClose={() => setMilestoneDetailEventId(undefined)}
+      />
 
       {/* Manager-only Milestone Dialog */}
       {canManageMilestones && (

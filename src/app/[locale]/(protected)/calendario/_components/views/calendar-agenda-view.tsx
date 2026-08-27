@@ -20,6 +20,7 @@ export function CalendarAgendaView({
   userRole,
   onEditMilestone,
   onDeleteMilestone,
+  onOpenMilestoneDetail,
 }: CalendarViewProps) {
   const locale = useLocale();
   const eventsByDate = useMemo(() => groupEventsByDate(events), [events]);
@@ -81,6 +82,7 @@ export function CalendarAgendaView({
                 compact={false}
                 onEdit={onEditMilestone}
                 onDelete={onDeleteMilestone}
+                onOpenMilestoneDetail={onOpenMilestoneDetail}
               />
             ))}
           </div>

@@ -1,7 +1,14 @@
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/routing";
 import type { Profile } from "@/lib/auth/session";
 import type { PmShellData } from "@/lib/shell-data/shell-queries";
 import { PROJECT_STATUS_MAP, type ProjectStatus } from "@/lib/status-maps";
+import {
+  ArrowRight,
+  CalendarDays,
+  ChartNoAxesCombined,
+  FolderKanban,
+} from "lucide-react";
 
 interface PmShellProps {
   profile: Profile;
@@ -10,78 +17,114 @@ interface PmShellProps {
 
 export async function PmShell({ profile, data }: PmShellProps) {
   const t = await getTranslations("shell");
+  const projects = [...data.projects].sort((a, b) => {
+    if (!a.deadline_at) return 1;
+    if (!b.deadline_at) return -1;
+    return (
+      new Date(a.deadline_at).getTime() - new Date(b.deadline_at).getTime()
+    );
+  });
+  const quickAccess = [
+    {
+      href: "/pm/proyectos",
+      icon: FolderKanban,
+      title: t("nav.links.projects"),
+      description: t("landing.pm.myProjects"),
+    },
+    {
+      href: "/calendario",
+      icon: CalendarDays,
+      title: t("nav.links.calendar"),
+      description: t("landing.pm.calendarDescription"),
+    },
+    {
+      href: "/pm/metricas",
+      icon: ChartNoAxesCombined,
+      title: t("nav.links.metrics"),
+      description: t("landing.pm.metricsDescription"),
+    },
+  ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          {t("landing.pm.welcome", { name: profile.full_name })}
-        </h1>
-      </div>
-
+    <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+      <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+        {t("landing.pm.welcome", { name: profile.full_name })}
+      </h1>
+      <section
+        className="grid gap-4 sm:grid-cols-3"
+        aria-label={t("landing.quickAccess")}
+      >
+        {quickAccess.map(({ href, icon: Icon, title, description }) => (
+          <Link
+            key={href}
+            href={href}
+            className="group flex min-h-[132px] flex-col justify-between rounded-xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <div className="flex items-center gap-3">
+              <span className="rounded-lg bg-primary/10 p-2.5 text-primary">
+                <Icon className="h-5 w-5" />
+              </span>
+              <div>
+                <h2 className="font-semibold">{title}</h2>
+                <p className="text-xs text-muted-foreground">{description}</p>
+              </div>
+            </div>
+            <span className="flex items-center gap-1 text-xs font-medium text-primary">
+              {t("landing.open")}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </span>
+          </Link>
+        ))}
+      </section>
       <section aria-labelledby="pm-projects-heading" className="space-y-4">
-        <h2
-          id="pm-projects-heading"
-          className="text-lg font-semibold text-foreground"
-        >
-          {t("landing.pm.myProjects")}
-        </h2>
-
-        {data.projects.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border p-8 text-center bg-card/50">
+        <div className="flex items-center justify-between">
+          <h2 id="pm-projects-heading" className="text-lg font-semibold">
+            {t("landing.pm.myProjects")}
+          </h2>
+          <Link
+            href="/pm/proyectos"
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            {t("landing.viewAll")}
+          </Link>
+        </div>
+        {projects.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border p-8 text-center">
             <p className="text-muted-foreground">
               {t("landing.pm.emptyProjects")}
             </p>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {data.projects.map((project) => {
-              const statusConfig =
+            {projects.map((project) => {
+              const status =
                 PROJECT_STATUS_MAP[
                   (project.status as ProjectStatus) || "planning"
                 ] ?? PROJECT_STATUS_MAP.planning;
-
               return (
-                <div
+                <Link
                   key={project.id}
-                  className="rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md text-card-foreground flex flex-col justify-between"
+                  href={`/pm/proyectos/${project.id}`}
+                  className="group rounded-xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <div>
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-semibold text-foreground line-clamp-1">
-                        {project.name}
-                      </h3>
-                      {project.is_primary && (
-                        <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-                          Lead
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-2 flex items-center gap-2">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusConfig.badgeBg} ${statusConfig.badgeFg}`}
-                      >
-                        <statusConfig.icon
-                          className="h-3 w-3"
-                          aria-hidden="true"
-                        />
-                        {t(
-                          `status.${statusConfig.labelKey}` as
-                            | "status.planning"
-                            | "status.inProgress"
-                            | "status.paused"
-                            | "status.completed"
-                            | "status.cancelled",
-                        )}
-                      </span>
-                    </div>
-                  </div>
+                  <h3 className="font-semibold group-hover:text-primary">
+                    {project.name}
+                  </h3>
+                  <span
+                    className={`mt-2 inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${status.badgeBg} ${status.badgeFg}`}
+                  >
+                    {t(`status.${status.labelKey}`)}
+                  </span>
                   {project.deadline_at && (
                     <p className="mt-4 text-xs text-muted-foreground">
-                      {new Date(project.deadline_at).toLocaleDateString()}
+                      {t("landing.deadline", {
+                        date: new Intl.DateTimeFormat("en-US", {
+                          dateStyle: "medium",
+                        }).format(new Date(project.deadline_at)),
+                      })}
                     </p>
                   )}
-                </div>
+                </Link>
               );
             })}
           </div>

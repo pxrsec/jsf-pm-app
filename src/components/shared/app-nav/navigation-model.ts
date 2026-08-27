@@ -4,6 +4,7 @@ export type AppNavigationItemKey =
   | "home"
   | "projects"
   | "agenda"
+  | "operatorProjects"
   | "calendar"
   | "archive"
   | "linkIncidents"
@@ -60,6 +61,13 @@ export function buildNavigationModel({
       href: "/operador/agenda",
       label: agendaLabel,
       ariaLabel: agendaLabel,
+    });
+    const operatorProjectsLabel = t("links.myProjects");
+    items.push({
+      key: "operatorProjects",
+      href: "/operador/proyectos",
+      label: operatorProjectsLabel,
+      ariaLabel: operatorProjectsLabel,
     });
   } else {
     const projectsLabel = t("links.projects");
