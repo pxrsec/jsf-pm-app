@@ -1,5 +1,15 @@
 # JSF PM App Development Changelog
 
+## [2026-08-28 @ 15:15]
+
+**🛠 Architecture & 🚀 Features: S09-06 Operator Task Milestone Context Migration & Typegen**
+
+- **Database Migration (`supabase/migrations/20260828113000_s09-06-operator-task-milestone-context.sql`):**
+  - Applied migration creating security-definer RPC `public.list_operator_task_milestone_context(p_task_id uuid)` with strict operator role and direct task assignee authorization guards.
+  - Granted execute permission to `authenticated` users and revoked from `public` and `anon`.
+- **Database Types (`src/lib/database.types.ts`):**
+  - Regenerated Supabase TypeScript types including `list_operator_task_milestone_context` RPC definition.
+
 ## [2026-08-27 @ 13:27]
 
 **🐛 Hotfixes: Missing Localization Keys in Project Tasks & Member Capacities**

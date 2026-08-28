@@ -10,6 +10,7 @@ required_applied_migrations:
   - supabase/migrations/20260823144000_s07_e09_calendar-task-scoped-milestones-and-pm-authority.sql
   - supabase/migrations/20260827123000_s09-04-task-deliverable-bundle-and-workflow-integrity.sql
   - supabase/migrations/20260828110000_s09-06-milestone-goals-and-task-progress.sql
+  - supabase/migrations/20260828113000_s09-06-operator-task-milestone-context.sql
 ---
 
 # S09-06 — Milestone Goals, Task Progress, and Project Timeline

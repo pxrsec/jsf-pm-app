@@ -2046,6 +2046,14 @@ export type Database = {
           trigger: Database["public"]["Enums"]["notification_trigger"]
         }[]
       }
+      list_operator_task_milestone_context: {
+        Args: { p_task_id: string }
+        Returns: {
+          scope: string
+          target_date: string
+          title: string
+        }[]
+      }
       list_project_milestone_summaries: {
         Args: { p_project_id: string }
         Returns: {
