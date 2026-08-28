@@ -35,4 +35,5 @@ export interface CalendarViewProps {
   userRole: AppRole;
   onEditMilestone?: (eventId: string) => void;
   onDeleteMilestone?: (eventId: string, title: string) => void;
+  onOpenMilestoneDetail?: (eventId: string) => void;
 }

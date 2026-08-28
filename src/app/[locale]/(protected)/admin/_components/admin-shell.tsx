@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/routing";
 import type { Profile } from "@/lib/auth/session";
 import type { AdminShellData } from "@/lib/shell-data/shell-queries";
 import { PROJECT_STATUS_MAP, type ProjectStatus } from "@/lib/status-maps";
@@ -42,9 +43,10 @@ export async function AdminShell({ profile, data }: AdminShellProps) {
                 ] ?? PROJECT_STATUS_MAP.planning;
 
               return (
-                <div
+                <Link
                   key={project.id}
-                  className="rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md text-card-foreground flex flex-col justify-between"
+                  href={`/admin/proyectos/${project.id}`}
+                  className="rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md text-card-foreground flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <div>
                     <h3 className="font-semibold text-foreground line-clamp-1">
@@ -74,7 +76,7 @@ export async function AdminShell({ profile, data }: AdminShellProps) {
                       {new Date(project.deadline_at).toLocaleDateString()}
                     </p>
                   )}
-                </div>
+                </Link>
               );
             })}
           </div>

@@ -33,6 +33,7 @@ export function CalendarMonthView({
   userRole,
   onEditMilestone,
   onDeleteMilestone,
+  onOpenMilestoneDetail,
 }: CalendarViewProps) {
   const t = useTranslations("calendar");
   const locale = useLocale();
@@ -190,6 +191,7 @@ export function CalendarMonthView({
                     compact
                     onEdit={onEditMilestone}
                     onDelete={onDeleteMilestone}
+                    onOpenMilestoneDetail={onOpenMilestoneDetail}
                   />
                 ))}
               </div>

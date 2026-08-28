@@ -32,6 +32,7 @@
       "links": {
         "home": "Home",
         "projects": "Projects",
+        "myProjects": "My Projects",
         "agenda": "My Agenda",
         "calendar": "Calendar",
         "archive": "Archive",
@@ -49,6 +50,10 @@
       }
     },
     "landing": {
+      "quickAccess": "Quick access",
+      "open": "Open",
+      "viewAll": "View all",
+      "deadline": "Deadline: {date}",
       "admin": {
         "welcome": "Welcome, {name}",
         "recentProjects": "Recent projects",
@@ -57,13 +62,18 @@
       "pm": {
         "welcome": "Welcome, {name}",
         "myProjects": "My assigned projects",
-        "emptyProjects": "You currently have no assigned projects."
+        "emptyProjects": "You currently have no assigned projects.",
+        "calendarDescription": "Review project deadlines and milestones.",
+        "metricsDescription": "Open operational metrics."
       },
       "operator": {
         "welcome": "Welcome, {name}",
         "myAgenda": "My task agenda",
         "emptyAgenda": "You have no pending tasks in your agenda.",
-        "untitledTask": "Untitled task"
+        "untitledTask": "Untitled task",
+        "agendaDescription": "Open your assigned task queue.",
+        "projectsDescription": "Review projects with your assigned work.",
+        "calendarDescription": "Review scheduled assigned work."
       },
       "client": {
         "welcome": "Welcome, {name}",
@@ -338,6 +348,30 @@
         "quickStatsTitle": "Work Summary",
         "tasksCount": "Active tasks",
         "deliverablesCount": "Deliverables",
+        "activeCount": "{count} active",
+        "noTasks": "No tasks yet",
+        "noDeliverables": "No deliverables yet",
+        "view": "View",
+        "openTasks": "Open tasks, {count} active",
+        "openDeliverables": "Open deliverables, {count} total",
+        "copyProjectId": "Copy project ID",
+        "copySuccess": "Project ID copied.",
+        "copyError": "Project ID could not be copied.",
+        "taskStatus": {
+          "pending": "Pending",
+          "in_progress": "In progress",
+          "in_review": "In review",
+          "blocked": "Blocked",
+          "completed": "Completed"
+        },
+        "deliverableStatus": {
+          "pending": "Pending",
+          "submitted": "Submitted",
+          "awaiting_internal_review": "Awaiting internal review",
+          "changes_requested": "Changes requested",
+          "approved": "Approved",
+          "delivered": "Delivered"
+        },
         "teamSummaryTitle": "Project Team",
         "viewAllMembers": "View all ({count})",
         "completionCyclesTitle": "Completion Cycle History",
@@ -1681,6 +1715,17 @@
       "saveChanges": "Save Changes",
       "close": "Close",
       "retry": "Retry"
+    },
+    "detail": {
+      "title": "Milestone details",
+      "description": "Read-only milestone information.",
+      "unavailable": "Milestone details are unavailable.",
+      "name": "Title",
+      "project": "Project",
+      "starts": "Starts",
+      "ends": "Ends",
+      "descriptionLabel": "Description",
+      "close": "Close"
     },
     "form": {
       "createTitle": "Create Calendar Milestone",

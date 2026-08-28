@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Copy, Check } from "lucide-react";
 
@@ -19,17 +20,24 @@ export function ExternalLinkButton({
   const t = useTranslations("archive.actions");
   const [copied, setCopied] = useState(false);
   const [liveMessage, setLiveMessage] = useState<string | null>(null);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    },
+    [],
+  );
 
   const handleCopy = useCallback(async () => {
     if (!url) return;
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setLiveMessage(t("copySuccess"));
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      setLiveMessage(t("copyError"));
-    }
+    const didCopy = await copyTextToClipboard(url);
+    setLiveMessage(didCopy ? t("copySuccess") : t("copyError"));
+    if (!didCopy) return;
+
+    setCopied(true);
+    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    resetTimerRef.current = setTimeout(() => setCopied(false), 2500);
   }, [url, t]);
 
   if (!url) return null;

@@ -1,3 +1,4 @@
+import type { AppRole } from "@/lib/auth/routes";
 import type { Database } from "@/lib/database.types";
 
 export type CalendarEventType =
@@ -151,6 +152,62 @@ export function normalizeMilestoneEditDetailDto(
       ? row.color_override
       : null,
   };
+}
+
+export type CalendarEventDestination =
+  | { kind: "milestone-detail"; eventId: string }
+  | {
+      kind:
+        | "project-overview"
+        | "project-tasks"
+        | "project-deliverables"
+        | "operator-task";
+      href: string;
+    }
+  | { kind: "none" };
+
+export function resolveCalendarEventDestination(
+  event: CalendarEventDto,
+  role: AppRole,
+): CalendarEventDestination {
+  if (role === "operator") {
+    if (
+      !event.task_id ||
+      !["milestone", "task_deadline", "client_delivery_deadline"].includes(
+        event.event_type,
+      )
+    )
+      return { kind: "none" };
+    return { kind: "operator-task", href: `/operador/tareas/${event.task_id}` };
+  }
+  if (event.event_type === "milestone" && (role === "admin" || role === "pm")) {
+    return { kind: "milestone-detail", eventId: event.entity_id };
+  }
+  if (!event.project_id) return { kind: "none" };
+  const base =
+    role === "admin"
+      ? "/admin/proyectos"
+      : role === "pm"
+        ? "/pm/proyectos"
+        : role === "client"
+          ? "/cliente/proyectos"
+          : null;
+  if (!base) return { kind: "none" };
+  if (role === "client")
+    return { kind: "project-overview", href: `${base}/${event.project_id}` };
+  const tab =
+    event.event_type === "task_deadline"
+      ? "tasks"
+      : event.event_type === "internal_review_deadline" ||
+          event.event_type === "client_delivery_deadline"
+        ? "deliverables"
+        : null;
+  return tab
+    ? {
+        kind: tab === "tasks" ? "project-tasks" : "project-deliverables",
+        href: `${base}/${event.project_id}?tab=${tab}`,
+      }
+    : { kind: "project-overview", href: `${base}/${event.project_id}` };
 }
 
 export function getCalendarEventKey(event: CalendarEventDto): string {

@@ -13,6 +13,7 @@ import {
 import type { AppRole } from "@/lib/auth/routes";
 import {
   CALENDAR_COLOR_CLASSES,
+  resolveCalendarEventDestination,
   type CalendarEventDto,
 } from "@/lib/calendar/types";
 import { formatCalendarDate } from "@/lib/calendar/date-utils";
@@ -31,6 +32,7 @@ interface EventBadgeProps {
   compact?: boolean;
   onEdit?: (eventId: string) => void;
   onDelete?: (eventId: string, title: string) => void;
+  onOpenMilestoneDetail?: (eventId: string) => void;
 }
 
 export function EventBadge({
@@ -40,6 +42,7 @@ export function EventBadge({
   compact = false,
   onEdit,
   onDelete,
+  onOpenMilestoneDetail,
 }: EventBadgeProps) {
   const t = useTranslations("calendar");
   const locale = useLocale();
@@ -54,22 +57,8 @@ export function EventBadge({
         dot: "bg-primary",
       };
 
-  const getSafeProjectLink = (): string | null => {
-    if (!event.project_id) return null;
-    if (userRole === "admin") {
-      return `/admin/proyectos/${event.project_id}`;
-    }
-    if (userRole === "pm") {
-      return `/pm/proyectos/${event.project_id}`;
-    }
-    if (userRole === "client") {
-      return `/cliente/proyectos/${event.project_id}`;
-    }
-    // Operator events are non-interactive text per S07-02
-    return null;
-  };
-
-  const projectHref = getSafeProjectLink();
+  const destination = resolveCalendarEventDestination(event, userRole);
+  const projectHref = "href" in destination ? destination.href : null;
   const isMilestone = event.event_type === "milestone";
   const showManagerActions = canManageMilestones && isMilestone;
 
@@ -83,7 +72,17 @@ export function EventBadge({
             className={`h-1.5 w-1.5 shrink-0 rounded-full ${colorStyles.dot}`}
             aria-hidden="true"
           />
-          {projectHref ? (
+          {destination.kind === "milestone-detail" ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onOpenMilestoneDetail?.(destination.eventId)}
+              className="h-auto min-h-[32px] justify-start truncate px-0 font-medium hover:bg-transparent hover:underline"
+              title={event.title}
+            >
+              {event.title}
+            </Button>
+          ) : projectHref ? (
             <Link
               href={projectHref}
               className="truncate font-medium hover:underline focus:outline-none focus:ring-1 focus:ring-ring"
@@ -157,7 +156,17 @@ export function EventBadge({
         </div>
 
         <div className="text-sm font-semibold text-foreground">
-          {projectHref ? (
+          {destination.kind === "milestone-detail" ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onOpenMilestoneDetail?.(destination.eventId)}
+              className="h-auto min-h-[32px] justify-start truncate px-0 font-medium hover:bg-transparent hover:underline"
+              title={event.title}
+            >
+              {event.title}
+            </Button>
+          ) : projectHref ? (
             <Link
               href={projectHref}
               className="hover:underline focus:outline-none focus:ring-1 focus:ring-ring"

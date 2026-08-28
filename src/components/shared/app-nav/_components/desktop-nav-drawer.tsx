@@ -37,6 +37,7 @@ const ICON_MAP: Record<AppNavigationItemKey, LucideIcon> = {
   home: House,
   projects: FolderKanban,
   agenda: CalendarCheck,
+  operatorProjects: FolderKanban,
   calendar: CalendarDays,
   archive: Archive,
   linkIncidents: Link2,

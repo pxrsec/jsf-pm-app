@@ -255,6 +255,8 @@ export function ProjectWorkspaceShell({
             project={project}
             clients={clients}
             cycles={cycles}
+            tasks={initialTasks}
+            deliverables={initialDeliverables}
             onOpenEditDialog={() => setIsEditOpen(true)}
             onSelectTab={(tab) => handleTabChange(tab)}
           />

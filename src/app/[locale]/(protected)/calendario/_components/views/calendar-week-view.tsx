@@ -20,6 +20,7 @@ export function CalendarWeekView({
   userRole,
   onEditMilestone,
   onDeleteMilestone,
+  onOpenMilestoneDetail,
 }: CalendarViewProps) {
   const locale = useLocale();
   const eventsByDate = useMemo(() => groupEventsByDate(events), [events]);
@@ -107,6 +108,7 @@ export function CalendarWeekView({
                     compact
                     onEdit={onEditMilestone}
                     onDelete={onDeleteMilestone}
+                    onOpenMilestoneDetail={onOpenMilestoneDetail}
                   />
                 ))
               )}
