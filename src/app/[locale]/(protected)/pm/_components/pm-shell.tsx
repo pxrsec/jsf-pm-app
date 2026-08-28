@@ -17,6 +17,7 @@ interface PmShellProps {
 
 export async function PmShell({ profile, data }: PmShellProps) {
   const t = await getTranslations("shell");
+  const tCapacities = await getTranslations("projects.roster.capacities");
   const projects = [...data.projects].sort((a, b) => {
     if (!a.deadline_at) return 1;
     if (!b.deadline_at) return -1;
@@ -110,6 +111,15 @@ export async function PmShell({ profile, data }: PmShellProps) {
                   <h3 className="font-semibold group-hover:text-primary">
                     {project.name}
                   </h3>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {project.member_type === "pm_lead" && project.is_primary
+                      ? tCapacities("pmLeadPrimary")
+                      : tCapacities(
+                          project.member_type === "pm_lead"
+                            ? "pmLead"
+                            : "pmWatcher",
+                        )}
+                  </p>
                   <span
                     className={`mt-2 inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${status.badgeBg} ${status.badgeFg}`}
                   >

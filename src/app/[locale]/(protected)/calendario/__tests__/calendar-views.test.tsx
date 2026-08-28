@@ -176,7 +176,7 @@ describe("Calendar Presentation Views", () => {
       ).toBe(true);
     });
 
-    it("renders non-interactive text for Operator user (zero deep links)", () => {
+    it("links only task-scoped actionable events for Operator users", () => {
       render(
         <CalendarListView
           events={mockEvents}
@@ -186,8 +186,14 @@ describe("Calendar Presentation Views", () => {
         />,
       );
 
-      expect(screen.queryByTestId("calendar-link")).not.toBeInTheDocument();
+      const links = screen.getAllByTestId("calendar-link");
+      expect(links).toHaveLength(1);
+      expect(links[0]).toHaveAttribute(
+        "href",
+        "/operador/tareas/00000000-0000-0000-0000-000000000003",
+      );
       expect(screen.getByText("Documentary Film")).toBeInTheDocument();
+      expect(screen.getByText("Commercial Ad")).toBeInTheDocument();
     });
   });
 
