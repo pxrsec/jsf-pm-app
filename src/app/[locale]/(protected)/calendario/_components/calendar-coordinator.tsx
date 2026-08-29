@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { usePathname, useRouter } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
@@ -10,11 +9,7 @@ import {
   getWeekRange,
 } from "@/lib/calendar/date-utils";
 import type { CalendarRangeState, CalendarView } from "@/lib/calendar/types";
-import type {
-  CalendarCoordinatorProps,
-  DeleteDialogState,
-  MilestoneDialogState,
-} from "./types";
+import type { CalendarCoordinatorProps } from "./types";
 import { CalendarHeader } from "./calendar-header";
 import { CalendarMonthView } from "./views/calendar-month-view";
 import { CalendarWeekView } from "./views/calendar-week-view";
@@ -31,211 +26,85 @@ export function CalendarCoordinator({
   canManageMilestones,
   userRole,
   fixedProjectId,
+  initialMilestoneId,
   keyPrefix = "",
   onRangeChange,
 }: CalendarCoordinatorProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const [milestoneDialog, setMilestoneDialog] = useState<MilestoneDialogState>({
-    isOpen: false,
-    mode: "create",
-  });
-
-  const [deleteDialog, setDeleteDialog] = useState<DeleteDialogState>({
-    isOpen: false,
-  });
-  const [milestoneDetailEventId, setMilestoneDetailEventId] = useState<
-    string | undefined
-  >();
-
-  const updateRange = (newRange: CalendarRangeState) => {
-    if (onRangeChange) {
-      onRangeChange(newRange);
-      return;
+  const params = useSearchParams();
+  const [form, setForm] = useState<{
+    mode: "create" | "edit";
+    milestoneId?: string;
+    focusTasks?: boolean;
+  } | null>(null);
+  const [detailId, setDetailId] = useState<string | undefined>(
+    initialMilestoneId,
+  );
+  const [deleting, setDeleting] = useState<{
+    milestoneId: string;
+    title: string;
+  } | null>(null);
+  const updateRange = (range: CalendarRangeState) => {
+    if (onRangeChange) return onRangeChange(range);
+    const next = new URLSearchParams(params.toString());
+    const prefix = keyPrefix ? keyPrefix : "";
+    next.set(prefix ? `${prefix}View` : "view", range.view);
+    next.set(prefix ? `${prefix}From` : "from", range.from);
+    next.set(prefix ? `${prefix}To` : "to", range.to);
+    if (!prefix) {
+      if (range.projectId) next.set("projectId", range.projectId);
+      else next.delete("projectId");
     }
-
-    const params = new URLSearchParams(searchParams.toString());
-    const fromKey = keyPrefix ? `${keyPrefix}From` : "from";
-    const toKey = keyPrefix ? `${keyPrefix}To` : "to";
-    const viewKey = keyPrefix ? `${keyPrefix}View` : "view";
-
-    params.set(viewKey, newRange.view);
-    params.set(fromKey, newRange.from);
-    params.set(toKey, newRange.to);
-
-    if (!keyPrefix) {
-      if (newRange.projectId) {
-        params.set("projectId", newRange.projectId);
-      } else {
-        params.delete("projectId");
-      }
-    }
-
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${next}`);
   };
-
-  const handleViewChange = (newView: CalendarView) => {
-    let from = initialRange.from;
-    let to = initialRange.to;
-
-    const today = new Date();
-
-    if (newView === "month" || newView === "agenda" || newView === "list") {
-      const monthRange = getDefaultMonthRange(today);
-      from = monthRange.from;
-      to = monthRange.to;
-    } else if (newView === "week") {
-      const weekRange = getWeekRange(today);
-      from = weekRange.from;
-      to = weekRange.to;
-    }
-
-    updateRange({
-      view: newView,
-      from,
-      to,
-      projectId: initialRange.projectId,
-    });
+  const changeView = (view: CalendarView) => {
+    const range =
+      view === "week"
+        ? getWeekRange(new Date())
+        : getDefaultMonthRange(new Date());
+    updateRange({ view, ...range, projectId: initialRange.projectId });
   };
-
-  const handlePrev = () => {
-    const fromDate = new Date(initialRange.from);
-    const tzRef = new TZDate(fromDate, CALENDAR_TIME_ZONE);
-
+  const shift = (direction: -1 | 1) => {
+    const from = new TZDate(new Date(initialRange.from), CALENDAR_TIME_ZONE);
     if (initialRange.view === "week") {
-      const prevWeekDate = new TZDate(
-        tzRef.getTime() - 7 * 86400000,
-        CALENDAR_TIME_ZONE,
+      const range = getWeekRange(
+        new TZDate(
+          from.getTime() + direction * 7 * 86400000,
+          CALENDAR_TIME_ZONE,
+        ),
       );
-      const weekRange = getWeekRange(prevWeekDate);
-      updateRange({
-        ...initialRange,
-        from: weekRange.from,
-        to: weekRange.to,
-      });
+      updateRange({ ...initialRange, ...range });
     } else {
-      // Month / Agenda / List: shift by 1 month
-      const prevMonth = new TZDate(
-        tzRef.getFullYear(),
-        tzRef.getMonth() - 1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        CALENDAR_TIME_ZONE,
+      const range = getDefaultMonthRange(
+        new TZDate(
+          from.getFullYear(),
+          from.getMonth() + direction,
+          1,
+          0,
+          0,
+          0,
+          0,
+          CALENDAR_TIME_ZONE,
+        ),
       );
-      const monthRange = getDefaultMonthRange(prevMonth);
-      updateRange({
-        ...initialRange,
-        from: monthRange.from,
-        to: monthRange.to,
-      });
+      updateRange({ ...initialRange, ...range });
     }
   };
-
-  const handleNext = () => {
-    const fromDate = new Date(initialRange.from);
-    const tzRef = new TZDate(fromDate, CALENDAR_TIME_ZONE);
-
-    if (initialRange.view === "week") {
-      const nextWeekDate = new TZDate(
-        tzRef.getTime() + 7 * 86400000,
-        CALENDAR_TIME_ZONE,
-      );
-      const weekRange = getWeekRange(nextWeekDate);
-      updateRange({
-        ...initialRange,
-        from: weekRange.from,
-        to: weekRange.to,
-      });
-    } else {
-      // Month / Agenda / List: shift by 1 month
-      const nextMonth = new TZDate(
-        tzRef.getFullYear(),
-        tzRef.getMonth() + 1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        CALENDAR_TIME_ZONE,
-      );
-      const monthRange = getDefaultMonthRange(nextMonth);
-      updateRange({
-        ...initialRange,
-        from: monthRange.from,
-        to: monthRange.to,
-      });
-    }
-  };
-
-  const handleToday = () => {
-    const today = new Date();
-    if (initialRange.view === "week") {
-      const weekRange = getWeekRange(today);
-      updateRange({
-        ...initialRange,
-        from: weekRange.from,
-        to: weekRange.to,
-      });
-    } else {
-      const monthRange = getDefaultMonthRange(today);
-      updateRange({
-        ...initialRange,
-        from: monthRange.from,
-        to: monthRange.to,
-      });
-    }
-  };
-
-  const handleProjectFilterChange = (newProjectId?: string) => {
-    updateRange({
-      ...initialRange,
-      projectId: newProjectId,
-    });
-  };
-
-  const handleCreateMilestone = () => {
-    setMilestoneDialog({
-      isOpen: true,
-      mode: "create",
-    });
-  };
-
-  const handleEditMilestone = (eventId: string) => {
-    setMilestoneDialog({
-      isOpen: true,
-      mode: "edit",
-      editEventId: eventId,
-    });
-  };
-
-  const handleDeleteMilestone = (eventId: string, title: string) => {
-    setDeleteDialog({
-      isOpen: true,
-      eventId,
-      eventTitle: title,
-    });
-  };
-
-  const handleMutationSuccess = () => {
-    router.refresh();
-  };
-
   const viewProps = {
     events: initialEvents,
     currentRange: initialRange,
     canManageMilestones,
     userRole,
-    onEditMilestone: canManageMilestones ? handleEditMilestone : undefined,
-    onDeleteMilestone: canManageMilestones ? handleDeleteMilestone : undefined,
-    onOpenMilestoneDetail: (eventId: string) =>
-      setMilestoneDetailEventId(eventId),
+    onOpenMilestoneDetail: setDetailId,
+    onEditMilestone: canManageMilestones
+      ? (id: string) => setForm({ mode: "edit", milestoneId: id })
+      : undefined,
+    onDeleteMilestone: canManageMilestones
+      ? (milestoneId: string, title: string) =>
+          setDeleting({ milestoneId, title })
+      : undefined,
   };
-
   return (
     <div className="space-y-4">
       <CalendarHeader
@@ -243,55 +112,63 @@ export function CalendarCoordinator({
         canManageMilestones={canManageMilestones}
         targets={milestoneTargets}
         fixedProjectId={fixedProjectId}
-        onViewChange={handleViewChange}
-        onPrev={handlePrev}
-        onNext={handleNext}
-        onToday={handleToday}
+        onViewChange={changeView}
+        onPrev={() => shift(-1)}
+        onNext={() => shift(1)}
+        onToday={() => {
+          const range =
+            initialRange.view === "week"
+              ? getWeekRange(new Date())
+              : getDefaultMonthRange(new Date());
+          updateRange({ ...initialRange, ...range });
+        }}
         onProjectFilterChange={
-          canManageMilestones ? handleProjectFilterChange : undefined
+          canManageMilestones
+            ? (projectId) => updateRange({ ...initialRange, projectId })
+            : undefined
         }
         onCreateMilestone={
-          canManageMilestones ? handleCreateMilestone : undefined
+          canManageMilestones ? () => setForm({ mode: "create" }) : undefined
         }
       />
-
-      {/* Active Calendar View */}
-      {initialRange.view === "month" && <CalendarMonthView {...viewProps} />}
-      {initialRange.view === "week" && <CalendarWeekView {...viewProps} />}
-      {initialRange.view === "agenda" && <CalendarAgendaView {...viewProps} />}
+      {initialRange.view === "month" && <CalendarMonthView {...viewProps} />}{" "}
+      {initialRange.view === "week" && <CalendarWeekView {...viewProps} />}{" "}
+      {initialRange.view === "agenda" && <CalendarAgendaView {...viewProps} />}{" "}
       {initialRange.view === "list" && <CalendarListView {...viewProps} />}
-
       <MilestoneDetailDialog
-        eventId={milestoneDetailEventId}
-        isOpen={Boolean(milestoneDetailEventId)}
-        onClose={() => setMilestoneDetailEventId(undefined)}
+        milestoneId={detailId}
+        isOpen={Boolean(detailId)}
+        canManage={canManageMilestones}
+        onClose={() => setDetailId(undefined)}
+        onEdit={(id, focusTasks) =>
+          setForm({ mode: "edit", milestoneId: id, focusTasks })
+        }
+        onDelete={(id, title) => setDeleting({ milestoneId: id, title })}
       />
-
-      {/* Manager-only Milestone Dialog */}
-      {canManageMilestones && (
-        <>
-          <MilestoneDialog
-            isOpen={milestoneDialog.isOpen}
-            mode={milestoneDialog.mode}
-            editEventId={milestoneDialog.editEventId}
-            targets={milestoneTargets}
-            fixedProjectId={fixedProjectId}
-            onClose={() =>
-              setMilestoneDialog((prev) => ({ ...prev, isOpen: false }))
-            }
-            onSuccess={handleMutationSuccess}
-          />
-
-          <DeleteMilestoneDialog
-            isOpen={deleteDialog.isOpen}
-            eventId={deleteDialog.eventId}
-            eventTitle={deleteDialog.eventTitle}
-            onClose={() =>
-              setDeleteDialog((prev) => ({ ...prev, isOpen: false }))
-            }
-            onSuccess={handleMutationSuccess}
-          />
-        </>
+      {canManageMilestones && form && (
+        <MilestoneDialog
+          isOpen
+          mode={form.mode}
+          milestoneId={form.milestoneId}
+          focusTasks={form.focusTasks}
+          targets={milestoneTargets}
+          fixedProjectId={fixedProjectId}
+          onClose={() => setForm(null)}
+          onSuccess={() => router.refresh()}
+        />
+      )}{" "}
+      {canManageMilestones && deleting && (
+        <DeleteMilestoneDialog
+          isOpen
+          milestoneId={deleting.milestoneId}
+          milestoneTitle={deleting.title}
+          onClose={() => setDeleting(null)}
+          onSuccess={() => {
+            setDeleting(null);
+            setDetailId(undefined);
+            router.refresh();
+          }}
+        />
       )}
     </div>
   );

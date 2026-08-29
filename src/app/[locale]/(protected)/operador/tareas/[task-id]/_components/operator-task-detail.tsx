@@ -23,12 +23,10 @@ import {
   Package,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-
 interface OperatorTaskDetailViewProps {
   task: OperatorTaskDetail;
   locale: string;
 }
-
 const URGENCY_CONFIG: Record<
   string,
   {
@@ -68,7 +66,6 @@ const URGENCY_CONFIG: Record<
     icon: CheckCircle,
   },
 };
-
 function formatDisplayDate(dateStr: string | null, locale: string): string {
   if (!dateStr) return "";
   try {
@@ -87,7 +84,6 @@ function formatDisplayDate(dateStr: string | null, locale: string): string {
     return dateStr;
   }
 }
-
 export async function OperatorTaskDetailView({
   task,
   locale,
@@ -97,22 +93,17 @@ export async function OperatorTaskDetailView({
   const tAgenda = await getTranslations("projects.operatorAgenda");
   const tTasks = await getTranslations("projects.tasks");
   const tPriority = await getTranslations("shell.priority");
-
   const urgencyConfig =
     URGENCY_CONFIG[task.urgencyCategory] ?? URGENCY_CONFIG.normal;
   const UrgencyIcon = urgencyConfig.icon;
-
   const statusConfig = TASK_STATUS_MAP[task.taskStatus];
   const StatusIcon = statusConfig?.icon ?? CircleDot;
   const taskStatusKey = OPERATOR_TASK_STATUS_KEYS[task.taskStatus] ?? "pending";
   const taskStatusLabel = tTasks(`taskStatus.${taskStatusKey}`);
-
   const priorityConfig = TASK_PRIORITY_MAP[task.taskPriority];
   const priorityLabel = tPriority(task.taskPriority);
-
   const urgencyLabel = tAgenda(`urgency.${task.urgencyCategory}`);
   const urgencyAria = tAgenda(`urgency.${task.urgencyCategory}Aria`);
-
   const formattedAssigned = task.assignedAt
     ? formatDisplayDate(task.assignedAt, locale)
     : null;
@@ -122,10 +113,8 @@ export async function OperatorTaskDetailView({
   const formattedStarted = task.taskStartedAt
     ? formatDisplayDate(task.taskStartedAt, locale)
     : null;
-
   return (
     <div className="space-y-6" data-testid="operator-task-detail-view">
-      {/* Top back navigation */}
       <div>
         <Link
           href={`/operador/proyectos/${task.projectId}`}
@@ -135,11 +124,8 @@ export async function OperatorTaskDetailView({
           <span>{tTask("backToProject")}</span>
         </Link>
       </div>
-
-      {/* Task Header & Badges */}
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          {/* Urgency Badge */}
           <span
             className={cn(
               "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold shrink-0",
@@ -152,8 +138,6 @@ export async function OperatorTaskDetailView({
             <UrgencyIcon className="size-3.5 shrink-0" aria-hidden="true" />
             <span>{urgencyLabel}</span>
           </span>
-
-          {/* Task Status Badge */}
           {statusConfig && (
             <span
               className={cn(
@@ -167,8 +151,6 @@ export async function OperatorTaskDetailView({
               <span>{taskStatusLabel}</span>
             </span>
           )}
-
-          {/* Priority Badge */}
           {priorityConfig && (
             <span
               className={cn(
@@ -181,8 +163,6 @@ export async function OperatorTaskDetailView({
             </span>
           )}
         </div>
-
-        {/* Title and Project Name */}
         <div>
           <h1
             data-testid="operator-task-title"
@@ -190,7 +170,6 @@ export async function OperatorTaskDetailView({
           >
             {task.taskTitle}
           </h1>
-
           <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
             <Folder className="size-3.5 shrink-0" aria-hidden="true" />
             <Link
@@ -205,8 +184,6 @@ export async function OperatorTaskDetailView({
           </div>
         </div>
       </div>
-
-      {/* Timeline & Deadlines */}
       {(formattedAssigned || formattedDeadline || formattedStarted) && (
         <section
           aria-labelledby="task-timeline-heading"
@@ -246,8 +223,6 @@ export async function OperatorTaskDetailView({
           </div>
         </section>
       )}
-
-      {/* Description */}
       <section
         aria-labelledby="task-description-heading"
         className="rounded-lg border border-border bg-card p-4 sm:p-5 shadow-sm space-y-2"
@@ -272,8 +247,6 @@ export async function OperatorTaskDetailView({
           )}
         </p>
       </section>
-
-      {/* Task Resources */}
       <OperatorTaskResources
         resources={task.resources}
         translations={{
@@ -284,8 +257,40 @@ export async function OperatorTaskDetailView({
           }),
         }}
       />
-
-      {/* Assigned Deliverables */}
+      {(task.milestoneContext?.length ?? 0) > 0 && (
+        <section
+          aria-labelledby="task-goals-heading"
+          className="rounded-lg border border-border bg-card p-4 sm:p-5"
+        >
+          <h2
+            id="task-goals-heading"
+            className="text-sm font-semibold text-foreground"
+          >
+            {tTask("goalsTitle")}
+          </h2>
+          <ul className="mt-2 space-y-2 text-xs text-foreground">
+            {(task.milestoneContext ?? []).map((goal) => (
+              <li
+                key={[goal.scope, goal.title, goal.targetDate].join("-")}
+                className="rounded border border-border/70 p-2"
+              >
+                <span className="font-medium">
+                  {goal.scope === "company"
+                    ? tTask("companyGoal")
+                    : tTask("projectGoal")}
+                </span>{" "}
+                {goal.title} ·{" "}
+                {tTask("goalTarget", {
+                  date: new Intl.DateTimeFormat(
+                    locale === "es" || locale === "es-MX" ? "es-MX" : "en-US",
+                    { month: "short", day: "numeric", year: "numeric" },
+                  ).format(new Date(`${goal.targetDate}T12:00:00`)),
+                })}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <section
         data-testid="operator-deliverables-section"
         aria-labelledby="task-deliverables-heading"
@@ -306,7 +311,6 @@ export async function OperatorTaskDetailView({
             ({task.deliverables.length})
           </span>
         </div>
-
         {task.deliverables.length === 0 ? (
           <div className="rounded-lg border border-border bg-card p-4 text-xs text-muted-foreground italic">
             {tTask("noDeliverables")}
@@ -321,7 +325,6 @@ export async function OperatorTaskDetailView({
               const deliverableStatusLabel = tTask(
                 `deliverableStatus.${deliverableStatusKey}`,
               );
-
               return (
                 <OperatorDeliverableCard
                   key={deliverable.deliverableId}

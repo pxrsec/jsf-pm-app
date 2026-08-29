@@ -1,5 +1,13 @@
 # JSF PM App Development Changelog
 
+## [2026-08-29 @ 09:53]
+
+**🐛 Hotfixes: Missing Milestone Scope Localization Keys in Task Creation Dialog**
+
+- **Project Tasks Creation Dialog (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Added missing `goalsCompanyScope` ("Empresa" / "Company") and `goalsProjectScope` ("Proyecto" / "Project") translation keys under the `projects.tasks.create` namespace.
+  - Resolves runtime localization warnings when rendering milestone scope options in `TaskCreateDialog` (`src/components/shared/projects/project-tasks/task-create-dialog.tsx`).
+
 ## [2026-08-28 @ 15:15]
 
 **🛠 Architecture & 🚀 Features: S09-06 Operator Task Milestone Context Migration & Typegen**

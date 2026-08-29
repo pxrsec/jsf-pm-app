@@ -9,6 +9,7 @@ import {
   type OperatorTaskResource,
   type OperatorTaskDeliverableDetail,
   type OperatorTaskDetail,
+  type OperatorTaskMilestoneContext,
   type OperatorDeliverableForSubmission,
   type OperatorAgendaItem,
   type OperatorOwnWorkProject,
@@ -335,6 +336,7 @@ export function mapTaskDetailRows(
     projectName: first.project_name,
     resources,
     deliverables,
+    milestoneContext: [],
   };
 }
 
@@ -358,7 +360,29 @@ export async function getOperatorTaskDetail(
       return null;
     }
     if (!data || data.length === 0) return null;
-    return mapTaskDetailRows(data);
+    const detail = mapTaskDetailRows(data);
+    if (!detail) return null;
+    const { data: milestoneRows, error: milestoneError } = await supabase.rpc(
+      "list_operator_task_milestone_context",
+      { p_task_id: taskId },
+    );
+    if (milestoneError) {
+      logger.error("Failed to load operator task milestone context", {
+        milestoneError,
+        taskId,
+      });
+      return detail;
+    }
+    const milestoneContext: OperatorTaskMilestoneContext[] = (
+      milestoneRows ?? []
+    ).flatMap((row) =>
+      (row.scope === "project" || row.scope === "company") &&
+      row.title &&
+      row.target_date
+        ? [{ title: row.title, scope: row.scope, targetDate: row.target_date }]
+        : [],
+    );
+    return { ...detail, milestoneContext };
   } catch (err) {
     logger.error("Error in getOperatorTaskDetail", { err, taskId });
     return null;

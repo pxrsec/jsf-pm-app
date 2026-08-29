@@ -344,6 +344,7 @@ export async function createTaskWithDeliverables(
         p_deadline_at: input.deadline_at,
         p_assignee_id: input.assignee_id,
         p_deliverables: deliverablesPayload,
+        p_milestone_ids: input.milestone_ids,
       },
     );
 

@@ -76,7 +76,7 @@ export function EventBadge({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onOpenMilestoneDetail?.(destination.eventId)}
+              onClick={() => onOpenMilestoneDetail?.(destination.milestoneId)}
               className="h-auto min-h-[32px] justify-start truncate px-0 font-medium hover:bg-transparent hover:underline"
               title={event.title}
             >
@@ -160,7 +160,7 @@ export function EventBadge({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onOpenMilestoneDetail?.(destination.eventId)}
+              onClick={() => onOpenMilestoneDetail?.(destination.milestoneId)}
               className="h-auto min-h-[32px] justify-start truncate px-0 font-medium hover:bg-transparent hover:underline"
               title={event.title}
             >

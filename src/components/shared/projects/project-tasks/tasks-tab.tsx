@@ -18,18 +18,21 @@ import type {
   TaskStatus,
   TaskWithAssignee,
 } from "@/lib/projects/queries";
+import type { MilestoneOptionDto } from "@/lib/calendar/types";
 
 interface TasksTabProps {
   project: ProjectDetail;
   initialTasks: TaskWithAssignee[];
   effectiveCapacity: "admin" | "pm_lead" | "pm_watcher";
   locale: string;
+  milestoneOptions?: MilestoneOptionDto[];
 }
 
 export function TasksTab({
   project,
   initialTasks,
   effectiveCapacity,
+  milestoneOptions,
 }: TasksTabProps) {
   const t = useTranslations("projects.tasks");
   const router = useRouter();
@@ -195,6 +198,7 @@ export function TasksTab({
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         onSuccess={handleMutationSuccess}
+        milestoneOptions={milestoneOptions}
       />
 
       {/* Edit Task Dialog */}

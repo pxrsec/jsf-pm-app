@@ -15,12 +15,14 @@ import { listProjectDeliverables } from "@/lib/deliverables/queries";
 import { listActiveClients } from "@/lib/clients/queries";
 import {
   fetchCalendarFeed,
-  fetchCalendarMilestoneTargets,
+  fetchMilestoneManagementTargets,
+  fetchProjectMilestoneSummaries,
+  fetchTaskMilestoneOptions,
 } from "@/lib/calendar/queries";
 import { normalizeCalendarRange } from "@/lib/calendar/date-utils";
 import type {
   CalendarEventDto,
-  CalendarMilestoneTargetDto,
+  MilestoneManagementTargetDto,
   CalendarRangeState,
 } from "@/lib/calendar/types";
 import { fetchFinalizedArchivePage } from "@/lib/archive/queries";
@@ -91,6 +93,8 @@ export default async function AdminProjectDetailPage({
     initialDeliverables,
     initialCalendarEvents,
     milestoneTargets,
+    milestoneSummaries,
+    milestoneOptions,
     initialArchivePage,
   ] = await Promise.all([
     listActiveClients(supabase),
@@ -108,8 +112,10 @@ export default async function AdminProjectDetailPage({
         })
       : Promise.resolve<CalendarEventDto[] | undefined>(undefined),
     isCalendarTab
-      ? fetchCalendarMilestoneTargets(supabase)
-      : Promise.resolve<CalendarMilestoneTargetDto[] | undefined>(undefined),
+      ? fetchMilestoneManagementTargets(supabase)
+      : Promise.resolve<MilestoneManagementTargetDto[] | undefined>(undefined),
+    fetchProjectMilestoneSummaries(supabase, id),
+    fetchTaskMilestoneOptions(supabase, id),
     isArchiveTab && archiveQuery
       ? fetchFinalizedArchivePage(supabase, archiveQuery, null, "admin")
       : Promise.resolve<FinalizedArchivePage | undefined>(undefined),
@@ -132,6 +138,8 @@ export default async function AdminProjectDetailPage({
       milestoneTargets={milestoneTargets}
       calendarRange={calendarRange}
       initialArchivePage={initialArchivePage}
+      milestoneSummaries={milestoneSummaries}
+      milestoneOptions={milestoneOptions}
       archiveQuery={archiveQuery}
       locale={locale}
       initialTab={tab}

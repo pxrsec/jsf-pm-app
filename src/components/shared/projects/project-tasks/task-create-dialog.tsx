@@ -28,6 +28,7 @@ import {
 } from "@/lib/projects/task-actions";
 import type { ProjectDetail, TaskPriority } from "@/lib/projects/queries";
 import type { MemberCapacity } from "@/lib/status-maps";
+import type { MilestoneOptionDto } from "@/lib/calendar/types";
 
 interface TaskFormData {
   project_id: string;
@@ -38,6 +39,7 @@ interface TaskFormData {
   assignee_id: string;
   deadline_at: string;
   deliverables: TaskDeliverableDraftFormValue[];
+  milestone_ids: string[];
 }
 
 interface TaskCreateDialogProps {
@@ -45,6 +47,7 @@ interface TaskCreateDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  milestoneOptions?: MilestoneOptionDto[];
 }
 
 export function TaskCreateDialog({
@@ -52,6 +55,7 @@ export function TaskCreateDialog({
   isOpen,
   onClose,
   onSuccess,
+  milestoneOptions = [],
 }: TaskCreateDialogProps) {
   const t = useTranslations("projects.tasks.create");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,6 +99,7 @@ export function TaskCreateDialog({
       assignee_id: getFirstCompatibleMember("internal_work")?.user_id ?? "",
       deadline_at: "",
       deliverables: [],
+      milestone_ids: [],
     },
   });
 
@@ -148,7 +153,7 @@ export function TaskCreateDialog({
     try {
       const isoDeadline = new Date(data.deadline_at).toISOString();
 
-      if (draftCount === 0) {
+      if (draftCount === 0 && data.milestone_ids.length === 0) {
         const result = await createTaskAction({
           project_id: data.project_id,
           task_type: data.task_type,
@@ -185,6 +190,7 @@ export function TaskCreateDialog({
           assignee_id: data.assignee_id,
           deadline_at: isoDeadline,
           deliverables: cleanDeliverables,
+          milestone_ids: data.milestone_ids,
         });
 
         if (!result.ok) {
@@ -238,6 +244,39 @@ export function TaskCreateDialog({
               isSubmitting={isSubmitting}
               onAssigneeChange={syncTaskAssigneeChange}
             />
+
+            {milestoneOptions.length > 0 && (
+              <div className="space-y-1.5 border-t border-border/60 pt-3">
+                <label
+                  htmlFor="task-milestones"
+                  className="text-xs font-semibold"
+                >
+                  {t("goalsLabel")}
+                </label>
+                <select
+                  id="task-milestones"
+                  multiple
+                  {...register("milestone_ids")}
+                  className="min-h-24 w-full rounded-md border border-input bg-background p-2 text-sm"
+                  disabled={isSubmitting}
+                >
+                  {milestoneOptions.map((milestone) => (
+                    <option
+                      key={milestone.milestoneId}
+                      value={milestone.milestoneId}
+                    >
+                      {milestone.scope === "company"
+                        ? t("goalsCompanyScope")
+                        : t("goalsProjectScope")}{" "}
+                      · {milestone.title}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  {t("goalsHint")}
+                </p>
+              </div>
+            )}
 
             {/* Deliverables Section */}
             <div className="pt-3 border-t border-border/60 space-y-3">

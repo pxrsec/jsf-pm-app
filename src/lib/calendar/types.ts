@@ -3,10 +3,9 @@ import type { Database } from "@/lib/database.types";
 
 export type CalendarEventType =
   Database["public"]["Enums"]["calendar_event_type"];
-
 export type CalendarColorOverride =
   "chart-1" | "chart-2" | "chart-3" | "chart-4" | "chart-5";
-
+export type MilestoneScope = "project" | "company";
 export type CalendarView = "month" | "week" | "agenda" | "list";
 
 export interface CalendarRangeState {
@@ -27,37 +26,57 @@ export interface CalendarEventDto {
   ends_at: string | null;
   is_all_day: boolean;
   color_override: CalendarColorOverride | null;
+  milestone_scope?: MilestoneScope;
 }
 
-export interface CalendarMilestoneTargetDto {
-  project_id: string;
-  project_name: string;
-  task_id: string | null;
-  task_title: string | null;
+export interface MilestoneManagementTargetDto {
+  projectId: string;
+  projectName: string;
+  taskId: string;
+  taskTitle: string;
+  taskStatus: string;
 }
 
-export interface CalendarMilestoneEditDetailDto {
-  entity_id: string;
-  project_id: string;
-  project_name: string;
-  task_id: string | null;
+export interface MilestoneOptionDto {
+  milestoneId: string;
   title: string;
+  scope: MilestoneScope;
+  targetDate: string;
+}
+
+export interface MilestoneSummaryDto {
+  milestoneId: string;
+  title: string;
+  scope: MilestoneScope;
+  targetDate: string;
+  colorOverride: CalendarColorOverride | null;
+  activeTaskCount: number;
+  completedTaskCount: number;
+  inProgressTaskCount: number;
+  inReviewTaskCount: number;
+  blockedTaskCount: number;
+}
+
+export interface MilestoneTaskDto {
+  taskId: string;
+  projectId: string;
+  projectName: string;
+  title: string;
+  status: string;
+  priority: string;
+  deadlineAt: string | null;
+}
+
+export interface MilestoneDetailDto extends MilestoneSummaryDto {
   description: string | null;
-  starts_at: string;
-  ends_at: string | null;
-  is_all_day: boolean;
-  color_override: CalendarColorOverride | null;
+  projectId: string | null;
+  projectName: string | null;
+  tasks: MilestoneTaskDto[];
 }
 
 export const CALENDAR_COLOR_CLASSES: Record<
   CalendarColorOverride,
-  {
-    badge: string;
-    border: string;
-    bg: string;
-    text: string;
-    dot: string;
-  }
+  { badge: string; border: string; bg: string; text: string; dot: string }
 > = {
   "chart-1": {
     badge: "bg-chart-1 text-primary-foreground",
@@ -94,7 +113,7 @@ export const CALENDAR_COLOR_CLASSES: Record<
     text: "text-chart-5",
     dot: "bg-chart-5",
   },
-} as const;
+};
 
 export function isCalendarColorOverride(
   value: unknown,
@@ -105,57 +124,59 @@ export function isCalendarColorOverride(
   );
 }
 
+const count = (value: unknown) =>
+  typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0;
+const scope = (value: unknown): MilestoneScope | null =>
+  value === "project" || value === "company" ? value : null;
+
 export function normalizeCalendarEventDto(
   row: Database["public"]["Functions"]["list_role_safe_calendar_events"]["Returns"][number],
 ): CalendarEventDto {
+  const isMilestone = row.event_type === "milestone";
   return {
     entity_id: row.entity_id,
-    project_id: row.project_id ? row.project_id : null,
-    project_name: row.project_name ? row.project_name : null,
-    task_id: row.task_id ? row.task_id : null,
+    project_id: row.project_id ?? null,
+    project_name: row.project_name ?? null,
+    task_id: row.task_id ?? null,
     title: row.title,
     event_type: row.event_type,
     starts_at: row.starts_at,
-    ends_at: row.ends_at ? row.ends_at : null,
+    ends_at: row.ends_at ?? null,
     is_all_day: Boolean(row.is_all_day),
     color_override: isCalendarColorOverride(row.color_override)
       ? row.color_override
       : null,
+    milestone_scope: isMilestone
+      ? row.project_id
+        ? "project"
+        : "company"
+      : undefined,
   };
 }
 
-export function normalizeMilestoneTargetDto(
-  row: Database["public"]["Functions"]["list_calendar_milestone_targets"]["Returns"][number],
-): CalendarMilestoneTargetDto {
+export function normalizeMilestoneSummary(
+  row: Database["public"]["Functions"]["list_project_milestone_summaries"]["Returns"][number],
+): MilestoneSummaryDto | null {
+  const rowScope = scope(row.scope);
+  if (!rowScope) return null;
   return {
-    project_id: row.project_id,
-    project_name: row.project_name,
-    task_id: row.task_id ? row.task_id : null,
-    task_title: row.task_title ? row.task_title : null,
-  };
-}
-
-export function normalizeMilestoneEditDetailDto(
-  row: Database["public"]["Functions"]["get_calendar_milestone_for_edit"]["Returns"][number],
-): CalendarMilestoneEditDetailDto {
-  return {
-    entity_id: row.entity_id,
-    project_id: row.project_id,
-    project_name: row.project_name,
-    task_id: row.task_id ? row.task_id : null,
+    milestoneId: row.milestone_id,
     title: row.title,
-    description: row.description ? row.description : null,
-    starts_at: row.starts_at,
-    ends_at: row.ends_at ? row.ends_at : null,
-    is_all_day: Boolean(row.is_all_day),
-    color_override: isCalendarColorOverride(row.color_override)
+    scope: rowScope,
+    targetDate: row.target_date,
+    colorOverride: isCalendarColorOverride(row.color_override)
       ? row.color_override
       : null,
+    activeTaskCount: count(row.active_task_count),
+    completedTaskCount: count(row.completed_task_count),
+    inProgressTaskCount: count(row.in_progress_task_count),
+    inReviewTaskCount: count(row.in_review_task_count),
+    blockedTaskCount: count(row.blocked_task_count),
   };
 }
 
 export type CalendarEventDestination =
-  | { kind: "milestone-detail"; eventId: string }
+  | { kind: "milestone-detail"; milestoneId: string }
   | {
       kind:
         | "project-overview"
@@ -170,19 +191,14 @@ export function resolveCalendarEventDestination(
   event: CalendarEventDto,
   role: AppRole,
 ): CalendarEventDestination {
-  if (role === "operator") {
-    if (
-      !event.task_id ||
-      !["milestone", "task_deadline", "client_delivery_deadline"].includes(
-        event.event_type,
-      )
-    )
-      return { kind: "none" };
-    return { kind: "operator-task", href: `/operador/tareas/${event.task_id}` };
-  }
-  if (event.event_type === "milestone" && (role === "admin" || role === "pm")) {
-    return { kind: "milestone-detail", eventId: event.entity_id };
-  }
+  if (event.event_type === "milestone")
+    return role === "admin" || role === "pm"
+      ? { kind: "milestone-detail", milestoneId: event.entity_id }
+      : { kind: "none" };
+  if (role === "operator")
+    return event.task_id
+      ? { kind: "operator-task", href: `/operador/tareas/${event.task_id}` }
+      : { kind: "none" };
   if (!event.project_id) return { kind: "none" };
   const base =
     role === "admin"
@@ -210,6 +226,5 @@ export function resolveCalendarEventDestination(
     : { kind: "project-overview", href: `${base}/${event.project_id}` };
 }
 
-export function getCalendarEventKey(event: CalendarEventDto): string {
-  return `${event.event_type}-${event.entity_id}-${event.starts_at}`;
-}
+export const getCalendarEventKey = (event: CalendarEventDto) =>
+  `${event.event_type}-${event.entity_id}-${event.starts_at}`;

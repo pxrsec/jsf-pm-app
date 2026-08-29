@@ -2,98 +2,145 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import { logger } from "@/lib/logger";
+import { CalendarFeedParamsSchema, MilestoneIdValueSchema } from "./schemas";
 import {
+  isCalendarColorOverride,
   normalizeCalendarEventDto,
-  normalizeMilestoneTargetDto,
-  normalizeMilestoneEditDetailDto,
+  normalizeMilestoneSummary,
   type CalendarEventDto,
-  type CalendarMilestoneTargetDto,
-  type CalendarMilestoneEditDetailDto,
+  type MilestoneDetailDto,
+  type MilestoneManagementTargetDto,
+  type MilestoneOptionDto,
+  type MilestoneSummaryDto,
+  type MilestoneTaskDto,
 } from "./types";
-import { CalendarFeedParamsSchema } from "./schemas";
 
-/**
- * Server-only query fetching the role-safe calendar feed from Supabase RPC.
- * Discards sensitive database/event internals and returns normalized CalendarEventDto[].
- */
+type Client = SupabaseClient<Database>;
+
 export async function fetchCalendarFeed(
-  supabase: SupabaseClient<Database>,
-  params: {
-    from: string;
-    to: string;
-    projectId?: string | null;
-  },
+  supabase: Client,
+  params: { from: string; to: string; projectId?: string | null },
 ): Promise<CalendarEventDto[]> {
-  const parseResult = CalendarFeedParamsSchema.safeParse({
-    from: params.from,
-    to: params.to,
+  const parsed = CalendarFeedParamsSchema.safeParse({
+    ...params,
     projectId: params.projectId ?? undefined,
   });
-
-  if (!parseResult.success) {
-    logger.debug("calendar-feed-params-invalid", {
-      errors: parseResult.error.format(),
-    });
-    throw new Error("Invalid calendar range parameters");
-  }
-
-  const { from, to, projectId } = parseResult.data;
-
+  if (!parsed.success) throw new Error("Invalid calendar range parameters");
   const { data, error } = await supabase.rpc("list_role_safe_calendar_events", {
-    p_from: from,
-    p_to: to,
-    p_project_id: projectId ?? undefined,
+    p_from: parsed.data.from,
+    p_to: parsed.data.to,
+    p_project_id: parsed.data.projectId,
   });
-
   if (error) {
-    logger.debug("calendar-feed-rpc-failed", {
-      operation: "fetchCalendarFeed",
-    });
+    logger.debug("calendar-feed-rpc-failed");
     throw new Error("Failed to fetch calendar feed");
   }
-
   return (data ?? []).map(normalizeCalendarEventDto);
 }
 
-/**
- * Server-only query fetching the manager-only milestone project and task targets.
- */
-export async function fetchCalendarMilestoneTargets(
-  supabase: SupabaseClient<Database>,
-): Promise<CalendarMilestoneTargetDto[]> {
-  const { data, error } = await supabase.rpc("list_calendar_milestone_targets");
-
+export async function fetchMilestoneManagementTargets(
+  supabase: Client,
+): Promise<MilestoneManagementTargetDto[]> {
+  const { data, error } = await supabase.rpc(
+    "list_milestone_management_targets",
+  );
   if (error) {
-    logger.debug("calendar-targets-rpc-failed", {
-      operation: "fetchCalendarMilestoneTargets",
-    });
+    logger.debug("milestone-management-targets-rpc-failed");
     return [];
   }
-
-  return (data ?? []).map(normalizeMilestoneTargetDto);
+  return (data ?? []).map((row) => ({
+    projectId: row.project_id,
+    projectName: row.project_name,
+    taskId: row.task_id,
+    taskTitle: row.task_title,
+    taskStatus: row.task_status,
+  }));
 }
 
-/**
- * Server-only query fetching manager-only edit detail for a specific milestone.
- * Preserves description for edit forms without exposing it in general feeds.
- */
-export async function fetchCalendarMilestoneForEdit(
-  supabase: SupabaseClient<Database>,
-  eventId: string,
-): Promise<CalendarMilestoneEditDetailDto | null> {
-  const { data, error } = await supabase.rpc(
-    "get_calendar_milestone_for_edit",
-    {
-      p_event_id: eventId,
-    },
+export async function fetchTaskMilestoneOptions(
+  supabase: Client,
+  projectId: string,
+): Promise<MilestoneOptionDto[]> {
+  if (!MilestoneIdValueSchema.safeParse(projectId).success) return [];
+  const { data, error } = await supabase.rpc("list_task_milestone_options", {
+    p_project_id: projectId,
+  });
+  if (error) return [];
+  return (data ?? []).flatMap((row) =>
+    row.scope === "project" || row.scope === "company"
+      ? [
+          {
+            milestoneId: row.milestone_id,
+            title: row.title,
+            scope: row.scope,
+            targetDate: row.target_date,
+          },
+        ]
+      : [],
   );
+}
 
-  if (error || !data || data.length === 0) {
-    logger.debug("calendar-edit-detail-rpc-failed", {
-      operation: "fetchCalendarMilestoneForEdit",
-    });
+export async function fetchProjectMilestoneSummaries(
+  supabase: Client,
+  projectId: string,
+): Promise<MilestoneSummaryDto[]> {
+  if (!MilestoneIdValueSchema.safeParse(projectId).success) return [];
+  const { data, error } = await supabase.rpc(
+    "list_project_milestone_summaries",
+    { p_project_id: projectId },
+  );
+  if (error) return [];
+  return (data ?? []).flatMap((row) => {
+    const summary = normalizeMilestoneSummary(row);
+    return summary ? [summary] : [];
+  });
+}
+
+export async function fetchMilestoneDetail(
+  supabase: Client,
+  milestoneId: string,
+): Promise<MilestoneDetailDto | null> {
+  if (!MilestoneIdValueSchema.safeParse(milestoneId).success) return null;
+  const [
+    { data: detailRows, error: detailError },
+    { data: taskRows, error: taskError },
+  ] = await Promise.all([
+    supabase.rpc("get_milestone_detail", { p_milestone_id: milestoneId }),
+    supabase.rpc("list_milestone_tasks", { p_milestone_id: milestoneId }),
+  ]);
+  const row = detailRows?.[0];
+  if (
+    detailError ||
+    taskError ||
+    !row ||
+    (row.scope !== "project" && row.scope !== "company")
+  )
     return null;
-  }
-
-  return normalizeMilestoneEditDetailDto(data[0]);
+  const tasks: MilestoneTaskDto[] = (taskRows ?? []).map((task) => ({
+    taskId: task.task_id,
+    projectId: task.project_id,
+    projectName: task.project_name,
+    title: task.title,
+    status: task.status,
+    priority: task.priority,
+    deadlineAt: task.deadline_at ?? null,
+  }));
+  return {
+    milestoneId: row.milestone_id,
+    title: row.title,
+    scope: row.scope,
+    targetDate: row.target_date,
+    description: row.description ?? null,
+    projectId: row.project_id ?? null,
+    projectName: row.project_name ?? null,
+    colorOverride: isCalendarColorOverride(row.color_override)
+      ? row.color_override
+      : null,
+    activeTaskCount: row.active_task_count,
+    completedTaskCount: row.completed_task_count,
+    inProgressTaskCount: row.in_progress_task_count,
+    inReviewTaskCount: row.in_review_task_count,
+    blockedTaskCount: row.blocked_task_count,
+    tasks,
+  };
 }

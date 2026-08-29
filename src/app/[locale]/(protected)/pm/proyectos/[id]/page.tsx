@@ -15,12 +15,14 @@ import { listProjectDeliverables } from "@/lib/deliverables/queries";
 import { listActiveClients } from "@/lib/clients/queries";
 import {
   fetchCalendarFeed,
-  fetchCalendarMilestoneTargets,
+  fetchMilestoneManagementTargets,
+  fetchProjectMilestoneSummaries,
+  fetchTaskMilestoneOptions,
 } from "@/lib/calendar/queries";
 import { normalizeCalendarRange } from "@/lib/calendar/date-utils";
 import type {
   CalendarEventDto,
-  CalendarMilestoneTargetDto,
+  MilestoneManagementTargetDto,
   CalendarRangeState,
 } from "@/lib/calendar/types";
 import { fetchFinalizedArchivePage } from "@/lib/archive/queries";
@@ -66,17 +68,13 @@ export default async function PmProjectDetailPage({
     notFound();
   }
 
-  // Determine current PM's capacity in this project
+  // Active PM application roles may open every workspace; membership is metadata.
   const userMembership = project.members.find(
     (m) => m.user_id === session.user.id,
   );
 
-  if (!userMembership) {
-    notFound();
-  }
-
   const effectiveCapacity =
-    userMembership.member_type === "pm_watcher" ? "pm_watcher" : "pm_lead";
+    userMembership?.member_type === "pm_watcher" ? "pm_watcher" : "pm_lead";
 
   const isCalendarTab = tab === "calendar";
   const calendarRange: CalendarRangeState | undefined = isCalendarTab
@@ -103,6 +101,8 @@ export default async function PmProjectDetailPage({
     initialDeliverables,
     initialCalendarEvents,
     milestoneTargets,
+    milestoneSummaries,
+    milestoneOptions,
     initialArchivePage,
   ] = await Promise.all([
     listActiveClients(supabase),
@@ -120,8 +120,10 @@ export default async function PmProjectDetailPage({
         })
       : Promise.resolve<CalendarEventDto[] | undefined>(undefined),
     isCalendarTab
-      ? fetchCalendarMilestoneTargets(supabase)
-      : Promise.resolve<CalendarMilestoneTargetDto[] | undefined>(undefined),
+      ? fetchMilestoneManagementTargets(supabase)
+      : Promise.resolve<MilestoneManagementTargetDto[] | undefined>(undefined),
+    fetchProjectMilestoneSummaries(supabase, id),
+    fetchTaskMilestoneOptions(supabase, id),
     isArchiveTab && archiveQuery
       ? fetchFinalizedArchivePage(supabase, archiveQuery, null, "pm")
       : Promise.resolve<FinalizedArchivePage | undefined>(undefined),
@@ -144,6 +146,8 @@ export default async function PmProjectDetailPage({
       milestoneTargets={milestoneTargets}
       calendarRange={calendarRange}
       initialArchivePage={initialArchivePage}
+      milestoneSummaries={milestoneSummaries}
+      milestoneOptions={milestoneOptions}
       archiveQuery={archiveQuery}
       locale={locale}
       initialTab={tab}

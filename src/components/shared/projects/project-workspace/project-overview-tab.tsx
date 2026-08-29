@@ -15,6 +15,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { CompletionCyclesCard } from "./completion-cycles-card";
+import { ProjectMilestoneTimeline } from "./project-milestone-timeline";
+import { ProjectTeamSummary } from "./project-team-summary";
 import type {
   ProjectDetail,
   ProjectCompletionCyclesView,
@@ -22,6 +24,7 @@ import type {
 } from "@/lib/projects/queries";
 import type { DeliverableListItem } from "@/lib/deliverables/queries";
 import type { ClientListItem } from "@/lib/clients/queries";
+import type { MilestoneSummaryDto } from "@/lib/calendar/types";
 
 interface ProjectOverviewTabProps {
   project: ProjectDetail;
@@ -29,8 +32,11 @@ interface ProjectOverviewTabProps {
   cycles: ProjectCompletionCyclesView[];
   tasks: readonly TaskWithAssignee[];
   deliverables: readonly DeliverableListItem[];
+  milestoneSummaries?: readonly MilestoneSummaryDto[];
+  canManageMilestones?: boolean;
   onOpenEditDialog?: () => void;
   onSelectTab?: (tab: string) => void;
+  onOpenMilestone?: (milestoneId: string) => void;
 }
 
 export function ProjectOverviewTab({
@@ -39,8 +45,11 @@ export function ProjectOverviewTab({
   cycles,
   tasks,
   deliverables,
+  milestoneSummaries = [],
+  canManageMilestones = false,
   onOpenEditDialog,
   onSelectTab,
+  onOpenMilestone,
 }: ProjectOverviewTabProps) {
   const t = useTranslations("projects.workspace");
   const tOverview = useTranslations("projects.workspace.overview");
@@ -175,42 +184,12 @@ export function ProjectOverviewTab({
             </Card>
           )}
 
-          {/* Storage & Links */}
-          <Card className="border-border bg-card">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold">
-                {tOverview("linksCardTitle")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {project.drive_folder_url ? (
-                <div className="flex items-center justify-between p-3 rounded-md border border-border bg-muted/40">
-                  <div className="flex items-center gap-2 truncate pr-2">
-                    <span className="text-xs font-mono text-muted-foreground truncate">
-                      {project.drive_folder_url}
-                    </span>
-                  </div>
-                  <a
-                    href={project.drive_folder_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={buttonVariants({
-                      variant: "outline",
-                      size: "sm",
-                      className: "h-8 gap-1.5 shrink-0",
-                    })}
-                  >
-                    <span>{tOverview("openDriveFolder")}</span>
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
-                </div>
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  {tOverview("noDriveLink")}
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <ProjectMilestoneTimeline
+            milestones={milestoneSummaries}
+            canManageMilestones={canManageMilestones}
+            onOpenCalendar={() => onSelectTab?.("calendar")}
+            onOpenMilestone={(milestoneId) => onOpenMilestone?.(milestoneId)}
+          />
 
           {/* Work Summary Preview */}
           <Card className="border-border bg-card">
@@ -376,47 +355,43 @@ export function ProjectOverviewTab({
                   </span>
                 </div>
               )}
-            </CardContent>
-          </Card>
 
-          {/* Team Summary Card */}
-          <Card className="border-border bg-card">
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <CardTitle className="text-base font-semibold">
-                {tOverview("teamSummaryTitle")}
-              </CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onSelectTab?.("members")}
-                className="h-7 text-xs text-primary font-medium px-2"
-              >
-                {tOverview("viewAllMembers", { count: project.members.length })}
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-2.5">
-                {project.members.slice(0, 5).map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center justify-between text-xs"
-                  >
-                    <div className="flex items-center gap-2 truncate pr-2">
-                      <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
-                        {member.profile?.full_name?.charAt(0) ?? "U"}
-                      </div>
-                      <span className="font-medium text-foreground truncate">
-                        {member.profile?.full_name ?? "Usuario"}
-                      </span>
-                    </div>
-                    <Badge variant="outline" className="text-[10px] shrink-0">
-                      {member.is_primary ? "Lead ★" : member.member_type}
-                    </Badge>
+              <div className="border-t border-border pt-2.5">
+                <span className="text-muted-foreground">
+                  {tOverview("linksCardTitle")}
+                </span>
+                {project.drive_folder_url ? (
+                  <div className="mt-1.5 flex items-center justify-between gap-2 rounded border border-border bg-muted/40 p-2">
+                    <span className="truncate font-mono text-[11px] text-muted-foreground">
+                      {project.drive_folder_url}
+                    </span>
+                    <a
+                      href={project.drive_folder_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "sm",
+                        className: "h-8 shrink-0 gap-1.5",
+                      })}
+                    >
+                      <span>{tOverview("openDriveFolder")}</span>
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
                   </div>
-                ))}
+                ) : (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {tOverview("noDriveLink")}
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
+
+          <ProjectTeamSummary
+            members={project.members}
+            onOpenMembers={() => onSelectTab?.("members")}
+          />
 
           {/* Completion Cycles History Card */}
           <CompletionCyclesCard cycles={cycles} />

@@ -5,9 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 import { normalizeCalendarRange } from "@/lib/calendar/date-utils";
 import {
   fetchCalendarFeed,
-  fetchCalendarMilestoneTargets,
+  fetchMilestoneManagementTargets,
 } from "@/lib/calendar/queries";
-import type { CalendarMilestoneTargetDto } from "@/lib/calendar/types";
+import type { MilestoneManagementTargetDto } from "@/lib/calendar/types";
 import { CalendarCoordinator } from "./_components/calendar-coordinator";
 
 interface CalendarPageProps {
@@ -42,8 +42,8 @@ export default async function CalendarPage({
       projectId: range.projectId,
     }),
     canManageMilestones
-      ? fetchCalendarMilestoneTargets(supabase)
-      : Promise.resolve<CalendarMilestoneTargetDto[]>([]),
+      ? fetchMilestoneManagementTargets(supabase)
+      : Promise.resolve<MilestoneManagementTargetDto[]>([]),
   ]);
 
   return (

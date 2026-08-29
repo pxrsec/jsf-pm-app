@@ -128,7 +128,7 @@ vi.mock("next-intl", () => ({
       "nav.today": "Hoy",
       "nav.prev": "Anterior",
       "nav.next": "Siguiente",
-      "actions.createMilestone": "Nuevo Hito",
+      "actions.createMilestone": "Nueva Meta",
       "states.empty": "No hay eventos",
       "scope.allProjectsFilter": "Todos los proyectos",
     };
@@ -322,7 +322,7 @@ describe("Project Workspace Navigation and Calendar Integration", () => {
 
     expect(screen.getByRole("tab", { name: "Calendario" })).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Nuevo Hito" }),
+      screen.queryByRole("button", { name: "Nueva Meta" }),
     ).not.toBeInTheDocument();
   });
 
