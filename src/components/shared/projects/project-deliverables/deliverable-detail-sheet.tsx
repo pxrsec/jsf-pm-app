@@ -160,7 +160,11 @@ export function DeliverableDetailSheet({
 
             <Badge variant="outline" className="text-[10px] font-normal gap-1">
               <User className="size-3 text-muted-foreground" />
-              <span>{deliverable.workflow_type}</span>
+              <span>
+                {deliverable.workflow_type === "client_submission"
+                  ? t("workflowType.clientSubmission")
+                  : t("workflowType.production")}
+              </span>
             </Badge>
           </div>
 

@@ -18,6 +18,7 @@ import { DraftDeliverableCard } from "./draft-deliverable-card";
 import { TaskTypeToggle } from "./task-type-toggle";
 import { TaskTypeChangeAlert } from "./task-type-change-alert";
 import { TaskDetailsFields } from "./task-details-fields";
+import { TaskMilestoneSelector } from "./task-milestone-selector";
 import {
   useTaskDeliverableDrafts,
   type TaskDeliverableDraftFormValue,
@@ -115,6 +116,7 @@ export function TaskCreateDialog({
 
   const selectedType = useWatch({ control, name: "task_type" });
   const taskAssigneeId = useWatch({ control, name: "assignee_id" });
+  const selectedMilestoneIds = useWatch({ control, name: "milestone_ids" });
 
   const allowedMemberTypes: MemberCapacity[] =
     selectedType === "internal_work"
@@ -246,36 +248,17 @@ export function TaskCreateDialog({
             />
 
             {milestoneOptions.length > 0 && (
-              <div className="space-y-1.5 border-t border-border/60 pt-3">
-                <label
-                  htmlFor="task-milestones"
-                  className="text-xs font-semibold"
-                >
-                  {t("goalsLabel")}
-                </label>
-                <select
-                  id="task-milestones"
-                  multiple
-                  {...register("milestone_ids")}
-                  className="min-h-24 w-full rounded-md border border-input bg-background p-2 text-sm"
-                  disabled={isSubmitting}
-                >
-                  {milestoneOptions.map((milestone) => (
-                    <option
-                      key={milestone.milestoneId}
-                      value={milestone.milestoneId}
-                    >
-                      {milestone.scope === "company"
-                        ? t("goalsCompanyScope")
-                        : t("goalsProjectScope")}{" "}
-                      · {milestone.title}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-muted-foreground">
-                  {t("goalsHint")}
-                </p>
-              </div>
+              <TaskMilestoneSelector
+                milestones={milestoneOptions}
+                selectedIds={selectedMilestoneIds ?? []}
+                disabled={isSubmitting}
+                onChange={(milestoneIds) =>
+                  setValue("milestone_ids", milestoneIds, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              />
             )}
 
             {/* Deliverables Section */}

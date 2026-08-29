@@ -65,7 +65,7 @@ function initialValues(fixedProjectId?: string): MilestoneFormValues {
     title: "",
     description: "",
     targetDate: "",
-    colorOverride: "",
+    colorOverride: "chart-1",
     taskIds: [],
   };
 }
@@ -117,7 +117,7 @@ function MilestoneForm({
           title: detail.title,
           description: detail.description ?? "",
           targetDate: detail.targetDate,
-          colorOverride: detail.colorOverride ?? "",
+          colorOverride: detail.colorOverride ?? "chart-1",
           taskIds: detail.tasks.map((task) => task.taskId),
         });
         setLoadState("ready");
@@ -176,7 +176,7 @@ function MilestoneForm({
     event.preventDefault();
     setError(null);
     if (!values.targetDate || !values.title.trim() || (values.scope === "project" && !values.projectId)) {
-      setError(t("states.error"));
+      setError(t("form.validationError"));
       return;
     }
     setSaving(true);
@@ -187,21 +187,21 @@ function MilestoneForm({
         title: values.title.trim(),
         description: values.description.trim() || null,
         targetDate: values.targetDate,
-        colorOverride: values.colorOverride || null,
+        colorOverride: values.colorOverride || "chart-1",
         taskIds: values.taskIds,
       };
       const result = mode === "edit" && milestoneId
         ? await updateMilestoneAction({ milestoneId, ...payload })
         : await createMilestoneAction(payload);
       if (!result.ok) {
-        setError(t("states.error"));
+        setError(mode === "edit" ? t("form.updateError") : t("form.createError"));
         return;
       }
       toast.success(mode === "edit" ? t("states.successUpdate") : t("states.successCreate"));
       onSuccess();
       onClose();
     } catch {
-      setError(t("states.error"));
+      setError(mode === "edit" ? t("form.updateError") : t("form.createError"));
     } finally {
       setSaving(false);
     }
@@ -257,7 +257,6 @@ function MilestoneForm({
             <div className="space-y-2">
               <Label htmlFor="milestone-color">{t("form.colorLabel")}</Label>
               <select id="milestone-color" value={values.colorOverride} onChange={(event) => setValues((current) => ({ ...current, colorOverride: event.target.value as CalendarColorOverride | "" }))} disabled={saving} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
-                <option value="">{t("form.defaultColor")}</option>
                 {colors.map((color) => <option key={color} value={color}>{t(`colors.${color}`)}</option>)}
               </select>
             </div>

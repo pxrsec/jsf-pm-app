@@ -139,6 +139,7 @@ export function CalendarCoordinator({
         milestoneId={detailId}
         isOpen={Boolean(detailId)}
         canManage={canManageMilestones}
+        userRole={userRole}
         onClose={() => setDetailId(undefined)}
         onEdit={(id, focusTasks) =>
           setForm({ mode: "edit", milestoneId: id, focusTasks })
