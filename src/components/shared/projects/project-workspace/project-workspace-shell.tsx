@@ -33,7 +33,9 @@ import type { DeliverableListItem } from "@/lib/deliverables/queries";
 import type { ClientListItem } from "@/lib/clients/queries";
 import type {
   CalendarEventDto,
-  CalendarMilestoneTargetDto,
+  MilestoneManagementTargetDto,
+  MilestoneOptionDto,
+  MilestoneSummaryDto,
   CalendarRangeState,
 } from "@/lib/calendar/types";
 import type {
@@ -71,7 +73,9 @@ interface ProjectWorkspaceShellProps {
   initialTasks?: TaskWithAssignee[];
   initialDeliverables?: DeliverableListItem[];
   initialCalendarEvents?: CalendarEventDto[];
-  milestoneTargets?: CalendarMilestoneTargetDto[];
+  milestoneTargets?: MilestoneManagementTargetDto[];
+  milestoneSummaries?: MilestoneSummaryDto[];
+  milestoneOptions?: MilestoneOptionDto[];
   calendarRange?: CalendarRangeState;
   initialArchivePage?: FinalizedArchivePage;
   archiveQuery?: FinalizedArchiveQuery;
@@ -93,6 +97,8 @@ export function ProjectWorkspaceShell({
   initialDeliverables = [],
   initialCalendarEvents,
   milestoneTargets = [],
+  milestoneSummaries = [],
+  milestoneOptions = [],
   calendarRange,
   initialArchivePage,
   archiveQuery,
@@ -115,6 +121,7 @@ export function ProjectWorkspaceShell({
   const [isReopenOpen, setIsReopenOpen] = useState(false);
   const [statusAction, setStatusAction] =
     useState<ProjectStatusActionType | null>(null);
+  const [openMilestoneId, setOpenMilestoneId] = useState<string>();
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -154,14 +161,15 @@ export function ProjectWorkspaceShell({
     }
   };
 
+  const handleOpenMilestone = (milestoneId: string) => {
+    setOpenMilestoneId(milestoneId);
+    handleTabChange("calendar");
+  };
+
   const baseHref = actorRole === "admin" ? "/admin/proyectos" : "/pm/proyectos";
   const canViewCalendarTab = actorRole === "admin" || actorRole === "pm";
-  const isTerminalStatus =
-    project.status === "completed" || project.status === "cancelled";
   const canManageMilestones =
-    !isTerminalStatus &&
-    (actorRole === "admin" ||
-      (actorRole === "pm" && effectiveCapacity !== "pm_watcher"));
+    effectiveCapacity === "admin" || effectiveCapacity === "pm_lead";
 
   const navigationContent = (
     <TabsList className="h-10 bg-transparent p-0 flex space-x-6 justify-start">
@@ -257,8 +265,11 @@ export function ProjectWorkspaceShell({
             cycles={cycles}
             tasks={initialTasks}
             deliverables={initialDeliverables}
+            milestoneSummaries={milestoneSummaries}
+            canManageMilestones={canManageMilestones}
             onOpenEditDialog={() => setIsEditOpen(true)}
             onSelectTab={(tab) => handleTabChange(tab)}
+            onOpenMilestone={handleOpenMilestone}
           />
         </TabsContent>
 
@@ -268,6 +279,7 @@ export function ProjectWorkspaceShell({
             initialTasks={initialTasks}
             effectiveCapacity={effectiveCapacity}
             locale={locale}
+            milestoneOptions={milestoneOptions}
           />
         </TabsContent>
 
@@ -305,6 +317,7 @@ export function ProjectWorkspaceShell({
                 canManageMilestones={canManageMilestones}
                 userRole={actorRole}
                 initialRange={calendarRange}
+                initialMilestoneId={openMilestoneId}
               />
             ) : (
               <div className="flex h-48 items-center justify-center gap-2">

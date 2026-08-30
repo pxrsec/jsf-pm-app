@@ -5,18 +5,19 @@ import { useSearchParams } from "next/navigation";
 import type { AppRole } from "@/lib/auth/routes";
 import type {
   CalendarEventDto,
-  CalendarMilestoneTargetDto,
+  MilestoneManagementTargetDto,
   CalendarRangeState,
 } from "@/lib/calendar/types";
 import { CalendarCoordinator } from "@/app/[locale]/(protected)/calendario/_components/calendar-coordinator";
 
 interface ProjectCalendarTabProps {
   initialEvents: CalendarEventDto[];
-  milestoneTargets: CalendarMilestoneTargetDto[];
+  milestoneTargets: MilestoneManagementTargetDto[];
   projectId: string;
   canManageMilestones: boolean;
   userRole: AppRole;
   initialRange: CalendarRangeState;
+  initialMilestoneId?: string;
 }
 
 export function ProjectCalendarTab({
@@ -26,6 +27,7 @@ export function ProjectCalendarTab({
   canManageMilestones,
   userRole,
   initialRange,
+  initialMilestoneId,
 }: ProjectCalendarTabProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -43,12 +45,14 @@ export function ProjectCalendarTab({
   return (
     <div className="pt-2">
       <CalendarCoordinator
+        key={initialMilestoneId ?? "project-calendar"}
         initialEvents={initialEvents}
         initialRange={initialRange}
         milestoneTargets={milestoneTargets}
         canManageMilestones={canManageMilestones}
         userRole={userRole}
         fixedProjectId={projectId}
+        initialMilestoneId={initialMilestoneId}
         keyPrefix="calendar"
         onRangeChange={handleRangeChange}
       />

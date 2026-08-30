@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -791,6 +791,123 @@ export type Database = {
           },
           {
             foreignKeyName: "invite_tokens_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      milestone_tasks: {
+        Row: {
+          created_at: string
+          created_by: string
+          milestone_id: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          milestone_id: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          milestone_id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestone_tasks_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestone_tasks_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "client_task_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestone_tasks_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "operator_agenda_view"
+            referencedColumns: ["task_id"]
+          },
+          {
+            foreignKeyName: "milestone_tasks_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      milestones: {
+        Row: {
+          color_override: string | null
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          description: string | null
+          id: string
+          project_id: string | null
+          scope: string
+          target_date: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          color_override?: string | null
+          created_at?: string
+          created_by: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          project_id?: string | null
+          scope: string
+          target_date: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          color_override?: string | null
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          project_id?: string | null
+          scope?: string
+          target_date?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "client_project_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "project_completion_cycles_view"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "milestones_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -1721,30 +1838,6 @@ export type Database = {
         Args: { p_notification_recipient_id: string }
         Returns: boolean
       }
-      create_calendar_milestone: {
-        Args: {
-          p_color_override?: string
-          p_description?: string
-          p_ends_at?: string
-          p_is_all_day?: boolean
-          p_project_id: string
-          p_starts_at?: string
-          p_task_id?: string
-          p_title?: string
-        }
-        Returns: {
-          color_override: string
-          ends_at: string
-          entity_id: string
-          event_type: Database["public"]["Enums"]["calendar_event_type"]
-          is_all_day: boolean
-          project_id: string
-          project_name: string
-          starts_at: string
-          task_id: string
-          title: string
-        }[]
-      }
       create_collaboration_comment: {
         Args: {
           p_body: string
@@ -1754,12 +1847,32 @@ export type Database = {
         }
         Returns: Json
       }
+      create_milestone: {
+        Args: {
+          p_color_override?: string
+          p_description?: string
+          p_project_id?: string
+          p_scope: string
+          p_target_date?: string
+          p_task_ids?: string[]
+          p_title?: string
+        }
+        Returns: {
+          color_override: string
+          milestone_id: string
+          project_id: string
+          scope: string
+          target_date: string
+          title: string
+        }[]
+      }
       create_task_with_deliverables: {
         Args: {
           p_assignee_id: string
           p_deadline_at: string
           p_deliverables?: Json
           p_description: string
+          p_milestone_ids?: string[]
           p_priority: Database["public"]["Enums"]["task_priority"]
           p_project_id: string
           p_task_type: Database["public"]["Enums"]["task_type"]
@@ -1771,18 +1884,21 @@ export type Database = {
         Args: { p_project_id?: string }
         Returns: Json
       }
-      get_calendar_milestone_for_edit: {
-        Args: { p_event_id: string }
+      get_milestone_detail: {
+        Args: { p_milestone_id: string }
         Returns: {
+          active_task_count: number
+          blocked_task_count: number
           color_override: string
+          completed_task_count: number
           description: string
-          ends_at: string
-          entity_id: string
-          is_all_day: boolean
+          in_progress_task_count: number
+          in_review_task_count: number
+          milestone_id: string
           project_id: string
           project_name: string
-          starts_at: string
-          task_id: string
+          scope: string
+          target_date: string
           title: string
         }[]
       }
@@ -1860,15 +1976,6 @@ export type Database = {
           whatsapp_opt_in: boolean
         }[]
       }
-      list_calendar_milestone_targets: {
-        Args: never
-        Returns: {
-          project_id: string
-          project_name: string
-          task_id: string
-          task_title: string
-        }[]
-      }
       list_finalized_production_archive: {
         Args: {
           p_before_deliverable_id?: string
@@ -1889,6 +1996,28 @@ export type Database = {
           project_drive_folder_url: string
           project_id: string
           project_name: string
+        }[]
+      }
+      list_milestone_management_targets: {
+        Args: never
+        Returns: {
+          project_id: string
+          project_name: string
+          task_id: string
+          task_status: Database["public"]["Enums"]["task_status"]
+          task_title: string
+        }[]
+      }
+      list_milestone_tasks: {
+        Args: { p_milestone_id: string }
+        Returns: {
+          deadline_at: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          project_id: string
+          project_name: string
+          status: Database["public"]["Enums"]["task_status"]
+          task_id: string
+          title: string
         }[]
       }
       list_my_in_app_notifications: {
@@ -1915,6 +2044,29 @@ export type Database = {
           subject_kind: string
           subject_title: string
           trigger: Database["public"]["Enums"]["notification_trigger"]
+        }[]
+      }
+      list_operator_task_milestone_context: {
+        Args: { p_task_id: string }
+        Returns: {
+          scope: string
+          target_date: string
+          title: string
+        }[]
+      }
+      list_project_milestone_summaries: {
+        Args: { p_project_id: string }
+        Returns: {
+          active_task_count: number
+          blocked_task_count: number
+          color_override: string
+          completed_task_count: number
+          in_progress_task_count: number
+          in_review_task_count: number
+          milestone_id: string
+          scope: string
+          target_date: string
+          title: string
         }[]
       }
       list_role_safe_calendar_events: {
@@ -2025,6 +2177,18 @@ export type Database = {
           trigger: Database["public"]["Enums"]["notification_trigger"]
         }[]
       }
+      list_task_milestone_options: {
+        Args: { p_project_id: string }
+        Returns: {
+          color_override: string
+          milestone_id: string
+          project_id: string
+          project_name: string
+          scope: string
+          target_date: string
+          title: string
+        }[]
+      }
       mark_all_notifications_read: { Args: never; Returns: number }
       mark_deliverable_delivered: {
         Args: { p_deliverable_id: string }
@@ -2071,16 +2235,16 @@ export type Database = {
         }
         Returns: Json
       }
-      soft_delete_calendar_milestone: {
-        Args: { p_event_id: string }
-        Returns: boolean
-      }
       soft_delete_entity: {
         Args: {
           p_entity_id: string
           p_entity_type: Database["public"]["Enums"]["entity_type"]
           p_reason?: string
         }
+        Returns: boolean
+      }
+      soft_delete_milestone: {
+        Args: { p_milestone_id: string }
         Returns: boolean
       }
       submit_client_deliverable: {
@@ -2116,28 +2280,23 @@ export type Database = {
         }
         Returns: Json
       }
-      update_calendar_milestone: {
+      update_milestone: {
         Args: {
           p_color_override?: string
           p_description?: string
-          p_ends_at?: string
-          p_event_id: string
-          p_is_all_day?: boolean
-          p_project_id: string
-          p_starts_at?: string
-          p_task_id?: string
+          p_milestone_id: string
+          p_project_id?: string
+          p_scope: string
+          p_target_date?: string
+          p_task_ids?: string[]
           p_title?: string
         }
         Returns: {
           color_override: string
-          ends_at: string
-          entity_id: string
-          event_type: Database["public"]["Enums"]["calendar_event_type"]
-          is_all_day: boolean
+          milestone_id: string
           project_id: string
-          project_name: string
-          starts_at: string
-          task_id: string
+          scope: string
+          target_date: string
           title: string
         }[]
       }
@@ -2179,6 +2338,7 @@ export type Database = {
         | "invite_token"
         | "collaboration_comment"
         | "link_report"
+        | "milestone"
       invite_status: "pending" | "accepted" | "expired" | "revoked"
       link_report_status: "open" | "resolved" | "dismissed"
       notification_channel: "in_app" | "whatsapp" | "email"
@@ -2411,6 +2571,7 @@ export const Constants = {
         "invite_token",
         "collaboration_comment",
         "link_report",
+        "milestone",
       ],
       invite_status: ["pending", "accepted", "expired", "revoked"],
       link_report_status: ["open", "resolved", "dismissed"],

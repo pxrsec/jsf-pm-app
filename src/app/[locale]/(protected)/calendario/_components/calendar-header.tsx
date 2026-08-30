@@ -9,7 +9,7 @@ import {
   formatCalendarDate,
 } from "@/lib/calendar/date-utils";
 import type {
-  CalendarMilestoneTargetDto,
+  MilestoneManagementTargetDto,
   CalendarRangeState,
   CalendarView,
 } from "@/lib/calendar/types";
@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 interface CalendarHeaderProps {
   currentRange: CalendarRangeState;
   canManageMilestones: boolean;
-  targets: CalendarMilestoneTargetDto[];
+  targets: MilestoneManagementTargetDto[];
   fixedProjectId?: string;
   onViewChange: (view: CalendarView) => void;
   onPrev: () => void;
@@ -106,8 +106,8 @@ export function CalendarHeader({
   const uniqueProjects = useMemo(() => {
     const map = new Map<string, string>();
     for (const target of targets) {
-      if (!map.has(target.project_id)) {
-        map.set(target.project_id, target.project_name);
+      if (!map.has(target.projectId)) {
+        map.set(target.projectId, target.projectName);
       }
     }
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));

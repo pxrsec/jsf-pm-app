@@ -1,100 +1,75 @@
 "use client";
-
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { softDeleteMilestoneAction } from "@/lib/calendar/actions";
 import {
   AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { softDeleteCalendarMilestoneAction } from "@/lib/calendar/actions";
-
-interface DeleteMilestoneDialogProps {
-  isOpen: boolean;
-  eventId?: string;
-  eventTitle?: string;
-  onClose: () => void;
-  onSuccess: () => void;
-}
 
 export function DeleteMilestoneDialog({
   isOpen,
-  eventId,
-  eventTitle,
+  milestoneId,
+  milestoneTitle,
   onClose,
   onSuccess,
-}: DeleteMilestoneDialogProps) {
+}: {
+  isOpen: boolean;
+  milestoneId: string;
+  milestoneTitle: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
   const t = useTranslations("calendar");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const handleDelete = async () => {
-    if (!eventId) return;
-
-    setIsDeleting(true);
-    setErrorMessage(null);
-
-    try {
-      const result = await softDeleteCalendarMilestoneAction({ eventId });
-      if (!result.ok) {
-        setErrorMessage(result.error.message);
-        return;
-      }
-
-      toast.success(t("states.successDelete"));
-      onSuccess();
-      onClose();
-    } catch {
-      setErrorMessage(t("states.error"));
-    } finally {
-      setIsDeleting(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(false);
+  const remove = async () => {
+    setSaving(true);
+    setError(false);
+    const result = await softDeleteMilestoneAction({ milestoneId });
+    setSaving(false);
+    if (!result.ok) {
+      setError(true);
+      return;
     }
+    toast.success(t("states.successDelete"));
+    onSuccess();
   };
-
   return (
     <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("actions.confirmDelete")}</AlertDialogTitle>
           <AlertDialogDescription>
-            {eventTitle ? `"${eventTitle}". ` : ""}
-            {t("actions.confirmDeleteDesc")}
+            {milestoneTitle}. {t("actions.confirmDeleteDesc")}
           </AlertDialogDescription>
         </AlertDialogHeader>
-
-        {errorMessage && (
-          <div
-            role="alert"
-            className="rounded-md bg-destructive/10 p-3 text-sm font-medium text-destructive"
-          >
-            {errorMessage}
-          </div>
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {t("states.error")}
+          </p>
         )}
-
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting} onClick={onClose}>
+          <AlertDialogCancel disabled={saving}>
             {t("actions.cancel")}
           </AlertDialogCancel>
           <AlertDialogAction
-            onClick={(e) => {
-              e.preventDefault();
-              void handleDelete();
+            disabled={saving}
+            onClick={(event) => {
+              event.preventDefault();
+              void remove();
             }}
-            disabled={isDeleting}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isDeleting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t("actions.deleting")}
-              </>
+            {saving ? (
+              <Loader2 className="animate-spin" />
             ) : (
               t("actions.deleteMilestone")
             )}

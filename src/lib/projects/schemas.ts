@@ -190,6 +190,14 @@ export const CreateTaskWithDeliverablesSchema = z
       .array(CreateTaskDeliverableDraftSchema)
       .max(20, "A task may be created with at most 20 deliverables")
       .default([]),
+    milestone_ids: z
+      .array(z.string().uuid("Invalid milestone ID"))
+      .max(100, "A task may contribute to at most 100 milestones")
+      .refine(
+        (ids) => new Set(ids).size === ids.length,
+        "Milestone IDs must be unique",
+      )
+      .default([]),
   })
   .superRefine((data, ctx) => {
     for (let i = 0; i < data.deliverables.length; i++) {

@@ -129,7 +129,7 @@ export function CalendarListView({
                         variant="ghost"
                         size="sm"
                         onClick={() =>
-                          onOpenMilestoneDetail?.(destination.eventId)
+                          onOpenMilestoneDetail?.(destination.milestoneId)
                         }
                         className="h-auto px-0 font-semibold hover:bg-transparent hover:underline"
                       >

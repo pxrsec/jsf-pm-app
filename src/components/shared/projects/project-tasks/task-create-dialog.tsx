@@ -18,6 +18,7 @@ import { DraftDeliverableCard } from "./draft-deliverable-card";
 import { TaskTypeToggle } from "./task-type-toggle";
 import { TaskTypeChangeAlert } from "./task-type-change-alert";
 import { TaskDetailsFields } from "./task-details-fields";
+import { TaskMilestoneSelector } from "./task-milestone-selector";
 import {
   useTaskDeliverableDrafts,
   type TaskDeliverableDraftFormValue,
@@ -28,6 +29,7 @@ import {
 } from "@/lib/projects/task-actions";
 import type { ProjectDetail, TaskPriority } from "@/lib/projects/queries";
 import type { MemberCapacity } from "@/lib/status-maps";
+import type { MilestoneOptionDto } from "@/lib/calendar/types";
 
 interface TaskFormData {
   project_id: string;
@@ -38,6 +40,7 @@ interface TaskFormData {
   assignee_id: string;
   deadline_at: string;
   deliverables: TaskDeliverableDraftFormValue[];
+  milestone_ids: string[];
 }
 
 interface TaskCreateDialogProps {
@@ -45,6 +48,7 @@ interface TaskCreateDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  milestoneOptions?: MilestoneOptionDto[];
 }
 
 export function TaskCreateDialog({
@@ -52,6 +56,7 @@ export function TaskCreateDialog({
   isOpen,
   onClose,
   onSuccess,
+  milestoneOptions = [],
 }: TaskCreateDialogProps) {
   const t = useTranslations("projects.tasks.create");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,6 +100,7 @@ export function TaskCreateDialog({
       assignee_id: getFirstCompatibleMember("internal_work")?.user_id ?? "",
       deadline_at: "",
       deliverables: [],
+      milestone_ids: [],
     },
   });
 
@@ -110,6 +116,7 @@ export function TaskCreateDialog({
 
   const selectedType = useWatch({ control, name: "task_type" });
   const taskAssigneeId = useWatch({ control, name: "assignee_id" });
+  const selectedMilestoneIds = useWatch({ control, name: "milestone_ids" });
 
   const allowedMemberTypes: MemberCapacity[] =
     selectedType === "internal_work"
@@ -148,7 +155,7 @@ export function TaskCreateDialog({
     try {
       const isoDeadline = new Date(data.deadline_at).toISOString();
 
-      if (draftCount === 0) {
+      if (draftCount === 0 && data.milestone_ids.length === 0) {
         const result = await createTaskAction({
           project_id: data.project_id,
           task_type: data.task_type,
@@ -185,6 +192,7 @@ export function TaskCreateDialog({
           assignee_id: data.assignee_id,
           deadline_at: isoDeadline,
           deliverables: cleanDeliverables,
+          milestone_ids: data.milestone_ids,
         });
 
         if (!result.ok) {
@@ -238,6 +246,20 @@ export function TaskCreateDialog({
               isSubmitting={isSubmitting}
               onAssigneeChange={syncTaskAssigneeChange}
             />
+
+            {milestoneOptions.length > 0 && (
+              <TaskMilestoneSelector
+                milestones={milestoneOptions}
+                selectedIds={selectedMilestoneIds ?? []}
+                disabled={isSubmitting}
+                onChange={(milestoneIds) =>
+                  setValue("milestone_ids", milestoneIds, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              />
+            )}
 
             {/* Deliverables Section */}
             <div className="pt-3 border-t border-border/60 space-y-3">

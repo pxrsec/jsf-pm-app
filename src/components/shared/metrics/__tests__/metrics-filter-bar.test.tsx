@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { MetricsFilterBar } from "../metrics-filter-bar";
 
 const mockPush = vi.fn();
@@ -39,6 +38,38 @@ vi.mock("next-intl", () => ({
   },
 }));
 
+vi.mock("@/components/ui/select", () => ({
+  Select: ({
+    value,
+    onValueChange,
+    children,
+  }: {
+    value?: string;
+    onValueChange?: (val: string) => void;
+    children: React.ReactNode;
+  }) => (
+    <select
+      aria-label="Select project"
+      value={value}
+      onChange={(e) => onValueChange?.(e.target.value)}
+    >
+      {children}
+    </select>
+  ),
+  SelectTrigger: () => null,
+  SelectValue: () => null,
+  SelectContent: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+  SelectItem: ({
+    value,
+    children,
+  }: {
+    value: string;
+    children: React.ReactNode;
+  }) => <option value={value}>{children}</option>,
+}));
+
 describe("MetricsFilterBar (metrics-filter-bar.tsx)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -66,16 +97,14 @@ describe("MetricsFilterBar (metrics-filter-bar.tsx)", () => {
       />,
     );
 
-    const selectTrigger = screen.getByRole("combobox", {
+    const select = screen.getByRole("combobox", {
       name: "Select project",
     });
-    expect(selectTrigger).toBeInTheDocument();
+    expect(select).toBeInTheDocument();
 
-    await userEvent.click(selectTrigger);
-    const optionBeta = await screen.findByRole("option", {
-      name: "Project Beta",
+    fireEvent.change(select, {
+      target: { value: "a0000000-0000-0000-0000-000000000002" },
     });
-    await userEvent.click(optionBeta);
 
     expect(mockPush).toHaveBeenCalledTimes(1);
     const pushedUrl = mockPush.mock.calls[0][0];

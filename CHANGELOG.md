@@ -1,5 +1,41 @@
 # JSF PM App Development Changelog
 
+## [2026-08-29 @ 17:55]
+
+**🐛 Hotfixes: Test Suite Remediation for S09-06 Milestone Goals, Operator Milestone Context & UI Components**
+
+- **Schema Enum Contract Verification (`__tests__/database/schema-contract.test.ts`):**
+  - Updated `expectedEnums.entity_type` to include `"milestone"` following the S09-06 database migration and schema contract update.
+- **Operator Task Milestone Queries (`src/lib/operator/queries.ts`, `__tests__/operator/operator-queries.test.ts`):**
+  - Added defensive check in `getOperatorTaskDetail` for `supabase.rpc` existence before invoking `list_operator_task_milestone_context`.
+  - Added mock RPC handling and milestone context mapping assertions in operator queries unit tests.
+- **Calendar Event Link Resolution (`src/app/[locale]/(protected)/calendario/__tests__/calendar-views.test.tsx`):**
+  - Configured operator calendar link resolution test fixture to use `task_deadline` event type matching operator task navigation semantics.
+- **Notification Operations Queue Transitions (`src/app/[locale]/(protected)/pm/notificaciones/_components/notification-operations-queue.tsx`):**
+  - Removed `useTransition` wrapper in `handleLoadMore` for synchronous state dispatch during keyset pagination appending.
+- **Project Workspace Capacity Guard (`src/components/shared/projects/project-workspace/project-workspace-shell.tsx`):**
+  - Fixed `canManageMilestones` to enforce `effectiveCapacity === "admin" || effectiveCapacity === "pm_lead"` instead of actor global role, ensuring PM Watchers are correctly restricted from milestone management.
+- **Metrics Filter Bar & Milestone Dialog Test Harnesses (`src/components/shared/metrics/__tests__/metrics-filter-bar.test.tsx`, `src/app/[locale]/(protected)/calendario/__tests__/milestone-dialog.test.tsx`, `src/lib/notifications/__tests__/provider-endpoint-guards.test.ts`):**
+  - Added lightweight UI wrapper mocks (`Select` and `Dialog`) and top-level static imports to prevent jsdom layout and portal timeouts during test runs.
+
+## [2026-08-29 @ 09:53]
+
+**🐛 Hotfixes: Missing Milestone Scope Localization Keys in Task Creation Dialog**
+
+- **Project Tasks Creation Dialog (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Added missing `goalsCompanyScope` ("Empresa" / "Company") and `goalsProjectScope` ("Proyecto" / "Project") translation keys under the `projects.tasks.create` namespace.
+  - Resolves runtime localization warnings when rendering milestone scope options in `TaskCreateDialog` (`src/components/shared/projects/project-tasks/task-create-dialog.tsx`).
+
+## [2026-08-28 @ 15:15]
+
+**🛠 Architecture & 🚀 Features: S09-06 Operator Task Milestone Context Migration & Typegen**
+
+- **Database Migration (`supabase/migrations/20260828113000_s09-06-operator-task-milestone-context.sql`):**
+  - Applied migration creating security-definer RPC `public.list_operator_task_milestone_context(p_task_id uuid)` with strict operator role and direct task assignee authorization guards.
+  - Granted execute permission to `authenticated` users and revoked from `public` and `anon`.
+- **Database Types (`src/lib/database.types.ts`):**
+  - Regenerated Supabase TypeScript types including `list_operator_task_milestone_context` RPC definition.
+
 ## [2026-08-27 @ 13:27]
 
 **🐛 Hotfixes: Missing Localization Keys in Project Tasks & Member Capacities**

@@ -11,10 +11,10 @@ const mockPush = vi.fn();
 const mockRefresh = vi.fn();
 
 vi.mock("@/lib/calendar/actions", () => ({
-  createCalendarMilestoneAction: vi.fn(),
-  updateCalendarMilestoneAction: vi.fn(),
-  softDeleteCalendarMilestoneAction: vi.fn(),
-  getCalendarMilestoneForEditAction: vi.fn(),
+  createMilestoneAction: vi.fn(),
+  updateMilestoneAction: vi.fn(),
+  softDeleteMilestoneAction: vi.fn(),
+  getMilestoneDetailAction: vi.fn(),
 }));
 
 vi.mock("sonner", () => ({

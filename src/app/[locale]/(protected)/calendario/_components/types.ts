@@ -1,31 +1,20 @@
 import type { AppRole } from "@/lib/auth/routes";
 import type {
   CalendarEventDto,
-  CalendarMilestoneTargetDto,
+  MilestoneManagementTargetDto,
   CalendarRangeState,
 } from "@/lib/calendar/types";
 
 export interface CalendarCoordinatorProps {
   initialEvents: CalendarEventDto[];
   initialRange: CalendarRangeState;
-  milestoneTargets: CalendarMilestoneTargetDto[];
+  milestoneTargets: MilestoneManagementTargetDto[];
   canManageMilestones: boolean;
   userRole: AppRole;
   fixedProjectId?: string;
+  initialMilestoneId?: string;
   keyPrefix?: string;
   onRangeChange?: (range: CalendarRangeState) => void;
-}
-
-export interface MilestoneDialogState {
-  isOpen: boolean;
-  mode: "create" | "edit";
-  editEventId?: string;
-}
-
-export interface DeleteDialogState {
-  isOpen: boolean;
-  eventId?: string;
-  eventTitle?: string;
 }
 
 export interface CalendarViewProps {

@@ -92,6 +92,12 @@ export interface OperatorTaskDeliverableDetail {
   clientDeliveryDeadlineAt: string | null;
 }
 
+export interface OperatorTaskMilestoneContext {
+  title: string;
+  scope: "project" | "company";
+  targetDate: string;
+}
+
 export interface OperatorTaskDetail {
   taskId: string;
   taskTitle: string;
@@ -106,6 +112,7 @@ export interface OperatorTaskDetail {
   projectName: string;
   resources: OperatorTaskResource[];
   deliverables: OperatorTaskDeliverableDetail[];
+  milestoneContext?: OperatorTaskMilestoneContext[];
 }
 
 export interface OperatorDeliverableForSubmission {
