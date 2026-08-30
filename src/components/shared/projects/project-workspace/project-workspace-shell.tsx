@@ -168,7 +168,8 @@ export function ProjectWorkspaceShell({
 
   const baseHref = actorRole === "admin" ? "/admin/proyectos" : "/pm/proyectos";
   const canViewCalendarTab = actorRole === "admin" || actorRole === "pm";
-  const canManageMilestones = actorRole === "admin" || actorRole === "pm";
+  const canManageMilestones =
+    effectiveCapacity === "admin" || effectiveCapacity === "pm_lead";
 
   const navigationContent = (
     <TabsList className="h-10 bg-transparent p-0 flex space-x-6 justify-start">
@@ -265,7 +266,7 @@ export function ProjectWorkspaceShell({
             tasks={initialTasks}
             deliverables={initialDeliverables}
             milestoneSummaries={milestoneSummaries}
-            canManageMilestones={actorRole === "admin" || actorRole === "pm"}
+            canManageMilestones={canManageMilestones}
             onOpenEditDialog={() => setIsEditOpen(true)}
             onSelectTab={(tab) => handleTabChange(tab)}
             onOpenMilestone={handleOpenMilestone}

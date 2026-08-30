@@ -105,6 +105,7 @@ describe("S02-E02-03: Static Schema Contract Verification", () => {
         "invite_token",
         "collaboration_comment",
         "link_report",
+        "milestone",
       ],
       invite_status: ["pending", "accepted", "expired", "revoked"],
       link_report_status: ["open", "resolved", "dismissed"],

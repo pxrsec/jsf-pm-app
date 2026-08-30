@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useTransition } from "react";
+import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,6 @@ export function NotificationOperationsQueue({
   initialPage,
 }: NotificationOperationsQueueProps) {
   const t = useTranslations("notificationOperations");
-  const [, startTransition] = useTransition();
 
   const [operations, setOperations] = useState<
     readonly SuppressedNotificationOperation[]
@@ -62,13 +61,11 @@ export function NotificationOperationsQueue({
 
     if (result.ok) {
       const newPage = result.data;
-      startTransition(() => {
-        setOperations((prev) => [...prev, ...newPage.operations]);
-        setCursor(newPage.nextCursor);
-        setHasMore(newPage.hasMore);
-        setStatusMessage(t("loadMoreSuccess"));
-        setErrorMessage(null);
-      });
+      setOperations((prev) => [...prev, ...newPage.operations]);
+      setCursor(newPage.nextCursor);
+      setHasMore(newPage.hasMore);
+      setStatusMessage(t("loadMoreSuccess"));
+      setErrorMessage(null);
 
       if (!newPage.hasMore) {
         // When load more button disappears, transfer focus to status region

@@ -51,7 +51,9 @@ export function MilestoneTaskAssociation({
   const projects = useMemo(
     () =>
       Array.from(
-        new Map(targets.map((target) => [target.projectId, target.projectName])).entries(),
+        new Map(
+          targets.map((target) => [target.projectId, target.projectName]),
+        ).entries(),
       ).map(([id, name]) => ({ id, name })),
     [targets],
   );
@@ -75,21 +77,32 @@ export function MilestoneTaskAssociation({
     );
   }, [activeProjectId, search, selectedTaskIds, targets]);
 
-  const canBrowse = scope === "project" ? Boolean(projectId) : Boolean(companyProjectId);
+  const canBrowse =
+    scope === "project" ? Boolean(projectId) : Boolean(companyProjectId);
 
   return (
-    <section className="space-y-4 border-t border-border pt-5" aria-labelledby="milestone-tasks-heading">
+    <section
+      className="space-y-4 border-t border-border pt-5"
+      aria-labelledby="milestone-tasks-heading"
+    >
       <div className="space-y-1">
-        <h3 id="milestone-tasks-heading" className="text-sm font-semibold text-foreground">
+        <h3
+          id="milestone-tasks-heading"
+          className="text-sm font-semibold text-foreground"
+        >
           {t("tasksLabel")}
         </h3>
-        <p className="text-xs leading-relaxed text-muted-foreground">{t("tasksHelp")}</p>
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          {t("tasksHelp")}
+        </p>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-3 sm:p-4">
           <div className="space-y-2">
-            <Label htmlFor="milestone-task-project">{t("browseProjectLabel")}</Label>
+            <Label htmlFor="milestone-task-project">
+              {t("browseProjectLabel")}
+            </Label>
             <select
               id="milestone-task-project"
               value={activeProjectId}
@@ -106,9 +119,14 @@ export function MilestoneTaskAssociation({
             </select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="milestone-task-search">{t("searchTasksLabel")}</Label>
+            <Label htmlFor="milestone-task-search">
+              {t("searchTasksLabel")}
+            </Label>
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
               <Input
                 ref={searchInputRef}
                 id="milestone-task-search"
@@ -120,14 +138,24 @@ export function MilestoneTaskAssociation({
               />
             </div>
           </div>
-          <div className="max-h-64 space-y-2 overflow-y-auto pr-1" aria-live="polite">
+          <div
+            className="max-h-64 space-y-2 overflow-y-auto pr-1"
+            aria-live="polite"
+          >
             {!canBrowse ? (
-              <p className="py-5 text-center text-sm text-muted-foreground">{t("browseProjectRequired")}</p>
+              <p className="py-5 text-center text-sm text-muted-foreground">
+                {t("browseProjectRequired")}
+              </p>
             ) : availableTasks.length === 0 ? (
-              <p className="py-5 text-center text-sm text-muted-foreground">{t("noMatchingTasks")}</p>
+              <p className="py-5 text-center text-sm text-muted-foreground">
+                {t("noMatchingTasks")}
+              </p>
             ) : (
               availableTasks.map((task) => (
-                <label key={task.taskId} className="flex min-h-11 cursor-pointer items-start gap-3 rounded-md border border-border bg-background p-3 text-sm hover:bg-muted/50 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring">
+                <label
+                  key={task.taskId}
+                  className="flex min-h-11 cursor-pointer items-start gap-3 rounded-md border border-border bg-background p-3 text-sm hover:bg-muted/50 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring"
+                >
                   <input
                     type="checkbox"
                     checked={false}
@@ -137,8 +165,14 @@ export function MilestoneTaskAssociation({
                     aria-label={t("selectTaskAria", { title: task.taskTitle })}
                   />
                   <span className="min-w-0 space-y-0.5">
-                    <span className="block break-words font-medium text-foreground">{task.taskTitle}</span>
-                    <span className="block text-xs text-muted-foreground">{tStatus(`taskStatus.${statusKeys[task.taskStatus] ?? "pending"}`)}</span>
+                    <span className="block break-words font-medium text-foreground">
+                      {task.taskTitle}
+                    </span>
+                    <span className="block text-xs text-muted-foreground">
+                      {tStatus(
+                        `taskStatus.${statusKeys[task.taskStatus] ?? "pending"}`,
+                      )}
+                    </span>
                   </span>
                 </label>
               ))
@@ -148,20 +182,50 @@ export function MilestoneTaskAssociation({
 
         <div className="space-y-3 rounded-lg border border-border bg-card p-3 sm:p-4">
           <div className="flex items-center justify-between gap-3">
-            <h4 className="text-sm font-semibold text-foreground">{t("relatedTasksTitle")}</h4>
-            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground" aria-label={t("tasksSelected", { count: selectedTasks.length })}>{selectedTasks.length}</span>
+            <h4 className="text-sm font-semibold text-foreground">
+              {t("relatedTasksTitle")}
+            </h4>
+            <span
+              className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
+              aria-label={t("tasksSelected", { count: selectedTasks.length })}
+            >
+              {selectedTasks.length}
+            </span>
           </div>
           {selectedTasks.length === 0 ? (
-            <p className="py-5 text-center text-sm text-muted-foreground">{t("noRelatedTasks")}</p>
+            <p className="py-5 text-center text-sm text-muted-foreground">
+              {t("noRelatedTasks")}
+            </p>
           ) : (
-            <ul className="max-h-64 space-y-2 overflow-y-auto pr-1" aria-label={t("relatedTasksTitle")}>
+            <ul
+              className="max-h-64 space-y-2 overflow-y-auto pr-1"
+              aria-label={t("relatedTasksTitle")}
+            >
               {selectedTasks.map((task) => (
-                <li key={task.taskId} className="flex min-h-11 items-start justify-between gap-3 rounded-md border border-border p-3">
+                <li
+                  key={task.taskId}
+                  className="flex min-h-11 items-start justify-between gap-3 rounded-md border border-border p-3"
+                >
                   <span className="min-w-0 space-y-0.5">
-                    <span className="block break-words text-sm font-medium text-foreground">{task.taskTitle}</span>
-                    <span className="block text-xs text-muted-foreground">{task.projectName} · {tStatus(`taskStatus.${statusKeys[task.taskStatus] ?? "pending"}`)}</span>
+                    <span className="block break-words text-sm font-medium text-foreground">
+                      {task.taskTitle}
+                    </span>
+                    <span className="block text-xs text-muted-foreground">
+                      {task.projectName} ·{" "}
+                      {tStatus(
+                        `taskStatus.${statusKeys[task.taskStatus] ?? "pending"}`,
+                      )}
+                    </span>
                   </span>
-                  <Button type="button" variant="ghost" size="icon" className="size-9 shrink-0" disabled={disabled} onClick={() => onToggleTask(task.taskId)} aria-label={t("removeTaskAria", { title: task.taskTitle })}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-9 shrink-0"
+                    disabled={disabled}
+                    onClick={() => onToggleTask(task.taskId)}
+                    aria-label={t("removeTaskAria", { title: task.taskTitle })}
+                  >
                     <X className="size-4" aria-hidden="true" />
                   </Button>
                 </li>

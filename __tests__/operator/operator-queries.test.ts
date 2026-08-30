@@ -296,8 +296,20 @@ describe("Operator Queries (src/lib/operator/queries.ts)", () => {
           .fn()
           .mockResolvedValue({ data: mockRows.slice(0, 2), error: null }),
       });
+      const rpcMock = vi.fn().mockResolvedValue({
+        data: [
+          {
+            milestone_id: "m-1",
+            title: "Sprint Milestone",
+            scope: "project",
+            target_date: "2026-09-01",
+          },
+        ],
+        error: null,
+      });
       const mockSupabase = {
         from: vi.fn().mockReturnValue({ select: selectMock }),
+        rpc: rpcMock,
       } as unknown as TypedSupabase;
 
       const result = await getOperatorTaskDetail(
@@ -305,10 +317,21 @@ describe("Operator Queries (src/lib/operator/queries.ts)", () => {
         "00000000-0000-0000-0000-000000000001",
       );
       expect(mockSupabase.from).toHaveBeenCalledWith("operator_agenda_view");
+      expect(mockSupabase.rpc).toHaveBeenCalledWith(
+        "list_operator_task_milestone_context",
+        { p_task_id: "00000000-0000-0000-0000-000000000001" },
+      );
       expect(result).not.toBeNull();
       expect(result?.taskTitle).toBe("Overdue Task");
       expect(result?.resources).toHaveLength(2);
       expect(result?.deliverables).toHaveLength(2);
+      expect(result?.milestoneContext).toEqual([
+        {
+          title: "Sprint Milestone",
+          scope: "project",
+          targetDate: "2026-09-01",
+        },
+      ]);
     });
 
     it("returns null for invalid UUID format", async () => {

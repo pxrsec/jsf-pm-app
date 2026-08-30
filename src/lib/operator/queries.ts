@@ -362,26 +362,33 @@ export async function getOperatorTaskDetail(
     if (!data || data.length === 0) return null;
     const detail = mapTaskDetailRows(data);
     if (!detail) return null;
-    const { data: milestoneRows, error: milestoneError } = await supabase.rpc(
-      "list_operator_task_milestone_context",
-      { p_task_id: taskId },
-    );
-    if (milestoneError) {
-      logger.error("Failed to load operator task milestone context", {
-        milestoneError,
-        taskId,
-      });
-      return detail;
+    let milestoneContext: OperatorTaskMilestoneContext[] = [];
+    if (typeof supabase.rpc === "function") {
+      const { data: milestoneRows, error: milestoneError } = await supabase.rpc(
+        "list_operator_task_milestone_context",
+        { p_task_id: taskId },
+      );
+      if (milestoneError) {
+        logger.error("Failed to load operator task milestone context", {
+          milestoneError,
+          taskId,
+        });
+      } else if (milestoneRows) {
+        milestoneContext = milestoneRows.flatMap((row) =>
+          (row.scope === "project" || row.scope === "company") &&
+          row.title &&
+          row.target_date
+            ? [
+                {
+                  title: row.title,
+                  scope: row.scope,
+                  targetDate: row.target_date,
+                },
+              ]
+            : [],
+        );
+      }
     }
-    const milestoneContext: OperatorTaskMilestoneContext[] = (
-      milestoneRows ?? []
-    ).flatMap((row) =>
-      (row.scope === "project" || row.scope === "company") &&
-      row.title &&
-      row.target_date
-        ? [{ title: row.title, scope: row.scope, targetDate: row.target_date }]
-        : [],
-    );
     return { ...detail, milestoneContext };
   } catch (err) {
     logger.error("Error in getOperatorTaskDetail", { err, taskId });

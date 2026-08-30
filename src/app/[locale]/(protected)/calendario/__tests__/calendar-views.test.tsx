@@ -87,7 +87,7 @@ describe("Calendar Presentation Views", () => {
       project_name: "Commercial Ad",
       task_id: "00000000-0000-0000-0000-000000000003",
       title: "Color Grading Session",
-      event_type: "milestone",
+      event_type: "task_deadline",
       starts_at: "2026-08-20T14:00:00-06:00",
       ends_at: null,
       is_all_day: false,

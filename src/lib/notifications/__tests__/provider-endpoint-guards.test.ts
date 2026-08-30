@@ -1,14 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
+import { rejectInactiveProviderEndpoint } from "../provider-endpoint-guards";
 
 vi.mock("server-only", () => ({}));
 
 describe("TC-NOTIF-GRD: Provider Endpoint Guards and Safety Boundary", () => {
   it("1. rejectInactiveProviderEndpoint returns exact 404 and structured ApiError envelope", async () => {
-    const { rejectInactiveProviderEndpoint } =
-      await import("../provider-endpoint-guards");
-
     const response = rejectInactiveProviderEndpoint();
     expect(response.status).toBe(404);
     expect(response.headers.get("content-type")).toContain("application/json");
@@ -33,9 +31,6 @@ describe("TC-NOTIF-GRD: Provider Endpoint Guards and Safety Boundary", () => {
   });
 
   it("2. request_id is an opaque UUID v4 and distinct across invocations", async () => {
-    const { rejectInactiveProviderEndpoint } =
-      await import("../provider-endpoint-guards");
-
     const res1 = rejectInactiveProviderEndpoint();
     const res2 = rejectInactiveProviderEndpoint();
 

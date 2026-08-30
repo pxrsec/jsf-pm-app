@@ -93,14 +93,18 @@ function MilestoneForm({
   onSuccess,
 }: Omit<MilestoneDialogProps, "isOpen">) {
   const t = useTranslations("calendar");
-  const [values, setValues] = useState<MilestoneFormValues>(() => initialValues(fixedProjectId));
-  const [loadState, setLoadState] = useState<"ready" | "loading" | "unavailable">(
-    mode === "edit" ? "loading" : "ready",
+  const [values, setValues] = useState<MilestoneFormValues>(() =>
+    initialValues(fixedProjectId),
   );
+  const [loadState, setLoadState] = useState<
+    "ready" | "loading" | "unavailable"
+  >(mode === "edit" ? "loading" : "ready");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const projects = Array.from(
-    new Map(targets.map((target) => [target.projectId, target.projectName])).entries(),
+    new Map(
+      targets.map((target) => [target.projectId, target.projectName]),
+    ).entries(),
   ).map(([id, name]) => ({ id, name }));
 
   useEffect(() => {
@@ -128,9 +132,14 @@ function MilestoneForm({
     };
   }, [milestoneId, mode]);
 
-  const selectedTasksFitProject = (projectId: string, taskIds = values.taskIds) =>
+  const selectedTasksFitProject = (
+    projectId: string,
+    taskIds = values.taskIds,
+  ) =>
     taskIds.every((taskId) =>
-      targets.some((target) => target.taskId === taskId && target.projectId === projectId),
+      targets.some(
+        (target) => target.taskId === taskId && target.projectId === projectId,
+      ),
     );
 
   const updateScope = (scope: MilestoneScope) => {
@@ -147,7 +156,8 @@ function MilestoneForm({
     setValues((current) => ({
       ...current,
       scope,
-      projectId: scope === "company" ? "" : fixedProjectId ?? current.projectId,
+      projectId:
+        scope === "company" ? "" : (fixedProjectId ?? current.projectId),
     }));
   };
 
@@ -175,7 +185,11 @@ function MilestoneForm({
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
-    if (!values.targetDate || !values.title.trim() || (values.scope === "project" && !values.projectId)) {
+    if (
+      !values.targetDate ||
+      !values.title.trim() ||
+      (values.scope === "project" && !values.projectId)
+    ) {
       setError(t("form.validationError"));
       return;
     }
@@ -190,14 +204,19 @@ function MilestoneForm({
         colorOverride: values.colorOverride || "chart-1",
         taskIds: values.taskIds,
       };
-      const result = mode === "edit" && milestoneId
-        ? await updateMilestoneAction({ milestoneId, ...payload })
-        : await createMilestoneAction(payload);
+      const result =
+        mode === "edit" && milestoneId
+          ? await updateMilestoneAction({ milestoneId, ...payload })
+          : await createMilestoneAction(payload);
       if (!result.ok) {
-        setError(mode === "edit" ? t("form.updateError") : t("form.createError"));
+        setError(
+          mode === "edit" ? t("form.updateError") : t("form.createError"),
+        );
         return;
       }
-      toast.success(mode === "edit" ? t("states.successUpdate") : t("states.successCreate"));
+      toast.success(
+        mode === "edit" ? t("states.successUpdate") : t("states.successCreate"),
+      );
       onSuccess();
       onClose();
     } catch {
@@ -210,23 +229,48 @@ function MilestoneForm({
   return (
     <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] overflow-y-auto sm:max-w-4xl">
       <DialogHeader className="space-y-2">
-        <DialogTitle>{mode === "edit" ? t("form.editTitle") : t("form.createTitle")}</DialogTitle>
+        <DialogTitle>
+          {mode === "edit" ? t("form.editTitle") : t("form.createTitle")}
+        </DialogTitle>
         <DialogDescription>{t("form.dialogDescription")}</DialogDescription>
       </DialogHeader>
       {loadState === "loading" ? (
         <Loader2 className="mx-auto my-12 size-6 animate-spin" />
       ) : loadState === "unavailable" ? (
-        <p role="alert" className="text-sm text-muted-foreground">{t("detail.unavailable")}</p>
+        <p role="alert" className="text-sm text-muted-foreground">
+          {t("detail.unavailable")}
+        </p>
       ) : (
         <form className="space-y-6 py-1" onSubmit={submit}>
-          {error && <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
+          {error && (
+            <p
+              role="alert"
+              className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+            >
+              {error}
+            </p>
+          )}
           <fieldset className="space-y-3">
-            <legend className="text-sm font-medium text-foreground">{t("form.scopeLabel")}</legend>
+            <legend className="text-sm font-medium text-foreground">
+              {t("form.scopeLabel")}
+            </legend>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {(["project", "company"] as const).map((scope) => (
-                <label key={scope} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border border-input bg-background px-3 py-2 text-sm has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring">
-                  <input type="radio" name="milestone-scope" checked={values.scope === scope} disabled={saving} onChange={() => updateScope(scope)} className="size-4 accent-primary" />
-                  {scope === "project" ? t("scope.projectMilestone") : t("scope.companyMilestone")}
+                <label
+                  key={scope}
+                  className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border border-input bg-background px-3 py-2 text-sm has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring"
+                >
+                  <input
+                    type="radio"
+                    name="milestone-scope"
+                    checked={values.scope === scope}
+                    disabled={saving}
+                    onChange={() => updateScope(scope)}
+                    className="size-4 accent-primary"
+                  />
+                  {scope === "project"
+                    ? t("scope.projectMilestone")
+                    : t("scope.companyMilestone")}
                 </label>
               ))}
             </div>
@@ -235,37 +279,123 @@ function MilestoneForm({
           <div className="grid gap-5 md:grid-cols-2">
             {values.scope === "project" && (
               <div className="space-y-2">
-                <Label htmlFor="milestone-project">{t("form.projectLabel")}</Label>
-                <select id="milestone-project" value={values.projectId} disabled={Boolean(fixedProjectId) || saving} onChange={(event) => updateProject(event.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
+                <Label htmlFor="milestone-project">
+                  {t("form.projectLabel")}
+                </Label>
+                <select
+                  id="milestone-project"
+                  value={values.projectId}
+                  disabled={Boolean(fixedProjectId) || saving}
+                  onChange={(event) => updateProject(event.target.value)}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                >
                   <option value="">{t("form.projectPlaceholder")}</option>
-                  {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="milestone-target-date">{t("form.targetDateLabel")}</Label>
-              <Input id="milestone-target-date" type="date" required value={values.targetDate} onChange={(event) => setValues((current) => ({ ...current, targetDate: event.target.value }))} disabled={saving} />
+              <Label htmlFor="milestone-target-date">
+                {t("form.targetDateLabel")}
+              </Label>
+              <Input
+                id="milestone-target-date"
+                type="date"
+                required
+                value={values.targetDate}
+                onChange={(event) =>
+                  setValues((current) => ({
+                    ...current,
+                    targetDate: event.target.value,
+                  }))
+                }
+                disabled={saving}
+              />
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="milestone-title">{t("form.titleLabel")}</Label>
-              <Input id="milestone-title" required maxLength={160} value={values.title} onChange={(event) => setValues((current) => ({ ...current, title: event.target.value }))} disabled={saving} />
+              <Input
+                id="milestone-title"
+                required
+                maxLength={160}
+                value={values.title}
+                onChange={(event) =>
+                  setValues((current) => ({
+                    ...current,
+                    title: event.target.value,
+                  }))
+                }
+                disabled={saving}
+              />
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="milestone-description">{t("form.descriptionLabel")}</Label>
-              <Textarea id="milestone-description" maxLength={2000} value={values.description} onChange={(event) => setValues((current) => ({ ...current, description: event.target.value }))} disabled={saving} className="min-h-24" />
+              <Label htmlFor="milestone-description">
+                {t("form.descriptionLabel")}
+              </Label>
+              <Textarea
+                id="milestone-description"
+                maxLength={2000}
+                value={values.description}
+                onChange={(event) =>
+                  setValues((current) => ({
+                    ...current,
+                    description: event.target.value,
+                  }))
+                }
+                disabled={saving}
+                className="min-h-24"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="milestone-color">{t("form.colorLabel")}</Label>
-              <select id="milestone-color" value={values.colorOverride} onChange={(event) => setValues((current) => ({ ...current, colorOverride: event.target.value as CalendarColorOverride | "" }))} disabled={saving} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
-                {colors.map((color) => <option key={color} value={color}>{t(`colors.${color}`)}</option>)}
+              <select
+                id="milestone-color"
+                value={values.colorOverride}
+                onChange={(event) =>
+                  setValues((current) => ({
+                    ...current,
+                    colorOverride: event.target.value as
+                      CalendarColorOverride | "",
+                  }))
+                }
+                disabled={saving}
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {colors.map((color) => (
+                  <option key={color} value={color}>
+                    {t(`colors.${color}`)}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
 
-          <MilestoneTaskAssociation scope={values.scope} projectId={values.projectId} targets={targets} selectedTaskIds={values.taskIds} disabled={saving} focusOnMount={focusTasks} onToggleTask={toggleTask} />
+          <MilestoneTaskAssociation
+            scope={values.scope}
+            projectId={values.projectId}
+            targets={targets}
+            selectedTaskIds={values.taskIds}
+            disabled={saving}
+            focusOnMount={focusTasks}
+            onToggleTask={toggleTask}
+          />
           <DialogFooter className="gap-2 border-t border-border pt-5 sm:justify-end">
-            <Button type="button" variant="outline" onClick={onClose} disabled={saving}>{t("actions.cancel")}</Button>
-            <Button type="submit" disabled={saving}>{saving && <Loader2 className="mr-2 size-4 animate-spin" />}{mode === "edit" ? t("actions.saveChanges") : t("actions.save")}</Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={saving}
+            >
+              {t("actions.cancel")}
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving && <Loader2 className="mr-2 size-4 animate-spin" />}
+              {mode === "edit" ? t("actions.saveChanges") : t("actions.save")}
+            </Button>
           </DialogFooter>
         </form>
       )}
