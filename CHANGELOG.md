@@ -1,5 +1,18 @@
 # JSF PM App Development Changelog
 
+## [2026-08-31 @ 14:51]
+
+**🛠 Database & Types: S10 Association Projection Integrity and Invitation List Index**
+
+- **Database Migration (`supabase/migrations/20260831123000_s10-association-projection-integrity-and-invitation-list-index.sql`):**
+  - Applied migration `20260831123000_s10_association_projection_integrity_and_invitation_list_index` cleanly via Supabase MCP tool.
+  - Updated `public.list_project_client_contact_associations` RPC with inner join to `client_contacts` ensuring only active direct contacts (`deleted_at is null` and `client_id is null`) are projected to administration consumers.
+  - Updated `public.set_project_client_contact` RPC ensuring associations require active direct contacts while idempotent disassociations can remediate historical records.
+  - Added partial index `invite_tokens_s10_ordinary_administration_cursor_idx` on `public.invite_tokens(created_at desc, id desc)` filtered by `role in ('client', 'operator')` matching keyset pagination query predicates.
+- **Database Types (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript database type definitions from remote Supabase schema via `generate_typescript_types` MCP tool.
+
+
 ## [2026-08-31 @ 11:54]
 
 **🛠 Database & Types: S10 Association Projection and Direct Contact Enforcement**

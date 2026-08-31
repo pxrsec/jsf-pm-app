@@ -2,13 +2,14 @@
 document_id: S10-01-S10-02-DIRECT-CLIENT-AND-INVITATION-ADMINISTRATION-IMPLEMENTATION-SPEC-03
 sprint_id: S10
 work_items: [S10-01, S10-02]
-status: implementation-ready-after-migration-application
-updated_at: 2026-08-31T11:45:00-06:00
+status: blocked-on-migration-application-and-types-regeneration
+updated_at: 2026-08-31T12:27:26-06:00
 target_environment: jsf-pm-dev
 schema_baseline:
   - supabase/migrations/20260830110000_s10-direct-client-identity-and-invitation-administration.sql
   - supabase/migrations/20260831100000_s10-02-ordinary-invitation-lifecycle.sql
   - supabase/migrations/20260831114500_s10-association-projection-and-direct-contact-enforcement.sql
+  - supabase/migrations/20260831123000_s10-association-projection-integrity-and-invitation-list-index.sql
 generated_types: src/lib/database.types.ts
 ---
 
@@ -54,6 +55,7 @@ Do not implement account deactivation, archive/recycle-bin, permanent deletion, 
 3. A project-contact association alone never satisfies readiness because it does not create an account or project membership.
 4. Association/disassociation uses `set_project_client_contact`; no UI path may compensate for a rejected readiness change by creating/deleting memberships or altering a profile.
 5. Admin and PM are global management authorities. `pm_lead` and `pm_watcher` are project metadata, never a gate for contacts, organizations, invitations, or S10 project-selection controls.
+6. The association projection returns only active direct-contact IDs. Historical rows for a deleted contact or a contact later changed to an organization are never browser-visible, but an Admin/PM may idempotently disassociate any historical association by its exact ID.
 
 ### 2.4 Ordinary invitation invariants
 
@@ -89,7 +91,7 @@ All calls below are typed Supabase RPC calls from `server-only` adapters or Serv
 | `list_client_organizations_for_administration()` | none | `id`, `display_name`, `slug` | Optional organization selector only. |
 | `save_client_contact(...)` | validated complete contact fields | contact UUID | Create or edit one direct/organization contact. Pass every editable field explicitly. |
 | `set_project_client_contact(projectId, contactId, associated)` | exact IDs and Boolean | resulting association Boolean | Associate/disassociate one contact in an authorized client-project context. |
-| `list_project_client_contact_associations(projectId)` | exact client-project UUID | active associated direct-contact UUIDs only | Resolve selected-project association state. |
+| `list_project_client_contact_associations(projectId)` | exact client-project UUID | active associated direct-contact UUIDs only; excludes deleted contacts and contacts now linked to an organization | Resolve selected-project association state. |
 
 ### 4.2 Model A invitation lifecycle
 
@@ -235,6 +237,7 @@ Do not add a route or navigation entry for Operator, Client, or unauthenticated 
 - Associate calls `set_project_client_contact(projectId, contactId, true)`; disassociate calls the same RPC with `false`.
 - Show association controls only for direct contacts (`client_id IS NULL`). Organization contacts use organization-match readiness and must neither show nor invoke association controls.
 - Do not automatically associate all organization contacts to a project. Organization-contact readiness remains organization-match based.
+- Do not render an association control from an ID alone. The association projection is already filtered to active direct contacts, and the UI must intersect it with the authorized current directory before rendering a selected state.
 
 ## 8. Invitation UI behavior
 
@@ -292,6 +295,7 @@ Use real links for navigation and buttons for mutations/copy. Do not nest contro
 ```text
 supabase/migrations/20260831100000_s10-02-ordinary-invitation-lifecycle.sql
 supabase/migrations/20260831114500_s10-association-projection-and-direct-contact-enforcement.sql
+supabase/migrations/20260831123000_s10-association-projection-integrity-and-invitation-list-index.sql
 src/lib/database.types.ts                           # regenerated artifact; never hand-edit
 src/lib/clients/schemas.ts
 src/lib/clients/queries.ts
@@ -325,5 +329,7 @@ Existing invitation completion files are modified only when necessary to preserv
 8. Verify Operator, Client, and unauthenticated callers receive no directory or lifecycle data and cannot execute management actions.
 9. Preserve existing valid/mismatched/expired/revoked invitation acceptance behavior and no-enumeration response shape.
 10. Verify added English and Mexican Spanish keys are structurally present and interactive paths are keyboard usable.
+11. Verify `list_project_client_contact_associations` returns no ID for a soft-deleted contact or a contact later changed from direct to organization, while `set_project_client_contact(projectId, historicalContactId, false)` remains an idempotent cleanup command for an authorized Admin/PM.
+12. Verify the new invitation-list cursor index is present after migration application and contains only `created_at` and `id` as indexed key columns.
 
 No provider activation, external-delivery verification, broad suite, E2E suite, or production action is part of this work.
