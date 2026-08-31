@@ -186,7 +186,7 @@ export type Database = {
       }
       client_contacts: {
         Row: {
-          client_id: string
+          client_id: string | null
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -201,7 +201,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
-          client_id: string
+          client_id?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -216,7 +216,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
-          client_id?: string
+          client_id?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -726,6 +726,7 @@ export type Database = {
           accepted_at: string | null
           accepted_by: string | null
           client_id: string | null
+          contact_id: string | null
           created_at: string
           created_by: string
           email: string
@@ -741,6 +742,7 @@ export type Database = {
           accepted_at?: string | null
           accepted_by?: string | null
           client_id?: string | null
+          contact_id?: string | null
           created_at?: string
           created_by: string
           email: string
@@ -756,6 +758,7 @@ export type Database = {
           accepted_at?: string | null
           accepted_by?: string | null
           client_id?: string | null
+          contact_id?: string | null
           created_at?: string
           created_by?: string
           email?: string
@@ -773,6 +776,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invite_tokens_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "client_contacts"
             referencedColumns: ["id"]
           },
           {
@@ -1129,6 +1139,65 @@ export type Database = {
           whatsapp_opt_in?: boolean
         }
         Relationships: []
+      }
+      project_client_contacts: {
+        Row: {
+          contact_id: string
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          id: string
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          created_by: string
+          deleted_at?: string | null
+          id?: string
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          id?: string
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_client_contacts_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "client_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_client_contacts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "client_project_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_client_contacts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "project_completion_cycles_view"
+            referencedColumns: ["project_id"]
+          },
+          {
+            foreignKeyName: "project_client_contacts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_members: {
         Row: {
@@ -1976,6 +2045,29 @@ export type Database = {
           whatsapp_opt_in: boolean
         }[]
       }
+      list_client_contacts_for_administration: {
+        Args: never
+        Returns: {
+          client_id: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          is_primary: boolean
+          job_title: string
+          phone_e164: string
+          profile_id: string
+          updated_at: string
+        }[]
+      }
+      list_client_organizations_for_administration: {
+        Args: never
+        Returns: {
+          display_name: string
+          id: string
+          slug: string
+        }[]
+      }
       list_finalized_production_archive: {
         Args: {
           p_before_deliverable_id?: string
@@ -2234,6 +2326,26 @@ export type Database = {
           p_stage: Database["public"]["Enums"]["review_stage"]
         }
         Returns: Json
+      }
+      save_client_contact: {
+        Args: {
+          p_client_id?: string
+          p_contact_id: string
+          p_email: string
+          p_full_name: string
+          p_is_primary?: boolean
+          p_job_title?: string
+          p_phone_e164?: string
+        }
+        Returns: string
+      }
+      set_project_client_contact: {
+        Args: {
+          p_associated: boolean
+          p_contact_id: string
+          p_project_id: string
+        }
+        Returns: boolean
       }
       soft_delete_entity: {
         Args: {
