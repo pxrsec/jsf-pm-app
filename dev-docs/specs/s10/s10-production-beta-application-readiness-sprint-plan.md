@@ -1,110 +1,144 @@
 ---
-document_id: S10-PRODUCTION-BETA-APPLICATION-READINESS-SPRINT-PLAN-01
+document_id: S10-PRODUCTION-BETA-APPLICATION-READINESS-SPRINT-PLAN-02
 sprint_id: S10
 epic_id: E10
-status: draft-owner-directed-execution-plan
+status: active-owner-directed-sprint-plan
 created_at: 2026-08-30T00:00:00-06:00
+updated_at: 2026-08-31T00:00:00-06:00
 branch: feature/production-readiness-pt-1
 target_environment: jsf-pm-dev
 ---
 
 # Sprint 10 — Production-Beta Application Readiness
 
+## Purpose and execution boundary
+
+This plan is the complete **S10 work-item breakdown and sequencing authority**. It names every work item, its deliverable, dependency, acceptance outcome, and stop condition. It is not a substitute for a work-item implementation specification.
+
+Only `s10-01-production-readiness-foundation-and-task-detail-implementation-spec.md` currently authorizes implementation planning for **S10-01 and S10-02**. It must not be read as authority for S10-03 through S10-06. Those work items remain planned and blocked pending their own accepted implementation specifications and stated schema gates.
+
 ## Sprint goal
 
-Close the application-level beta-operability gaps before any `jsf-pm-prod` migration or provider setup. This is one integrated sprint, but execution is ordered by database authority and independently testable vertical slices.
+Close the application-level beta-operability gaps in `jsf-pm-dev` without creating a production project or activating an external provider. Execute in dependency order, preserve the Project Owner's applied-M01/type provenance, and keep provider, production, legal-approval, and infrastructure work deferred.
 
 ## Entry conditions
 
 - ADR-024 and ADR-025 remain controlling.
-- The Project Owner has confirmed: free tiers only; Hostinger is registrar; Cloudflare will be authoritative DNS later; Rubén/Pxrsec is sole recovery custodian; T1–T3 are deferred; Supabase Auth free-tier support for password/email change notices is accepted; providers will be implemented later.
-- No provider console, secret, DNS, production project, billing, or live delivery action is in the sprint.
+- Target environment is `jsf-pm-dev`; no production environment is in scope.
+- M01 has been applied and `src/lib/database.types.ts` refreshed from the resulting schema.
+- No provider console, secret, DNS, billing, external delivery, scheduling, public signup, or production action is authorized.
 
-## Ordered sprint backlog
+## Ordered backlog
 
 ### S10-01 — Direct client and optional organization authority foundation
 
-**Deliverable:** M01 (applied to `jsf-pm-dev`; types regenerated) plus repository-local contract implementation for client contacts, optional organizations, direct-client readiness, project/member assignment, and global Admin/PM authority.
+**Objective:** Establish direct-contact identity, optional-organization, project-readiness, and global Admin/PM authority behavior required for S10-02.
 
-**Required behavior:**
-- A contact is a person record, may have no account and no organization, and remains meaningful after account deactivation or organization change. M01 must make the current `client_contacts.client_id NOT NULL` column nullable, preserve organization-contact foreign-key/index behavior, and provide direct-contact-safe uniqueness.
-- An organization is optional grouping; association never grants visibility by itself.
-- Direct contact/user or organization-associated contact/user satisfies client readiness where a client-facing workflow requires readiness. Planning remains possible without either where ADR-025 permits it.
-- Admin/PM can globally administer contacts/organizations and ordinary `operator|client` invites. PM authority cannot be based on `project_members` membership. Privileged Admin/PM provisioning remains manual/audited; this sprint must not widen the existing `invite_tokens` role ceiling.
+**Deliverable:** Repository implementation against applied M01 and regenerated declarations, including direct-contact-aware client/project adapters and replacement of organization-universal assumptions.
 
-**Acceptance evidence:** migration/RLS negative cases; Admin/PM direct-contact creation/edit/assignment; direct client invitation; later organization association; denied Operator/Client access; i18n parity.
+**Dependency:** M01 applied to `jsf-pm-dev`. Do not edit the applied migration.
+
+**Required outcome:**
+
+- A contact remains a person record and may have neither organization nor account.
+- Organization association is optional and never grants project membership or visibility by itself.
+- Direct contact/user or matching organization contact/user can satisfy required client readiness; organization is not universal.
+- Active Admin/PM management authority is global. `pm_lead` and `pm_watcher` remain project metadata, not PM authorization gates.
+- Operator/Client cannot enumerate contacts, organizations, raw invitation state, or profile/email directory data.
+- Existing organization-only query assumptions are replaced/supplemented with M01-safe server adapters.
+
+**Acceptance outcome:** Admin and PM can create/edit direct contacts, later associate an organization where appropriate, associate an eligible contact to a client project without accidentally adding membership, and retain global management behavior. Operator/Client are denied directory access.
+
+**Stop conditions:** Any implementation that requires an organization universally, treats association as access, uses membership capacity to deny PM authority, bypasses M01 commands/projections, or exposes contact/profile data is out of scope and requires a new review.
 
 ### S10-02 — Client-contact and invitation administration
 
-**Deliverable:** discoverable Admin and PM client administration plus invitation management (create, copy link, resend, revoke, expiry/pending state) for `operator` and `client` only.
+**Objective:** Build the Admin/PM operational UI and server boundary that consume the S10-01/M01 foundation.
 
-**Route intent:** role-safe equivalent Admin/PM entry points, with no public signup and no ordinary privileged invite route. Exact paths must follow existing locale routing and navigation model.
+**Deliverable:** Discoverable locale-safe Admin and PM administration surfaces for contacts, optional organization association, project-contact association, and the ordinary operator/client invitation lifecycle.
 
-**Acceptance evidence:** Admin and PM global journeys; contact without organization; invite lifecycle; opaque token flow; denied role/access paths; no raw email/token disclosure in general UI/logs.
+**Dependency:** S10-01/M01 contract plus a reviewed/applied S10-02 invitation-lifecycle migration and refreshed generated declarations. M01 exposes acceptance but does not expose the create/list/resend/revoke/copy lifecycle contract required by this work item.
+
+**Required outcome:**
+
+- Admin and PM receive equivalent global administration capability through the established role-aware navigation and locale routing model.
+- Contact management supports create/edit and optional organization association without treating a contact as an account or membership.
+- Invitation management supports client/operator only: create, copy join link, resend, revoke, and current pending/expired/revoked/accepted state.
+- Token values are opaque. No general UI, client log, error, telemetry payload, or audit display exposes raw token hashes, full join links beyond an explicitly requested copy flow, or uninvited contact email/profile data.
+- Invitation acceptance remains the trusted M01 path: matching authenticated email, unexpired/unrevoked/single-use token, exact eligible client-contact binding for client invitations, and project membership only when the invite explicitly carries a project.
+- No public signup and no ordinary Admin/PM invitation route are added.
+
+**Acceptance outcome:** Admin and PM can complete the same contact and invitation journeys; direct contacts without organizations are supported; operator/client/non-authenticated paths fail closed; lifecycle changes are reflected safely and accessibly.
+
+**Stop conditions:** Any attempt to build browser base-table writes, client-side authorization, arbitrary invitation role assignment, raw-token storage/logging, public registration, provider dispatch, or implicit project membership/access is out of scope.
 
 ### S10-03 — Recoverable lifecycle and Admin-only permanent deletion
 
-**Deliverable:** project-local operational recycle bin and cross-layer lifecycle reconciliation.
+**Objective:** Reconcile archive/restore, operational recycle-bin, and narrow permanent-deletion behavior.
 
-**Required behavior:**
-- Archive/restore applies to project/task/deliverable/milestone. Archive removes records from active work lists, Kanban, calendar feeds, assignment selectors, normal reporting, and notification affordances.
-- Admin/PM can restore only through trusted dependency-aware paths.
-- Admin-only permanent deletion applies only to project/task/deliverable/milestone. It is a distinct trusted command, not `soft_delete_entity` relabeling.
-- Localized confirmation must state irreversibility, offer Archive instead, and never use browser-native confirmation.
+**Deliverable:** M03 plus application controls for projects, tasks, deliverables, and milestones.
 
-**Acceptance evidence:** role × entity matrix; active-surface exclusion; restore dependency handling; PM permanent-delete denial; audit rows; no deletion scope expansion.
+**Dependency:** Reviewed/applied M03 and refreshed generated declarations; a separate accepted S10-03 implementation specification.
+
+**Required outcome:** Archive/restore is recoverable for Admin/PM; archived records disappear from active lists, Kanban, calendar, selectors, normal reports, and notification affordances. Admin-only permanent deletion is a separate dependency-aware command limited to the four accepted entity types, with localized irreversible confirmation and audit evidence.
+
+**Acceptance outcome:** Entity/role matrix, restore dependencies, active-surface exclusion, PM permanent-delete denial, and no expansion to users/contacts/history.
 
 ### S10-04 — Account, access hygiene, and bug triage
 
-**Deliverable:** `<L>/cuenta` (or accepted role-neutral equivalent), user-access management for Admin/PM, stale-access reminder state, authenticated problem reporting, and triage.
+**Objective:** Deliver bounded self-account control, safe access deactivation, stale-access reminder state, and authenticated bug reporting/triage.
 
-**Required behavior:**
-- Users manage display name, locale, timezone, phone, and optional product-email preference for themselves only; role remains display-only. Supabase Auth owns password/email change flows.
-- User removal is deactivation/revocation, preserves historical evidence, and is not permanent deletion. Trusted deactivation/re-activation prevents self-lockout and loss of the last active Admin/PM management-capable account, locks the target record, revokes relevant pending invites, and audits actor/reason/target without token material.
-- One Admin/PM reminder after 45 consecutive days with neither successful authentication nor qualifying active project/task/deliverable assignment/membership; auth or qualifying membership resets the period; no automatic deactivation.
-- Every active role submits a bounded report; Admin/PM see and transition `open`, `triaged`, `resolved`, `dismissed` reports.
+**Deliverable:** M04 plus account, administrative access, reminder-state, and bug-report surfaces.
 
-**Acceptance evidence:** own-account boundaries; security-notice preference exception; deactivation/history; exact 45-day state transitions/deduplication; report/triage authorization; no sensitive error leakage.
+**Dependency:** Reviewed/applied M04 and refreshed generated declarations; a separate accepted S10-04 implementation specification.
+
+**Required outcome:** Users edit only bounded personal fields; role and activation stay protected. Admin/PM deactivation/re-activation preserves history, prevents self-lockout/last-management-account loss, revokes relevant pending invites, and audits safely. One stale-access reminder eligibility period begins at 45 consecutive inactive days and resets only on qualifying auth or active assignment/membership. Authenticated users submit bounded reports; Admin/PM triage `open|triaged|resolved|dismissed`.
+
+**Acceptance outcome:** Self-only account boundary, no permanent user deletion, exact reminder reset/deduplication, safe deactivation, and role-safe report/triage behavior.
 
 ### S10-05 — Public legal surface
 
-**Deliverable:** public localized privacy/terms routes, footer on sign-in/recovery/invitation/public surfaces, sitemap entries, and deliberate robots policy.
+**Objective:** Establish stable public legal locations and legal navigation without falsely claiming legal approval.
 
-**Boundary:** legal text remains draft/pending stakeholder review. UI must not imply legal approval. This sprint builds stable public locations and navigation only.
+**Deliverable:** Localized privacy/terms routes, legal footer on public/auth/invitation surfaces, sitemap/robots reconciliation.
 
-**Acceptance evidence:** unauthenticated routes, locale parity, footer reachability, sitemap/robots source inspection, no authenticated-data leak.
+**Dependency:** Separate accepted S10-05 implementation specification. No schema migration expected.
+
+**Required outcome:** Public unauthenticated routes exist for both locales; legal links are reachable from sign-in, recovery, invitation, public landing, and legal pages; protected navigation is not exposed. Copy remains visibly draft/pending stakeholder approval.
+
+**Acceptance outcome:** Locale parity, footer reachability, sitemap/robots inspection, and no protected-data leak.
 
 ### S10-06 — Task detail, deliverable context, and calendar navigation
 
-**Deliverable:** correct task-detail information architecture and the confirmed calendar defect repair.
+**Objective:** Repair task-detail information architecture and the calendar task-navigation regression without weakening task/deliverable authority.
 
-**Required behavior:**
-- Task sheet replaces the boolean deliverable flag with an authorized associated-deliverables section: name, status/current version, latest safe URL presence, and context action.
-- Authorized link correction uses an auditable version/revision path. Historical version URLs are immutable; “edit link” must create a valid new/current version according to the existing deliverable workflow, not rewrite past evidence.
-- Add dedicated Admin and PM task detail routes under the already authorized project workspace (`/admin/proyectos/[id]/tareas/[task-id]`, `/pm/proyectos/[id]/tareas/[task-id]` unless repository route review identifies an established equivalent). Breadcrumbs return to the project task list/Kanban while preserving locale and a valid `tab=tasks` workspace return.
-- Operator and Client retain their existing task-detail routes and own-work/client scope. Do not grant them manager routes.
-- Replace the milestone dialog's current link to `?tab=tasks` with a role-safe task-detail destination. The current shell initializes its active tab from an optional raw query value; the implementation must normalize supported tabs and never mount a calendar panel with absent calendar data after navigation.
+**Deliverable:** Role-safe associated-deliverable context in task detail, dedicated manager task routes, immutable link-correction path, and corrected milestone task navigation.
 
-**Acceptance evidence:** every role's authorized route works; unauthorized/unknown/deleted task gives the existing safe absence/not-found treatment without resource leakage; a milestone task click reaches task detail without an infinite loader; task sheet/list/kanban all expose an accessible “open full details” affordance; i18n and mobile layouts remain usable.
+**Dependency:** Inspect M01–M04 read/RLS contracts. Create/apply M05 only if a narrow manager detail projection is necessary. Separate accepted S10-06 implementation specification required.
+
+**Required outcome:** Authorized task views show real associated deliverables, current version metadata, and safe actions. Manager routes preserve locale and valid task-workspace return. Operator and Client keep current scoped routes. Calendar tabs are normalized server-side and synchronize client state; milestone task links target a role-safe task detail instead of an ambiguous workspace state. Historic deliverable URLs are never mutated in place.
+
+**Acceptance outcome:** Authorized role journeys, safe absence for inaccessible/deleted tasks, no calendar infinite-loader path, accessible task-detail affordance, and preserved immutable version evidence.
 
 ## Migration and implementation order
 
-1. M01 was authored/reviewed, applied by the Project Owner to `jsf-pm-dev`, and followed by unchanged generated-type refresh. The pre-application correction replaces unsupported `min(c.id)` with `min(c.id::text)::uuid` in the unambiguous legacy-contact backfill. Implement S10-01/S10-02 against the refreshed declarations; do not edit the applied migration.
-2. Author/review M03 and M04. Apply in order; regenerate types. Implement S10-03/S10-04.
-3. Confirm whether a narrow manager task-detail projection is expressible using the applied contracts. Author M05 only if needed; otherwise document no-migration evidence for S10-06.
-4. Implement S10-05/S10-06 around the applied authority model.
-5. Run focused verification and factual closeout. Do not run production/provider procedures.
+1. Implement S10-01 and S10-02 only from their bounded accepted specification, against M01 and the refreshed generated declarations. M01 application evidence: `20260830110000_s10_direct_client_identity_and_invitation_administration` on `jsf-pm-dev`; the pre-application legacy backfill correction was `min(c.id::text)::uuid` because PostgreSQL has no `min(uuid)` aggregate.
+2. Author, review, apply, and regenerate after M03; then create/execute only an accepted S10-03 specification.
+3. Author, review, apply, and regenerate after M04; then create/execute only an accepted S10-04 specification.
+4. S10-05 waits for its own bounded implementation specification; it has no schema dependency.
+5. Inspect M01–M04 for S10-06. Author M05 only if a narrow authorized projection is genuinely required; then create/execute only an accepted S10-06 specification.
+6. Record focused verification and truthful closeout evidence. Do not run provider or production procedures.
 
-## Required verification
+## Verification policy
 
-Do not create exhaustive TDD, coverage, role-matrix, fixture, or broad regression suites for S10. Preserve an existing controlling test only if the implementation changes its contract. For each implemented slice, add at most the smallest focused test that proves a newly introduced trusted boundary or fixes a reproduced regression; do not duplicate equivalent cases across roles.
+Use the smallest focused proof for each changed trusted boundary or reproduced regression. Preserve an existing controlling test when its contract changes. Do not create exhaustive TDD, coverage, fixture, role-matrix, E2E, or broad regression suites merely for S10.
 
-For S10-01, repository review and Project Owner-provided Supabase MCP evidence confirm M01 application and refreshed generated types in `jsf-pm-dev`. After application code exists, run only `npm run lint` and `npm run typecheck`; run a single affected Vitest test only when one is added for a concrete new command/route regression. `npm run build` is deferred until integrated route work is complete. Mock/client tests do not prove deployed RLS.
+For application slices, run `npm run lint` and `npm run typecheck`. Run one affected Vitest test only when a focused test was added or changed. Defer `npm run build` until integrated route work is complete. Client/mock evidence does not prove deployed RLS; only the Project Owner's application/type-generation evidence establishes M01 remote provenance.
 
 ## Sprint exit criteria
 
-1. S10-01 through S10-06 acceptance criteria pass with factual evidence.
-2. All applied migration IDs and regenerated-type provenance are recorded.
-3. No provider is activated and `EXTERNAL_DELIVERY_MODE` remains disabled/fail-closed.
-4. No production project or DNS change occurs.
-5. Open legal text/signoff, T1–T3 designation, recovery drill execution, and free-tier console capture remain explicitly deferred operational tasks, not concealed as sprint failures.
+1. Each S10-01 through S10-06 work item has its own accepted implementation scope and factual acceptance evidence.
+2. Applied migration IDs and regenerated-type provenance are recorded accurately.
+3. `EXTERNAL_DELIVERY_MODE` remains disabled/fail-closed; no provider is activated.
+4. No production project, production migration, or DNS change occurs.
+5. Legal signoff, recovery-drill execution, provider activation, and infrastructure-console work remain explicit deferred operational work, not concealed as sprint failures.

@@ -1935,6 +1935,21 @@ export type Database = {
           title: string
         }[]
       }
+      create_ordinary_invitation: {
+        Args: {
+          p_contact_id?: string
+          p_expires_in_hours?: number
+          p_project_id?: string
+          p_recipient_email?: string
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: {
+          expires_at: string
+          invitation_id: string
+          invitation_role: Database["public"]["Enums"]["app_role"]
+          invitation_token: string
+        }[]
+      }
       create_task_with_deliverables: {
         Args: {
           p_assignee_id: string
@@ -2146,6 +2161,26 @@ export type Database = {
           title: string
         }[]
       }
+      list_ordinary_invitation_administration: {
+        Args: {
+          p_before_created_at?: string
+          p_before_invitation_id?: string
+          p_limit?: number
+        }
+        Returns: {
+          accepted_at: string
+          contact_id: string
+          created_at: string
+          expires_at: string
+          invitation_id: string
+          project_id: string
+          project_name: string
+          recipient_label: string
+          revoked_at: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["invite_status"]
+        }[]
+      }
       list_project_milestone_summaries: {
         Args: { p_project_id: string }
         Returns: {
@@ -2326,6 +2361,23 @@ export type Database = {
           p_stage: Database["public"]["Enums"]["review_stage"]
         }
         Returns: Json
+      }
+      revoke_ordinary_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: {
+          changed: boolean
+          invitation_id: string
+          invitation_status: Database["public"]["Enums"]["invite_status"]
+        }[]
+      }
+      rotate_ordinary_invitation: {
+        Args: { p_expires_in_hours?: number; p_invitation_id: string }
+        Returns: {
+          expires_at: string
+          invitation_id: string
+          invitation_role: Database["public"]["Enums"]["app_role"]
+          invitation_token: string
+        }[]
       }
       save_client_contact: {
         Args: {

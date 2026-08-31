@@ -1,93 +1,95 @@
 ---
-document_id: S10-E10-PRODUCTION-BETA-APPLICATION-READINESS-EPIC-01
+document_id: S10-E10-PRODUCTION-BETA-APPLICATION-READINESS-EPIC-02
 epic_id: E10
 sprint_id: S10
-status: draft-owner-directed-implementation-baseline
+status: active-owner-directed-epic-baseline
 created_at: 2026-08-30T00:00:00-06:00
+updated_at: 2026-08-31T00:00:00-06:00
 branch: feature/production-readiness-pt-1
 target_environment: jsf-pm-dev
 ---
 
 # E10 — Production-Beta Application Readiness
 
+## Document purpose and boundary
+
+This is the **epic-level scope and outcome authority** for all S10 work items. It defines the complete production-beta application-readiness outcome, portfolio sequencing, cross-item dependencies, and epic exit conditions. It is not an implementation specification and must not be used to infer implementation scope for a work item that has no accepted work-item specification.
+
+The repository-local implementation specification `s10-01-production-readiness-foundation-and-task-detail-implementation-spec.md` is deliberately limited to **S10-01 and S10-02 only**. S10-03 through S10-06 require their own accepted specifications and their stated prerequisites before implementation begins.
+
 ## Objective
 
-Deliver the missing application controls required before creating `jsf-pm-prod` or activating any external provider. The result is a role-safe, localized internal beta capability for Admin, PM, Operator, and invited Client users, using in-app notifications only.
+Deliver the missing application controls required before creating `jsf-pm-prod` or activating an external provider. The outcome is a role-safe, localized internal beta capability for Admin, PM, Operator, and invited Client users. In-app application behavior may be implemented; external provider delivery remains fail-closed.
 
-This epic implements the ADR-025 product decisions. It does **not** create a production Supabase project, configure Vercel/Cloudflare/Hostinger, add secrets, send email, enable Sentry/Resend/QStash, schedule workflows, or activate WhatsApp.
+## Controlling decisions
 
-## Authority and fixed decisions
+1. Direct Project Owner direction and ADR-025 control product, role, identity, lifecycle, and beta-operability policy.
+2. ADR-024 retains the fail-closed deferred-provider boundary.
+3. `profiles.role` is application authority. Active Admin and active PM have global management authority. `pm_lead` and `pm_watcher` are project-membership capacities only; they never narrow global PM authority.
+4. A client contact, client organization, authenticated account, and project membership are different entities/relationships. A contact may exist without an organization or account. A direct contact may later gain an account or organization association. Association alone never grants membership or access.
+5. Archive is recoverable. Admin and PM archive/restore projects, tasks, deliverables, and milestones. Only Admin may permanently delete those four entity types. Users, profiles, contacts, organizations, invitations, access history, audit history, deliverable versions, and feedback are never permanently deleted in E10.
+6. Providers remain free-tier-only and inactive. No provider activation, external dispatch, WhatsApp, scheduler, production deployment, DNS, billing, or secret-management work belongs to this epic.
 
-1. Direct Project Owner direction and ADR-025 control product/role/lifecycle policy.
-2. ADR-024 retains the fail-closed provider boundary.
-3. `profiles.role` is application authority. Active Admin and active PM have the accepted global management authority; `pm_lead` and `pm_watcher` remain project-membership capacities and never narrow global PM authority.
-4. Client organizations are optional. A contact may exist without an organization or account; a client account may later link to a direct contact. No universal organization prerequisite is permitted for contact capture, invitation, project planning, or authorized assignment.
-5. Archive is recoverable. Admin and PM archive/restore projects, tasks, deliverables, and milestones. Only Admin may permanently delete those four entity types; users, contacts, organizations, invitations, and access records are deactivated/revoked, never permanently deleted in this beta.
-6. All providers remain free-tier-only. Provider activation is outside S10. WhatsApp remains explicitly deferred.
+## Work-item map
 
-## S10 scope
+| Work item | Required outcome | Dependency / readiness gate | Explicit implementation boundary |
+| --- | --- | --- | --- |
+| S10-01 | Direct-client and optional-organization authority/readiness foundation | M01 applied to `jsf-pm-dev`; generated declarations refreshed | Implement only through narrow trusted commands/projections and role-safe server adapters. |
+| S10-02 | Discoverable Admin/PM client-contact and ordinary invitation administration | S10-01/M01 plus a reviewed S10-02 invitation-lifecycle migration and regenerated declarations | Client/operator invitations only; create, list, copy-link, resend, revoke, pending/expiry state; no public signup or privileged invitation. |
+| S10-03 | Project operational recycle bin, archive/restore, Admin-only permanent deletion | Reviewed/applied M03; regenerated declarations | Only projects, tasks, deliverables, milestones; lifecycle behavior must be reconciled across active queries and UI. |
+| S10-04 | Self account settings, access deactivation, stale-access state, bug intake/triage | Reviewed/applied M04; regenerated declarations | No permanent user deletion; no automated provider delivery. |
+| S10-05 | Public privacy/terms locations, legal footer, sitemap/robots reconciliation | No migration expected | Legal copy remains visibly draft until stakeholder approval; do not imply legal approval. |
+| S10-06 | Role-safe task-detail correction, associated deliverable context, calendar task-navigation repair | Inspect M01–M04 contracts; author/apply M05 only if required; regenerated declarations if M05 exists | Preserve immutable deliverable versions and existing Operator/Client task authority. |
 
-| Work item | Outcome | Database change |
-| --- | --- | --- |
-| S10-01 | Direct-client/optional-organization data, readiness, and Admin/PM authority reconciliation | M01 applied to `jsf-pm-dev`; generated types refreshed |
-| S10-02 | Admin/PM client-contact directory and ordinary operator/client invitation administration | M01 |
-| S10-03 | Project operational recycle bin; archive/restore; Admin-only permanent deletion | Required forward migration M03 |
-| S10-04 | Account settings, user-access deactivation, stale-access reminder state, authenticated bug-report intake and Admin/PM triage | Required forward migration M04 |
-| S10-05 | Public privacy/terms routes, public/auth legal footer, sitemap/robots reconciliation | No schema migration expected |
-| S10-06 | Task detail correction: associated deliverables with latest version/link; dedicated manager task pages; calendar task navigation fix | M05 only if role-safe manager task-detail projection cannot be built from M01–M04 contracts; no speculative migration |
-
-## Target role/capability matrix
+## Role and capability matrix
 
 | Capability | Admin | PM | Operator | Client |
 | --- | --- | --- | --- | --- |
-| Client/contact directory; direct contact without organization | Global manage | Global manage | No | No |
-| Create/resend/revoke/copy ordinary operator/client invitation | Yes | Yes | No | No |
-| Privileged Admin/PM provisioning | Manual audited only | No | No | No |
-| Archive/restore project/task/deliverable/milestone | Yes | Yes | No | No |
-| Permanent delete four permitted entity types | Yes | No | No | No |
-| Deactivate/revoke user access | Yes | Yes | Self only: no | Self only: no |
-| Account settings / problem report | Own account | Own account | Own account | Own account |
+| Global client/contact and organization administration | Yes | Yes | No | No |
+| Direct contact capture and project association | Yes | Yes | No | No |
+| Ordinary client/operator invitation lifecycle | Yes | Yes | No | No |
+| Privileged Admin/PM provisioning | Manual audited process only | No | No | No |
+| Archive/restore permitted operational entities | Yes | Yes | No | No |
+| Permanent delete project/task/deliverable/milestone | Yes | No | No | No |
+| Self account settings and problem report | Own account | Own account | Own account | Own account |
+| Access deactivation/re-activation | Yes | Yes | No | No |
 | Bug-report triage | Yes | Yes | Submit only | Submit only |
-| Dedicated task detail | Any authorized project task | Any authorized project task | Own assigned task only | Own authorized client task only |
+| Dedicated task detail | Authorized project task | Authorized project task | Own assigned task only | Own authorized client task only |
 
-## Required forward migration set
+## Migration and artifact sequence
 
-The Project Owner applies reviewed, append-only migrations to `jsf-pm-dev` in filename order before dependent application work. Regenerate and commit `src/lib/database.types.ts` unchanged after each applied database batch. Never edit an applied migration.
+1. **M01 — `20260830110000_s10-direct-client-identity-and-invitation-administration.sql`:** establishes the S10-01/S10-02 data and trusted-command foundation. It was applied by the Project Owner to `jsf-pm-dev` as `20260830110000_s10_direct_client_identity_and_invitation_administration`; `src/lib/database.types.ts` was regenerated from the applied schema. The pre-application source correction used `min(c.id::text)::uuid` for the legacy-contact backfill because PostgreSQL has no `min(uuid)` aggregate. Never edit the applied migration.
+2. **M03 — `20260830111000_s10-archive-recycle-bin-and-admin-permanent-deletion.sql`:** must be reviewed/applied before S10-03 database-dependent implementation.
+3. **M04 — `20260830112000_s10-account-access-hygiene-and-bug-triage.sql`:** must be reviewed/applied before S10-04 database-dependent implementation.
+4. **M05 — `20260830113000_s10-manager-task-detail-projection.sql`:** conditional. Create only after inspecting M01–M04 and proving the current role-safe contracts cannot return the S10-06 manager-detail shape.
 
-1. `20260830110000_s10-direct-client-identity-and-invitation-administration.sql` (M01)
-   - Make `client_contacts.client_id` nullable while preserving the foreign key/index behavior for organization contacts; add a direct-contact-safe uniqueness rule and replace organization-universal readiness enforcement with direct-contact-or-organization-associated contact/user semantics.
-   - Add narrowly scoped Admin/PM trusted commands and role-safe projections for contacts, optional organizations, project association, and ordinary invite lifecycle.
-   - Preserve opaque, expiring, revocable, single-use invitation tokens and non-enumeration. Replace the current `(client_id,email)`-only acceptance binding so a trusted direct contact can link without an organization; ordinary invitation roles remain `operator|client` only.
-   - **Applied evidence (2026-08-31):** applied to `jsf-pm-dev` remote project `ccaxxmqighpffgpaxjwg` as `20260830110000_s10_direct_client_identity_and_invitation_administration`; `src/lib/database.types.ts` was regenerated from the resulting schema. The applied source uses `min(c.id::text)::uuid` in the legacy-invitation backfill because PostgreSQL has no `min(uuid)` aggregate. This is an equivalent source correction made before successful application, not a post-application edit.
-2. `20260830111000_s10-archive-recycle-bin-and-admin-permanent-deletion.sql` (M03)
-   - Reconcile trusted archive/restore authority for projects, tasks, deliverables, milestones; active-list/calendar/selector/report exclusion; project recycle-bin projection; dependency-safe Admin-only permanent-delete command; and audit events.
-3. `20260830112000_s10-account-access-hygiene-and-bug-triage.sql` (M04)
-   - Add bounded account-update command/projection, access-deactivation audit, stale-access reminder decision/delivery state, immutable/append-only bug reports, and role-safe Admin/PM triage commands/projections. Deactivation/re-activation commands must lock target rows, prevent self-lockout and loss of the last active management-capable account, revoke pending invites as applicable, and audit actor/reason/target without raw tokens.
-4. `20260830113000_s10-manager-task-detail-projection.sql` (M05, conditional)
-   - Create only if existing RLS/read contracts cannot return a narrow authorized manager task-detail projection with associated deliverable/version metadata. It must not expose arbitrary task/project data or alter immutable deliverable-version history.
+## Epic-wide invariants
+
+- Browser code does not receive raw invitation-token hashes, arbitrary contact-directory data, secrets, or privileged table access.
+- Role-safe server adapters and `SECURITY DEFINER` commands must validate the authenticated actor independently of navigation/UI state.
+- Invitation tokens remain opaque, hashed, expiring, revocable, and single-use. Ordinary roles are exactly `client` or `operator`.
+- A direct contact or organization-associated contact can satisfy client readiness where needed; no organization is a universal prerequisite for contact capture, invitation, planning, or authorized assignment.
+- A client-contact association does not create `project_members` membership and does not grant project visibility.
+- Immutable historical records remain immutable. In particular, correcting a deliverable link creates/uses an auditable current version; it never overwrites historical `deliverable_versions.submission_url`.
+- Every visible string is localized through the established English and Spanish message catalogs. Routes preserve the locale model.
 
 ## Epic acceptance criteria
 
-1. Every S10 database change is a reviewed forward migration with exact owner/grant/search-path/RLS evidence and regenerated types.
-2. A direct client contact can be created, managed, assigned, and invited without an organization; later organization association preserves history and does not broaden visibility.
-3. Admin and PM have the accepted global management controls; no UI, query, RPC, RLS helper, or membership capacity silently downgrades PM authority.
-4. Archive/recovery/deletion semantics are truthful and consistent across UI, server actions, RPCs, RLS, active feeds, calendar, selectors, reports, and audit history.
-5. Every active role can manage only their own account fields and submit a bounded bug report. Admin/PM can triage safely. Optional product-email preference never controls essential security notices.
-6. Public privacy and terms routes exist with localized public/auth footer links and sitemap/robots decisions; placeholder legal copy is visibly non-final until stakeholder text is approved.
-7. The task sheet and dedicated task pages show authorized deliverable names, current version numbers, and safe links. Link correction preserves immutable version evidence rather than overwriting historical submitted URLs.
-8. Calendar milestone task links resolve to the appropriate dedicated task route or valid workspace task state; no indefinite loading state remains.
-9. Focused authorization, migration-contract, navigation, i18n, and regression evidence is recorded truthfully. No claim of production/provider activation is made.
-
-## Dependencies and sequencing
-
-S10-01 establishes the identity/readiness authority contract. S10-02 consumes it. S10-03 and S10-04 can proceed after their independent migration contracts are accepted. S10-05 is application/public-surface work but cannot be labeled legally approved until stakeholder text/signoff exists. S10-06 starts with the confirmed calendar defect and existing detail models, and must consume the role-safe task projection before presentation work.
+1. All six S10 work-item outcomes are delivered only after their individual readiness gates and accepted specifications are satisfied.
+2. Direct contact flows work without an organization and do not broaden access or directory visibility.
+3. Admin/PM global authority is enforced consistently; project membership capacity never silently downgrades PM authority.
+4. Archive, restoration, deactivation, permanent deletion, and immutable-history semantics are distinct and truthfully represented.
+5. Account, access, legal-surface, task-detail, and calendar corrections are role-safe, localized, and evidenced through focused checks.
+6. Applied migration IDs and generated-type provenance are recorded accurately.
+7. No result is described as production live, externally delivered, legally approved, or provider activated.
 
 ## Explicit exclusions
 
-- Production Supabase/Vercel projects, production migrations, DNS/Hostinger/Cloudflare changes, secrets, billing, external providers, email, scheduling, Meta/WhatsApp, public signup, CRM automation, Sentry activation, backup execution, legal-text approval, broad dashboard/metrics changes, and broad redesign. The recorded M01 application to `jsf-pm-dev` is the sole completed remote schema action in this scope.
-- Permanent deletion of users, contacts, organizations, invitations, profiles, access history, notification history, audit logs, deliverable versions, or feedback.
-- Editing historic `deliverable_versions.submission_url` in place. A correction must use the existing or newly specified audited version/revision command.
+- Creating or mutating `jsf-pm-prod`; production migration; Vercel, Cloudflare, Hostinger, DNS, billing, secrets, provider-console, email, Sentry, Resend, QStash, Meta/WhatsApp, scheduler, or public-signup work.
+- Permanent deletion outside the four named operational entities.
+- Broad dashboard/metrics redesign, CRM automation, recovery-drill execution, legal-text approval, and external-provider activation.
+- Using this epic or the sprint plan as an implementation brief for a work item without an accepted work-item specification.
 
-## Definition of ready to begin production-foundation planning
+## Epic exit condition
 
-S10 is implementation-complete only when its accepted controls have focused evidence in `jsf-pm-dev`, the closeout names each applied migration/type provenance, and the remaining production-foundation work is limited to separately approved environment/account/DNS/provider actions. It is not a hosted or commercial-production declaration.
+E10 is implementation-complete only when each S10 work item has factual, role-safe acceptance evidence in `jsf-pm-dev`, the migration/type provenance is recorded, and remaining production-foundation work is explicitly limited to separately authorized environment, account, DNS, provider, legal, and operational actions. This is not a hosted-production or commercial-readiness declaration.

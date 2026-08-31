@@ -1,5 +1,15 @@
 # JSF PM App Development Changelog
 
+## [2026-08-31 @ 11:02]
+
+**🚀 Features: S10-02 Ordinary Invitation Lifecycle Migration & Database Types Generation**
+
+- **Database Migration (`supabase/migrations/20260831100000_s10-02-ordinary-invitation-lifecycle.sql`):**
+  - Applied migration `20260831100000_s10_02_ordinary_invitation_lifecycle` to active database environment via Supabase MCP tool.
+  - Implemented Model A ordinary invitation lifecycle database functions (`create_ordinary_invitation`, `rotate_ordinary_invitation`, `revoke_ordinary_invitation`, `list_ordinary_invitation_administration`) with private helper validations (`assert_s10_invitation_manager`, `new_s10_invitation_token`, `resolve_s10_ordinary_invitation`), atomic token revocation/supersession, audit logging, and authenticated role execute grants.
+- **Database Types (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript database type definitions from remote Supabase schema to include `create_ordinary_invitation`, `rotate_ordinary_invitation`, `revoke_ordinary_invitation`, and `list_ordinary_invitation_administration` RPC function signatures and return types.
+
 ## [2026-08-29 @ 17:55]
 
 **🐛 Hotfixes: Test Suite Remediation for S09-06 Milestone Goals, Operator Milestone Context & UI Components**
