@@ -2181,6 +2181,12 @@ export type Database = {
           status: Database["public"]["Enums"]["invite_status"]
         }[]
       }
+      list_project_client_contact_associations: {
+        Args: { p_project_id: string }
+        Returns: {
+          contact_id: string
+        }[]
+      }
       list_project_milestone_summaries: {
         Args: { p_project_id: string }
         Returns: {
@@ -2812,3 +2818,4 @@ export const Constants = {
     },
   },
 } as const
+

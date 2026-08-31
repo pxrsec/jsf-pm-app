@@ -1,5 +1,18 @@
 # JSF PM App Development Changelog
 
+## [2026-08-31 @ 11:54]
+
+**🛠 Database & Types: S10 Association Projection and Direct Contact Enforcement**
+
+- **Database Migration (`supabase/migrations/20260831114500_s10-association-projection-and-direct-contact-enforcement.sql`):**
+  - Applied migration `20260831114500_s10_association_projection_and_direct_contact_enforcement` cleanly via Supabase MCP tool.
+  - Implemented `public.set_project_client_contact` security definer RPC with direct-contact enforcement (disallowing new associations when `client_id` is set), audit logging, and disassociation support for historical remediation.
+  - Implemented `public.list_project_client_contact_associations` security definer RPC for purpose-limited administration projection returning contact IDs.
+  - Configured function ownership, revocation of public/anon/service_role execute, and granted execute privileges to authenticated users.
+- **Database Types (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript database definitions from remote Supabase schema to include `list_project_client_contact_associations` and `set_project_client_contact` functions.
+
+
 ## [2026-08-31 @ 11:02]
 
 **🚀 Features: S10-02 Ordinary Invitation Lifecycle Migration & Database Types Generation**

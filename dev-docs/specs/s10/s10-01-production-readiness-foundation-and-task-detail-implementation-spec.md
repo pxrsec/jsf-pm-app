@@ -2,12 +2,13 @@
 document_id: S10-01-S10-02-DIRECT-CLIENT-AND-INVITATION-ADMINISTRATION-IMPLEMENTATION-SPEC-03
 sprint_id: S10
 work_items: [S10-01, S10-02]
-status: implementation-ready
-updated_at: 2026-08-31T00:00:00-06:00
+status: implementation-ready-after-migration-application
+updated_at: 2026-08-31T11:45:00-06:00
 target_environment: jsf-pm-dev
 schema_baseline:
   - supabase/migrations/20260830110000_s10-direct-client-identity-and-invitation-administration.sql
   - supabase/migrations/20260831100000_s10-02-ordinary-invitation-lifecycle.sql
+  - supabase/migrations/20260831114500_s10-association-projection-and-direct-contact-enforcement.sql
 generated_types: src/lib/database.types.ts
 ---
 
@@ -88,6 +89,7 @@ All calls below are typed Supabase RPC calls from `server-only` adapters or Serv
 | `list_client_organizations_for_administration()` | none | `id`, `display_name`, `slug` | Optional organization selector only. |
 | `save_client_contact(...)` | validated complete contact fields | contact UUID | Create or edit one direct/organization contact. Pass every editable field explicitly. |
 | `set_project_client_contact(projectId, contactId, associated)` | exact IDs and Boolean | resulting association Boolean | Associate/disassociate one contact in an authorized client-project context. |
+| `list_project_client_contact_associations(projectId)` | exact client-project UUID | active associated direct-contact UUIDs only | Resolve selected-project association state. |
 
 ### 4.2 Model A invitation lifecycle
 
@@ -228,8 +230,10 @@ Do not add a route or navigation entry for Operator, Client, or unauthenticated 
 
 - Association controls appear only for a selected client project and an Admin/PM management context.
 - Selecting a project uses a server-only global management-project loader under M01 `projects` RLS; do not use the membership-scoped `listProjectsForPm` helper for this selector.
+- Resolve selected-project association state through `list_project_client_contact_associations`; never query `project_client_contacts` from application code or the browser.
 - Show explicit copy: association supports identity/readiness planning and **does not invite, activate, add a member, grant project access, or assign work**.
 - Associate calls `set_project_client_contact(projectId, contactId, true)`; disassociate calls the same RPC with `false`.
+- Show association controls only for direct contacts (`client_id IS NULL`). Organization contacts use organization-match readiness and must neither show nor invoke association controls.
 - Do not automatically associate all organization contacts to a project. Organization-contact readiness remains organization-match based.
 
 ## 8. Invitation UI behavior
@@ -287,6 +291,7 @@ Use real links for navigation and buttons for mutations/copy. Do not nest contro
 
 ```text
 supabase/migrations/20260831100000_s10-02-ordinary-invitation-lifecycle.sql
+supabase/migrations/20260831114500_s10-association-projection-and-direct-contact-enforcement.sql
 src/lib/database.types.ts                           # regenerated artifact; never hand-edit
 src/lib/clients/schemas.ts
 src/lib/clients/queries.ts
@@ -312,8 +317,8 @@ Existing invitation completion files are modified only when necessary to preserv
 
 1. Run `npm run lint` and `npm run typecheck`.
 2. Add at most the smallest focused Vitest coverage required for a new Server Action/adapter contract or a reproduced UI regression.
-3. Verify Admin and PM can independently reach `/admin/clientes` and `/pm/clientes`, create/edit a direct contact, optionally associate an organization, and associate/disassociate a direct contact without membership gating.
-4. Verify a direct contact remains visible/selectable without organization and association is never represented as membership/access.
+3. After applying the complete schema baseline and regenerating `src/lib/database.types.ts`, verify Admin and PM can independently reach `/admin/clientes` and `/pm/clientes`, create/edit a direct contact, optionally associate an organization, and associate/disassociate a direct contact without membership gating.
+4. Verify a direct contact remains visible/selectable without organization and association is never represented as membership/access; verify organization contacts have no association control and `set_project_client_contact(..., true)` rejects them.
 5. Verify Client invite creation requires an exact contact; Operator invite creation requires email; both reject all privileged roles.
 6. Verify Model A create and resend return a one-time link only to the initiating action, copy feedback does not disclose it, resend revokes the old pending link, and list rows contain no email/token/hash.
 7. Verify revoke is idempotent and terminal rows expose no mutation controls.
