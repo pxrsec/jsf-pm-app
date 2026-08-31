@@ -3,13 +3,14 @@ document_id: S10-01-S10-02-DIRECT-CLIENT-AND-INVITATION-ADMINISTRATION-IMPLEMENT
 sprint_id: S10
 work_items: [S10-01, S10-02]
 status: blocked-on-migration-application-and-types-regeneration
-updated_at: 2026-08-31T12:27:26-06:00
+updated_at: 2026-08-31T15:00:38-06:00
 target_environment: jsf-pm-dev
 schema_baseline:
   - supabase/migrations/20260830110000_s10-direct-client-identity-and-invitation-administration.sql
   - supabase/migrations/20260831100000_s10-02-ordinary-invitation-lifecycle.sql
   - supabase/migrations/20260831114500_s10-association-projection-and-direct-contact-enforcement.sql
   - supabase/migrations/20260831123000_s10-association-projection-integrity-and-invitation-list-index.sql
+  - supabase/migrations/20260831153000_s10-active-project-command-enforcement.sql
 generated_types: src/lib/database.types.ts
 ---
 
@@ -56,15 +57,16 @@ Do not implement account deactivation, archive/recycle-bin, permanent deletion, 
 4. Association/disassociation uses `set_project_client_contact`; no UI path may compensate for a rejected readiness change by creating/deleting memberships or altering a profile.
 5. Admin and PM are global management authorities. `pm_lead` and `pm_watcher` are project metadata, never a gate for contacts, organizations, invitations, or S10 project-selection controls.
 6. The association projection returns only active direct-contact IDs. Historical rows for a deleted contact or a contact later changed to an organization are never browser-visible, but an Admin/PM may idempotently disassociate any historical association by its exact ID.
+7. Every S10 association command or projection accepts only a non-deleted, non-archived client project. An archived project has no selectable or mutable S10 association state.
 
 ### 2.4 Ordinary invitation invariants
 
 1. The only ordinary invitation roles are `client` and `operator`.
 2. An ordinary invite can be global (`project_id IS NULL`) or explicitly project-scoped.
 3. A client invite binds one exact unlinked active `client_contacts` row through `contact_id`; recipient email is derived from that contact inside the trusted command.
-4. A project-scoped client invite requires a client project and either an active direct-contact association for that project or an organization contact whose organization matches the project organization.
-5. An operator invite uses a validated recipient email, has no `contact_id`, and can reference any active project selected explicitly by an authorized manager.
-6. `accept_invite` validates exact recipient-email match, invitation state, role, contact eligibility, and project compatibility. It creates a project member only when that invitation explicitly carries a project.
+4. A project-scoped client invite requires a non-deleted, non-archived client project and either an active direct-contact association for that project or an organization contact whose organization matches the project organization.
+5. An operator invite uses a validated recipient email, has no `contact_id`, and can reference any non-deleted, non-archived project selected explicitly by an authorized manager.
+6. `accept_invite` validates exact recipient-email match, invitation state, role, contact eligibility, project compatibility, and that a project-scoped invitation's project remains non-deleted and non-archived. It creates a project member only when that invitation explicitly carries a project.
 7. No ordinary flow can create/invite Admin or PM accounts, infer a role from a membership capacity, or mutate an existing user’s role in the browser.
 
 ## 3. Model A invitation delivery
@@ -103,7 +105,7 @@ All calls below are typed Supabase RPC calls from `server-only` adapters or Serv
 | `list_ordinary_invitation_administration(beforeCreatedAt?, beforeInvitationId?, limit?)` | complete composite cursor or no cursor; limit 1–100 | bounded lifecycle rows without email/token/hash | Management list. Fetch `pageSize + 1`, validate every returned row, then slice locally. |
 | `accept_invite(tokenHash)` | hash generated server-side from the recipient’s opaque token | existing safe result | Preserve current recipient onboarding path only. |
 
-All lifecycle functions are security-definer commands with a fixed safe search path, internal active Admin/PM check, explicit `postgres` owner, no `public`/`anon`/`service_role` execute grant, and `authenticated` grant only. They retain closed base-table RLS and append audit rows containing identifiers/outcomes only—not recipient email, raw token, hash, or URL.
+All lifecycle functions are security-definer commands with a fixed safe search path, internal active Admin/PM check where applicable, explicit `postgres` owner, no `public`/`anon`/`service_role` execute grant, and `authenticated` grant only. They retain closed base-table RLS and append audit rows containing identifiers/outcomes only—not recipient email, raw token, hash, or URL. Trusted project-bearing commands reject deleted or archived projects rather than relying on UI selector filtering.
 
 ## 5. Server-only adapter and action contract
 
@@ -296,6 +298,7 @@ Use real links for navigation and buttons for mutations/copy. Do not nest contro
 supabase/migrations/20260831100000_s10-02-ordinary-invitation-lifecycle.sql
 supabase/migrations/20260831114500_s10-association-projection-and-direct-contact-enforcement.sql
 supabase/migrations/20260831123000_s10-association-projection-integrity-and-invitation-list-index.sql
+supabase/migrations/20260831153000_s10-active-project-command-enforcement.sql
 src/lib/database.types.ts                           # regenerated artifact; never hand-edit
 src/lib/clients/schemas.ts
 src/lib/clients/queries.ts
@@ -331,5 +334,6 @@ Existing invitation completion files are modified only when necessary to preserv
 10. Verify added English and Mexican Spanish keys are structurally present and interactive paths are keyboard usable.
 11. Verify `list_project_client_contact_associations` returns no ID for a soft-deleted contact or a contact later changed from direct to organization, while `set_project_client_contact(projectId, historicalContactId, false)` remains an idempotent cleanup command for an authorized Admin/PM.
 12. Verify the new invitation-list cursor index is present after migration application and contains only `created_at` and `id` as indexed key columns.
+13. Verify every trusted S10 project-bearing command rejects an archived project: association set/list, Client invitation create, Operator invitation create, and rotation of a pending project-scoped invitation after archival. Verify `accept_invite` rejects a pending project-scoped invitation when its project is archived and does not create a membership, while a global invitation remains unaffected.
 
 No provider activation, external-delivery verification, broad suite, E2E suite, or production action is part of this work.

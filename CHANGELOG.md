@@ -1,5 +1,17 @@
 # JSF PM App Development Changelog
 
+## [2026-08-31 @ 15:31]
+
+**🛠 Database & Types: S10 Active Project Command Enforcement**
+
+- **Database Migration (`supabase/migrations/20260831153000_s10-active-project-command-enforcement.sql`):**
+  - Applied forward-only migration `20260831153000_s10_active_project_command_enforcement` cleanly via Supabase MCP tool.
+  - Updated `public.set_project_client_contact` and `public.list_project_client_contact_associations` RPCs to check `archived_at is null`, rejecting archived projects for contact associations.
+  - Updated `private.resolve_s10_ordinary_invitation` to require active (non-archived, non-deleted) projects when creating or rotating invitations for both client and operator roles.
+  - Updated `public.accept_invite` to verify project is active (`archived_at is null` and `deleted_at is null`) before accepting project-bound invitations.
+- **Database Types (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript database type definitions from remote Supabase schema via `generate_typescript_types` MCP tool.
+
 ## [2026-08-31 @ 14:51]
 
 **🛠 Database & Types: S10 Association Projection Integrity and Invitation List Index**
