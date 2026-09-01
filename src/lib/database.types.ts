@@ -599,6 +599,11 @@ export type Database = {
       deliverables: {
         Row: {
           approved_at: string | null
+          archive_reason: string | null
+          archived_at: string | null
+          archived_by: string | null
+          archived_parent_project_id: string | null
+          archived_parent_task_id: string | null
           assignee_id: string
           client_delivery_deadline_at: string | null
           created_at: string
@@ -623,6 +628,11 @@ export type Database = {
         }
         Insert: {
           approved_at?: string | null
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          archived_parent_project_id?: string | null
+          archived_parent_task_id?: string | null
           assignee_id: string
           client_delivery_deadline_at?: string | null
           created_at?: string
@@ -647,6 +657,11 @@ export type Database = {
         }
         Update: {
           approved_at?: string | null
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          archived_parent_project_id?: string | null
+          archived_parent_task_id?: string | null
           assignee_id?: string
           client_delivery_deadline_at?: string | null
           created_at?: string
@@ -860,6 +875,10 @@ export type Database = {
       }
       milestones: {
         Row: {
+          archive_reason: string | null
+          archived_at: string | null
+          archived_by: string | null
+          archived_parent_project_id: string | null
           color_override: string | null
           created_at: string
           created_by: string
@@ -874,6 +893,10 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          archived_parent_project_id?: string | null
           color_override?: string | null
           created_at?: string
           created_by: string
@@ -888,6 +911,10 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          archived_parent_project_id?: string | null
           color_override?: string | null
           created_at?: string
           created_by?: string
@@ -1272,7 +1299,9 @@ export type Database = {
       }
       projects: {
         Row: {
+          archive_reason: string | null
           archived_at: string | null
+          archived_by: string | null
           client_id: string | null
           client_scope: string | null
           completed_at: string | null
@@ -1290,7 +1319,9 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          archive_reason?: string | null
           archived_at?: string | null
+          archived_by?: string | null
           client_id?: string | null
           client_scope?: string | null
           completed_at?: string | null
@@ -1308,7 +1339,9 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          archive_reason?: string | null
           archived_at?: string | null
+          archived_by?: string | null
           client_id?: string | null
           client_scope?: string | null
           completed_at?: string | null
@@ -1395,6 +1428,10 @@ export type Database = {
       }
       tasks: {
         Row: {
+          archive_reason: string | null
+          archived_at: string | null
+          archived_by: string | null
+          archived_parent_project_id: string | null
           assigned_at: string
           assignee_id: string
           completed_at: string | null
@@ -1415,6 +1452,10 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          archived_parent_project_id?: string | null
           assigned_at?: string
           assignee_id: string
           completed_at?: string | null
@@ -1435,6 +1476,10 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
+          archived_parent_project_id?: string | null
           assigned_at?: string
           assignee_id?: string
           completed_at?: string | null
@@ -1915,6 +1960,17 @@ export type Database = {
         Args: { p_notification_recipient_id: string }
         Returns: boolean
       }
+      archive_operational_entity: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: Database["public"]["Enums"]["entity_type"]
+          p_reason?: string
+        }
+        Returns: {
+          code: string
+          success: boolean
+        }[]
+      }
       create_collaboration_comment: {
         Args: {
           p_body: string
@@ -1991,6 +2047,19 @@ export type Database = {
           project_name: string
           scope: string
           target_date: string
+          title: string
+        }[]
+      }
+      get_operational_deletion_preview: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: Database["public"]["Enums"]["entity_type"]
+        }
+        Returns: {
+          blocker_code: string
+          can_delete: boolean
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["entity_type"]
           title: string
         }[]
       }
@@ -2159,6 +2228,19 @@ export type Database = {
           subject_kind: string
           subject_title: string
           trigger: Database["public"]["Enums"]["notification_trigger"]
+        }[]
+      }
+      list_operational_recycle_bin: {
+        Args: { p_project_id?: string }
+        Returns: {
+          archive_reason: string
+          archived_at: string
+          archived_by: string
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          parent_is_archived: boolean
+          project_id: string
+          title: string
         }[]
       }
       list_operator_task_milestone_context: {
@@ -2339,6 +2421,16 @@ export type Database = {
         Args: { p_notification_recipient_id: string }
         Returns: boolean
       }
+      permanently_delete_operational_entity: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: Database["public"]["Enums"]["entity_type"]
+        }
+        Returns: {
+          code: string
+          success: boolean
+        }[]
+      }
       recover_project_status: {
         Args: {
           p_project_id: string
@@ -2358,6 +2450,16 @@ export type Database = {
           p_version_id: string
         }
         Returns: Json
+      }
+      restore_archived_operational_entity: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: Database["public"]["Enums"]["entity_type"]
+        }
+        Returns: {
+          code: string
+          success: boolean
+        }[]
       }
       restore_entity: {
         Args: {

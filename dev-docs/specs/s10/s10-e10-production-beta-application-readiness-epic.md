@@ -61,7 +61,7 @@ Deliver the missing application controls required before creating `jsf-pm-prod` 
 
 1. **M01 — `20260830110000_s10-direct-client-identity-and-invitation-administration.sql`:** establishes the S10-01/S10-02 data and trusted-command foundation. It was applied by the Project Owner to `jsf-pm-dev` as `20260830110000_s10_direct_client_identity_and_invitation_administration`; `src/lib/database.types.ts` was regenerated from the applied schema. The pre-application source correction used `min(c.id::text)::uuid` for the legacy-contact backfill because PostgreSQL has no `min(uuid)` aggregate. Never edit the applied migration.
 2. **M02-R1 — `20260901120000_s10-02-r1-invitation-completion-profile-authority.sql`:** replaces the one-argument invitation-acceptance command with the profile/contact-completion command and aligns WhatsApp consent evidence. It must be reviewed/applied before S10-02-R1 application work.
-3. **M03 — `20260830111000_s10-archive-recycle-bin-and-admin-permanent-deletion.sql`:** must be reviewed/applied before S10-03 database-dependent implementation.
+3. **M03 — `20260901140000_s10-03-archive-recycle-bin-and-admin-permanent-deletion.sql`:** must be reviewed/applied before S10-03 database-dependent implementation.
 4. **M04 — `20260830112000_s10-account-access-hygiene-and-bug-triage.sql`:** must be reviewed/applied before S10-04 database-dependent implementation.
 5. **M05 — `20260830113000_s10-manager-task-detail-projection.sql`:** conditional. Create only after inspecting M01–M04 and proving the current role-safe contracts cannot return the S10-06 manager-detail shape.
 

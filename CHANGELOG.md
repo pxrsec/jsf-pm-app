@@ -1,5 +1,18 @@
 # JSF PM App Development Changelog
 
+## [2026-09-01 @ 16:38]
+
+**🛠 Database & 🔒 Security: S10-03 Archive, Recycle Bin, and Admin Permanent Deletion Migration & Type Regeneration**
+
+- **Database Migration Applied (`20260901140000_s10-03-archive-recycle-bin-and-admin-permanent-deletion.sql`):**
+  - Executed migration via Supabase MCP tooling (`apply_migration`) establishing recoverable operational lifecycle metadata (`archived_at`, `archived_by`, `archive_reason`, `archived_parent_*_id`) and partial recycle-bin indexes across projects, tasks, deliverables, and milestones.
+  - Implemented authoritative lifecycle functions: `public.archive_operational_entity`, `public.restore_archived_operational_entity`, `public.list_operational_recycle_bin`, `public.get_operational_deletion_preview`, and `public.permanently_delete_operational_entity`.
+  - Enforced strict Admin-only permanent deletion boundary requiring pre-existing archive status and zero operational dependencies, while preserving immutable audit logs.
+  - Retired legacy generic soft-delete / restore routes for S10-03 operational entities (`soft_delete_entity`, `restore_entity`, `soft_delete_milestone`).
+  - Tightened RLS base-table select/update policies on `projects`, `tasks`, and `deliverables` to strictly filter out archived entities from active runtime queries.
+- **TypeScript Type Regeneration (`src/lib/database.types.ts`):**
+  - Regenerated Supabase schema definitions and database types via Supabase MCP tooling (`generate_typescript_types`).
+
 ## [2026-09-01 @ 15:35]
 
 **🐛 Bug Fixes & 🧪 Test Suite Stabilization**
