@@ -4,7 +4,7 @@ sprint_id: S10
 epic_id: E10
 status: active-owner-directed-sprint-plan
 created_at: 2026-08-30T00:00:00-06:00
-updated_at: 2026-08-31T00:00:00-06:00
+updated_at: 2026-09-01T12:00:00-06:00
 branch: feature/production-readiness-pt-1
 target_environment: jsf-pm-dev
 ---
@@ -15,7 +15,7 @@ target_environment: jsf-pm-dev
 
 This plan is the complete **S10 work-item breakdown and sequencing authority**. It names every work item, its deliverable, dependency, acceptance outcome, and stop condition. It is not a substitute for a work-item implementation specification.
 
-Only `s10-01-production-readiness-foundation-and-task-detail-implementation-spec.md` currently authorizes implementation planning for **S10-01 and S10-02**. It must not be read as authority for S10-03 through S10-06. Those work items remain planned and blocked pending their own accepted implementation specifications and stated schema gates.
+`s10-01-production-readiness-foundation-and-task-detail-implementation-spec.md` authorizes the original **S10-01 and S10-02** slice. `s10-02-r1-invitation-completion-and-direct-client-project-ux-implementation-spec.md` separately authorizes the bounded **S10-02-R1** refinement after its applied schema baseline. Neither specification authorizes S10-03 through S10-06. Those work items remain planned and blocked pending their own accepted implementation specifications and stated schema gates.
 
 ## Sprint goal
 
@@ -72,6 +72,26 @@ Close the application-level beta-operability gaps in `jsf-pm-dev` without creati
 
 **Stop conditions:** Any attempt to build browser base-table writes, client-side authorization, arbitrary invitation role assignment, raw-token storage/logging, public registration, provider dispatch, or implicit project membership/access is out of scope.
 
+### S10-02-R1 — Invitation completion repair and direct-client project UX
+
+**Objective:** Repair ordinary invitation redemption, converge invitee-owned profile/contact data under the fixed invitation email, and make direct-client identity management discoverable from Admin/PM project workspaces.
+
+**Deliverable:** M02-R1 plus the bounded application refinement defined by `s10-02-r1-invitation-completion-and-direct-client-project-ux-implementation-spec.md`.
+
+**Dependency:** Applied M01/S10-02 chain, reviewed/applied `20260901120000_s10-02-r1-invitation-completion-profile-authority.sql`, refreshed generated declarations, and the accepted S10-02-R1 implementation specification.
+
+**Required outcome:**
+
+- Invitation completion reaches the non-localized canonical API route from both locales; `/en/api/...` is never a valid API path.
+- The invitation email remains pre-bound and exact-match authoritative. Invitees supply full name, optional E.164 phone, password, and WhatsApp preference only.
+- Trusted completion atomically persists profile/contact completion, consent evidence, project-scoped membership where applicable, invitation state, and non-PII audit evidence; application code performs no post-completion direct profile/contact write.
+- Auth-user creation failure after creation but before trusted completion receives bounded compensating deletion without falsely representing the invitation as accepted.
+- Admin/PM project workspaces expose optional organization, exact direct-contact, or planning-without-identity selection. Association and invitation are explicit; no identity selection creates membership or access.
+
+**Acceptance outcome:** Admin/PM can complete the same direct-client project identity journey regardless of PM membership capacity; Client/Operator/non-authenticated paths fail closed; accepted Client and Operator invites persist invitee-owned data while preserving the fixed email boundary; no external provider is activated.
+
+**Stop conditions:** Any editable invitation email, email-confirmation substitute for fixed email binding, raw token exposure, `/en/api` route duplication, browser direct contact/project-association access, implicit member creation, fabricated consent IP, provider activation, or claim of cross-system atomicity is out of scope.
+
 ### S10-03 — Recoverable lifecycle and Admin-only permanent deletion
 
 **Objective:** Reconcile archive/restore, operational recycle-bin, and narrow permanent-deletion behavior.
@@ -86,15 +106,15 @@ Close the application-level beta-operability gaps in `jsf-pm-dev` without creati
 
 ### S10-04 — Account, access hygiene, and bug triage
 
-**Objective:** Deliver bounded self-account control, safe access deactivation, stale-access reminder state, and authenticated bug reporting/triage.
+**Objective:** Deliver bounded self-account control, discoverable Admin/PM user access administration, safe access deactivation, stale-access reminder state, and authenticated bug reporting/triage.
 
-**Deliverable:** M04 plus account, administrative access, reminder-state, and bug-report surfaces.
+**Deliverable:** M04 plus account settings, a role-safe Admin/PM active-user directory and access-management surface, reminder-state, and bug-report surfaces.
 
 **Dependency:** Reviewed/applied M04 and refreshed generated declarations; a separate accepted S10-04 implementation specification.
 
-**Required outcome:** Users edit only bounded personal fields; role and activation stay protected. Admin/PM deactivation/re-activation preserves history, prevents self-lockout/last-management-account loss, revokes relevant pending invites, and audits safely. One stale-access reminder eligibility period begins at 45 consecutive inactive days and resets only on qualifying auth or active assignment/membership. Authenticated users submit bounded reports; Admin/PM triage `open|triaged|resolved|dismissed`.
+- Users edit only bounded personal fields; role and activation stay protected. A discoverable Admin/PM global directory returns only role-safe user fields and active/inactive state; it does not expose contact-directory information, token data, or history beyond its authorization purpose. Admin/PM deactivation/re-activation preserves history, prevents self-lockout/last-management-account loss, revokes relevant pending invites, and audits safely. One stale-access reminder eligibility period begins at 45 consecutive inactive days and resets only on qualifying auth or active assignment/membership. Authenticated users submit bounded reports; Admin/PM triage `open|triaged|resolved|dismissed`.
 
-**Acceptance outcome:** Self-only account boundary, no permanent user deletion, exact reminder reset/deduplication, safe deactivation, and role-safe report/triage behavior.
+**Acceptance outcome:** Self-only account boundary; discoverable Admin/PM global active-user access management without role escalation or contact-directory leakage; no permanent user deletion; exact reminder reset/deduplication; safe deactivation; and role-safe report/triage behavior.
 
 ### S10-05 — Public legal surface
 
@@ -123,11 +143,12 @@ Close the application-level beta-operability gaps in `jsf-pm-dev` without creati
 ## Migration and implementation order
 
 1. Implement S10-01 and S10-02 only from their bounded accepted specification, against M01 and the refreshed generated declarations. M01 application evidence: `20260830110000_s10_direct_client_identity_and_invitation_administration` on `jsf-pm-dev`; the pre-application legacy backfill correction was `min(c.id::text)::uuid` because PostgreSQL has no `min(uuid)` aggregate.
-2. Author, review, apply, and regenerate after M03; then create/execute only an accepted S10-03 specification.
-3. Author, review, apply, and regenerate after M04; then create/execute only an accepted S10-04 specification.
-4. S10-05 waits for its own bounded implementation specification; it has no schema dependency.
-5. Inspect M01–M04 for S10-06. Author M05 only if a narrow authorized projection is genuinely required; then create/execute only an accepted S10-06 specification.
-6. Record focused verification and truthful closeout evidence. Do not run provider or production procedures.
+2. Review, apply, and regenerate from M02-R1 `20260901120000_s10-02-r1-invitation-completion-profile-authority.sql`; then execute only the accepted S10-02-R1 refinement specification and record focused invitation/workspace evidence.
+3. Author, review, apply, and regenerate after M03; then create/execute only an accepted S10-03 specification.
+4. Author, review, apply, and regenerate after M04; then create/execute only an accepted S10-04 specification that includes the approved Admin/PM active-user access-management surface.
+5. S10-05 waits for its own bounded implementation specification; it has no schema dependency.
+6. Inspect M01–M04 for S10-06. Author M05 only if a narrow authorized projection is genuinely required; then create/execute only an accepted S10-06 specification.
+7. Record focused verification and truthful closeout evidence. Do not run provider or production procedures.
 
 ## Verification policy
 
@@ -137,7 +158,7 @@ For application slices, run `npm run lint` and `npm run typecheck`. Run one affe
 
 ## Sprint exit criteria
 
-1. Each S10-01 through S10-06 work item has its own accepted implementation scope and factual acceptance evidence.
+1. Each planned S10 work item, including S10-02-R1, has its own accepted implementation scope and factual acceptance evidence.
 2. Applied migration IDs and regenerated-type provenance are recorded accurately.
 3. `EXTERNAL_DELIVERY_MODE` remains disabled/fail-closed; no provider is activated.
 4. No production project, production migration, or DNS change occurs.

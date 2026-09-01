@@ -4,7 +4,7 @@ epic_id: E10
 sprint_id: S10
 status: active-owner-directed-epic-baseline
 created_at: 2026-08-30T00:00:00-06:00
-updated_at: 2026-08-31T00:00:00-06:00
+updated_at: 2026-09-01T12:00:00-06:00
 branch: feature/production-readiness-pt-1
 target_environment: jsf-pm-dev
 ---
@@ -15,7 +15,7 @@ target_environment: jsf-pm-dev
 
 This is the **epic-level scope and outcome authority** for all S10 work items. It defines the complete production-beta application-readiness outcome, portfolio sequencing, cross-item dependencies, and epic exit conditions. It is not an implementation specification and must not be used to infer implementation scope for a work item that has no accepted work-item specification.
 
-The repository-local implementation specification `s10-01-production-readiness-foundation-and-task-detail-implementation-spec.md` is deliberately limited to **S10-01 and S10-02 only**. S10-03 through S10-06 require their own accepted specifications and their stated prerequisites before implementation begins.
+The repository-local implementation specification `s10-01-production-readiness-foundation-and-task-detail-implementation-spec.md` is deliberately limited to the original **S10-01 and S10-02** slice. The bounded S10-02-R1 refinement is separately controlled by `s10-02-r1-invitation-completion-and-direct-client-project-ux-implementation-spec.md`. S10-03 through S10-06 require their own accepted specifications and stated prerequisites before implementation begins.
 
 ## Objective
 
@@ -36,8 +36,9 @@ Deliver the missing application controls required before creating `jsf-pm-prod` 
 | --- | --- | --- | --- |
 | S10-01 | Direct-client and optional-organization authority/readiness foundation | M01 applied to `jsf-pm-dev`; generated declarations refreshed | Implement only through narrow trusted commands/projections and role-safe server adapters. |
 | S10-02 | Discoverable Admin/PM client-contact and ordinary invitation administration | S10-01/M01 plus a reviewed S10-02 invitation-lifecycle migration and regenerated declarations | Client/operator invitations only; create, list, copy-link, resend, revoke, pending/expiry state; no public signup or privileged invitation. |
+| S10-02-R1 | Invitation completion repair and direct-client project-workspace UX | Reviewed/applied M02-R1; regenerated declarations; accepted S10-02-R1 specification | Fixed invitation email; invitee-owned name/phone/preference; trusted completion and explicit direct-contact association/invitation only; no provider or implicit membership. |
 | S10-03 | Project operational recycle bin, archive/restore, Admin-only permanent deletion | Reviewed/applied M03; regenerated declarations | Only projects, tasks, deliverables, milestones; lifecycle behavior must be reconciled across active queries and UI. |
-| S10-04 | Self account settings, access deactivation, stale-access state, bug intake/triage | Reviewed/applied M04; regenerated declarations | No permanent user deletion; no automated provider delivery. |
+| S10-04 | Self account settings, global Admin/PM user access management, deactivation, stale-access state, bug intake/triage | Reviewed/applied M04; regenerated declarations | Role-safe active-user directory/deactivate-reactivate surface; no permanent user deletion or automated provider delivery. |
 | S10-05 | Public privacy/terms locations, legal footer, sitemap/robots reconciliation | No migration expected | Legal copy remains visibly draft until stakeholder approval; do not imply legal approval. |
 | S10-06 | Role-safe task-detail correction, associated deliverable context, calendar task-navigation repair | Inspect M01–M04 contracts; author/apply M05 only if required; regenerated declarations if M05 exists | Preserve immutable deliverable versions and existing Operator/Client task authority. |
 
@@ -59,9 +60,10 @@ Deliver the missing application controls required before creating `jsf-pm-prod` 
 ## Migration and artifact sequence
 
 1. **M01 — `20260830110000_s10-direct-client-identity-and-invitation-administration.sql`:** establishes the S10-01/S10-02 data and trusted-command foundation. It was applied by the Project Owner to `jsf-pm-dev` as `20260830110000_s10_direct_client_identity_and_invitation_administration`; `src/lib/database.types.ts` was regenerated from the applied schema. The pre-application source correction used `min(c.id::text)::uuid` for the legacy-contact backfill because PostgreSQL has no `min(uuid)` aggregate. Never edit the applied migration.
-2. **M03 — `20260830111000_s10-archive-recycle-bin-and-admin-permanent-deletion.sql`:** must be reviewed/applied before S10-03 database-dependent implementation.
-3. **M04 — `20260830112000_s10-account-access-hygiene-and-bug-triage.sql`:** must be reviewed/applied before S10-04 database-dependent implementation.
-4. **M05 — `20260830113000_s10-manager-task-detail-projection.sql`:** conditional. Create only after inspecting M01–M04 and proving the current role-safe contracts cannot return the S10-06 manager-detail shape.
+2. **M02-R1 — `20260901120000_s10-02-r1-invitation-completion-profile-authority.sql`:** replaces the one-argument invitation-acceptance command with the profile/contact-completion command and aligns WhatsApp consent evidence. It must be reviewed/applied before S10-02-R1 application work.
+3. **M03 — `20260830111000_s10-archive-recycle-bin-and-admin-permanent-deletion.sql`:** must be reviewed/applied before S10-03 database-dependent implementation.
+4. **M04 — `20260830112000_s10-account-access-hygiene-and-bug-triage.sql`:** must be reviewed/applied before S10-04 database-dependent implementation.
+5. **M05 — `20260830113000_s10-manager-task-detail-projection.sql`:** conditional. Create only after inspecting M01–M04 and proving the current role-safe contracts cannot return the S10-06 manager-detail shape.
 
 ## Epic-wide invariants
 
@@ -75,7 +77,7 @@ Deliver the missing application controls required before creating `jsf-pm-prod` 
 
 ## Epic acceptance criteria
 
-1. All six S10 work-item outcomes are delivered only after their individual readiness gates and accepted specifications are satisfied.
+1. All planned S10 work-item outcomes, including the bounded S10-02-R1 refinement, are delivered only after their individual readiness gates and accepted specifications are satisfied.
 2. Direct contact flows work without an organization and do not broaden access or directory visibility.
 3. Admin/PM global authority is enforced consistently; project membership capacity never silently downgrades PM authority.
 4. Archive, restoration, deactivation, permanent deletion, and immutable-history semantics are distinct and truthfully represented.

@@ -54,7 +54,7 @@ declare
   v_project public.projects%rowtype;
   v_user_email extensions.citext;
   v_user_id uuid := auth.uid();
-  v_existing_role public.app_role;
+
   v_member_type public.project_member_type;
   v_full_name text := btrim(p_full_name);
   v_phone_e164 text := nullif(btrim(p_phone_e164), '');
@@ -80,53 +80,29 @@ begin
     raise exception 'Invitation cannot be accepted';
   end if;
 
+  -- Read identity fields first but do not lock the invitation yet. Lock order
+  -- must match create/rotate: contact, project, then invitation token.
   select * into v_invite
   from public.invite_tokens
-  where token_hash = p_token_hash
-  for update;
+  where token_hash = p_token_hash;
   if not found then
     raise exception 'Invitation cannot be accepted';
   end if;
-  if v_invite.status <> 'pending'
-    or v_invite.revoked_at is not null
-    or v_invite.expires_at <= now() then
-    if v_invite.status = 'pending' and v_invite.expires_at <= now() then
-      update public.invite_tokens
-      set status = 'expired'
-      where id = v_invite.id;
-    elsif v_invite.status = 'pending' and v_invite.revoked_at is not null then
-      update public.invite_tokens
-      set status = 'revoked'
-      where id = v_invite.id;
-    end if;
-    raise exception 'Invitation cannot be accepted';
-  end if;
-  if v_invite.role not in ('operator', 'client')
-    or lower(v_invite.email::text) <> lower(v_user_email::text) then
-    raise exception 'Invitation cannot be accepted';
-  end if;
 
-  select role into v_existing_role
+  perform 1
   from public.profiles
   where id = v_user_id
   for update;
-  if found and v_existing_role in ('admin', 'pm') then
+  -- Completion is only for a newly created Auth identity.  Never let a
+  -- pre-existing Client/Operator identity change application role or create a
+  -- second membership capacity for the same project.
+  if found then
     raise exception 'Invitation cannot be accepted';
   end if;
 
-  if v_invite.project_id is not null then
-    select * into v_project
-    from public.projects
-    where id = v_invite.project_id
-      and deleted_at is null
-      and archived_at is null
-    for update;
-    if not found then
-      raise exception 'Invitation cannot be accepted';
-    end if;
-  end if;
-
   if v_invite.role = 'client' then
+    -- Lock contact before project. This matches the lock order used by
+    -- invitation creation/rotation and avoids a contact/project deadlock.
     if v_invite.contact_id is not null then
       select * into v_contact
       from public.client_contacts
@@ -154,7 +130,20 @@ begin
       and v_contact.client_id is distinct from v_invite.client_id then
       raise exception 'Invitation cannot be accepted';
     end if;
-    if v_invite.project_id is not null then
+  end if;
+
+  if v_invite.project_id is not null then
+    select * into v_project
+    from public.projects
+    where id = v_invite.project_id
+      and deleted_at is null
+      and archived_at is null
+    for update;
+    if not found then
+      raise exception 'Invitation cannot be accepted';
+    end if;
+
+    if v_invite.role = 'client' then
       if v_contact.client_id is null then
         if not exists (
           select 1
@@ -169,6 +158,36 @@ begin
         raise exception 'Invitation cannot be accepted';
       end if;
     end if;
+  end if;
+
+  -- Re-read under lock after contact/project locks. This serializes acceptance
+  -- with invitation creation/rotation and makes the terminal-state decision
+  -- from the current token row rather than the preliminary read above.
+  select * into v_invite
+  from public.invite_tokens
+  where id = v_invite.id
+    and token_hash = p_token_hash
+  for update;
+  if not found then
+    raise exception 'Invitation cannot be accepted';
+  end if;
+  if v_invite.status <> 'pending'
+    or v_invite.revoked_at is not null
+    or v_invite.expires_at <= now() then
+    if v_invite.status = 'pending' and v_invite.expires_at <= now() then
+      update public.invite_tokens
+      set status = 'expired'
+      where id = v_invite.id;
+    elsif v_invite.status = 'pending' and v_invite.revoked_at is not null then
+      update public.invite_tokens
+      set status = 'revoked'
+      where id = v_invite.id;
+    end if;
+    raise exception 'Invitation cannot be accepted';
+  end if;
+  if v_invite.role not in ('operator', 'client')
+    or lower(v_invite.email::text) <> lower(v_user_email::text) then
+    raise exception 'Invitation cannot be accepted';
   end if;
 
   insert into public.profiles (
@@ -189,23 +208,7 @@ begin
     case when p_whatsapp_opt_in then now() else null end,
     case when p_whatsapp_opt_in then 'invitation' else null end,
     true
-  )
-  on conflict (id) do update
-  set role = v_invite.role,
-      full_name = excluded.full_name,
-      phone_e164 = excluded.phone_e164,
-      whatsapp_opt_in = excluded.whatsapp_opt_in,
-      whatsapp_consent_at = case
-        when excluded.whatsapp_opt_in then excluded.whatsapp_consent_at
-        else public.profiles.whatsapp_consent_at
-      end,
-      whatsapp_consent_source = case
-        when excluded.whatsapp_opt_in then excluded.whatsapp_consent_source
-        else public.profiles.whatsapp_consent_source
-      end,
-      is_active = true,
-      deleted_at = null,
-      updated_at = now();
+  );
 
   if v_invite.role = 'client' then
     update public.client_contacts
@@ -238,8 +241,7 @@ begin
       v_user_id,
       v_member_type,
       v_invite.created_by
-    )
-    on conflict do nothing;
+    );
   end if;
 
   update public.invite_tokens
