@@ -3,8 +3,8 @@ document_id: S10-02-R1-INVITATION-COMPLETION-AND-DIRECT-CLIENT-PROJECT-UX-IMPLEM
 sprint_id: S10
 work_items: [S10-02-R1]
 parent_work_items: [S10-01, S10-02]
-status: implementation-ready-after-applied-baseline
-updated_at: 2026-09-01T12:00:00-06:00
+status: blocked-pending-applied-s10-02-r1-cancelled-project-command-baseline
+updated_at: 2026-09-01T13:00:00-06:00
 target_environment: jsf-pm-dev
 schema_baseline:
   - supabase/migrations/20260830110000_s10-direct-client-identity-and-invitation-administration.sql
@@ -13,7 +13,9 @@ schema_baseline:
   - supabase/migrations/20260831123000_s10-association-projection-integrity-and-invitation-list-index.sql
   - supabase/migrations/20260831153000_s10-active-project-command-enforcement.sql
   - supabase/migrations/20260901120000_s10-02-r1-invitation-completion-profile-authority.sql
+  - supabase/migrations/20260901130000_s10-02-r1-cancelled-project-command-enforcement.sql
 generated_types: src/lib/database.types.ts
+implementation_prerequisite: Apply the final migration to jsf-pm-dev and regenerate src/lib/database.types.ts unchanged before implementation planning or code changes.
 ---
 
 # S10-02-R1 — Invitation Completion and Direct-Client Project UX
@@ -73,9 +75,9 @@ The command atomically:
 
 1. Validates the authenticated caller, opaque hash, pending/unrevoked/unexpired invitation state, ordinary role, and exact pre-bound email match.
 2. Validates name `1..120` trimmed characters, optional phone as `^\+[1-9][0-9]{7,14}$`, and non-null boolean preference.
-3. Rechecks active non-deleted/non-archived project eligibility when the invitation carries a project.
+3. Rechecks active non-deleted/non-archived/non-cancelled project eligibility when the invitation carries a project.
 4. Rechecks exact Client-contact binding and direct-association/organization-match requirements for Client invitations.
-5. Creates or reactivates the profile with invitee-owned fields.
+5. Creates a new active profile with invitee-owned fields; a pre-existing profile is rejected.
 6. For Client invitations, links and updates exactly the accepted contact’s full name and phone while preserving its pre-bound email.
 7. Creates a project member only for a project-scoped invitation.
 8. Marks the invitation accepted and records a non-PII audit event.
@@ -88,19 +90,22 @@ The command returns only `{ success, role, project_id, client_id }`. It must not
 
 No application code may directly update `profiles` after completion. In particular, remove the current post-RPC direct profile update from the completion API route.
 
-### 4.3 Existing project/contact commands reused without a migration
+### 4.3 Final applied project/contact contract
 
-The project-workspace UX must consume existing trusted primitives only:
+The final baseline migration `20260901130000_s10-02-r1-cancelled-project-command-enforcement.sql` is required before application work. It changes no RPC signature or return shape, but makes every relevant trusted command reject cancelled projects. `planning`, `in_progress`, `paused`, and `completed` remain eligible when not deleted or archived; only `cancelled` is inactive for this slice.
 
-| Need | Existing trusted boundary |
+The project-workspace UX must consume these existing trusted primitives only:
+
+| Need | Trusted boundary and non-negotiable behavior |
 | --- | --- |
-| List management contacts | `list_client_contacts_for_administration` through a server-only adapter; UI receives a minimized direct-contact DTO only. |
-| Read current direct association | `list_project_client_contact_associations` through a server-only adapter or existing server action; never read `project_client_contacts` directly. |
-| Associate/disassociate exact direct contact | `set_project_client_contact(projectId, contactId, associated)` through `setProjectClientContactAction`. |
-| Set/clear optional organization | Existing role-authorized `updateProjectAction` and `UpdateProjectSchema`; never use an organization as a membership shortcut. |
-| Create Client invite | Existing `create_ordinary_invitation` action, only after association is successful for a direct contact. |
+| List management contacts | `list_client_contacts_for_administration` through a server-only adapter. The adapter maps **only active direct contacts** to `{ id, fullName, profileId }`; it never passes the broad administration DTO or email/phone/job title/client/timestamps to workspace UI. |
+| Read current direct association | `list_project_client_contact_associations` through a server-only adapter or action. It returns IDs only and rejects deleted, archived, cancelled, non-Client, or unauthorized project scope. An unavailable projection is not an empty association. |
+| Associate/disassociate exact direct contact | `set_project_client_contact(projectId, contactId, associated)` through `setProjectClientContactAction`. It rejects deleted, archived, cancelled, non-Client projects, organization contacts on association, and unauthorized callers. It does not create a membership. |
+| Set/clear optional organization | A hardened, role-authorized, strict project identity update action over `updateProjectAction`/`UpdateProjectSchema`; it must return safe codes, never raw command messages, and must preserve the database readiness constraint. |
+| Create/rotate Client invite | `create_ordinary_invitation` / existing action only after the direct association succeeds. The resolver used by create and rotate rejects deleted, archived, cancelled, or invalid project context. |
+| Complete project-scoped invite | Four-argument `accept_invite`; it rechecks deleted/archived/cancelled project state before any membership creation. |
 
-No S10-02-R1 database command may create membership merely because an organization or contact is selected.
+No S10-02-R1 database command may create membership merely because an organization or contact is selected. No browser code may read/write `project_client_contacts` or call an RPC directly.
 
 ## 5. API and routing contract
 
@@ -200,52 +205,40 @@ Client validation may fail fast. Server validation remains mandatory and uses th
 
 ## 7. Admin/PM project-workspace client identity UX
 
-### 7.1 Authority and placement
+### 7.1 Authority, eligibility, and placement
 
-Add one localized **Client identity** action/surface to the Admin and PM project workspace for active non-archived Client projects. It is available to `actorRole === 'admin' || actorRole === 'pm'`; it must not use project membership capacity as an authorization gate. In particular, a globally authorized PM must not lose this management control merely because the current workspace derives `pm_watcher` metadata.
+Add one localized **Client identity** action/surface to Admin and PM project workspaces only when all are true: `project_type === 'client'`, `deleted_at === null`, `archived_at === null`, and `status !== 'cancelled'`. It is available solely from `actorRole === 'admin' || actorRole === 'pm'`; project membership capacity is never an authorization gate. A globally authorized PM retains this control with no membership or `pm_watcher` metadata.
 
-Do not render this surface for Operator or Client routes. Do not expose its contact directory data to either role.
+Do not render or server-load this surface for Operator or Client routes. Do not expose its direct-contact directory or association IDs to either role. Do not add a workspace tab or place identity-management state in the URL; place the trigger next to existing project management actions or in Overview.
 
-Place the action adjacent to existing project management actions or in the project Overview surface. It must not add a new workspace tab or put management state in the URL.
-
-### 7.2 Client identity modes
+### 7.2 Client identity modes and readiness
 
 The dialog/sheet presents one selected mode at a time:
 
-| Mode | Display | Save behavior |
+| Mode | Display | Explicit save behavior |
 | --- | --- | --- |
-| Organization | Existing active organization selector | Save the selected organization through the existing authorized project update path; clear no direct association automatically. |
-| Direct contact | Existing active direct-contact selector, showing only name and linked-account state | On explicit save, call the trusted association action. The organization field remains null for a direct project. |
-| No identity yet | Planning-only state | Clear optional organization through the existing project update path; do not create an association, invitation, member, or account. |
+| Organization | Existing active organization selector | Set the selected organization through the hardened identity update action. It does not alter a direct association. |
+| Direct contact | Existing active direct-contact selector, displaying only full name and linked-account state | On save, require organization clearing in the same explicit identity save when an organization is set. Then perform the trusted association sequence below. |
+| No identity yet | Planning-only state | Render and permit this option only while `project.status === 'planning'`; clear optional organization through the hardened identity update action. It must not create an association, invitation, member, or account. |
 
-A project must never have its organization silently inferred from a direct contact. An organization contact is never selectable in Direct contact mode. A direct contact is never silently converted into an organization contact.
+A project must never silently infer organization from a direct contact, convert a direct contact into an organization contact, or remain non-planning/non-cancelled without database-enforced Client readiness. The UI may prevent invalid planning transitions but must not reimplement or weaken trusted readiness checks.
 
-### 7.3 Direct-contact association behavior
+### 7.3 Direct-contact association, replacement, and cache behavior
 
-- Load only current active direct contacts through an Admin/PM server-authorized minimized DTO: `{ id, fullName, profileId }` or equivalent no-email display shape.
-- Load existing direct association IDs through the trusted association projection. Treat an unavailable projection as unavailable; never misrepresent it as no association.
-- A selected direct contact can be associated only by an explicit user action. The existing trusted RPC enforces Client project, active/non-archived project, active direct contact, and Admin/PM authority.
-- If changing direct contact, require a localized confirmation before disassociating another currently associated direct contact. Do not delete contacts or members.
-- If a project has an organization and a direct contact becomes selected, require an explicit organization-clearing save action. Do not leave a misleading combined identity state.
-- Association success refreshes only relevant workspace state. Failure retains the selected input and reports a safe localized error.
+- Server-load only the minimized direct-contact DTO `{ id, fullName, profileId }` after session resolution and explicit Admin/PM authorization. Filter `clientId === null` before the DTO leaves the server. Email, phone, job title, organization, timestamps, raw rows, and broad profile fields never reach the component.
+- Server-load association IDs only through the trusted projection. An unavailable response displays unavailable state and blocks identity mutation; it is never rendered as “no direct contact.”
+- Selection alone does nothing. Save uses `setProjectClientContactAction` only; the RPC enforces active non-cancelled Client project, active direct contact, and Admin/PM authority.
+- When replacing associated contact(s), display localized confirmation before mutation. On confirmation, disassociate every currently associated non-selected direct contact one at a time, then associate the selected contact. The RPC is pairwise, not an atomic replacement command; retain selection and report a localized safe failure if any step fails. Do not delete contacts or members.
+- A direct save against a project with organization must require explicit organization clearing first. Do not leave a combined identity state. Do not offer identity mutation for cancelled projects even if their workspace route remains reachable for historical viewing.
+- Successful identity mutation revalidates the exact Admin and PM project-detail locale paths and refreshes only the current workspace; read-only loaders never revalidate.
 
-### 7.4 Explicit invitation action
+### 7.4 Explicit invitation action and one-time token lifetime
 
-When the selected associated direct contact has no linked profile, show an explicit **Invite client** action after successful association. It opens/reuses the existing ordinary invitation dialog preconfigured to:
+When the successfully associated selected direct contact has no linked profile, display an explicit **Invite client** action. Reuse the existing invitation infrastructure only through a constrained Client-project mode: fixed `{ role: 'client', contactId, projectId }`, no role selector, no contact directory, no recipient-email input, and no project selector. It may display the minimized contact name but not email. It retains the existing expiry range and invokes `createOrdinaryInvitationAction` only after association success.
 
-```ts
-{ role: 'client', contactId, projectId }
-```
+Reuse `InvitationCopyDialog` for the one-time URL. The raw URL/token is response-local transient state only: copy-only UI; no text rendering, DOM/data attributes, storage, logs, telemetry, query state, or recovery. Clear it on every close, unmount, navigation, and before `router.refresh`; do not refresh the route while it is the only copy opportunity.
 
-The action must retain the existing invitation behavior:
-
-- Exact contact only; no free-form Client email.
-- Explicit selected project only; no implicit project inferred outside this direct-contact flow.
-- Existing expiry range and one-time copy-link behavior.
-- No raw URL/token persistence, rendering, or later recovery.
-- No membership creation until accepted trusted completion.
-
-When the selected direct contact already has a linked active Client profile, show a clear localized state. The existing explicit Add Member flow may be used to add that eligible account; do not auto-add it from identity selection.
+No membership is created until trusted completion. If the selected associated direct contact already has a linked active Client profile, show localized state only; the established Add Member flow remains separately explicit and is never invoked from identity selection.
 
 ### 7.5 Project creation handoff
 
@@ -266,31 +259,35 @@ src/app/[locale]/invitacion/_components/invitation-form.test.tsx
 src/lib/clients/types.ts
 src/lib/clients/queries.ts
 src/lib/clients/actions.ts
+src/lib/projects/actions.ts
+src/lib/projects/schemas.ts
 src/lib/invitations/actions.ts
-src/components/shared/client-administration/invitations-panel.tsx
+src/components/shared/client-administration/invitation-create-dialog.tsx
+src/components/shared/client-administration/invitation-copy-dialog.tsx
+src/components/shared/projects/project-workspace/<new-client-identity-component>.tsx
 src/components/shared/projects/project-workspace/project-workspace-shell.tsx
 src/components/shared/projects/project-workspace/project-header.tsx
 src/components/shared/projects/project-workspace/project-overview-tab.tsx
-src/components/shared/projects/project-workspace/<new-client-identity-component>.tsx
 src/app/[locale]/(protected)/admin/proyectos/[id]/page.tsx
 src/app/[locale]/(protected)/pm/proyectos/[id]/page.tsx
 messages/en-US.json
 messages/es-MX.json
 __tests__/auth/complete-invite.test.ts
-__tests__/auth/negative-path.test.ts
-__tests__/auth/validation.test.ts
-__tests__/clients/clients-administration.test.ts
-__tests__/projects/direct-client-member-eligibility.test.ts
+<one-focused-client-identity-test>
+__tests__/database/<only-if-schema-contract-repair-is-required>.test.ts
 ```
 
 This list identifies likely touched surfaces, not permission for opportunistic refactors. Keep new feature components route-local or in the established project-workspace shared directory; do not put server-only Supabase code in a client component.
 
-### 8.1 Server-only adapters
+### 8.1 Required server/client boundaries
 
-- Query modules begin with `import "server-only"`; action modules begin with `"use server"`.
-- Add a narrowly mapped direct-contact selection adapter if needed. It receives authorized management contacts only on the server and returns a minimized DTO without email, phone, job title, organization details, token material, or broad profile fields.
-- The Admin/PM project pages load the minimized direct contacts only after resolving session and explicitly authorizing role. They pass no raw database rows to client components.
-- Actions independently call `requireSession`, require Admin/PM before input handling, validate strict UUID/unknown-key rules, use only trusted command/RPC boundaries, and revalidate the locale route trees after successful mutation.
+- Query modules begin with `import "server-only"`; action modules begin with `"use server"`. Client components never import them.
+- Add a narrow server-only direct-contact workspace adapter over `list_client_contacts_for_administration`. After Admin/PM authorization, map only active direct contacts to `{ id, fullName, profileId }`. A query/RPC error or malformed row returns `{ status: 'unavailable' }`, not `[]`.
+- The Admin/PM pages load that DTO and association projection only for eligible Client workspaces. They pass no raw Supabase rows, broad administration DTOs, organization contacts, or contact email/phone to client components. The existing active organization selector remains a separate minimal server-loaded projection.
+- Harden the project identity update boundary before this surface calls it: require session then Admin/PM role, strict project UUID and unknown-key validation, a strict allowlisted identity payload, safe closed result codes, and revalidation of both locale Admin/PM project-detail paths only after success. Do not expose `CommandResult.message` directly in this new UI.
+- `setProjectClientContactAction` remains the association boundary. Do not add direct `project_client_contacts` reads/writes, browser RPC calls, or a new association/membership command.
+- Extend `InvitationCreateDialog` only with a constrained fixed Client-project mode, or create a small wrapper that invokes the existing invitation action and `InvitationCopyDialog`; do not pass its existing broad `ClientContactAdministrationDto[]` contract into the workspace. Keep route-local orchestration in the new workspace component and reuse established dialog primitives.
+- New/changed implementation files may be up to 600 lines. Do not refactor unrelated files merely to alter line count.
 
 ### 8.2 Localization
 
@@ -309,53 +306,29 @@ No raw validation or database/provider message reaches the UI. Remove hard-coded
 7. Project-contact association creates no membership, account, task authority, directory authority, or invitation automatically.
 8. Admin and PM receive equivalent global management authority; `pm_lead`/`pm_watcher` remain metadata and cannot gate the Client identity control or its server actions.
 9. Operator and Client cannot enumerate contacts, organizations, direct associations, invitation data, or profile/email directory fields through any new path.
-10. Project identity selectors exclude deleted/archived projects and deleted contacts. Direct association rejects organization contacts at the database boundary.
+10. Project identity selectors and every callable association/invitation/completion command reject deleted, archived, and cancelled projects. Planning stays eligible for identity setup; only a non-planning, non-cancelled Client project requires database-enforced readiness. Direct association rejects organization contacts at the database boundary.
 11. Consent source/timestamp must be truthful. Do not write guessed user IP addresses.
-12. Errors fail closed and distinguish no internal reason to the browser.
+12. Errors fail closed and disclose no internal reason to the browser.
 
-## 10. Focused verification
+## 10. Minimal verification
 
-Run only focused changed checks plus repository lint/typecheck:
+Do **not** use test-first development, broad regression expansion, coverage, E2E, provider, production, or full-suite work. Update only tests directly broken by the changed API/schema and add only the smallest focused assertions required to protect the two changed behavior boundaries.
 
 ```text
 npm run lint
 npm run typecheck
-npm run test -- __tests__/auth/complete-invite.test.ts
-npm run test -- __tests__/auth/negative-path.test.ts
-npm run test -- __tests__/auth/validation.test.ts
-npm run test -- <focused changed project/workspace test files>
+npm run test -- __tests__/auth/complete-invite.test.ts src/app/[locale]/invitacion/_components/invitation-form.test.tsx <one-focused-client-identity-test>
 ```
 
-Do not add provider, production, E2E, coverage, broad full-suite, or unrelated regression work.
+The focused evidence is limited to:
 
-### 10.1 Required automated assertions
+1. Completion sends the strict four-argument RPC payload, uses only the fixed invitation email for Auth creation, makes no post-RPC profile write, and compensates only the newly created Auth user when session/RPC completion fails.
+2. The public form has no email field, uses the canonical `/api/v1/auth/invites/complete` path from both locales, maps safe server codes to localized copy, and does not surface raw validation/provider/database text.
+3. The Client identity surface is available to Admin/global PM (including `pm_watcher` metadata), absent for cancelled/Operator/Client scope, receives no email/phone DTO fields, invokes only the trusted association/invitation actions after explicit save/confirmation, and never creates a member itself.
 
-1. Proxy/middleware route behavior leaves `/api/v1/auth/invites/complete` non-localized and does not produce `/en/api/...`.
-2. Strict completion input rejects unknown keys, malformed token, invalid name, malformed E.164 phone, null preference, and every password policy deficiency.
-3. Password special-symbol feedback names the exact allowed set through localization, not raw validation text.
-4. Completion invokes the four-argument RPC and never directly updates `profiles` after it.
-5. Fixed invite email is used for Auth creation; no request email field is accepted.
-6. RPC failure after new Auth user creation invokes bounded deletion compensation exactly once; successful completion never invokes it.
-7. Safe responses contain no raw token/hash, email, phone, password, SQL/RPC message, compensation detail, or arbitrary redirect URL.
-8. Client completion uses name/phone/preference arguments; Operator completion uses the same profile contract without a contact update path.
-9. A pre-existing profile, including an existing Client or Operator, is rejected by trusted completion; it cannot have its role reassigned or gain another membership capacity.
-10. Direct-contact workspace DTO contains no contact email/phone/token data; organization contacts are unavailable for direct association.
-11. Direct association invokes the trusted action only; selecting a contact does not invoke project-member creation.
-12. Explicit Client invitation is available only after association and uses exact contact plus explicit project ID.
-13. Admin and PM can access the control regardless of PM membership capacity; Operator and Client cannot.
-14. English/Mexican Spanish key parity covers every added namespace.
+Maintain existing static schema-contract tests only where the migration’s changed `accept_invite` signature or final migration list makes them fail. Do not add a separate matrix, broad integration harness, snapshot suite, or manual test script.
 
-### 10.2 Required manual `jsf-pm-dev` journeys
-
-1. From default Spanish and `/en` invitation pages, redeem a valid project-scoped Client invite. Confirm no `/en/api` request/404 occurs, the accepted Client profile/contact has the invitee name/phone/preference, and membership exists only after acceptance.
-2. Redeem a global Operator invite. Confirm the fixed email creates the account, invitee values persist on profile, and no client contact/member is created.
-3. Test terminal expired/revoked/used links and malformed form values. Confirm safe localized messaging and no raw reason/token disclosure.
-4. Simulate or use a controlled failure after Auth user creation and before/at RPC completion. Confirm the newly created user is removed when bounded compensation succeeds and the invitation is not falsely shown accepted.
-5. Create a planning Client project with no organization. From its workspace, select and associate a direct contact, then create/copy a Client invitation. Confirm association itself creates no member/access.
-6. Accept that invite and confirm the Client member becomes eligible only after accepted completion. Confirm direct readiness works without organization.
-7. Select an organization path and confirm it is optional metadata; organization contacts cannot appear in direct-association controls.
-8. Verify Admin and global PM journeys; a PM without project membership and a PM with `pm_watcher` metadata still has the management control. Verify Operator/Client denial.
-9. Verify keyboard dialog behavior, focus restoration, one-time link clearing, narrow responsive layout, and English/Mexican Spanish parity.
+After the migration is applied, the Project Owner—not the implementation agent—may perform one development-environment smoke journey: planning direct Client project → associate → copy Client invitation → complete acceptance. Report it separately if performed; it is not an implementation blocker.
 
 ## 11. Completion-report contract
 

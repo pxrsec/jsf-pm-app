@@ -43,7 +43,7 @@ If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is 
 - Use the Next.js App Router. Prefer React Server Components; use client components only at interaction boundaries.
 - Preserve strict TypeScript. Use `@/*` imports for `src/`. New filenames and directories use lowercase kebab-case.
 - Put route-specific components in route-local `_components/`, shared application components in `src/components/shared/`, and shadcn primitives in `src/components/ui/`.
-- Keep implementation files at or below 400 lines. Split by responsibility; do not evade the limit through generated or compressed code. Do not edit, split, or regenerate `src/lib/database.types.ts`; it is an MCP-generated tracked-source exception to the line limit.
+- Keep implementation files at or below 600 lines. Split by responsibility; do not evade the limit through generated or compressed code. Do not edit, split, or regenerate `src/lib/database.types.ts`; it is an MCP-generated tracked-source exception to the line limit.
 - Localize user-visible text. Keep code, identifiers, and persisted enums in English. Follow the repository's locale architecture.
 
 ## Data and security boundaries

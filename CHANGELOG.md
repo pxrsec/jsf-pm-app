@@ -1,5 +1,16 @@
 # JSF PM App Development Changelog
 
+## [2026-09-01 @ 14:03]
+
+**🛠 Database & 🔒 Security: S10-02-R1 Cancelled Project Command Enforcement Migration & Type Regeneration**
+
+- **Database Migration Applied (`20260901130000_s10-02-r1-cancelled-project-command-enforcement.sql`):**
+  - Executed migration via Supabase MCP tooling (`apply_migration`) to align direct-client association and invitation boundaries with the S10 readiness model.
+  - Hardened `public.set_project_client_contact`, `public.list_project_client_contact_associations`, `private.resolve_s10_ordinary_invitation`, and `public.accept_invite` to explicitly reject cancelled projects (`status <> 'cancelled'`).
+  - Preserved planning project eligibility while preventing direct association, association projection, invitation lifecycle actions, and membership creation on cancelled projects.
+- **TypeScript Type Regeneration (`src/lib/database.types.ts`):**
+  - Regenerated Supabase schema definitions and database types via Supabase MCP tooling (`generate_typescript_types`).
+
 ## [2026-09-01 @ 11:18]
 
 **🎨 UI & 📱 Mobile First: Enterprise Brand Refinement for Invitation Route (`/invitacion`)**
