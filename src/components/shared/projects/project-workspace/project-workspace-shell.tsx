@@ -31,6 +31,7 @@ import type {
 } from "@/lib/projects/queries";
 import type { DeliverableListItem } from "@/lib/deliverables/queries";
 import type { ClientListItem } from "@/lib/clients/queries";
+import type { AvailableResult } from "@/lib/clients/types";
 import type {
   CalendarEventDto,
   MilestoneManagementTargetDto,
@@ -66,7 +67,8 @@ interface ProjectWorkspaceShellProps {
     Profile,
     "id" | "full_name" | "role" | "avatar_url"
   >[];
-  eligibleClients: EligibleClientMember[];
+  eligibleClients:
+    AvailableResult<EligibleClientMember[]> | EligibleClientMember[];
   effectiveCapacity: "admin" | "pm_lead" | "pm_watcher";
   actorRole: "admin" | "pm";
   currentUserId?: string;

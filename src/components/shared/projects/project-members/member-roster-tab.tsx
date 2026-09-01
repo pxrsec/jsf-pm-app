@@ -33,6 +33,7 @@ import { AddMemberDialog } from "./add-member-dialog";
 import { ChangeCapacityDialog } from "./change-capacity-dialog";
 import { RemoveMemberDialog } from "./remove-member-dialog";
 import { SetPrimaryLeadDialog } from "./set-primary-lead-dialog";
+import type { AvailableResult } from "@/lib/clients/types";
 import type {
   ProjectDetail,
   ProjectMemberWithProfile,
@@ -48,7 +49,8 @@ interface MemberRosterTabProps {
     Profile,
     "id" | "full_name" | "role" | "avatar_url"
   >[];
-  eligibleClients: EligibleClientMember[];
+  eligibleClients:
+    AvailableResult<EligibleClientMember[]> | EligibleClientMember[];
 }
 
 export function MemberRosterTab({

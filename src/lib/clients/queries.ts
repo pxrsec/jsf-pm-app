@@ -2,6 +2,11 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import { logger } from "@/lib/logger";
+import type {
+  AvailableResult,
+  ClientContactAdministrationDto,
+  ClientOrganizationAdministrationDto,
+} from "./types";
 
 export type Client = Database["public"]["Tables"]["clients"]["Row"];
 export type ClientInsert = Database["public"]["Tables"]["clients"]["Insert"];
@@ -109,5 +114,139 @@ export async function listClientContacts(
   } catch (err) {
     logger.debug("Failed in listClientContacts", { err });
     return [];
+  }
+}
+
+// ── S10 Administration Queries ───────────────────────────────────────────────
+
+export async function listClientContactsForAdministration(
+  supabase: TypedSupabase,
+): Promise<AvailableResult<ClientContactAdministrationDto[]>> {
+  try {
+    const { data, error } = await supabase.rpc(
+      "list_client_contacts_for_administration",
+    );
+
+    if (error || !data) {
+      if (error) {
+        logger.debug("Error in listClientContactsForAdministration RPC", {
+          error: error.message,
+        });
+      }
+      return { status: "unavailable" };
+    }
+
+    const contacts: ClientContactAdministrationDto[] = [];
+    for (const row of data) {
+      if (
+        typeof row.id !== "string" ||
+        typeof row.full_name !== "string" ||
+        typeof row.email !== "string" ||
+        typeof row.is_primary !== "boolean" ||
+        typeof row.created_at !== "string" ||
+        typeof row.updated_at !== "string"
+      ) {
+        return { status: "unavailable" };
+      }
+
+      contacts.push({
+        id: row.id,
+        clientId: row.client_id ?? null,
+        profileId: row.profile_id ?? null,
+        fullName: row.full_name,
+        email: row.email,
+        phoneE164: row.phone_e164 ?? null,
+        jobTitle: row.job_title ?? null,
+        isPrimary: row.is_primary,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      });
+    }
+
+    return { status: "available", data: contacts };
+  } catch (err) {
+    logger.debug("Failed in listClientContactsForAdministration", { err });
+    return { status: "unavailable" };
+  }
+}
+
+export async function listClientOrganizationsForAdministration(
+  supabase: TypedSupabase,
+): Promise<AvailableResult<ClientOrganizationAdministrationDto[]>> {
+  try {
+    const { data, error } = await supabase.rpc(
+      "list_client_organizations_for_administration",
+    );
+
+    if (error || !data) {
+      if (error) {
+        logger.debug("Error in listClientOrganizationsForAdministration RPC", {
+          error: error.message,
+        });
+      }
+      return { status: "unavailable" };
+    }
+
+    const orgs: ClientOrganizationAdministrationDto[] = [];
+    for (const row of data) {
+      if (
+        typeof row.id !== "string" ||
+        typeof row.display_name !== "string" ||
+        typeof row.slug !== "string"
+      ) {
+        return { status: "unavailable" };
+      }
+
+      orgs.push({
+        id: row.id,
+        displayName: row.display_name,
+        slug: row.slug,
+      });
+    }
+
+    return { status: "available", data: orgs };
+  } catch (err) {
+    logger.debug("Failed in listClientOrganizationsForAdministration", { err });
+    return { status: "unavailable" };
+  }
+}
+
+export async function listProjectClientContactAssociations(
+  supabase: TypedSupabase,
+  projectId: string,
+): Promise<AvailableResult<string[]>> {
+  try {
+    const { data, error } = await supabase.rpc(
+      "list_project_client_contact_associations",
+      { p_project_id: projectId },
+    );
+
+    if (error || !data) {
+      if (error) {
+        logger.debug("Error in listProjectClientContactAssociations RPC", {
+          error: error.message,
+        });
+      }
+      return { status: "unavailable" };
+    }
+
+    const contactIds: string[] = [];
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    for (const row of data) {
+      if (
+        typeof row.contact_id !== "string" ||
+        !uuidRegex.test(row.contact_id)
+      ) {
+        return { status: "unavailable" };
+      }
+      contactIds.push(row.contact_id);
+    }
+
+    return { status: "available", data: contactIds };
+  } catch (err) {
+    logger.debug("Failed in listProjectClientContactAssociations", { err });
+    return { status: "unavailable" };
   }
 }

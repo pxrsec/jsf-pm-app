@@ -1,5 +1,72 @@
 # JSF PM App Development Changelog
 
+## [2026-09-01 @ 11:18]
+
+**🎨 UI & 📱 Mobile First: Enterprise Brand Refinement for Invitation Route (`/invitacion`)**
+
+- **Joya Star Films Brand Identity & Layout (`src/app/[locale]/invitacion/page.tsx`):**
+  - Upgraded `/invitacion` entry page with responsive mobile-first container (`flex flex-col items-center justify-center p-4 sm:p-6 md:p-8`).
+  - Added ambient atmospheric glowing background accents (`bg-accent/15` and `bg-purple-500/10` with heavy blur filters) consistent with enterprise auth layouts.
+  - Positioned top-right utility controls pairing `LanguageSwitcher` with `ThemeToggle`.
+- **Branded Invitation Form Experience (`src/app/[locale]/invitacion/_components/invitation-form.tsx`):**
+  - Integrated official Joya Star Films brand header with purple logo asset (`/joyalogo-purple.svg`), responsive scaling, and smooth hover micro-animations.
+  - Enhanced form visual hierarchy using glassmorphism card styling (`bg-card/95 backdrop-blur-xl border-border/80 shadow-2xl`).
+  - Added visual iconography to all inputs (`User` for name, `Phone` for telephone, `Lock` for password).
+  - Added interactive password visibility toggle (`Eye`/`EyeOff`) with accessible ARIA label switching.
+  - Polished WhatsApp notification opt-in checkbox container with comfortable touch target and muted caption.
+  - Implemented loading state with spinning `Loader2` indicator on the primary submit button.
+  - Added accessible sign-in navigation link (`/iniciar-sesion`) for users with existing credentials.
+- **Testing & Verification (`src/app/[locale]/invitacion/_components/invitation-form.test.tsx`):**
+  - Added comprehensive Vitest suite verifying logo rendering, header copy, input fields, password toggle interaction, and API response flows (201 success redirect, 410 expired redirect, and error alert handling).
+  - Confirmed strict TypeScript check (`npm run typecheck`) and ESLint (`npm run lint`) passing with 0 errors.
+
+## [2026-09-01 @ 10:48]
+
+**🎨 UI & 📱 Mobile First: Client Administration Route & Responsive Polish**
+
+- **Primitive UI Fixes (`src/components/ui/`):**
+  - Resolved `Tabs` component flex orientation bug in Tailwind CSS v4, setting `group/tabs flex flex-col gap-2 data-[orientation=vertical]:flex-row` and updating data attribute selectors across `TabsList` and `TabsTrigger`.
+  - Corrected `Separator` data orientation selectors to `data-[orientation=...]`.
+  - Refined `Select` primitive with default `w-full` on `SelectTrigger`, `h-9` touch-friendly sizing, and `min-w-[280px]` with `max-w-[calc(100vw-2rem)]` on `SelectContent` to prevent clipping of long options (e.g. "Sin organización (contacto directo)").
+- **Client Administration Header & Tab Hierarchy (`src/components/shared/client-administration/client-administration-view.tsx`):**
+  - Restructured layout so tab triggers are positioned horizontally directly below page title and description.
+  - Implemented responsive tab bar (`grid grid-cols-2` on mobile, `inline-flex` on desktop) with `h-10` touch targets.
+- **Mobile-First Dual-View Architecture (`src/components/shared/client-administration/`):**
+  - **`ContactCard` (`contact-card.tsx`)**: Created dedicated mobile card representation showing contact icons, organization/direct status badges, job title, email, account linking badge, and touch-friendly project association checkbox.
+  - **`InvitationCard` (`invitation-card.tsx`)**: Created dedicated mobile card representation showing role badges, status badges, recipient label, project association, formatted timestamps, and quick action buttons (Rotate / Revoke).
+  - **`ContactsPanel` & `InvitationsPanel` (`contacts-panel.tsx`, `invitations-panel.tsx`)**: Refactored to seamlessly switch between mobile cards (`block sm:hidden`) and full data tables (`hidden sm:block`), preventing viewport overflow and keeping source files well under the 400-line limit.
+  - **Dialogs & Layouts**: Standardized select triggers and container padding across admin and PM client administration routes.
+- **Verification:**
+  - Verified `npm run typecheck` with 0 errors.
+  - Verified `npm run lint` with 0 errors/warnings.
+  - Created and ran focused unit tests in `client-administration-ui.test.tsx` and i18n parity tests (`client-administration-messages.test.ts`), all passing 100%.
+
+## [2026-08-31 @ 16:35]
+
+**🚀 Features & 🛠 Architecture: S10-01 & S10-02 Client Administration, Ordinary Invitations & Direct Eligibility**
+
+- **Client Administration Foundation & Server Actions (`src/lib/clients/`):**
+  - Implemented strict camelCase DTOs, `AvailableResult<T>`, and `ClientAdministrationActionResult<T>` in `types.ts`.
+  - Defined strict Zod schemas in `schemas.ts` enforcing `isPrimary: false` refinement for direct contacts.
+  - Implemented query modules in `queries.ts` including `listClientContactsForAdministration`, `listClientOrganizationsForAdministration`, and `listProjectClientContactAssociations`.
+  - Implemented secure server actions in `actions.ts` (`saveClientContactAction`, `setProjectClientContactAction`, `loadProjectClientContactAssociationsAction`) with `SaveClientContactRpcArgs` passing explicit `p_contact_id: null` on creation and strict `admin`/`pm` role boundaries.
+- **Ordinary Invitations Engine (`src/lib/invitations/`):**
+  - Implemented DTOs, schemas, query pagination, and lifecycle server actions (`loadOrdinaryInvitationPageAction`, `createOrdinaryInvitationAction`, `rotateOrdinaryInvitationAction`, `revokeOrdinaryInvitationAction`).
+  - Enforced keyset page validation over all rows before slicing, deriving `nextCursor` from the last visible item.
+  - Implemented canonical one-time URL construction with `InvitationLinkLocale` (`es-MX` / `en-US`), zero plaintext token storage, and strict UI copy dialog isolation.
+- **Direct-Contact Project-Member Eligibility (`src/lib/projects/queries.ts`, `src/lib/deliverables/auth-checks.ts`):**
+  - Replaced legacy query with two-step `listEligibleClientMembersForProject` querying `list_project_client_contact_associations` RPC for direct projects and `client_contacts` under RLS. Enforced strict prohibition on direct reads of `project_client_contacts`.
+  - Updated deliverable eligibility checks to support client tasks on direct client projects.
+- **Client Administration Surfaces & Global Navigation (`src/components/shared/client-administration/`, `src/app/[locale]/(protected)/`):**
+  - Built directory management panel, direct project association toolbar, keyset invitations list, and accessible modal dialogs (`ContactDialog`, `InvitationCreateDialog`, `InvitationConfirmDialog`, `InvitationCopyDialog`).
+  - Added `/admin/clientes` and `/pm/clientes` App Router pages and mapped `clients` into global desktop and mobile drawer navigation for `admin` and `pm`.
+- **Existing Surfaces Reconciliation (`src/components/shared/projects/`):**
+  - Reconciled `ProjectOverviewTab`, `ProjectHeader`, `DeliverablesTab`, `DeliverableCreateDialog`, and `AddMemberDialog` for direct client projects and added localized prerequisite guidance.
+- **Localization (`messages/en-US.json`, `messages/es-MX.json`):**
+  - Added bilingual `clientAdministration` namespace, navigation link translations, direct project type labels, and dialog guidance.
+- **Automated Verification:**
+  - Added 6 focused Vitest test suites (65 tests passing 100%), verified `npm run lint` with 0 errors/warnings, and confirmed `npm run typecheck` with 0 errors.
+
 ## [2026-08-31 @ 15:31]
 
 **🛠 Database & Types: S10 Active Project Command Enforcement**

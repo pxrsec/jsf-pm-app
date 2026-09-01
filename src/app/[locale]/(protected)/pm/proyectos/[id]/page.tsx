@@ -8,7 +8,7 @@ import {
   getCompletionCycles,
   listEligiblePmUsers,
   listEligibleOperators,
-  listEligibleClientMembers,
+  listEligibleClientMembersForProject,
   listProjectTasks,
 } from "@/lib/projects/queries";
 import { listProjectDeliverables } from "@/lib/deliverables/queries";
@@ -109,7 +109,10 @@ export default async function PmProjectDetailPage({
     getCompletionCycles(supabase, id),
     listEligiblePmUsers(supabase),
     listEligibleOperators(supabase),
-    listEligibleClientMembers(supabase, project.client_id),
+    listEligibleClientMembersForProject(supabase, {
+      id: project.id,
+      client_id: project.client_id,
+    }),
     listProjectTasks(supabase, id),
     listProjectDeliverables(supabase, id),
     isCalendarTab && calendarRange

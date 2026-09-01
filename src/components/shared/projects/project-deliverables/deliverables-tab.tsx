@@ -69,8 +69,9 @@ export function DeliverablesTab({
     useState<DeliverableVersionView | null>(null);
 
   const hasTasks = tasks.some((t) => !t.deleted_at);
-  const isMissingClientOrg =
-    project.project_type === "client" && !project.client_id;
+  const isMissingClientMember =
+    project.project_type === "client" &&
+    !project.members.some((m) => m.member_type === "client" && !m.deleted_at);
   const isLeadOrAdmin =
     effectiveCapacity === "admin" || effectiveCapacity === "pm_lead";
 
@@ -134,7 +135,7 @@ export function DeliverablesTab({
 
   return (
     <div className="space-y-6">
-      {isMissingClientOrg && (
+      {isMissingClientMember && (
         <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200">
           <Building2 className="size-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
           <div className="space-y-0.5 text-xs">

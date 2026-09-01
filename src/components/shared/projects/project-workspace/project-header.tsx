@@ -230,7 +230,7 @@ export function ProjectHeader({
             {project.project_type === "client"
               ? clientOrg
                 ? `Cliente: ${clientOrg.display_name}`
-                : `Cliente: ${tTypes("unassigned")}`
+                : `Cliente: ${tTypes("direct")}`
               : tTypes("internal")}
           </Badge>
 

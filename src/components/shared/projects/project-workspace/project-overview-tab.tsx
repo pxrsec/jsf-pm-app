@@ -109,8 +109,7 @@ export function ProjectOverviewTab({
   );
 
   const isClientProject = project.project_type === "client";
-  const isMissingClientSetup =
-    isClientProject && (!project.client_id || clientMembers.length === 0);
+  const isMissingClientSetup = isClientProject && clientMembers.length === 0;
 
   const createdDate = new Date(project.created_at);
   const deadlineDate = project.deadline_at

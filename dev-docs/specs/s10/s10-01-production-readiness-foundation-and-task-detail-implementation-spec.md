@@ -1,9 +1,9 @@
 ---
-document_id: S10-01-S10-02-DIRECT-CLIENT-AND-INVITATION-ADMINISTRATION-IMPLEMENTATION-SPEC-03
+document_id: S10-01-S10-02-DIRECT-CLIENT-AND-INVITATION-ADMINISTRATION-IMPLEMENTATION-SPEC-04
 sprint_id: S10
 work_items: [S10-01, S10-02]
-status: blocked-on-migration-application-and-types-regeneration
-updated_at: 2026-08-31T15:00:38-06:00
+status: implementation-ready-no-further-migration-required
+updated_at: 2026-08-31T15:44:33-06:00
 target_environment: jsf-pm-dev
 schema_baseline:
   - supabase/migrations/20260830110000_s10-direct-client-identity-and-invitation-administration.sql
@@ -16,324 +16,268 @@ generated_types: src/lib/database.types.ts
 
 # S10-01 and S10-02 — Direct Client and Ordinary Invitation Administration
 
-## 1. Scope
+## 1. Controlling scope and final schema verdict
 
-Implement only these two capabilities:
+Implement **only** S10-01 and S10-02:
 
-1. **S10-01:** Admin/PM administration of direct client contacts, optional client organizations, and client-project contact associations under the M01 readiness and global-management-authority model.
-2. **S10-02:** discoverable Admin/PM contact and ordinary invitation administration using **Model A** invitation delivery.
+1. Admin/PM administration of direct client contacts, optional organizations, and direct-contact/project associations.
+2. Admin/PM Model A administration of Client and Operator invitations.
 
-Do not implement account deactivation, archive/recycle-bin, permanent deletion, legal pages, providers, outbound email/WhatsApp delivery, public signup, task-detail work, calendar work, or changes to historical deliverable versions.
+This specification supersedes revision 03 for this implementation slice. It reconciles the applied S10 migration chain, the regenerated declarations, and the current repository code. It is the complete execution authority for the implementation plan and code work.
 
-## 2. Applied data contract
+### Final migration decision
 
-### 2.1 Domain terms
+**No further migration is required for S10-01 or S10-02. Do not author, apply, or regenerate types for another S10-01/S10-02 migration during normal implementation.**
 
-| Term | Stored model | Meaning | Does not grant or imply |
+The applied chain already supplies every required trusted boundary:
+
+| Need | Applied command/projection | Coverage |
+| --- | --- | --- |
+| Direct contact create/edit and optional organization link | `save_client_contact` | Admin/PM-only `SECURITY DEFINER`; rejects deleted organization; direct contacts require `is_primary = false`. |
+| Contact directory and organization selector | `list_client_contacts_for_administration`, `list_client_organizations_for_administration` | Admin/PM-only; no browser base-table access is needed. |
+| Direct-contact association state and mutation | `list_project_client_contact_associations`, `set_project_client_contact` | Active direct contact IDs only; historical rows can be removed; rejects deleted/archived/non-client projects. |
+| Model A lifecycle | `create_ordinary_invitation`, `rotate_ordinary_invitation`, `revoke_ordinary_invitation`, `list_ordinary_invitation_administration` | Closed Client/Operator role set; token returned only by create/rotate; bounded safe list projection. |
+| Invitation acceptance | `accept_invite` | Exact email/contact binding, expiry/revocation/single-use checks, and deleted/archived project rejection before membership creation. |
+| Global Admin/PM project selection | existing `projects` RLS after M01 | Active Admin/PM may read all non-deleted projects. The application selector must filter to `project_type = client` and `archived_at IS NULL`. No new selector RPC is necessary. |
+
+`20260831153000_s10-active-project-command-enforcement.sql` closes the last schema-level lifecycle mismatch by enforcing `archived_at IS NULL` in association set/list, Client and Operator invitation resolution, and invite acceptance. Create and rotate call the repaired resolver; therefore their project predicates are also covered.
+
+A later migration is permitted only if implementation proves an actual deployed-schema contradiction not represented in this baseline. A TypeScript ergonomics issue, a UI state issue, or a recoverable adapter validation issue is **not** a migration reason.
+
+## 2. Explicit non-goals
+
+Do not implement or alter:
+
+- S10-03 through S10-06, archive/recycle-bin/permanent deletion, deactivation, stale reminders, bug reports, legal routes, task-detail work, calendar work, or deliverable-link correction.
+- Provider dispatch, email, WhatsApp, SMS, queueing, scheduling, analytics/telemetry, provider secrets, public signup, or production actions.
+- Admin/PM invitation creation, arbitrary role selection, browser role changes, browser base-table writes, direct table reads of `invite_tokens` or `project_client_contacts`, or service-role workarounds.
+- Project-membership creation/deletion as an association workaround. Association is readiness metadata only.
+- Broad project-directory redesign or a refactor unrelated to direct readiness.
+
+## 3. Domain and authority contract
+
+| Term | Stored model | Meaning | Never implies |
 | --- | --- | --- | --- |
-| Contact | `client_contacts` | A person record. `client_id` and `profile_id` are optional. | Account, organization, project membership, project visibility, task authority. |
-| Organization | `clients` | Optional grouping for contacts. | A universal client identity/readiness prerequisite or access. |
-| Account | `auth.users` plus `profiles` | Authenticated identity with an application role. | Contact-directory authority or membership in every project. |
-| Project membership | `project_members` | Explicit project authorization relationship. | Contact administration or organization membership. |
-| Project-contact association | `project_client_contacts` | Direct-contact identity/readiness metadata for one client project. | A `project_members` row, RLS visibility, task assignment, or client portal access. |
-| Invitation | `invite_tokens` | Opaque, hashed, expiring, revocable, single-use onboarding authorization for an ordinary role. | Public signup, role elevation, general directory visibility. |
+| Contact | `client_contacts` | Person record; may be direct or organization-associated; may lack an account. | Organization, account, membership, RLS visibility, or work authority. |
+| Direct contact | `client_contacts.client_id IS NULL` | Person not associated with an organization. | Invalid data or an implicit organization. |
+| Organization contact | `client_contacts.client_id IS NOT NULL` | Contact linked to a non-deleted `clients` row by the trusted save command. | Membership, project access, or a direct-contact association control. |
+| Organization | `clients` | Optional grouping metadata. | Universal client identity/readiness prerequisite. |
+| Account | `auth.users` and `profiles` | Authenticated identity and application role. | Directory authority or contact membership. |
+| Project member | `project_members` | Explicit project authorization. | Contact directory access. |
+| Project-contact association | `project_client_contacts` | Direct-contact identity/readiness metadata for one client project. | A member row, project visibility, invitation, activation, or assignment. |
+| Invitation | `invite_tokens` | Opaque, hashed, expiring, revocable, single-use onboarding authorization. | Public registration, role elevation, directory access, or token recovery. |
 
-### 2.2 Contact invariants
+`profiles.role` is the application authority. Active `admin` and active `pm` have equivalent global S10 management authority. `pm_lead` and `pm_watcher` are project metadata only and must never be consulted for this screen, its selector, its actions, or its routes.
 
-1. A direct contact has `client_id IS NULL`; an organization contact has an active `client_id`.
-2. A direct contact always has `is_primary = false`.
-3. An active organization contact is unique by `(client_id, email)`; an active direct contact is unique by `email`; an active profile can link to only one active contact.
-4. A contact remains valid when no account exists, when an account is deactivated, or when the contact later changes organization.
-5. Direct-to-organization and organization-to-direct transitions update the same contact through `save_client_contact`; never delete/recreate a contact solely to change organization association.
-6. Contact-directory information is an Admin/PM management surface. Operator and Client roles cannot enumerate contacts, organizations, contact-profile links, or invitation recipient information.
+## 4. Data invariants that application code must preserve
 
-### 2.3 Client-project readiness invariants
+1. A direct contact has `client_id = null` and `is_primary = false`.
+2. Active (non-deleted) direct contacts are unique by email; active organization contacts are unique by `(client_id, email)`; one active profile can link to one active contact.
+3. Moving a person direct → organization or organization → direct updates the same contact through `save_client_contact`. Never delete/recreate a person merely to alter `client_id`.
+4. A planning or cancelled client project can exist without organization, contact, account, or client membership.
+5. A non-planning, non-cancelled client project needs an active Client project member whose linked contact is either associated direct contact for that exact project or an organization contact matching `projects.client_id`. The database enforces this at commit time.
+6. Direct association is permitted only for a non-deleted direct contact and a non-deleted, non-archived client project. Disassociation remains valid for an exact historical contact ID to allow cleanup.
+7. Association projection returns only IDs for currently non-deleted direct contacts. UI must intersect those IDs with the authorized current contact directory before marking a row associated.
+8. Client invitations bind an exact non-deleted contact without a profile. Operator invitations bind no contact and use validated recipient email.
+9. Project-scoped Client invitations require direct association or organization match; project-scoped Operator invitations require an explicitly selected available project. Every project-bearing S10 command rejects archived/deleted projects.
+10. Only `client` and `operator` are ordinary invitation roles. A project membership is created only on accepted project-scoped invite; association never creates one.
 
-1. A planning or cancelled client project may exist without a client organization, direct contact, account, or client member.
-2. An active non-planning/non-cancelled client project is ready only when it contains an active `client` project member linked to either:
-   - a direct contact associated with that exact project through `project_client_contacts`; or
-   - an organization contact whose `client_id` equals `projects.client_id`.
-3. A project-contact association alone never satisfies readiness because it does not create an account or project membership.
-4. Association/disassociation uses `set_project_client_contact`; no UI path may compensate for a rejected readiness change by creating/deleting memberships or altering a profile.
-5. Admin and PM are global management authorities. `pm_lead` and `pm_watcher` are project metadata, never a gate for contacts, organizations, invitations, or S10 project-selection controls.
-6. The association projection returns only active direct-contact IDs. Historical rows for a deleted contact or a contact later changed to an organization are never browser-visible, but an Admin/PM may idempotently disassociate any historical association by its exact ID.
-7. Every S10 association command or projection accepts only a non-deleted, non-archived client project. An archived project has no selectable or mutable S10 association state.
+## 5. Required server-only modules
 
-### 2.4 Ordinary invitation invariants
-
-1. The only ordinary invitation roles are `client` and `operator`.
-2. An ordinary invite can be global (`project_id IS NULL`) or explicitly project-scoped.
-3. A client invite binds one exact unlinked active `client_contacts` row through `contact_id`; recipient email is derived from that contact inside the trusted command.
-4. A project-scoped client invite requires a non-deleted, non-archived client project and either an active direct-contact association for that project or an organization contact whose organization matches the project organization.
-5. An operator invite uses a validated recipient email, has no `contact_id`, and can reference any non-deleted, non-archived project selected explicitly by an authorized manager.
-6. `accept_invite` validates exact recipient-email match, invitation state, role, contact eligibility, project compatibility, and that a project-scoped invitation's project remains non-deleted and non-archived. It creates a project member only when that invitation explicitly carries a project.
-7. No ordinary flow can create/invite Admin or PM accounts, infer a role from a membership capacity, or mutate an existing user’s role in the browser.
-
-## 3. Model A invitation delivery
-
-Model A is a manual, token-safe join-link workflow with no provider dispatch.
-
-- Create and rotate commands generate a 32-byte cryptographically random URL-safe opaque token, store only `SHA-256(token)` in `invite_tokens`, and return the raw token once to the initiating authenticated Server Action.
-- The Server Action builds the locale-safe invitation URL from the one-time token. The client copies that URL immediately through the browser clipboard capability.
-- Raw token, hash, and join URL are never persisted in React state beyond the active result interaction, route/search state, local storage, session storage, analytics, telemetry, logs, audit payloads, list projections, or error messages.
-- A pending invitation cannot be reconstructed from its hash. Therefore there is no later retrieve/copy-token RPC. If the initiating one-time result is dismissed or clipboard copy fails, **Resend** rotates the invitation and produces a new one-time link.
-- Resend means token rotation only. It does not send email, WhatsApp, SMS, or any other external communication, and UI copy must never claim delivery.
-- Creating another ordinary invitation for the same Client contact or Operator email supersedes every earlier pending invite for that recipient: expired rows normalize to `expired`; usable rows become `revoked`. Exactly one newly issued Model A link remains usable for that recipient.
-- Rotation atomically revokes the prior pending invitation and creates a new pending invitation with the retained, revalidated role/contact/project context. The old link becomes unusable.
-
-## 4. Trusted database commands and projections
-
-All calls below are typed Supabase RPC calls from `server-only` adapters or Server Actions. Browser code must not read or mutate `client_contacts`, `clients`, `project_client_contacts`, or `invite_tokens` directly.
-
-### 4.1 Contacts and associations
-
-| RPC | Inputs | Output | Required use |
-| --- | --- | --- | --- |
-| `list_client_contacts_for_administration()` | none | active contact directory: `id`, `client_id`, `profile_id`, `full_name`, `email`, `phone_e164`, `job_title`, `is_primary`, timestamps | Directory, contact selector, and form initialization. |
-| `list_client_organizations_for_administration()` | none | `id`, `display_name`, `slug` | Optional organization selector only. |
-| `save_client_contact(...)` | validated complete contact fields | contact UUID | Create or edit one direct/organization contact. Pass every editable field explicitly. |
-| `set_project_client_contact(projectId, contactId, associated)` | exact IDs and Boolean | resulting association Boolean | Associate/disassociate one contact in an authorized client-project context. |
-| `list_project_client_contact_associations(projectId)` | exact client-project UUID | active associated direct-contact UUIDs only; excludes deleted contacts and contacts now linked to an organization | Resolve selected-project association state. |
-
-### 4.2 Model A invitation lifecycle
-
-| RPC | Inputs | Output | Required use |
-| --- | --- | --- | --- |
-| `create_ordinary_invitation(role, contactId?, recipientEmail?, projectId?, expiresInHours?)` | closed role; exact contact for Client or recipient email for Operator; optional selected project; 1–720 hour lifetime | `invitation_id`, `invitation_role`, `expires_at`, one-time `invitation_token` | Create an ordinary invite. Default the UI lifetime to 168 hours. |
-| `rotate_ordinary_invitation(invitationId, expiresInHours?)` | listed pending invitation ID and 1–720 hour lifetime | new invitation ID/role/expiry and one-time new token | Resend/reissue. Never reuse an old token. |
-| `revoke_ordinary_invitation(invitationId)` | listed invitation ID | `invitation_id`, final `invitation_status`, `changed` | Revoke a pending invite. Treat `changed: false` as an idempotent terminal result and refresh. |
-| `list_ordinary_invitation_administration(beforeCreatedAt?, beforeInvitationId?, limit?)` | complete composite cursor or no cursor; limit 1–100 | bounded lifecycle rows without email/token/hash | Management list. Fetch `pageSize + 1`, validate every returned row, then slice locally. |
-| `accept_invite(tokenHash)` | hash generated server-side from the recipient’s opaque token | existing safe result | Preserve current recipient onboarding path only. |
-
-All lifecycle functions are security-definer commands with a fixed safe search path, internal active Admin/PM check where applicable, explicit `postgres` owner, no `public`/`anon`/`service_role` execute grant, and `authenticated` grant only. They retain closed base-table RLS and append audit rows containing identifiers/outcomes only—not recipient email, raw token, hash, or URL. Trusted project-bearing commands reject deleted or archived projects rather than relying on UI selector filtering.
-
-## 5. Server-only adapter and action contract
-
-### 5.1 Module boundaries
-
-Create focused modules under these existing feature roots:
+Create/extend only these feature modules. Query modules begin with `import "server-only"`; action modules begin with `"use server"`. No client component imports a query module or Supabase client.
 
 ```text
-src/lib/clients/
-  types.ts                 # management DTOs and closed action result types
-  schemas.ts               # add contact/association validation to existing organization schema
-  queries.ts               # retain organization helpers only where still domain-specific; add M01 administration adapters
-  actions.ts               # contact save and project-contact association Server Actions
-src/lib/invitations/
-  types.ts                 # lifecycle rows, cursors, one-time link result
-  schemas.ts               # create/rotate/revoke/list action payload schemas
-  queries.ts               # server-only typed RPC adapter and fail-closed row validation
-  actions.ts               # create/rotate/revoke Server Actions and revalidation
+src/lib/clients/types.ts
+src/lib/clients/schemas.ts
+src/lib/clients/queries.ts
+src/lib/clients/actions.ts
+src/lib/invitations/types.ts
+src/lib/invitations/schemas.ts
+src/lib/invitations/queries.ts
+src/lib/invitations/actions.ts
+src/lib/projects/queries.ts
 ```
 
-Use `import "server-only"` in query adapters. Use `"use server"` only in action modules. UI components import Server Actions, never server query adapters or Supabase clients.
+### 5.1 DTO rules
 
-### 5.2 Authorization and error behavior
+- Public DTO fields are camelCase. Raw RPC fields are snake_case and are mapped only in server-only adapters.
+- Do not expose IDs as display text. IDs may be client-side action keys only.
+- Do not reuse broad table row types as browser DTOs.
+- Raw unexpected RPC errors, malformed rows, null required fields, invalid UUIDs, unexpected enum values, malformed timestamps, and invalid cursor combinations fail closed as `UNAVAILABLE`; never return provider/SQL error text.
+- The generated RPC declaration for `save_client_contact` represents `p_contact_id` as `string`, although PostgreSQL accepts explicit SQL `NULL` for create. This is a generator nullability limitation, not a schema defect. Keep the cast isolated in the server-only adapter through a narrow local args type accepting `string | null`; do not hand-edit generated types and do not create a migration solely to change this generated representation.
 
-Each Server Action must:
+### 5.2 Clients adapter contract
 
-1. obtain cookies, `requireSession`, and the server Supabase client;
-2. require `session.role === "admin" || session.role === "pm"` before parsing/using a management operation;
-3. validate only untrusted browser values with Zod;
-4. call the generated typed RPC with explicit arguments;
-5. map any authorization, constraint, unavailable, malformed-projection, conflict, or stale-state failure to a closed localized action code; and
-6. call `revalidatePath` for the active Admin/PM management route(s) only after successful mutation.
+`listClientContactsForAdministration(supabase)` calls `list_client_contacts_for_administration`, validates every row, and returns:
 
-Do not return SQL messages, RPC names, raw identifiers that were not already present in the rendered management model, profile details, token/hash material, stack traces, or a target-existence distinction to denied callers.
+```ts
+type ClientContactAdministrationDto = {
+  id: string;
+  clientId: string | null;
+  profileId: string | null;
+  fullName: string;
+  email: string;
+  phoneE164: string | null;
+  jobTitle: string | null;
+  isPrimary: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+```
 
-### 5.3 Contact schemas and action inputs
+`listClientOrganizationsForAdministration(supabase)` calls its corresponding RPC and returns only `{ id, displayName, slug }`.
 
-Use strict objects; reject unknown keys.
+`listClientManagementProjects(supabase)` is a new narrow server-only direct query against `projects`. It returns only `{ id, name }`, filters `project_type = "client"`, `deleted_at IS NULL`, and `archived_at IS NULL`, orders by `name`, and is called only after the route has confirmed Admin/PM. It replaces neither `listProjectsForAdmin` nor membership-scoped `listProjectsForPm`; specifically do not use `listProjectsForPm` for this selector.
 
-**Contact save input**
+`loadProjectClientContactAssociationsAction({ projectId })` must validate a strict UUID input, independently require Admin/PM, call the association RPC, validate every returned `contact_id`, and return IDs only. It is read-only and does not revalidate. It must never query `project_client_contacts` directly.
 
-| Field | Rules |
-| --- | --- |
-| `contactId` | UUID or `null`; `null` means create. |
-| `fullName` | Trimmed string, 1–120 characters. |
-| `email` | Trimmed valid email, maximum 320 characters. |
-| `phoneE164` | Optional `null` or strict E.164 `^\+[1-9][0-9]{7,14}$`; empty becomes `null`. |
-| `jobTitle` | Optional `null`; trimmed 1–120 characters when supplied; empty becomes `null`. |
-| `clientId` | Optional UUID or `null`. |
-| `isPrimary` | Boolean; force/require `false` when `clientId` is null. |
+### 5.3 Contact write actions
 
-**Association input:** strict `{ projectId: UUID, contactId: UUID, associated: boolean }`.
+Use strict Zod objects and reject unknown keys.
 
-### 5.4 Invitation schemas and one-time link handling
+```ts
+{ contactId: UUID | null, fullName: trimmed 1..120, email: trimmed email <=320,
+  phoneE164: null | strict /^\+[1-9][0-9]{7,14}$/, jobTitle: null | trimmed 1..120,
+  clientId: UUID | null, isPrimary: boolean }
+```
 
-**Create input**
+Normalize empty optional text to `null`. Before the RPC call, reject `clientId === null && isPrimary === true`; pass all editable values explicitly. `saveClientContactAction` returns a narrow `{ ok: true, data: { contactId } }` or safe error union.
 
-- strict `role: z.enum(["client", "operator"])`;
-- optional `projectId: UUID | null`;
-- `expiresInHours: integer 1..720`, UI default `168`;
-- Client variant: exact `contactId: UUID`; no recipient email field;
-- Operator variant: `recipientEmail`, trimmed valid email, maximum 320; no contact ID.
+`setProjectClientContactAction` accepts exactly `{ projectId: UUID, contactId: UUID, associated: boolean }`. It calls the trusted RPC only. On success, return the resulting Boolean; on every failure return a safe code. Neither action may create a profile, membership, invitation, or organization.
 
-Use a discriminated union. Do not accept role/context fields outside the selected variant.
+Every management action obtains cookies, calls `requireSession`, checks `session.role === "admin" || session.role === "pm"` before handling input, creates the server client, invokes the typed RPC, and calls `revalidatePath` only after a successful mutation for both `/admin/clientes` and `/pm/clientes` localized route trees. Do not log raw inputs with email, token, or URLs.
 
-**Rotate input:** strict `{ invitationId: UUID, expiresInHours: integer 1..720 }`.
+### 5.4 Invitation adapter and actions
 
-**Revoke input:** strict `{ invitationId: UUID }`.
+Define local DTOs for role (`client | operator`), status (`pending | accepted | expired | revoked`), and composite cursor. The list DTO contains exactly:
 
-The create/rotate action returns a narrow one-time object only after RPC success:
+```ts
+{ invitationId, role, status, recipientLabel, contactId, projectId,
+  projectName, createdAt, expiresAt, acceptedAt, revokedAt }
+```
+
+It must not include recipient email, token, token hash, audit payload, profile data, arbitrary URL, or raw error.
+
+`loadOrdinaryInvitationPageAction` accepts either no cursor or a complete strict pair `{ beforeCreatedAt, beforeInvitationId }` plus an integer limit. Request `pageSize + 1`, validate **all** rows before slicing, and derive the next cursor from the last visible row, never the lookahead row. Keep this cursor only in client component state; do not put it in search params, local storage, session storage, or a route URL.
+
+Create input is a strict discriminated union:
+
+- Client: `{ role: "client", contactId: UUID, projectId: UUID | null, expiresInHours: int 1..720 }` and no recipient email.
+- Operator: `{ role: "operator", recipientEmail: trimmed email <=320, projectId: UUID | null, expiresInHours: int 1..720 }` and no contact ID.
+
+Default lifetime is 168 hours. Rotate accepts only `{ invitationId: UUID, expiresInHours: int 1..720 }`. Revoke accepts only `{ invitationId: UUID }`.
+
+Create/rotate action consumes exactly one valid RPC row and produces only:
 
 ```ts
 { ok: true, data: { invitationId, role, expiresAt, invitationUrl } }
 ```
 
-Build `invitationUrl` server-side as the established locale-aware `/invitacion?token=<encoded opaque token>` route. Keep it in the interactive component only long enough to call clipboard copy. The UI must clear the one-time URL from component state when the dialog closes, after route refresh, and on unmount. It must never render the full URL/token as page text.
+Build `invitationUrl` on the server using the established locale-aware invitation route `/invitacion?token=<encoded opaque token>` and the actual next-intl routing model (`en-US` is `/en`; default `es-MX` has no prefix). Never log the raw token, token hash, or built URL. Revoke returns only its safe terminal result. Successful mutations revalidate the two management routes; load actions do not mutate data.
 
-For Clipboard API use, attempt `navigator.clipboard.writeText(invitationUrl)` in the same user gesture. If unsupported/failing, use a cleanup-safe temporary textarea fallback in that same gesture. Show only localized “link copied” or “copy failed” feedback; do not include the link in feedback.
+## 6. Routes, data loading, and navigation
 
-### 5.5 Invitation list adapter
-
-The adapter validates every RPC row, including the `limit + 1` continuation row, before pagination. A malformed row fails the page closed.
-
-Accept only:
-
-- UUID `invitation_id`;
-- role `client | operator`;
-- status `pending | accepted | expired | revoked`;
-- non-empty bounded `recipient_label`;
-- nullable UUID `contact_id` and `project_id`;
-- nullable bounded `project_name`;
-- valid ISO timestamps for creation/expiry and nullable accepted/revoked timestamps.
-
-The UI may render role, recipient label, project label, lifecycle status, timestamps, and action controls. IDs are action/navigation keys only and are never displayed. The list must not render recipient email, contact email, raw token, hash, profile data, audit payload, or arbitrary URLs.
-
-## 6. Routes and navigation
-
-Create equivalent protected routes:
+Create these protected route roots and route-local components:
 
 ```text
-/[locale]/admin/clientes
-/[locale]/pm/clientes
+src/app/[locale]/(protected)/admin/clientes/page.tsx
+src/app/[locale]/(protected)/admin/clientes/_components/**
+src/app/[locale]/(protected)/pm/clientes/page.tsx
+src/app/[locale]/(protected)/pm/clientes/_components/**
 ```
 
-Each page independently requires an active `admin` or `pm` session and loads only server-authorized management DTOs. The PM page must not require membership in any project.
+Each page resolves cookies/session before data access. Admin page redirects non-admin roles via the existing `ROLE_DEFAULT_PATHS`; PM page redirects non-PM roles the same way. The PM page never checks project membership. Each page passes only server-authorized DTOs to one shared client administration surface, or to parallel role-local wrappers around it if repository import conventions require that.
 
-Add one `clients` navigation-model item to `src/components/shared/app-nav/navigation-model.ts` for Admin and PM only. Add its icon mapping to both desktop and mobile navigation renderers. Keep mobile quick access unchanged unless its fixed role matrix has an explicit spare slot; the item remains available in the full authorized navigation drawer/menu.
+Load contacts, organizations, available client projects, and first invitation page in parallel after authorization. A directory/list failure is a safe localized unavailable state, never a fallback direct table query or an empty state that misrepresents unavailable data as no records.
 
-The administration screen has two tabs or equivalent clearly separated panels:
+Add `clients` to `AppNavigationItemKey` and `buildNavigationModel` only for Admin and PM. Add its localized `shell.nav.links.clients` key to both catalogs and add the matching icon mapping to both desktop and mobile navigation renderers. Do not add the item for Operator or Client. Do not alter the fixed mobile quick-access matrices; this item remains discoverable in the full authorized navigation.
 
-1. **Contacts** — directory, create/edit interaction, optional organization selection, and project-association management.
-2. **Invitations** — create, one-time immediate Copy Link result, bounded history, resend/rotate, revoke, pagination, and state display.
+## 7. Management UI requirements
 
-Do not add a route or navigation entry for Operator, Client, or unauthenticated users.
+The route shows one accessible administration surface with local controlled tab state only; tab state must not use search parameters. Use exactly two panels.
 
-## 7. Contact UI behavior
+### Contacts panel
 
-### 7.1 Directory
+- Render name, organization label or localized direct designation, optional job title, email, and linked-account presence only for Admin/PM.
+- Direct contacts are normal first-class rows; do not group them as invalid or hide them.
+- Create/edit uses existing accessible dialog/sheet primitives. It supports choosing no organization, choosing one organization, and only allows primary-contact input when organization is selected.
+- Do not create or modify organizations in this slice.
+- Project association begins with the global available client-project selector. Show association controls only for a selected project and direct contacts.
+- Organization contacts show no association toggle and do not invoke it. Do not infer association from organization matching.
+- Display explicit localized explanation: association supports identity/readiness planning only; it does not invite, activate, create membership, grant access, or assign work.
+- Disable only the affected form/row during its action. Preserve non-secret form input and focus after recoverable failure.
 
-- Show contact full name, optional organization display name, optional job title, contact email, direct/organization designation, and linked-account presence only when useful to the manager.
-- Use the contact and organization projections to resolve labels; do not run per-row browser queries.
-- Direct contacts must be first-class entries, not filtered out, grouped as invalid, or shown as missing organizations.
-- Create/edit interaction uses existing dialog/sheet primitives with label associations, described errors, Escape/cancel/focus return, and retained non-secret input after safe failures.
+### Invitations panel
 
-### 7.2 Association
+- Role selector contains Client and Operator only.
+- Client selection uses the authorized exact contact selector; never permit free-form recipient email. Operator selection shows recipient email and no contact selector.
+- Project selection is explicit and optional. It defaults to no project and never infers a project from selected contact or association.
+- On successful create/rotate, retain the URL only in the immediate interactive component state. Show one explicit Copy Link action; do not render the URL/token as visible page text, toast content, title, accessible description, HTML data attribute, or hidden DOM text.
+- Call the existing `copyTextToClipboard` helper within the initiating user interaction. It already uses Clipboard API followed by a cleanup-safe textarea fallback. Display only localized copied/failed feedback.
+- Clear one-time link state on dialog close, after route refresh, and component unmount. If copy fails or result is dismissed, users must use Resend, which rotates and invalidates the prior link.
+- Pending rows show expiration and only Resend/Rotate plus Revoke. Accepted, expired, and revoked rows show their terminal timestamp/state and no mutation controls.
+- Resend confirmation states that the old link stops working and the replacement must be copied immediately. Revoke confirmation states that the action is terminal for this link. Revoke is idempotent: `changed: false` is a valid terminal outcome and refreshes state.
+- Per-row pending state never disables pagination, other rows, tabs, or contact controls. On failure retain focus and list state; do not optimistically mark copied/revoked.
 
-- Association controls appear only for a selected client project and an Admin/PM management context.
-- Selecting a project uses a server-only global management-project loader under M01 `projects` RLS; do not use the membership-scoped `listProjectsForPm` helper for this selector.
-- Resolve selected-project association state through `list_project_client_contact_associations`; never query `project_client_contacts` from application code or the browser.
-- Show explicit copy: association supports identity/readiness planning and **does not invite, activate, add a member, grant project access, or assign work**.
-- Associate calls `set_project_client_contact(projectId, contactId, true)`; disassociate calls the same RPC with `false`.
-- Show association controls only for direct contacts (`client_id IS NULL`). Organization contacts use organization-match readiness and must neither show nor invoke association controls.
-- Do not automatically associate all organization contacts to a project. Organization-contact readiness remains organization-match based.
-- Do not render an association control from an ID alone. The association projection is already filtered to active direct contacts, and the UI must intersect it with the authorized current directory before rendering a selected state.
+All interactive status text is textual and not color-only. Use buttons for mutations/copy and real next-intl `Link` components for navigation. Dialogs require labels, descriptions, Escape/cancel, focus restoration, keyboard use, and responsive one-column flow.
 
-## 8. Invitation UI behavior
+## 8. Existing project surfaces that must be reconciled
 
-### 8.1 Create
+M01 removed organization-universal readiness. Preserve organization selectors where they are still optional metadata, but remove client-ID-only gating where the authoritative database now uses direct-or-organization readiness.
 
-- Role selector contains exactly Client and Operator.
-- Selecting Client displays an exact contact selector populated from the M01 administration contact projection. It does not accept free-form recipient email.
-- Selecting Operator displays recipient email and never permits client contact selection.
-- Optional project selection is explicit and defaults to none. The UI must not infer a project from a contact association.
-- A Client selection may include direct and organization contacts. The server command is authoritative for active/unlinked/project-compatible eligibility.
-- On success, remain in the invitation panel, surface a single immediate Copy Link control, and refresh list data after the clipboard attempt or dialog close. Do not navigate to the public invitation route.
-
-### 8.2 Lifecycle rows
-
-| State | Display | Actions |
-| --- | --- | --- |
-| Pending | Pending plus expiration | Resend (rotate), Revoke. No later copy/retrieve action. |
-| Accepted | Accepted timestamp | No mutation actions. |
-| Expired | Expired state | No mutation actions. Create a new invitation from the creation flow. |
-| Revoked | Revoked timestamp | No mutation actions. Create a new invitation from the creation flow. |
-
-- Resend opens a localized confirmation that states the prior link will stop working and a new link must be copied immediately.
-- Revoke opens a localized confirmation; it is idempotent and server-revalidated.
-- Disable only the affected row/action while its mutation is pending. Do not freeze filters, pagination, other rows, or the contact panel.
-- After a mutation failure, retain focus and the current list state. Do not optimistically claim a link was revoked or copied.
-
-## 9. Existing onboarding integration
-
-Preserve the public recipient path:
+Review and update the direct user-facing assumptions in these existing files:
 
 ```text
-/[locale]/invitacion?token=<opaque token>
-  → invitation-form.tsx
-  → POST /api/v1/auth/invites/complete
-  → SHA-256 token hash server-side
-  → accept_invite(p_token_hash)
-```
-
-Keep the existing completion endpoint’s Origin validation, idempotency-key validation, schema validation, server-only admin client, safe terminal 410 behavior, and role-safe redirect. The invitation lifecycle UI does not read `invite_tokens` directly and does not replace `accept_invite` logic.
-
-For a Client invitation, acceptance binds only the exact stored `contact_id`; no arbitrary profile may be linked. For a project-scoped invitation, acceptance creates membership only after all trusted checks pass. A direct contact association remains non-authorizing before and after acceptance.
-
-## 10. Localization and accessibility
-
-Add matching keys to `messages/en-US.json` and `messages/es-MX.json` for:
-
-- navigation label/ARIA label;
-- contact directory, direct-vs-organization designation, linked-account state, form labels/help/errors, association explanation and result states;
-- invitation role labels, project optionality, lifecycle statuses, expiry display, create/resend/revoke confirmations, one-time link copy success/failure, pagination, and safe unavailable/conflict states.
-
-Use real links for navigation and buttons for mutations/copy. Do not nest controls. Status and authorization outcomes must not rely on color alone. All new dialogs/sheets require keyboard operation, Escape/cancel behavior, focus return, accessible names/descriptions, and responsive single-column usability.
-
-## 11. Required file changes
-
-```text
-supabase/migrations/20260831100000_s10-02-ordinary-invitation-lifecycle.sql
-supabase/migrations/20260831114500_s10-association-projection-and-direct-contact-enforcement.sql
-supabase/migrations/20260831123000_s10-association-projection-integrity-and-invitation-list-index.sql
-supabase/migrations/20260831153000_s10-active-project-command-enforcement.sql
-src/lib/database.types.ts                           # regenerated artifact; never hand-edit
-src/lib/clients/schemas.ts
-src/lib/clients/queries.ts
-src/lib/clients/actions.ts                          # new
-src/lib/clients/types.ts                            # new when needed for narrow DTOs
-src/lib/projects/queries.ts                         # global management-project selector only
-src/lib/invitations/schemas.ts                      # new
-src/lib/invitations/queries.ts                      # new
-src/lib/invitations/actions.ts                      # new
-src/lib/invitations/types.ts                        # new
-src/app/[locale]/(protected)/admin/clientes/**
-src/app/[locale]/(protected)/pm/clientes/**
-src/components/shared/app-nav/navigation-model.ts
-src/components/shared/app-nav/_components/desktop-nav-drawer.tsx
-src/components/shared/app-nav/_components/mobile-nav-toggle.tsx
+src/lib/deliverables/auth-checks.ts
+src/components/shared/projects/project-workspace/project-overview-tab.tsx
+src/components/shared/projects/project-workspace/project-header.tsx
+src/components/shared/projects/project-deliverables/deliverables-tab.tsx
+src/components/shared/projects/project-deliverables/deliverable-create-dialog.tsx
+src/components/shared/projects/project-members/add-member-dialog.tsx
+src/app/[locale]/(protected)/admin/proyectos/[id]/page.tsx
+src/app/[locale]/(protected)/pm/proyectos/[id]/page.tsx
 messages/en-US.json
 messages/es-MX.json
 ```
 
-Existing invitation completion files are modified only when necessary to preserve the established acceptance/security contract. Do not edit M01 or manually edit generated database types.
+Required reconciliation:
 
-## 12. Focused verification
+1. Do not block a client request/deliverable merely because `project.client_id` is null when trusted database readiness is satisfied through an associated direct contact and Client member.
+2. Do not describe an organization as universally required for client setup, client review, or client-readiness state. State missing readiness truthfully without exposing contact/private profile data to unauthorized roles.
+3. Do not weaken existing role-safe project detail/load logic. Any existing `listClientContacts(clientId)` usage remains organization-specific and must not be repurposed as a direct-contact directory.
+4. Project create/edit organization controls remain optional metadata. No new direct-contact project-create flow is required in this slice.
+5. No change is required to Client/Operator portal data projections unless an implementation change would otherwise expose management directory information.
 
-1. Run `npm run lint` and `npm run typecheck`.
-2. Add at most the smallest focused Vitest coverage required for a new Server Action/adapter contract or a reproduced UI regression.
-3. After applying the complete schema baseline and regenerating `src/lib/database.types.ts`, verify Admin and PM can independently reach `/admin/clientes` and `/pm/clientes`, create/edit a direct contact, optionally associate an organization, and associate/disassociate a direct contact without membership gating.
-4. Verify a direct contact remains visible/selectable without organization and association is never represented as membership/access; verify organization contacts have no association control and `set_project_client_contact(..., true)` rejects them.
-5. Verify Client invite creation requires an exact contact; Operator invite creation requires email; both reject all privileged roles.
-6. Verify Model A create and resend return a one-time link only to the initiating action, copy feedback does not disclose it, resend revokes the old pending link, and list rows contain no email/token/hash.
-7. Verify revoke is idempotent and terminal rows expose no mutation controls.
-8. Verify Operator, Client, and unauthenticated callers receive no directory or lifecycle data and cannot execute management actions.
-9. Preserve existing valid/mismatched/expired/revoked invitation acceptance behavior and no-enumeration response shape.
-10. Verify added English and Mexican Spanish keys are structurally present and interactive paths are keyboard usable.
-11. Verify `list_project_client_contact_associations` returns no ID for a soft-deleted contact or a contact later changed from direct to organization, while `set_project_client_contact(projectId, historicalContactId, false)` remains an idempotent cleanup command for an authorized Admin/PM.
-12. Verify the new invitation-list cursor index is present after migration application and contains only `created_at` and `id` as indexed key columns.
-13. Verify every trusted S10 project-bearing command rejects an archived project: association set/list, Client invitation create, Operator invitation create, and rotation of a pending project-scoped invitation after archival. Verify `accept_invite` rejects a pending project-scoped invitation when its project is archived and does not create a membership, while a global invitation remains unaffected.
+## 9. Localization
 
-No provider activation, external-delivery verification, broad suite, E2E suite, or production action is part of this work.
+Add a dedicated, structurally identical administration namespace in both `messages/en-US.json` and `messages/es-MX.json`. Include every visible/accessible string for navigation, page title/description, tabs, empty/unavailable states, contact designation/account state, contact form and validation, organization selection, association explanation/result, invitation role/project/lifetime fields, lifecycle labels/timestamps, pagination, one-time copy, confirmations, safe errors, and ARIA labels.
+
+No user-facing fallback text belongs in query/adaptor code. Do not hard-code English placeholder labels in shared DTOs. Keep stored roles/statuses English and map them at presentation.
+
+## 10. Focused verification and required manual evidence
+
+Run exactly the bounded relevant checks after implementation:
+
+1. `npm run lint`
+2. `npm run typecheck`
+3. At most the smallest focused Vitest files added/changed for new action/adapter contracts or a reproduced UI regression. Do not add broad coverage, E2E, provider, production, or exhaustive role-matrix suites.
+
+Automated assertions must cover at least any new adapter/action behavior that is introduced: strict unknown-key rejection, role denial, malformed list-row failure, complete keyset cursor validation, lookahead cursor derivation, no email/token/hash in list DTOs, one-time link result shape, no action on terminal invite row, and no direct association action for an organization contact.
+
+Manual journeys in `jsf-pm-dev`:
+
+1. Admin and PM independently reach their `/clientes` route with the correct locale; Operator, Client, and unauthenticated callers cannot retrieve management data or complete management actions.
+2. Create/edit a direct contact, retain it without organization, then associate/disassociate an organization through the same contact record.
+3. Select an available client project, associate/disassociate a direct contact, and confirm no membership/access is created. Confirm organization contacts have no association control.
+4. Create Client invitation only through an exact contact; create Operator invitation only through email; both reject privileged roles and mismatched role fields.
+5. Confirm create/rotate produces a one-time copy interaction only, the list contains no email/token/hash, failed/dismissed copy has no recoverable later copy, and Resend invalidates prior link.
+6. Confirm revoke is idempotent and accepted/expired/revoked rows have no lifecycle mutation controls.
+7. Confirm every project-bearing command rejects a deleted/archived project: association set/list; Client and Operator create; rotation after archive; acceptance must not create membership for archived project. Global invitation remains unaffected.
+8. Confirm direct-contact readiness removes no valid client functionality merely because organization is absent, while all original permission boundaries remain intact.
+9. Confirm English and Mexican Spanish key parity and keyboard dialog/tabs/controls.
+
+## 11. Completion report contract
+
+The implementation report must state changed files; focused tests added/changed; exact commands and factual output; manual evidence versus unverified hosted claims; authorization/token/localization/accessibility impact; migration statement `none — complete applied baseline consumed`; and remaining blockers, if any.
+
+Do not claim provider delivery, production readiness, deployed RLS proof beyond the Project Owner’s applied migration/type provenance, legal approval, or external dispatch.

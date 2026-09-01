@@ -36,6 +36,7 @@
         "agenda": "My Agenda",
         "calendar": "Calendar",
         "archive": "Archive",
+        "clients": "Clients",
         "linkIncidents": "Link Incidents",
         "metrics": "Metrics",
         "operations": "Operations",
@@ -213,6 +214,7 @@
       "client": "Client",
       "internal": "Internal",
       "unassigned": "Unassigned",
+      "direct": "Direct",
       "clientDescription": "External client project with production deliverables.",
       "internalDescription": "Internal operational project without production deliverables."
     },
@@ -734,7 +736,11 @@
         "notificationsLabel": "Receive project notifications",
         "submitAction": "Add Member",
         "cancelAction": "Cancel",
-        "successToast": "Member added successfully."
+        "successToast": "Member added successfully.",
+        "directPrerequisiteHint": "To add a client on a direct project, first associate their contact in Clients and ensure they have completed their invitation.",
+        "clientsUnavailable": "Client contacts are temporarily unavailable.",
+        "internalDisabledHint": "Not available on internal projects",
+        "noUsersAvailable": "No users available in this capacity."
       },
       "changeDialog": {
         "title": "Change Member Capacity",
@@ -2351,6 +2357,179 @@
       "attentionUnavailable": "Unable to load operational attention summary.",
       "auditUnavailable": "Unable to load audit history.",
       "userStateUnavailable": "Unable to load user and invitation state."
+    }
+  },
+  "clientAdministration": {
+    "title": "Client Administration",
+    "description": "Manage direct client directory, project associations, and system invitations.",
+    "unavailableTitle": "Client Administration Unavailable",
+    "unavailableDescription": "Unable to load client administration data at this time. Please try again later.",
+    "tabs": {
+      "contacts": "Contacts & Directory",
+      "invitations": "Invitations"
+    },
+    "contactsPanel": {
+      "title": "Client Directory",
+      "description": "Directory of client contacts, organization memberships, and project readiness associations.",
+      "createContact": "New Contact",
+      "projectAssociationTitle": "Project Association Toolbar",
+      "selectProjectPlaceholder": "Select a client project...",
+      "noProjectSelectedPlaceholder": "No project selected (View directory)",
+      "associationExplanationNotice": "Direct contact associations are used for project identity and deliverable readiness planning. Associating a direct contact does not send an invitation, grant access, or create project membership.",
+      "columns": {
+        "name": "Contact Name",
+        "organization": "Organization",
+        "jobTitle": "Job Title",
+        "email": "Email",
+        "accountStatus": "Linked Account",
+        "projectAssociated": "Associated with Project",
+        "actions": "Actions"
+      },
+      "directContactBadge": "Direct Contact",
+      "primaryBadge": "Primary",
+      "unknownOrg": "Unknown",
+      "accountLinked": "Account Linked",
+      "noAccount": "No Account",
+      "emptyState": "No client contacts found in directory.",
+      "orgContactNotToggled": "Organization contact",
+      "toggleAssociationAria": "Toggle project association for",
+      "editContactAria": "Edit contact",
+      "associationLoadFailed": "Failed to load project associations.",
+      "associatedSuccess": "Contact associated with project.",
+      "disassociatedSuccess": "Contact disassociated from project.",
+      "associationMutationFailed": "Failed to update project association."
+    },
+    "contactDialog": {
+      "createTitle": "New Client Contact",
+      "createDescription": "Add a new client contact to an organization or as a direct contact.",
+      "editTitle": "Edit Client Contact",
+      "editDescription": "Update client contact information and organization affiliation.",
+      "directContactOption": "No organization (Direct contact)",
+      "directContactNotice": "Direct contacts belong to no organization and can be associated with individual client projects.",
+      "fields": {
+        "fullName": "Full Name",
+        "email": "Email Address",
+        "organization": "Client Organization",
+        "jobTitle": "Job Title (Optional)",
+        "phone": "Phone (E.164, Optional)",
+        "isPrimary": "Designate as primary contact for organization"
+      },
+      "placeholders": {
+        "fullName": "e.g. Maria Gonzalez",
+        "email": "e.g. maria@example.com",
+        "organization": "Select organization...",
+        "jobTitle": "e.g. Creative Director"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create Contact",
+        "save": "Save Changes"
+      },
+      "errors": {
+        "fullNameRequired": "Full name is required.",
+        "emailRequired": "Valid email address is required.",
+        "invalidPhone": "Phone must be in E.164 format (e.g. +525512345678).",
+        "unauthorized": "You do not have permission to manage client contacts.",
+        "validationFailed": "Please check the entered values and try again.",
+        "unavailable": "Failed to save client contact. Please try again."
+      }
+    },
+    "invitationsPanel": {
+      "title": "Ordinary Invitations",
+      "description": "Issue, monitor, and revoke invitations for Clients and Operators.",
+      "createInvitation": "Issue Invitation",
+      "columns": {
+        "role": "Role",
+        "recipient": "Recipient / Contact",
+        "project": "Project",
+        "status": "Status",
+        "createdAt": "Issued",
+        "expiresAt": "Expires",
+        "resolvedAt": "Resolved",
+        "actions": "Actions"
+      },
+      "roles": {
+        "client": "Client",
+        "operator": "Operator"
+      },
+      "statuses": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "expired": "Expired",
+        "revoked": "Revoked"
+      },
+      "actions": {
+        "rotate": "Resend / Rotate Link",
+        "revoke": "Revoke Invitation"
+      },
+      "emptyState": "No invitations found.",
+      "terminalState": "Finalized",
+      "loadMore": "Load More Invitations",
+      "loadingMore": "Loading...",
+      "loadMoreFailed": "Failed to load more invitations.",
+      "rotateFailed": "Failed to rotate invitation link.",
+      "revokeSuccess": "Invitation revoked successfully.",
+      "revokeFailed": "Failed to revoke invitation.",
+      "actionFailed": "Action failed. Please try again."
+    },
+    "createInviteDialog": {
+      "title": "Issue Ordinary Invitation",
+      "description": "Generate a single-use onboarding link for a Client or Operator.",
+      "noProjectOption": "No project association",
+      "noUnlinkedContacts": "No unlinked contacts available",
+      "allContactsLinkedHint": "All existing contacts already have registered accounts. Create a new contact first.",
+      "fields": {
+        "role": "Recipient Role",
+        "contact": "Client Contact",
+        "recipientEmail": "Recipient Email",
+        "project": "Associated Project (Optional)",
+        "lifetime": "Link Expiration"
+      },
+      "roles": {
+        "client": "Client (External)",
+        "operator": "Operator (Internal)"
+      },
+      "placeholders": {
+        "contact": "Select client contact...",
+        "email": "e.g. operator@joyastarfilms.com",
+        "project": "Select project..."
+      },
+      "lifetimes": {
+        "24h": "24 hours (1 day)",
+        "72h": "72 hours (3 days)",
+        "7d": "7 days (Standard)",
+        "14d": "14 days (2 weeks)",
+        "30d": "30 days (1 month)"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Generate Link"
+      },
+      "errors": {
+        "contactRequired": "Client contact selection is required.",
+        "emailRequired": "Valid recipient email is required.",
+        "unauthorized": "You do not have permission to issue invitations.",
+        "validationFailed": "Invalid invitation parameters.",
+        "unavailable": "Failed to generate invitation link. Please try again."
+      }
+    },
+    "confirmDialog": {
+      "rotateTitle": "Resend & Rotate Invitation Link?",
+      "rotateDescription": "Generating a new link will immediately invalidate any previous link sent to this recipient.",
+      "revokeTitle": "Revoke Invitation?",
+      "revokeDescription": "This invitation link will be permanently revoked and can no longer be used for account registration.",
+      "cancel": "Cancel",
+      "rotateConfirm": "Generate New Link",
+      "revokeConfirm": "Revoke Link"
+    },
+    "copyDialog": {
+      "title": "Invitation Link Ready",
+      "description": "Copy this single-use invitation link and send it directly to the recipient.",
+      "oneTimeWarning": "This link is single-use and will not be shown again. Once you close this window, you cannot view this link again.",
+      "copyAction": "Copy Link to Clipboard",
+      "copied": "Link Copied to Clipboard!",
+      "copyFailed": "Could not copy link. Please try again.",
+      "close": "Close and Dismiss"
     }
   }
 }

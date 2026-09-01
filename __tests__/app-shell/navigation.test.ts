@@ -1121,6 +1121,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         "/admin/proyectos",
         "/calendario",
         "/admin/archivo",
+        "/admin/clientes",
         "/admin/incidentes-enlaces",
         "/admin/metricas",
         "/admin/operaciones",
@@ -1493,6 +1494,48 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         name: "Operaciones de Notificaciones",
       });
       expect(notifOps).toHaveAttribute("href", "/pm/notificaciones");
+    });
+
+    it("includes Clientes in navigation model for admin and pm, and excludes it for operator and client", () => {
+      const t = getSpanishTranslation("shell.nav");
+
+      const adminItems = buildNavigationModel({
+        role: "admin",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      const adminClients = adminItems.find((i) => i.key === "clients");
+      expect(adminClients).toBeDefined();
+      expect(adminClients?.href).toBe("/admin/clientes");
+      expect(adminClients?.label).toBe("Clientes");
+
+      const pmItems = buildNavigationModel({
+        role: "pm",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      const pmClients = pmItems.find((i) => i.key === "clients");
+      expect(pmClients).toBeDefined();
+      expect(pmClients?.href).toBe("/pm/clientes");
+      expect(pmClients?.label).toBe("Clientes");
+
+      const opItems = buildNavigationModel({
+        role: "operator",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      expect(opItems.find((i) => i.key === "clients")).toBeUndefined();
+
+      const clientItems = buildNavigationModel({
+        role: "client",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      expect(clientItems.find((i) => i.key === "clients")).toBeUndefined();
     });
   });
 });

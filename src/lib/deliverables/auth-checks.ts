@@ -118,12 +118,11 @@ export async function verifyDeliverableEligibility(
   }
 
   if (task.task_type === "client_request") {
-    if (project.project_type !== "client" || !project.client_id) {
+    if (project.project_type !== "client") {
       return {
         ok: false,
         code: "INVARIANT_VIOLATION",
-        message:
-          "Client request deliverables require a client project with a linked client organization",
+        message: "Client request deliverables require a client project",
       };
     }
     if (assigneeMember.member_type !== "client") {
@@ -145,14 +144,6 @@ export async function verifyDeliverableEligibility(
   }
 
   if (task.task_type === "internal_work") {
-    if (project.project_type === "client" && !project.client_id) {
-      return {
-        ok: false,
-        code: "INVARIANT_VIOLATION",
-        message:
-          "Production deliverables on client projects require a linked client organization",
-      };
-    }
     if (
       !["pm_lead", "pm_watcher", "operator"].includes(
         assigneeMember.member_type,

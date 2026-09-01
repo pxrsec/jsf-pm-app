@@ -36,6 +36,7 @@
         "agenda": "Mi Agenda",
         "calendar": "Calendario",
         "archive": "Archivo",
+        "clients": "Clientes",
         "linkIncidents": "Incidentes de Enlaces",
         "metrics": "Métricas",
         "operations": "Operaciones",
@@ -213,6 +214,7 @@
       "client": "Cliente",
       "internal": "Interno",
       "unassigned": "Sin asignar",
+      "direct": "Directo",
       "clientDescription": "Proyecto con cliente externo y entregables de producción.",
       "internalDescription": "Proyecto operativo interno sin entregables de producción."
     },
@@ -734,7 +736,11 @@
         "notificationsLabel": "Recibir notificaciones del proyecto",
         "submitAction": "Agregar Miembro",
         "cancelAction": "Cancelar",
-        "successToast": "Miembro agregado exitosamente."
+        "successToast": "Miembro agregado exitosamente.",
+        "directPrerequisiteHint": "Para agregar un cliente en un proyecto directo, primero asocia su contacto en Clientes y asegúrate de que haya completado su invitación.",
+        "clientsUnavailable": "Los contactos de clientes no están disponibles temporalmente.",
+        "internalDisabledHint": "No disponible en proyectos internos",
+        "noUsersAvailable": "No hay usuarios disponibles en esta capacidad."
       },
       "changeDialog": {
         "title": "Cambiar Capacidad de Miembro",
@@ -2351,6 +2357,179 @@
       "attentionUnavailable": "No fue posible cargar el resumen de atención operativa.",
       "auditUnavailable": "No fue posible cargar el historial de auditoría.",
       "userStateUnavailable": "No fue posible cargar el estado de usuarios e invitaciones."
+    }
+  },
+  "clientAdministration": {
+    "title": "Administración de Clientes",
+    "description": "Administra el directorio de clientes directos, asociaciones de proyectos e invitaciones del sistema.",
+    "unavailableTitle": "Administración de Clientes no disponible",
+    "unavailableDescription": "No es posible cargar los datos de administración de clientes en este momento. Por favor, intenta de nuevo más tarde.",
+    "tabs": {
+      "contacts": "Contactos y Directorio",
+      "invitations": "Invitaciones"
+    },
+    "contactsPanel": {
+      "title": "Directorio de Clientes",
+      "description": "Directorio de contactos de clientes, afiliaciones de organización y asociaciones de proyectos.",
+      "createContact": "Nuevo Contacto",
+      "projectAssociationTitle": "Barra de Asociación de Proyectos",
+      "selectProjectPlaceholder": "Selecciona un proyecto de cliente...",
+      "noProjectSelectedPlaceholder": "Sin proyecto seleccionado (Ver directorio)",
+      "associationExplanationNotice": "Las asociaciones de contactos directos se usan para la planificación de identidad y preparación de entregables. Asociar un contacto directo no envía invitaciones, no otorga acceso ni crea membresía en el proyecto.",
+      "columns": {
+        "name": "Nombre de Contacto",
+        "organization": "Organización",
+        "jobTitle": "Puesto",
+        "email": "Correo Electrónico",
+        "accountStatus": "Cuenta Vinculada",
+        "projectAssociated": "Asociado al Proyecto",
+        "actions": "Acciones"
+      },
+      "directContactBadge": "Contacto Directo",
+      "primaryBadge": "Principal",
+      "unknownOrg": "Desconocido",
+      "accountLinked": "Cuenta Vinculada",
+      "noAccount": "Sin Cuenta",
+      "emptyState": "No se encontraron contactos de clientes en el directorio.",
+      "orgContactNotToggled": "Contacto de organización",
+      "toggleAssociationAria": "Alternar asociación al proyecto para",
+      "editContactAria": "Editar contacto",
+      "associationLoadFailed": "Error al cargar las asociaciones del proyecto.",
+      "associatedSuccess": "Contacto asociado al proyecto.",
+      "disassociatedSuccess": "Contacto desasociado del proyecto.",
+      "associationMutationFailed": "Error al actualizar la asociación del proyecto."
+    },
+    "contactDialog": {
+      "createTitle": "Nuevo Contacto de Cliente",
+      "createDescription": "Agrega un nuevo contacto de cliente a una organización o como contacto directo.",
+      "editTitle": "Editar Contacto de Cliente",
+      "editDescription": "Actualiza la información del contacto y su afiliación a la organización.",
+      "directContactOption": "Sin organización (Contacto directo)",
+      "directContactNotice": "Los contactos directos no pertenecen a una organización y pueden asociarse a proyectos de cliente individuales.",
+      "fields": {
+        "fullName": "Nombre Completo",
+        "email": "Correo Electrónico",
+        "organization": "Organización de Cliente",
+        "jobTitle": "Puesto (Opcional)",
+        "phone": "Teléfono (E.164, Opcional)",
+        "isPrimary": "Designar como contacto principal de la organización"
+      },
+      "placeholders": {
+        "fullName": "ej. María González",
+        "email": "ej. maria@example.com",
+        "organization": "Selecciona organización...",
+        "jobTitle": "ej. Directora Creativa"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "create": "Crear Contacto",
+        "save": "Guardar Cambios"
+      },
+      "errors": {
+        "fullNameRequired": "El nombre completo es requerido.",
+        "emailRequired": "Un correo electrónico válido es requerido.",
+        "invalidPhone": "El teléfono debe estar en formato E.164 (ej. +525512345678).",
+        "unauthorized": "No tienes permisos para administrar contactos de clientes.",
+        "validationFailed": "Por favor, verifica los datos ingresados e intenta de nuevo.",
+        "unavailable": "Error al guardar el contacto de cliente. Por favor, intenta de nuevo."
+      }
+    },
+    "invitationsPanel": {
+      "title": "Invitaciones Ordinarias",
+      "description": "Emite, monitorea y revoca invitaciones para Clientes y Operadores.",
+      "createInvitation": "Emitir Invitación",
+      "columns": {
+        "role": "Rol",
+        "recipient": "Destinatario / Contacto",
+        "project": "Proyecto",
+        "status": "Estado",
+        "createdAt": "Emitida",
+        "expiresAt": "Expira",
+        "resolvedAt": "Resuelta",
+        "actions": "Acciones"
+      },
+      "roles": {
+        "client": "Cliente",
+        "operator": "Operador"
+      },
+      "statuses": {
+        "pending": "Pendiente",
+        "accepted": "Aceptada",
+        "expired": "Expirada",
+        "revoked": "Revocada"
+      },
+      "actions": {
+        "rotate": "Reenviar / Rotar Enlace",
+        "revoke": "Revocar Invitación"
+      },
+      "emptyState": "No se encontraron invitaciones.",
+      "terminalState": "Finalizada",
+      "loadMore": "Cargar Más Invitaciones",
+      "loadingMore": "Cargando...",
+      "loadMoreFailed": "Error al cargar más invitaciones.",
+      "rotateFailed": "Error al rotar el enlace de invitación.",
+      "revokeSuccess": "Invitación revocada exitosamente.",
+      "revokeFailed": "Error al revocar la invitación.",
+      "actionFailed": "La acción falló. Por favor, intenta de nuevo."
+    },
+    "createInviteDialog": {
+      "title": "Emitir Invitación Ordinaria",
+      "description": "Genera un enlace de registro de un solo uso para un Cliente u Operador.",
+      "noProjectOption": "Sin asociación a proyecto",
+      "noUnlinkedContacts": "No hay contactos sin cuenta disponibles",
+      "allContactsLinkedHint": "Todos los contactos existentes ya tienen cuentas registradas. Crea un nuevo contacto primero.",
+      "fields": {
+        "role": "Rol del Destinatario",
+        "contact": "Contacto de Cliente",
+        "recipientEmail": "Correo del Destinatario",
+        "project": "Proyecto Asociado (Opcional)",
+        "lifetime": "Expiración del Enlace"
+      },
+      "roles": {
+        "client": "Cliente (Externo)",
+        "operator": "Operador (Interno)"
+      },
+      "placeholders": {
+        "contact": "Selecciona contacto de cliente...",
+        "email": "ej. operador@joyastarfilms.com",
+        "project": "Selecciona proyecto..."
+      },
+      "lifetimes": {
+        "24h": "24 horas (1 día)",
+        "72h": "72 horas (3 días)",
+        "7d": "7 días (Estándar)",
+        "14d": "14 días (2 semanas)",
+        "30d": "30 días (1 mes)"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "create": "Generar Enlace"
+      },
+      "errors": {
+        "contactRequired": "Es necesario seleccionar un contacto de cliente.",
+        "emailRequired": "Un correo electrónico válido es requerido.",
+        "unauthorized": "No tienes permisos para emitir invitaciones.",
+        "validationFailed": "Parámetros de invitación inválidos.",
+        "unavailable": "Error al generar el enlace de invitación. Por favor, intenta de nuevo."
+      }
+    },
+    "confirmDialog": {
+      "rotateTitle": "¿Reenviar y Rotar Enlace de Invitación?",
+      "rotateDescription": "Generar un nuevo enlace invalidará inmediatamente cualquier enlace anterior enviado a este destinatario.",
+      "revokeTitle": "¿Revocar Invitación?",
+      "revokeDescription": "Este enlace de invitación será revocado permanentemente y ya no podrá ser usado para registrar una cuenta.",
+      "cancel": "Cancelar",
+      "rotateConfirm": "Generar Nuevo Enlace",
+      "revokeConfirm": "Revocar Enlace"
+    },
+    "copyDialog": {
+      "title": "Enlace de Invitación Listo",
+      "description": "Copia este enlace de invitación de un solo uso y envíalo directamente al destinatario.",
+      "oneTimeWarning": "Este enlace es de un solo uso y no se volverá a mostrar. Una vez cerrada esta ventana, no podrás volver a verlo.",
+      "copyAction": "Copiar Enlace al Portapapeles",
+      "copied": "¡Enlace Copiado al Portapapeles!",
+      "copyFailed": "No se pudo copiar el enlace. Por favor, intenta de nuevo.",
+      "close": "Cerrar y Descartar"
     }
   }
 }

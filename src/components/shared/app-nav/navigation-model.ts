@@ -7,6 +7,7 @@ export type AppNavigationItemKey =
   | "operatorProjects"
   | "calendar"
   | "archive"
+  | "clients"
   | "linkIncidents"
   | "metrics"
   | "operations"
@@ -111,7 +112,19 @@ export function buildNavigationModel({
     ariaLabel: archiveLabel,
   });
 
-  // 5. Link Incidents (Admin and PM only)
+  // 5. Clients (Admin and PM only)
+  if (role === "admin" || role === "pm") {
+    const clientsLabel = t("links.clients");
+    const clientsHref = role === "admin" ? "/admin/clientes" : "/pm/clientes";
+    items.push({
+      key: "clients",
+      href: clientsHref,
+      label: clientsLabel,
+      ariaLabel: clientsLabel,
+    });
+  }
+
+  // 6. Link Incidents (Admin and PM only)
   if (role === "admin" || role === "pm") {
     const linkIncidentsLabel = t("links.linkIncidents");
     const linkIncidentsHref =
@@ -124,7 +137,7 @@ export function buildNavigationModel({
     });
   }
 
-  // 6. Metrics (Admin and PM only)
+  // 7. Metrics (Admin and PM only)
   if (role === "admin" || role === "pm") {
     const metricsLabel = t("links.metrics");
     const metricsHref = role === "admin" ? "/admin/metricas" : "/pm/metricas";
@@ -136,7 +149,7 @@ export function buildNavigationModel({
     });
   }
 
-  // 7. Operations (Admin only)
+  // 8. Operations (Admin only)
   if (role === "admin") {
     const operationsLabel = t("links.operations");
     items.push({

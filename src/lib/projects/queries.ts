@@ -2,6 +2,10 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import { logger } from "@/lib/logger";
+import type {
+  AvailableResult,
+  ClientManagementProjectDto,
+} from "@/lib/clients/types";
 
 export type Project = Database["public"]["Tables"]["projects"]["Row"];
 export type ProjectInsert = Database["public"]["Tables"]["projects"]["Insert"];
@@ -264,29 +268,144 @@ export async function listEligibleOperators(
   }
 }
 
-export async function listEligibleClientMembers(
+export async function listClientManagementProjects(
   supabase: TypedSupabase,
-  clientId?: string | null,
-): Promise<EligibleClientMember[]> {
-  if (!clientId) return [];
+): Promise<AvailableResult<ClientManagementProjectDto[]>> {
   try {
     const { data, error } = await supabase
-      .from("client_contacts")
-      .select("id, full_name, email, profile_id, job_title")
-      .eq("client_id", clientId)
-      .is("deleted_at", null);
+      .from("projects")
+      .select("id, name")
+      .eq("project_type", "client")
+      .is("deleted_at", null)
+      .is("archived_at", null)
+      .order("name", { ascending: true })
+      .order("id", { ascending: true });
 
     if (error || !data) {
-      if (error)
-        logger.debug("Error in listEligibleClientMembers", {
+      if (error) {
+        logger.debug("Error in listClientManagementProjects", {
           error: error.message,
         });
-      return [];
+      }
+      return { status: "unavailable" };
     }
-    return data;
+
+    return { status: "available", data };
   } catch (err) {
-    logger.debug("Failed in listEligibleClientMembers", { err });
-    return [];
+    logger.debug("Failed in listClientManagementProjects", { err });
+    return { status: "unavailable" };
+  }
+}
+
+export async function listEligibleClientMembersForProject(
+  supabase: TypedSupabase,
+  project: { id: string; client_id: string | null },
+): Promise<AvailableResult<EligibleClientMember[]>> {
+  try {
+    if (project.client_id !== null) {
+      const { data, error } = await supabase
+        .from("client_contacts")
+        .select(
+          "id, full_name, email, profile_id, job_title, profiles!inner(role, is_active, deleted_at)",
+        )
+        .eq("client_id", project.client_id)
+        .is("deleted_at", null)
+        .not("profile_id", "is", null)
+        .eq("profiles.role", "client")
+        .eq("profiles.is_active", true)
+        .is("profiles.deleted_at", null);
+
+      if (error || !data) {
+        if (error)
+          logger.debug("Error in listEligibleClientMembersForProject (org)", {
+            error: error.message,
+          });
+        return { status: "unavailable" };
+      }
+
+      return {
+        status: "available",
+        data: data.map((c) => ({
+          id: c.id,
+          full_name: c.full_name,
+          email: c.email,
+          profile_id: c.profile_id,
+          job_title: c.job_title,
+        })),
+      };
+    }
+
+    // Direct path: Step 1 - Call trusted association RPC (never query project_client_contacts table)
+    const { data: assocData, error: assocError } = await supabase.rpc(
+      "list_project_client_contact_associations",
+      { p_project_id: project.id },
+    );
+
+    if (assocError || !assocData) {
+      if (assocError) {
+        logger.debug(
+          "Error in list_project_client_contact_associations for project eligibility",
+          { error: assocError.message },
+        );
+      }
+      return { status: "unavailable" };
+    }
+
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    const contactIds: string[] = [];
+    for (const row of assocData) {
+      if (
+        typeof row.contact_id !== "string" ||
+        !uuidRegex.test(row.contact_id)
+      ) {
+        return { status: "unavailable" };
+      }
+      contactIds.push(row.contact_id);
+    }
+
+    if (contactIds.length === 0) {
+      return { status: "available", data: [] };
+    }
+
+    // Step 2: Query client_contacts for the trusted associated contact IDs
+    const { data, error } = await supabase
+      .from("client_contacts")
+      .select(
+        "id, full_name, email, profile_id, job_title, profiles!inner(role, is_active, deleted_at)",
+      )
+      .in("id", contactIds)
+      .is("client_id", null)
+      .is("deleted_at", null)
+      .not("profile_id", "is", null)
+      .eq("profiles.role", "client")
+      .eq("profiles.is_active", true)
+      .is("profiles.deleted_at", null);
+
+    if (error || !data) {
+      if (error) {
+        logger.debug(
+          "Error in listEligibleClientMembersForProject (direct contacts query)",
+          { error: error.message },
+        );
+      }
+      return { status: "unavailable" };
+    }
+
+    return {
+      status: "available",
+      data: data.map((c) => ({
+        id: c.id,
+        full_name: c.full_name,
+        email: c.email,
+        profile_id: c.profile_id,
+        job_title: c.job_title,
+      })),
+    };
+  } catch (err) {
+    logger.debug("Failed in listEligibleClientMembersForProject", { err });
+    return { status: "unavailable" };
   }
 }
 
