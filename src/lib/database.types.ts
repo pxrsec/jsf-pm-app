@@ -1902,7 +1902,15 @@ export type Database = {
       }
     }
     Functions: {
-      accept_invite: { Args: { p_token_hash: string }; Returns: Json }
+      accept_invite: {
+        Args: {
+          p_full_name: string
+          p_phone_e164: string
+          p_token_hash: string
+          p_whatsapp_opt_in: boolean
+        }
+        Returns: Json
+      }
       acknowledge_notification_and_navigate: {
         Args: { p_notification_recipient_id: string }
         Returns: boolean
@@ -2818,3 +2826,4 @@ export const Constants = {
     },
   },
 } as const
+
