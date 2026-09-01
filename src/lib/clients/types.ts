@@ -22,6 +22,17 @@ export type ClientManagementProjectDto = {
   name: string;
 };
 
+export type DirectContactWorkspaceDto = {
+  id: string;
+  fullName: string;
+  profileId: string | null;
+};
+
+export type ClientOrganizationWorkspaceDto = {
+  id: string;
+  name: string;
+};
+
 export type AvailableResult<T> =
   { status: "available"; data: T } | { status: "unavailable" };
 

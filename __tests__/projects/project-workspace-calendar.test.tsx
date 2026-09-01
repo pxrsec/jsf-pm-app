@@ -93,6 +93,12 @@ vi.mock(
     ProjectReopenDialog: () => null,
   }),
 );
+vi.mock(
+  "@/components/shared/projects/project-workspace/project-client-identity-dialog",
+  () => ({
+    ProjectClientIdentityDialog: () => null,
+  }),
+);
 
 vi.mock("@/lib/calendar/actions", () => ({
   createCalendarMilestoneAction: vi.fn(),

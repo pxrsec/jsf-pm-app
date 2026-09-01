@@ -157,13 +157,25 @@
     },
     "invitation": {
       "title": "Configura tu Cuenta",
+      "fixedEmailNotice": "Esta cuenta será creada para el correo electrónico asociado a esta invitación.",
       "fullNameLabel": "Nombre completo",
       "phoneLabel": "Teléfono (opcional)",
+      "phoneHelp": "Formato E.164 (ej. +525512345678)",
       "passwordLabel": "Contraseña",
+      "passwordPolicyHelp": "Mínimo 12 caracteres: mayúsculas, minúsculas, números y símbolos permitidos (!@#$%^&*()_+-=[]{};':\",.<>/?).",
+      "showPassword": "Ver contraseña",
+      "hidePassword": "Ocultar contraseña",
       "whatsappOptInLabel": "Deseo recibir notificaciones operativas por WhatsApp",
       "submitLabel": "Completar registro",
       "errorPolicy": "La contraseña debe tener al menos 12 caracteres e incluir mayúsculas, minúsculas, números y símbolos.",
-      "errorGeneric": "No pudimos procesar tu invitación. Verifica tus datos o solicita una nueva."
+      "errorGeneric": "No pudimos procesar tu invitación. Verifica tus datos o solicita una nueva.",
+      "errors": {
+        "conflict": "Ya existe una cuenta registrada con este correo electrónico.",
+        "validation_error": "Los datos ingresados no cumplen con los requisitos de seguridad.",
+        "invite_terminal": "Esta invitación ha expirado, fue revocada o ya fue utilizada.",
+        "authentication_failed": "No se pudo iniciar sesión automáticamente tras crear la cuenta.",
+        "unavailable": "El servicio no está disponible temporalmente. Por favor, intenta de nuevo."
+      }
     },
     "sessionExpired": {
       "title": "Enlace No Válido o Expirado",
@@ -272,9 +284,53 @@
         "primaryLeadLabel": "Lead Principal",
         "deadlineLabel": "Entrega",
         "editAction": "Editar Información",
+        "clientIdentityAction": "Identidad del Cliente",
         "statusActions": "Estado",
         "completeProject": "Completar Proyecto",
         "reopenProject": "Reabrir Proyecto"
+      },
+      "clientIdentity": {
+        "dialogTitle": "Identidad del Cliente",
+        "dialogDescription": "Configura la identidad del cliente vinculada a este proyecto (organización o contacto directo).",
+        "modes": {
+          "organization": "Organización de Cliente",
+          "directContact": "Contacto Directo (Sin organización)",
+          "noIdentity": "Sin Identidad Aún"
+        },
+        "fields": {
+          "mode": "Modo de Identidad",
+          "selectOrg": "Organización",
+          "selectContact": "Contacto Directo"
+        },
+        "placeholders": {
+          "org": "Selecciona una organización...",
+          "contact": "Selecciona un contacto directo..."
+        },
+        "noIdentityPlanningNotice": "El proyecto permanecerá en fase de planeación sin una identidad de cliente asociada.",
+        "directContactNotice": "Los proyectos de contacto directo solo están permitidos en fase de planeación. Al avanzar a ejecución activa se requerirá una organización.",
+        "nonPlanningNotice": "Los proyectos activos en ejecución o pausados requieren obligatoriamente una organización de cliente.",
+        "linkedAccountBadge": "Cuenta Vinculada",
+        "noAccountBadge": "Sin Cuenta",
+        "linkedAccountMemberHint": "Este contacto ya cuenta con una cuenta registrada. Puedes agregarlo al equipo en la pestaña Miembros.",
+        "confirmTransitionTitle": "¿Confirmar Cambio de Identidad?",
+        "confirmTransitionDescription": "Cambiar la identidad del cliente desvinculará la asignación actual del proyecto. ¿Deseas continuar?",
+        "confirmTransitionAction": "Confirmar y Guardar",
+        "inviteClientAction": "Invitar Cliente",
+        "inviteClientTitle": "Invitar Contacto Directo",
+        "inviteClientDescription": "Genera un enlace de registro de un solo uso para este contacto directo.",
+        "actions": {
+          "cancel": "Cancelar",
+          "save": "Guardar Identidad",
+          "close": "Cerrar"
+        },
+        "errors": {
+          "unavailable": "Los datos de organizaciones y contactos no están disponibles. Intenta nuevamente.",
+          "unauthorized": "No tienes autorización para administrar la identidad del cliente.",
+          "validationFailed": "Por favor, selecciona una opción válida.",
+          "readinessConflict": "El estado actual del proyecto no permite esta configuración de identidad.",
+          "saveFailed": "Ocurrió un error al guardar la identidad del cliente. Por favor, verifica el estado actual e intenta de nuevo."
+        },
+        "successToast": "Identidad del cliente actualizada exitosamente."
       },
       "completion": {
         "dialogTitle": "Completar Proyecto",
@@ -2495,11 +2551,11 @@
         "project": "Selecciona proyecto..."
       },
       "lifetimes": {
-        "24h": "24 horas (1 día)",
-        "72h": "72 horas (3 días)",
-        "7d": "7 días (Estándar)",
-        "14d": "14 días (2 semanas)",
-        "30d": "30 días (1 mes)"
+        "hours24": "24 horas (1 día)",
+        "hours72": "72 horas (3 días)",
+        "days7": "7 días (Estándar)",
+        "days14": "14 días (2 semanas)",
+        "days30": "30 días (1 mes)"
       },
       "actions": {
         "cancel": "Cancelar",

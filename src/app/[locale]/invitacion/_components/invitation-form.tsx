@@ -17,6 +17,7 @@ import {
   EyeOff,
   Loader2,
   AlertCircle,
+  Info,
 } from "lucide-react";
 
 interface InvitationFormProps {
@@ -53,18 +54,17 @@ export function InvitationForm({ token }: InvitationFormProps) {
     if (!validation.success) {
       const issue = validation.error.issues[0];
       setErrorMessage(issue?.message ?? t("errorPolicy"));
+      setPassword("");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const idempotencyKey = crypto.randomUUID();
       const response = await fetch("/api/v1/auth/invites/complete", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Idempotency-Key": idempotencyKey,
         },
         body: JSON.stringify(validation.data),
       });
@@ -82,14 +82,30 @@ export function InvitationForm({ token }: InvitationFormProps) {
       }
 
       const errorData = await response.json().catch(() => null);
-      if (errorData?.error?.message) {
+      const errorCode = errorData?.error?.code;
+
+      if (errorCode === "conflict") {
+        setErrorMessage(t("errors.conflict"));
+      } else if (errorCode === "validation_error") {
+        setErrorMessage(
+          errorData?.error?.message ?? t("errors.validation_error"),
+        );
+      } else if (errorCode === "invite_terminal") {
+        setErrorMessage(t("errors.invite_terminal"));
+      } else if (errorCode === "authentication_failed") {
+        setErrorMessage(t("errors.authentication_failed"));
+      } else if (errorCode === "unavailable") {
+        setErrorMessage(t("errors.unavailable"));
+      } else if (errorData?.error?.message) {
         setErrorMessage(errorData.error.message);
       } else {
         setErrorMessage(t("errorGeneric"));
       }
+      setPassword("");
       setIsLoading(false);
     } catch {
       setErrorMessage(t("errorGeneric"));
+      setPassword("");
       setIsLoading(false);
     }
   }
@@ -118,6 +134,12 @@ export function InvitationForm({ token }: InvitationFormProps) {
         <p className="text-xs text-muted-foreground mt-1 font-medium">
           {brandT("name")}
         </p>
+      </div>
+
+      {/* Fixed Email Bound Notice */}
+      <div className="flex items-start gap-2.5 rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground">
+        <Info className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
+        <span>{t("fixedEmailNotice")}</span>
       </div>
 
       {errorMessage && (
@@ -160,12 +182,17 @@ export function InvitationForm({ token }: InvitationFormProps) {
 
         {/* Phone Field */}
         <div className="space-y-1.5">
-          <Label
-            htmlFor="phone"
-            className="text-xs font-medium text-foreground"
-          >
-            {t("phoneLabel")}
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label
+              htmlFor="phone"
+              className="text-xs font-medium text-foreground"
+            >
+              {t("phoneLabel")}
+            </Label>
+            <span className="text-[11px] text-muted-foreground">
+              {t("phoneHelp")}
+            </span>
+          </div>
           <div className="relative flex items-center">
             <Phone
               className="pointer-events-none absolute left-3 h-4 w-4 text-muted-foreground/70"
@@ -186,12 +213,14 @@ export function InvitationForm({ token }: InvitationFormProps) {
 
         {/* Password Field */}
         <div className="space-y-1.5">
-          <Label
-            htmlFor="password"
-            className="text-xs font-medium text-foreground"
-          >
-            {t("passwordLabel")}
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label
+              htmlFor="password"
+              className="text-xs font-medium text-foreground"
+            >
+              {t("passwordLabel")}
+            </Label>
+          </div>
           <div className="relative flex items-center">
             <Lock
               className="pointer-events-none absolute left-3 h-4 w-4 text-muted-foreground/70"
@@ -210,9 +239,7 @@ export function InvitationForm({ token }: InvitationFormProps) {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              aria-label={
-                showPassword ? "Ocultar contraseña" : "Ver contraseña"
-              }
+              aria-label={showPassword ? t("hidePassword") : t("showPassword")}
               className="absolute right-2.5 p-1 rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-colors cursor-pointer"
               disabled={isLoading}
             >
@@ -223,6 +250,9 @@ export function InvitationForm({ token }: InvitationFormProps) {
               )}
             </button>
           </div>
+          <p className="text-[11px] text-muted-foreground leading-relaxed pt-0.5">
+            {t("passwordPolicyHelp")}
+          </p>
         </div>
 
         {/* WhatsApp Notification Opt-in */}

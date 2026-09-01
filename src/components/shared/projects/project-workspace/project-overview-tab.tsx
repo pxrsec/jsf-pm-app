@@ -35,6 +35,7 @@ interface ProjectOverviewTabProps {
   milestoneSummaries?: readonly MilestoneSummaryDto[];
   canManageMilestones?: boolean;
   onOpenEditDialog?: () => void;
+  onOpenClientIdentity?: () => void;
   onSelectTab?: (tab: string) => void;
   onOpenMilestone?: (milestoneId: string) => void;
 }
@@ -48,6 +49,7 @@ export function ProjectOverviewTab({
   milestoneSummaries = [],
   canManageMilestones = false,
   onOpenEditDialog,
+  onOpenClientIdentity,
   onSelectTab,
   onOpenMilestone,
 }: ProjectOverviewTabProps) {
@@ -132,12 +134,12 @@ export function ProjectOverviewTab({
               </p>
             </div>
           </div>
-          {onOpenEditDialog && (
+          {(onOpenClientIdentity || onOpenEditDialog) && (
             <Button
               variant="outline"
               size="sm"
-              onClick={onOpenEditDialog}
-              className="border-yellow-600/40 text-yellow-900 dark:text-yellow-100 hover:bg-yellow-500/20 shrink-0 self-start sm:self-auto h-8 text-xs font-medium"
+              onClick={onOpenClientIdentity ?? onOpenEditDialog}
+              className="border-yellow-600/40 text-yellow-900 dark:text-yellow-100 hover:bg-yellow-500/20 shrink-0 self-start sm:self-auto h-8 text-xs font-medium cursor-pointer"
             >
               {t("clientSetupBanner.linkCta")}
             </Button>

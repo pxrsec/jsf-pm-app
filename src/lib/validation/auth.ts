@@ -28,31 +28,33 @@ export const passwordSchema = z
     "Password must contain at least one allowed symbol",
   );
 
-export const CompleteInviteSchema = z.object({
-  token: z
-    .string({
-      required_error: "Token is required",
-    })
-    .min(43, "Token must be at least 43 characters")
-    .max(128, "Token must not exceed 128 characters"),
-  full_name: z
-    .string({
-      required_error: "Full name is required",
-    })
-    .trim()
-    .min(1, "Full name must not be empty")
-    .max(120, "Full name must not exceed 120 characters"),
-  phone_e164: z
-    .string()
-    .regex(
-      /^\+[1-9][0-9]{7,14}$/,
-      "Phone number must be valid E.164 format (e.g. +525512345678)",
-    )
-    .nullable()
-    .optional(),
-  password: passwordSchema,
-  whatsapp_opt_in: z.boolean().default(false).optional(),
-});
+export const CompleteInviteSchema = z
+  .object({
+    token: z
+      .string({
+        required_error: "Token is required",
+      })
+      .min(43, "Token must be at least 43 characters")
+      .max(128, "Token must not exceed 128 characters"),
+    full_name: z
+      .string({
+        required_error: "Full name is required",
+      })
+      .trim()
+      .min(1, "Full name must not be empty")
+      .max(120, "Full name must not exceed 120 characters"),
+    phone_e164: z
+      .string()
+      .regex(
+        /^\+[1-9][0-9]{7,14}$/,
+        "Phone number must be valid E.164 format (e.g. +525512345678)",
+      )
+      .nullable()
+      .optional(),
+    password: passwordSchema,
+    whatsapp_opt_in: z.boolean().nullish().default(false),
+  })
+  .strict();
 
 export type CompleteInviteInput = z.infer<typeof CompleteInviteSchema>;
 

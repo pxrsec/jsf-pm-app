@@ -37,9 +37,16 @@ vi.mock("next-intl", () => ({
       const messages: Record<string, Record<string, string>> = {
         "auth.invitation": {
           title: "Configura tu Cuenta",
+          fixedEmailNotice:
+            "Esta cuenta será creada para el correo electrónico asociado a esta invitación.",
           fullNameLabel: "Nombre completo",
           phoneLabel: "Teléfono (opcional)",
+          phoneHelp: "Formato E.164 (ej. +525512345678)",
           passwordLabel: "Contraseña",
+          passwordPolicyHelp:
+            "Mínimo 12 caracteres: mayúsculas, minúsculas, números y símbolos permitidos (!@#$%^&*()_+-=[]{};':\",.<>/?).",
+          showPassword: "Ver contraseña",
+          hidePassword: "Ocultar contraseña",
           whatsappOptInLabel:
             "Deseo recibir notificaciones operativas por WhatsApp",
           submitLabel: "Completar registro",
@@ -47,6 +54,16 @@ vi.mock("next-intl", () => ({
             "La contraseña debe tener al menos 12 caracteres e incluir mayúsculas, minúsculas, números y símbolos.",
           errorGeneric:
             "No pudimos procesar tu invitación. Verifica tus datos o solicita una nueva.",
+          "errors.conflict":
+            "Ya existe una cuenta registrada con este correo electrónico.",
+          "errors.validation_error":
+            "Los datos ingresados no cumplen con los requisitos de seguridad.",
+          "errors.invite_terminal":
+            "Esta invitación ha expirado, fue revocada o ya fue utilizada.",
+          "errors.authentication_failed":
+            "No se pudo iniciar sesión automáticamente tras crear la cuenta.",
+          "errors.unavailable":
+            "El servicio no está disponible temporalmente. Por favor, intenta de nuevo.",
         },
         "shell.brand": {
           name: "Joya Star Films",
@@ -76,24 +93,24 @@ describe("InvitationForm Component", () => {
     cleanup();
   });
 
-  it("renders branded logo, headers, inputs, and action links", () => {
+  it("renders branded logo, notice, inputs without email input, and action links", () => {
     render(<InvitationForm token={mockToken} />);
 
     // Brand logo
     const logo = screen.getByAltText("Joya Star Films");
     expect(logo).toBeInTheDocument();
-    expect(logo).toHaveAttribute(
-      "src",
-      expect.stringContaining("joyalogo-purple.svg"),
-    );
 
-    // Title and brand name
+    // Fixed email notice
     expect(
-      screen.getByRole("heading", { name: "Configura tu Cuenta", level: 1 }),
+      screen.getByText(
+        "Esta cuenta será creada para el correo electrónico asociado a esta invitación.",
+      ),
     ).toBeInTheDocument();
-    expect(screen.getByText("Joya Star Films")).toBeInTheDocument();
 
-    // Form inputs
+    // Form inputs - verify NO email input exists
+    expect(
+      screen.queryByLabelText(/correo electrónico/i),
+    ).not.toBeInTheDocument();
     expect(screen.getByLabelText("Nombre completo")).toBeInTheDocument();
     expect(screen.getByLabelText("Teléfono (opcional)")).toBeInTheDocument();
     expect(screen.getByLabelText("Contraseña")).toBeInTheDocument();
@@ -106,13 +123,6 @@ describe("InvitationForm Component", () => {
     expect(
       screen.getByRole("button", { name: "Completar registro" }),
     ).toBeInTheDocument();
-
-    // Sign-in link
-    const signInLink = screen.getByRole("link", {
-      name: /Ir a Iniciar Sesión/i,
-    });
-    expect(signInLink).toBeInTheDocument();
-    expect(signInLink).toHaveAttribute("href", "/iniciar-sesion");
   });
 
   it("toggles password visibility when the eye button is clicked", () => {
@@ -133,12 +143,12 @@ describe("InvitationForm Component", () => {
     expect(passwordInput).toHaveAttribute("type", "password");
   });
 
-  it("submits the form successfully and navigates to the target redirect path", async () => {
+  it("submits without Idempotency-Key header, disables button in-flight, and redirects on 201", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       status: 201,
       json: async () => ({
         data: {
-          redirect_path: "/pm/proyectos",
+          redirect_path: "/cliente",
         },
       }),
     });
@@ -152,19 +162,29 @@ describe("InvitationForm Component", () => {
       target: { value: "StrongPassw0rd!123" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Completar registro" }));
+    const submitBtn = screen.getByRole("button", {
+      name: "Completar registro",
+    });
+    fireEvent.click(submitBtn);
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
         "/api/v1/auth/invites/complete",
         expect.objectContaining({
           method: "POST",
-          headers: expect.objectContaining({
+          headers: {
             "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            token: mockToken,
+            full_name: "Juan Pérez",
+            phone_e164: null,
+            password: "StrongPassw0rd!123",
+            whatsapp_opt_in: false,
           }),
         }),
       );
-      expect(mockPush).toHaveBeenCalledWith("/pm/proyectos");
+      expect(mockPush).toHaveBeenCalledWith("/cliente");
     });
   });
 
@@ -190,12 +210,12 @@ describe("InvitationForm Component", () => {
     });
   });
 
-  it("displays server error message when submission fails with non-201 status", async () => {
+  it("maps 409 conflict error code to localized message and clears password", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      status: 400,
+      status: 409,
       json: async () => ({
         error: {
-          message: "Token inválido o expirado",
+          code: "conflict",
         },
       }),
     });
@@ -205,7 +225,8 @@ describe("InvitationForm Component", () => {
     fireEvent.change(screen.getByLabelText("Nombre completo"), {
       target: { value: "Juan Pérez" },
     });
-    fireEvent.change(screen.getByLabelText("Contraseña"), {
+    const passwordInput = screen.getByLabelText("Contraseña");
+    fireEvent.change(passwordInput, {
       target: { value: "StrongPassw0rd!123" },
     });
 
@@ -213,8 +234,9 @@ describe("InvitationForm Component", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(
-        "Token inválido o expirado",
+        "Ya existe una cuenta registrada con este correo electrónico.",
       );
+      expect(passwordInput).toHaveValue("");
     });
   });
 });

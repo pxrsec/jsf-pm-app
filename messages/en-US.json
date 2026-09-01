@@ -157,13 +157,25 @@
     },
     "invitation": {
       "title": "Set Up Your Account",
+      "fixedEmailNotice": "This account will be created for the email address associated with this invitation.",
       "fullNameLabel": "Full name",
       "phoneLabel": "Phone number (optional)",
+      "phoneHelp": "E.164 format (e.g. +525512345678)",
       "passwordLabel": "Password",
+      "passwordPolicyHelp": "Minimum 12 characters: uppercase, lowercase, numbers, and allowed symbols (!@#$%^&*()_+-=[]{};':\",.<>/?).",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
       "whatsappOptInLabel": "I wish to receive operational notifications via WhatsApp",
       "submitLabel": "Complete registration",
       "errorPolicy": "Password must be at least 12 characters and include uppercase, lowercase, numbers, and symbols.",
-      "errorGeneric": "We could not process your invitation. Please verify your details or request a new invite."
+      "errorGeneric": "We could not process your invitation. Please verify your details or request a new invite.",
+      "errors": {
+        "conflict": "An account with this email address already exists.",
+        "validation_error": "The submitted details do not meet security requirements.",
+        "invite_terminal": "This invitation has expired, was revoked, or has already been used.",
+        "authentication_failed": "Failed to establish an automatic session after creating the account.",
+        "unavailable": "The service is temporarily unavailable. Please try again."
+      }
     },
     "sessionExpired": {
       "title": "Invalid or Expired Link",
@@ -272,9 +284,53 @@
         "primaryLeadLabel": "Primary Lead",
         "deadlineLabel": "Deadline",
         "editAction": "Edit Information",
+        "clientIdentityAction": "Client Identity",
         "statusActions": "Status",
         "completeProject": "Complete Project",
         "reopenProject": "Reopen Project"
+      },
+      "clientIdentity": {
+        "dialogTitle": "Client Identity",
+        "dialogDescription": "Configure the client identity linked to this project (organization or direct contact).",
+        "modes": {
+          "organization": "Client Organization",
+          "directContact": "Direct Contact (No organization)",
+          "noIdentity": "No Identity Yet"
+        },
+        "fields": {
+          "mode": "Identity Mode",
+          "selectOrg": "Organization",
+          "selectContact": "Direct Contact"
+        },
+        "placeholders": {
+          "org": "Select an organization...",
+          "contact": "Select a direct contact..."
+        },
+        "noIdentityPlanningNotice": "The project will remain in planning without an associated client identity.",
+        "directContactNotice": "Direct-contact projects are only allowed during the planning phase. Advancing to active execution will require an organization.",
+        "nonPlanningNotice": "Active in-progress or paused projects strictly require a client organization.",
+        "linkedAccountBadge": "Linked Account",
+        "noAccountBadge": "No Account",
+        "linkedAccountMemberHint": "This contact already has a registered account. You can add them to the team in the Members tab.",
+        "confirmTransitionTitle": "Confirm Identity Change?",
+        "confirmTransitionDescription": "Changing client identity will clear the current project assignment. Do you wish to continue?",
+        "confirmTransitionAction": "Confirm & Save",
+        "inviteClientAction": "Invite Client",
+        "inviteClientTitle": "Invite Direct Contact",
+        "inviteClientDescription": "Generate a single-use registration link for this direct contact.",
+        "actions": {
+          "cancel": "Cancel",
+          "save": "Save Identity",
+          "close": "Close"
+        },
+        "errors": {
+          "unavailable": "Organization and contact data is unavailable. Please try again.",
+          "unauthorized": "You are not authorized to manage client identity.",
+          "validationFailed": "Please select a valid option.",
+          "readinessConflict": "The current project status does not allow this identity configuration.",
+          "saveFailed": "An error occurred while saving client identity. Please check the current state and try again."
+        },
+        "successToast": "Client identity updated successfully."
       },
       "completion": {
         "dialogTitle": "Complete Project",
@@ -2495,11 +2551,11 @@
         "project": "Select project..."
       },
       "lifetimes": {
-        "24h": "24 hours (1 day)",
-        "72h": "72 hours (3 days)",
-        "7d": "7 days (Standard)",
-        "14d": "14 days (2 weeks)",
-        "30d": "30 days (1 month)"
+        "hours24": "24 hours (1 day)",
+        "hours72": "72 hours (3 days)",
+        "days7": "7 days (Standard)",
+        "days14": "14 days (2 weeks)",
+        "days30": "30 days (1 month)"
       },
       "actions": {
         "cancel": "Cancel",

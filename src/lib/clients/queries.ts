@@ -6,6 +6,8 @@ import type {
   AvailableResult,
   ClientContactAdministrationDto,
   ClientOrganizationAdministrationDto,
+  DirectContactWorkspaceDto,
+  ClientOrganizationWorkspaceDto,
 } from "./types";
 
 export type Client = Database["public"]["Tables"]["clients"]["Row"];
@@ -211,6 +213,82 @@ export async function listClientOrganizationsForAdministration(
   }
 }
 
+export async function listDirectContactsForWorkspace(
+  supabase: TypedSupabase,
+): Promise<AvailableResult<DirectContactWorkspaceDto[]>> {
+  try {
+    const { data, error } = await supabase.rpc(
+      "list_client_contacts_for_administration",
+    );
+
+    if (error || !data) {
+      if (error) {
+        logger.debug("Error in listDirectContactsForWorkspace RPC", {
+          error: error.message,
+        });
+      }
+      return { status: "unavailable" };
+    }
+
+    const directContacts: DirectContactWorkspaceDto[] = [];
+    for (const row of data) {
+      if (typeof row.id !== "string" || typeof row.full_name !== "string") {
+        return { status: "unavailable" };
+      }
+
+      // Strict direct-contact filter: only contacts not belonging to an organization
+      if (row.client_id === null || row.client_id === undefined) {
+        directContacts.push({
+          id: row.id,
+          fullName: row.full_name,
+          profileId: row.profile_id ?? null,
+        });
+      }
+    }
+
+    return { status: "available", data: directContacts };
+  } catch (err) {
+    logger.debug("Failed in listDirectContactsForWorkspace", { err });
+    return { status: "unavailable" };
+  }
+}
+
+export async function listClientOrganizationsForWorkspace(
+  supabase: TypedSupabase,
+): Promise<AvailableResult<ClientOrganizationWorkspaceDto[]>> {
+  try {
+    const { data, error } = await supabase.rpc(
+      "list_client_organizations_for_administration",
+    );
+
+    if (error || !data) {
+      if (error) {
+        logger.debug("Error in listClientOrganizationsForWorkspace RPC", {
+          error: error.message,
+        });
+      }
+      return { status: "unavailable" };
+    }
+
+    const orgs: ClientOrganizationWorkspaceDto[] = [];
+    for (const row of data) {
+      if (typeof row.id !== "string" || typeof row.display_name !== "string") {
+        return { status: "unavailable" };
+      }
+
+      orgs.push({
+        id: row.id,
+        name: row.display_name,
+      });
+    }
+
+    return { status: "available", data: orgs };
+  } catch (err) {
+    logger.debug("Failed in listClientOrganizationsForWorkspace", { err });
+    return { status: "unavailable" };
+  }
+}
+
 export async function listProjectClientContactAssociations(
   supabase: TypedSupabase,
   projectId: string,
@@ -247,6 +325,37 @@ export async function listProjectClientContactAssociations(
     return { status: "available", data: contactIds };
   } catch (err) {
     logger.debug("Failed in listProjectClientContactAssociations", { err });
+    return { status: "unavailable" };
+  }
+}
+
+export async function listProjectDirectContactAssociations(
+  supabase: TypedSupabase,
+  projectId: string,
+): Promise<AvailableResult<string[]>> {
+  try {
+    const [associationsResult, contactsResult] = await Promise.all([
+      listProjectClientContactAssociations(supabase, projectId),
+      listDirectContactsForWorkspace(supabase),
+    ]);
+
+    if (
+      associationsResult.status === "unavailable" ||
+      contactsResult.status === "unavailable"
+    ) {
+      return { status: "unavailable" };
+    }
+
+    const directContactIdSet = new Set(
+      contactsResult.data.map((c: DirectContactWorkspaceDto) => c.id),
+    );
+    const directAssociationIds = associationsResult.data.filter((id: string) =>
+      directContactIdSet.has(id),
+    );
+
+    return { status: "available", data: directAssociationIds };
+  } catch (err) {
+    logger.debug("Failed in listProjectDirectContactAssociations", { err });
     return { status: "unavailable" };
   }
 }

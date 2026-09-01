@@ -1,5 +1,52 @@
 # JSF PM App Development Changelog
 
+## [2026-09-01 @ 15:35]
+
+**🐛 Bug Fixes & 🧪 Test Suite Stabilization**
+
+- **Project Workspace Calendar Test Isolation (`__tests__/projects/project-workspace-calendar.test.tsx`):**
+  - Added mock for `ProjectClientIdentityDialog` to prevent client-side component test from resolving server-only project command modules.
+- **Invitation Completion Route Hardening (`src/app/api/v1/auth/invites/complete/route.ts`, `__tests__/auth/negative-path.test.ts`):**
+  - Added safe typeof guard for `userClient.auth.signOut` during error compensation paths to prevent TypeErrors when `signOut` is not present on client mocks.
+  - Added `signOut` mock to `mockUserClient` in negative path test suite.
+- **Invitation Validation Schema (`src/lib/validation/auth.ts`):**
+  - Updated `CompleteInviteSchema` to accept null or omitted `whatsapp_opt_in` (`z.boolean().nullish().default(false)`), fixing optional field payload validation.
+- **i18n Semantic Key Naming & Dialog Lifetimes (`messages/es-MX.json`, `messages/en-US.json`, `src/components/shared/client-administration/invitation-create-dialog.tsx`, `__tests__/i18n/key-naming.test.ts`, `__tests__/projects/project-client-identity.test.tsx`):**
+  - Added `clientAdministration` to the authorized domain namespaces regex in key naming validation.
+  - Migrated numeric invitation lifetime keys (`24h`, `72h`, `7d`, `14d`, `30d`) to camelCase identifiers (`hours24`, `hours72`, `days7`, `days14`, `days30`) across message catalogs and dialog components.
+  - Removed forbidden `triggerButton` key in `projects.workspace.clientIdentity`.
+  - Added allowlist entries for `clientsUnavailable`, `unavailableTitle`, `unavailableDescription`, `directContactOption`, and `noProjectOption` in semantic UI key validation.
+
+## [2026-09-01 @ 14:56]
+
+**🚀 Features, 🛠 Architecture & 🔒 Security: S10-02-R1 Invitation Completion and Direct-Client Project UX Implementation**
+
+- **Cryptographic Helper & Proxy Routing (`src/lib/invitations/crypto.ts`, `src/proxy.ts`):**
+  - Created canonical token hashing helper `hashInvitationToken` using `node:crypto` SHA-256 (`\x<hex>`).
+  - Configured proxy middleware to bypass `next-intl` localization for `/api/*` routes while executing Supabase session refresh.
+- **Hardened Invitation Completion Route (`src/app/api/v1/auth/invites/complete/route.ts`):**
+  - Updated completion endpoint to call 4-argument `accept_invite` RPC (`p_token_hash`, `p_full_name`, `p_phone_e164`, `p_whatsapp_opt_in`).
+  - Enforced Origin validation (403), strict body validation (400), terminal invitation check (410), existing user conflict (409), and bounded user deletion on post-creation failures.
+  - Ensured zero direct `profiles` mutations post-RPC and verified strict response schema.
+- **Public Invitation Form Refinements (`src/app/[locale]/invitacion/_components/invitation-form.tsx`):**
+  - Added fixed-email bound notice, phone help text, password policy aid, accessible show/hide password buttons, in-flight button disable, and error taxonomy mappings.
+- **Minimized Workspace Client Adapters (`src/lib/clients/types.ts`, `src/lib/clients/queries.ts`):**
+  - Created `DirectContactWorkspaceDto` and `ClientOrganizationWorkspaceDto` data-minimized types.
+  - Implemented `listDirectContactsForWorkspace`, `listClientOrganizationsForWorkspace`, and `listProjectDirectContactAssociations` (strictly direct-contact filtered).
+- **Narrow Project Identity Schema & Actions (`src/lib/projects/schemas.ts`, `src/lib/projects/actions.ts`):**
+  - Added strict `UpdateProjectIdentitySchema` and `updateProjectIdentityAction` delegating to `projectCommands.updateProject`.
+  - Enforced server-side status eligibility (`canManageClientIdentity`) and exact cache invalidations across Admin and PM paths.
+- **Client Identity Dialog & Shell Integration (`src/components/shared/projects/project-workspace/`):**
+  - Created `ProjectClientIdentityDialog` enforcing the 3-mode state machine (Organization, Direct Contact, No Identity Yet) with destructive transition confirmations and full partial-failure recovery with immediate DB state reconciliation via `router.refresh()`.
+  - Added constrained invitation support in `InvitationCreateDialog` for direct client contacts.
+  - Integrated header action button and setup banner CTA wired to client identity dialog on eligible Admin/PM client projects.
+- **Localization Parity (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Added full translation sets for `auth.invitation` and `projects.workspace.clientIdentity` across English and Spanish catalogs.
+- **Testing & Verification:**
+  - Updated `__tests__/auth/complete-invite.test.ts` and `src/app/[locale]/invitacion/_components/invitation-form.test.tsx`.
+  - Added `__tests__/projects/project-client-identity.test.tsx` verifying eligibility gating, direct-contact association, and unavailable state handling.
+  - Verified `npm run typecheck`, `npm run lint`, and unit tests passing with 0 errors.
+
 ## [2026-09-01 @ 14:03]
 
 **🛠 Database & 🔒 Security: S10-02-R1 Cancelled Project Command Enforcement Migration & Type Regeneration**

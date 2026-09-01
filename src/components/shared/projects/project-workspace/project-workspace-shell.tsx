@@ -31,7 +31,12 @@ import type {
 } from "@/lib/projects/queries";
 import type { DeliverableListItem } from "@/lib/deliverables/queries";
 import type { ClientListItem } from "@/lib/clients/queries";
-import type { AvailableResult } from "@/lib/clients/types";
+import type {
+  AvailableResult,
+  DirectContactWorkspaceDto,
+  ClientOrganizationWorkspaceDto,
+} from "@/lib/clients/types";
+import { ProjectClientIdentityDialog } from "./project-client-identity-dialog";
 import type {
   CalendarEventDto,
   MilestoneManagementTargetDto,
@@ -71,6 +76,9 @@ interface ProjectWorkspaceShellProps {
     AvailableResult<EligibleClientMember[]> | EligibleClientMember[];
   effectiveCapacity: "admin" | "pm_lead" | "pm_watcher";
   actorRole: "admin" | "pm";
+  directContacts?: AvailableResult<DirectContactWorkspaceDto[]>;
+  organizations?: AvailableResult<ClientOrganizationWorkspaceDto[]>;
+  associatedContactIds?: AvailableResult<string[]>;
   currentUserId?: string;
   initialTasks?: TaskWithAssignee[];
   initialDeliverables?: DeliverableListItem[];
@@ -94,6 +102,9 @@ export function ProjectWorkspaceShell({
   eligibleClients,
   effectiveCapacity,
   actorRole,
+  directContacts,
+  organizations,
+  associatedContactIds,
   currentUserId,
   initialTasks = [],
   initialDeliverables = [],
@@ -119,11 +130,20 @@ export function ProjectWorkspaceShell({
     getDesktopServerSnapshot,
   );
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isClientIdentityOpen, setIsClientIdentityOpen] = useState(false);
   const [isCompleteOpen, setIsCompleteOpen] = useState(false);
   const [isReopenOpen, setIsReopenOpen] = useState(false);
   const [statusAction, setStatusAction] =
     useState<ProjectStatusActionType | null>(null);
   const [openMilestoneId, setOpenMilestoneId] = useState<string>();
+
+  const canManageClientIdentity =
+    project.project_type === "client" &&
+    project.deleted_at === null &&
+    project.archived_at === null &&
+    project.status !== "completed" &&
+    project.status !== "cancelled" &&
+    (actorRole === "admin" || actorRole === "pm");
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -236,9 +256,15 @@ export function ProjectWorkspaceShell({
         project={project}
         clients={clients}
         effectiveCapacity={effectiveCapacity}
+        actorRole={actorRole}
         baseHref={baseHref}
         onOpenEditDialog={() => setIsEditOpen(true)}
         onOpenStatusDialog={handleStatusDialog}
+        onOpenClientIdentity={
+          canManageClientIdentity
+            ? () => setIsClientIdentityOpen(true)
+            : undefined
+        }
         navigation={isDesktop ? navigationContent : undefined}
       />
 
@@ -270,6 +296,11 @@ export function ProjectWorkspaceShell({
             milestoneSummaries={milestoneSummaries}
             canManageMilestones={canManageMilestones}
             onOpenEditDialog={() => setIsEditOpen(true)}
+            onOpenClientIdentity={
+              canManageClientIdentity
+                ? () => setIsClientIdentityOpen(true)
+                : undefined
+            }
             onSelectTab={(tab) => handleTabChange(tab)}
             onOpenMilestone={handleOpenMilestone}
           />
@@ -381,6 +412,19 @@ export function ProjectWorkspaceShell({
         isOpen={isReopenOpen}
         onClose={() => setIsReopenOpen(false)}
       />
+
+      {/* Client Identity Dialog */}
+      {canManageClientIdentity && (
+        <ProjectClientIdentityDialog
+          isOpen={isClientIdentityOpen}
+          onClose={() => setIsClientIdentityOpen(false)}
+          project={project}
+          organizations={organizations}
+          directContacts={directContacts}
+          associatedContactIds={associatedContactIds}
+          actorRole={actorRole}
+        />
+      )}
     </Tabs>
   );
 }

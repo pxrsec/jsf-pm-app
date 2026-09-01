@@ -14,6 +14,7 @@ import {
   Archive,
   RotateCcw,
   CheckCircle2,
+  Building2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,9 +34,11 @@ interface ProjectHeaderProps {
   project: ProjectDetail;
   clients: ClientListItem[];
   effectiveCapacity: "admin" | "pm_lead" | "pm_watcher";
+  actorRole?: "admin" | "pm";
   baseHref: string;
   onOpenEditDialog: () => void;
   onOpenStatusDialog: (action: ProjectStatusActionType) => void;
+  onOpenClientIdentity?: () => void;
   navigation?: React.ReactNode;
 }
 
@@ -43,9 +46,11 @@ export function ProjectHeader({
   project,
   clients,
   effectiveCapacity,
+  actorRole,
   baseHref,
   onOpenEditDialog,
   onOpenStatusDialog,
+  onOpenClientIdentity,
   navigation,
 }: ProjectHeaderProps) {
   const t = useTranslations("projects.workspace");
@@ -55,6 +60,8 @@ export function ProjectHeader({
 
   const isWatcher = effectiveCapacity === "pm_watcher";
   const isAdmin = effectiveCapacity === "admin";
+  const resolvedRole =
+    actorRole ?? (effectiveCapacity === "admin" ? "admin" : "pm");
 
   const primaryLead = project.members.find(
     (m) => m.member_type === "pm_lead" && m.is_primary,
@@ -66,6 +73,14 @@ export function ProjectHeader({
     PROJECT_STATUS_MAP[project.status as ProjectStatus] ??
     PROJECT_STATUS_MAP.planning;
   const StatusIcon = statusConfig.icon;
+
+  const canManageClientIdentity =
+    project.project_type === "client" &&
+    project.deleted_at === null &&
+    project.archived_at === null &&
+    project.status !== "completed" &&
+    project.status !== "cancelled" &&
+    (resolvedRole === "admin" || resolvedRole === "pm");
 
   const deadlineDate = project.deadline_at
     ? new Date(project.deadline_at)
@@ -105,6 +120,18 @@ export function ProjectHeader({
 
           {!isWatcher && (
             <div className="flex items-center gap-2 shrink-0">
+              {canManageClientIdentity && onOpenClientIdentity && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onOpenClientIdentity}
+                  className="h-8 gap-1.5 text-xs cursor-pointer"
+                >
+                  <Building2 className="h-3.5 w-3.5" />
+                  <span>{t("summary.clientIdentityAction")}</span>
+                </Button>
+              )}
+
               <Button
                 variant="outline"
                 size="sm"

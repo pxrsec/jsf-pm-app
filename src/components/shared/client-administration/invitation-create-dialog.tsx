@@ -33,12 +33,19 @@ import { Loader2 } from "lucide-react";
 
 const NO_PROJECT_VALUE = "__none__";
 
+export type DirectClientProjectInviteMode = {
+  contactId: string;
+  contactName: string;
+  projectId: string;
+};
+
 interface InvitationCreateDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (invitationUrl: string) => void;
-  contacts: ClientContactAdministrationDto[];
-  projects: ClientManagementProjectDto[];
+  contacts?: ClientContactAdministrationDto[];
+  projects?: ClientManagementProjectDto[];
+  directClientMode?: DirectClientProjectInviteMode;
 }
 
 interface InvitationCreateFormProps {
@@ -46,6 +53,7 @@ interface InvitationCreateFormProps {
   onSuccess: (invitationUrl: string) => void;
   contacts: ClientContactAdministrationDto[];
   projects: ClientManagementProjectDto[];
+  directClientMode?: DirectClientProjectInviteMode;
 }
 
 function InvitationCreateForm({
@@ -53,6 +61,7 @@ function InvitationCreateForm({
   onSuccess,
   contacts,
   projects,
+  directClientMode,
 }: InvitationCreateFormProps) {
   const t = useTranslations("clientAdministration.createInviteDialog");
   const locale = useLocale() as InvitationLinkLocale;
@@ -60,13 +69,18 @@ function InvitationCreateForm({
   // Eligible contacts for invitation: contacts without a linked profile
   const unlinkedContacts = contacts.filter((c) => c.profileId === null);
 
-  const [role, setRole] = useState<OrdinaryInvitationRole>("client");
+  const [role, setRole] = useState<OrdinaryInvitationRole>(
+    directClientMode ? "client" : "client",
+  );
   const [selectedContactId, setSelectedContactId] = useState<string>(
-    unlinkedContacts[0]?.id ?? "",
+    directClientMode
+      ? directClientMode.contactId
+      : (unlinkedContacts[0]?.id ?? ""),
   );
   const [operatorEmail, setOperatorEmail] = useState<string>("");
-  const [selectedProjectId, setSelectedProjectId] =
-    useState<string>(NO_PROJECT_VALUE);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(
+    directClientMode ? directClientMode.projectId : NO_PROJECT_VALUE,
+  );
   const [expiresInHours, setExpiresInHours] = useState<number>(168);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,11 +90,18 @@ function InvitationCreateForm({
     e.preventDefault();
     setErrorMessage(null);
 
-    const projectId =
-      selectedProjectId === NO_PROJECT_VALUE ? null : selectedProjectId;
+    const effectiveRole = directClientMode ? "client" : role;
+    const effectiveContactId = directClientMode
+      ? directClientMode.contactId
+      : selectedContactId;
+    const effectiveProjectId = directClientMode
+      ? directClientMode.projectId
+      : selectedProjectId === NO_PROJECT_VALUE
+        ? null
+        : selectedProjectId;
 
-    if (role === "client") {
-      if (!selectedContactId) {
+    if (effectiveRole === "client") {
+      if (!effectiveContactId) {
         setErrorMessage(t("errors.contactRequired"));
         return;
       }
@@ -95,17 +116,17 @@ function InvitationCreateForm({
     setIsSubmitting(true);
     try {
       const payload =
-        role === "client"
+        effectiveRole === "client"
           ? {
               role: "client" as const,
-              contactId: selectedContactId,
-              projectId,
+              contactId: effectiveContactId,
+              projectId: effectiveProjectId,
               expiresInHours,
             }
           : {
               role: "operator" as const,
               recipientEmail: operatorEmail.trim(),
-              projectId,
+              projectId: effectiveProjectId,
               expiresInHours,
             };
 
@@ -145,125 +166,138 @@ function InvitationCreateForm({
         </div>
       )}
 
-      <div className="space-y-1.5">
-        <Label htmlFor="invite-role">{t("fields.role")}</Label>
-        <Select
-          value={role}
-          onValueChange={(val) => {
-            if (val) {
-              setRole(val as OrdinaryInvitationRole);
-              setErrorMessage(null);
-            }
-          }}
-          disabled={isSubmitting}
-          items={[
-            { value: "client", label: t("roles.client") },
-            { value: "operator", label: t("roles.operator") },
-          ]}
-        >
-          <SelectTrigger id="invite-role" className="h-9 w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="w-[var(--anchor-width)] min-w-[280px]">
-            <SelectItem value="client">{t("roles.client")}</SelectItem>
-            <SelectItem value="operator">{t("roles.operator")}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {role === "client" ? (
-        <div className="space-y-1.5">
-          <Label htmlFor="invite-contact">{t("fields.contact")}</Label>
-          <Select
-            value={selectedContactId}
-            onValueChange={(val) => {
-              if (val) setSelectedContactId(val);
-            }}
-            disabled={isSubmitting || unlinkedContacts.length === 0}
-            items={unlinkedContacts.map((c) => ({
-              value: c.id,
-              label: `${c.fullName} (${c.email})`,
-            }))}
-          >
-            <SelectTrigger id="invite-contact" className="h-9 w-full">
-              <SelectValue
-                placeholder={
-                  unlinkedContacts.length === 0
-                    ? t("noUnlinkedContacts")
-                    : t("placeholders.contact")
-                }
-              />
-            </SelectTrigger>
-            <SelectContent className="w-[var(--anchor-width)] min-w-[280px]">
-              {unlinkedContacts.length === 0 ? (
-                <div className="p-2 text-xs text-muted-foreground text-center">
-                  {t("noUnlinkedContacts")}
-                </div>
-              ) : (
-                unlinkedContacts.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.fullName} ({c.email})
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
-          {unlinkedContacts.length === 0 && (
-            <p className="text-xs text-muted-foreground">
-              {t("allContactsLinkedHint")}
-            </p>
-          )}
+      {directClientMode ? (
+        <div className="space-y-1.5 rounded-lg border border-border/60 bg-muted/30 p-3">
+          <Label className="text-xs text-muted-foreground">
+            {t("fields.contact")}
+          </Label>
+          <p className="text-sm font-semibold text-foreground">
+            {directClientMode.contactName}
+          </p>
         </div>
       ) : (
-        <div className="space-y-1.5">
-          <Label htmlFor="invite-operator-email">
-            {t("fields.recipientEmail")}
-          </Label>
-          <Input
-            id="invite-operator-email"
-            type="email"
-            value={operatorEmail}
-            onChange={(e) => setOperatorEmail(e.target.value)}
-            placeholder={t("placeholders.email")}
-            disabled={isSubmitting}
-            maxLength={320}
-            className="h-9"
-            required
-          />
-        </div>
-      )}
+        <>
+          <div className="space-y-1.5">
+            <Label htmlFor="invite-role">{t("fields.role")}</Label>
+            <Select
+              value={role}
+              onValueChange={(val) => {
+                if (val) {
+                  setRole(val as OrdinaryInvitationRole);
+                  setErrorMessage(null);
+                }
+              }}
+              disabled={isSubmitting}
+              items={[
+                { value: "client", label: t("roles.client") },
+                { value: "operator", label: t("roles.operator") },
+              ]}
+            >
+              <SelectTrigger id="invite-role" className="h-9 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="w-[var(--anchor-width)] min-w-[280px]">
+                <SelectItem value="client">{t("roles.client")}</SelectItem>
+                <SelectItem value="operator">{t("roles.operator")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="invite-project">{t("fields.project")}</Label>
-        <Select
-          value={selectedProjectId}
-          onValueChange={(val) => {
-            if (val) setSelectedProjectId(val);
-          }}
-          disabled={isSubmitting}
-          items={[
-            { value: NO_PROJECT_VALUE, label: t("noProjectOption") },
-            ...projects.map((p) => ({
-              value: p.id,
-              label: p.name,
-            })),
-          ]}
-        >
-          <SelectTrigger id="invite-project" className="h-9 w-full">
-            <SelectValue placeholder={t("placeholders.project")} />
-          </SelectTrigger>
-          <SelectContent className="w-[var(--anchor-width)] min-w-[280px]">
-            <SelectItem value={NO_PROJECT_VALUE}>
-              {t("noProjectOption")}
-            </SelectItem>
-            {projects.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          {role === "client" ? (
+            <div className="space-y-1.5">
+              <Label htmlFor="invite-contact">{t("fields.contact")}</Label>
+              <Select
+                value={selectedContactId}
+                onValueChange={(val) => {
+                  if (val) setSelectedContactId(val);
+                }}
+                disabled={isSubmitting || unlinkedContacts.length === 0}
+                items={unlinkedContacts.map((c) => ({
+                  value: c.id,
+                  label: `${c.fullName} (${c.email})`,
+                }))}
+              >
+                <SelectTrigger id="invite-contact" className="h-9 w-full">
+                  <SelectValue
+                    placeholder={
+                      unlinkedContacts.length === 0
+                        ? t("noUnlinkedContacts")
+                        : t("placeholders.contact")
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent className="w-[var(--anchor-width)] min-w-[280px]">
+                  {unlinkedContacts.length === 0 ? (
+                    <div className="p-2 text-xs text-muted-foreground text-center">
+                      {t("noUnlinkedContacts")}
+                    </div>
+                  ) : (
+                    unlinkedContacts.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.fullName} ({c.email})
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {unlinkedContacts.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {t("allContactsLinkedHint")}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <Label htmlFor="invite-operator-email">
+                {t("fields.recipientEmail")}
+              </Label>
+              <Input
+                id="invite-operator-email"
+                type="email"
+                value={operatorEmail}
+                onChange={(e) => setOperatorEmail(e.target.value)}
+                placeholder={t("placeholders.email")}
+                disabled={isSubmitting}
+                maxLength={320}
+                className="h-9"
+                required
+              />
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <Label htmlFor="invite-project">{t("fields.project")}</Label>
+            <Select
+              value={selectedProjectId}
+              onValueChange={(val) => {
+                if (val) setSelectedProjectId(val);
+              }}
+              disabled={isSubmitting}
+              items={[
+                { value: NO_PROJECT_VALUE, label: t("noProjectOption") },
+                ...projects.map((p) => ({
+                  value: p.id,
+                  label: p.name,
+                })),
+              ]}
+            >
+              <SelectTrigger id="invite-project" className="h-9 w-full">
+                <SelectValue placeholder={t("placeholders.project")} />
+              </SelectTrigger>
+              <SelectContent className="w-[var(--anchor-width)] min-w-[280px]">
+                <SelectItem value={NO_PROJECT_VALUE}>
+                  {t("noProjectOption")}
+                </SelectItem>
+                {projects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
 
       <div className="space-y-1.5">
         <Label htmlFor="invite-lifetime">{t("fields.lifetime")}</Label>
@@ -274,22 +308,22 @@ function InvitationCreateForm({
           }}
           disabled={isSubmitting}
           items={[
-            { value: "24", label: t("lifetimes.24h") },
-            { value: "72", label: t("lifetimes.72h") },
-            { value: "168", label: t("lifetimes.7d") },
-            { value: "336", label: t("lifetimes.14d") },
-            { value: "720", label: t("lifetimes.30d") },
+            { value: "24", label: t("lifetimes.hours24") },
+            { value: "72", label: t("lifetimes.hours72") },
+            { value: "168", label: t("lifetimes.days7") },
+            { value: "336", label: t("lifetimes.days14") },
+            { value: "720", label: t("lifetimes.days30") },
           ]}
         >
           <SelectTrigger id="invite-lifetime" className="h-9 w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="w-[var(--anchor-width)] min-w-[280px]">
-            <SelectItem value="24">{t("lifetimes.24h")}</SelectItem>
-            <SelectItem value="72">{t("lifetimes.72h")}</SelectItem>
-            <SelectItem value="168">{t("lifetimes.7d")}</SelectItem>
-            <SelectItem value="336">{t("lifetimes.14d")}</SelectItem>
-            <SelectItem value="720">{t("lifetimes.30d")}</SelectItem>
+            <SelectItem value="24">{t("lifetimes.hours24")}</SelectItem>
+            <SelectItem value="72">{t("lifetimes.hours72")}</SelectItem>
+            <SelectItem value="168">{t("lifetimes.days7")}</SelectItem>
+            <SelectItem value="336">{t("lifetimes.days14")}</SelectItem>
+            <SelectItem value="720">{t("lifetimes.days30")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -306,7 +340,10 @@ function InvitationCreateForm({
         <Button
           type="submit"
           disabled={
-            isSubmitting || (role === "client" && unlinkedContacts.length === 0)
+            isSubmitting ||
+            (!directClientMode &&
+              role === "client" &&
+              unlinkedContacts.length === 0)
           }
         >
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -321,8 +358,9 @@ export function InvitationCreateDialog({
   isOpen,
   onClose,
   onSuccess,
-  contacts,
-  projects,
+  contacts = [],
+  projects = [],
+  directClientMode,
 }: InvitationCreateDialogProps) {
   const t = useTranslations("clientAdministration.createInviteDialog");
 
@@ -340,6 +378,7 @@ export function InvitationCreateDialog({
             onSuccess={onSuccess}
             contacts={contacts}
             projects={projects}
+            directClientMode={directClientMode}
           />
         )}
       </DialogContent>

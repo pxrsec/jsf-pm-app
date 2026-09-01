@@ -178,6 +178,7 @@ describe("S03-E03-03 Negative-Path & Cross-Boundary Security Test Suite", () => 
             data: { session: {} },
             error: null,
           }),
+          signOut: vi.fn().mockResolvedValue({}),
         },
         rpc: vi.fn().mockResolvedValue({
           data: null,
