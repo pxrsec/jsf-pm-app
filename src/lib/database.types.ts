@@ -2611,6 +2611,7 @@ export type Database = {
           active_project_membership_count: number
           active_task_assignment_count: number
           application_role: Database["public"]["Enums"]["app_role"]
+          created_at: string
           full_name: string
           is_active: boolean
           last_access_action: string
@@ -3181,4 +3182,3 @@ export const Constants = {
     },
   },
 } as const
-
