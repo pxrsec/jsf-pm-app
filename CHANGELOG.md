@@ -1,5 +1,55 @@
 # JSF PM App Development Changelog
 
+## [2026-09-02 @ 15:20]
+
+**🐛 Hotfixes: S10-04 Translation Key Naming and Test Whitelist Alignment**
+
+- **Semantic Key Naming Alignment (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Converted `accountAccess.commonErrors` uppercase enum keys (`UNAUTHORIZED`, `VALIDATION_FAILED`, `UNAVAILABLE`) to camelCase (`unauthorized`, `validationFailed`, `unavailable`), satisfying dot-delimited lower camelCase segment constraints.
+- **Component Error Key Consumers:**
+  - Updated translation key invocations to lowercase `commonErrors.unauthorized` and `commonErrors.unavailable` across `account-settings-form.tsx`, `bug-report-form.tsx`, `stale-access-panel.tsx`, and `bug-reports-panel.tsx`.
+- **Test Whitelist Coverage (`__tests__/i18n/key-naming.test.ts`):**
+  - Added `accountAccess` to the valid domain namespaces regex.
+  - Added legitimate UI concept tokens (`localeLabel`, `statusChangedUnavailable`, `saveButton`, `savingButton`, `retryButton`, `bugReportForm`, `formTitle`, `formDescription`, `submitButton`, `submittingButton`, `submitAnotherButton`, `loadMoreButton`, `recordReminderButton`, `recordingButton`) to the segment allowlist.
+- **Focused Verification:**
+  - Ran `__tests__/i18n/key-naming.test.ts`: PASSED (3/3 tests).
+  - Ran related test suites `__tests__/i18n/message-catalogs.test.ts`, `__tests__/account-access/components.test.tsx`, and `__tests__/account-access/actions.test.ts`: PASSED (41/41 tests).
+  - Ran `npm run typecheck`: PASSED without errors.
+
+## [2026-09-02 @ 14:41]
+
+**🚀 Features & 🛠 Architecture: S10-04 Account, Access Hygiene, and Bug Triage Implementation**
+
+- **Domain Boundaries, Schemas & Actions (`src/lib/account-access/`):**
+  - Implemented strict Zod validation schemas (`schemas.ts`) enforcing `IsoTimestampSchema` and `NullableIsoTimestampSchema` with offset validation across all temporal attributes, eliminating `Date.parse`.
+  - Defined composite keyset cursor schemas (`UserAccessDirectoryCursorSchema`, `BugReportCursorSchema`) requiring inseparable `(beforeCreatedAt, beforeUserId)` and `(beforeCreatedAt, beforeReportId)` values.
+  - Defined `SetUserAccessStateInputSchema` discriminated union distinguishing deactivation (requiring exact `confirmationFullName`) and reactivation (strictly forbidding confirmation phrase).
+  - Built query adapters (`queries.ts`) with 26-row lookahead validation, slicing visible items to 25, deriving continuation cursors from item 25 without exposing item 26, and fail-safe `try/catch` isolation returning `{ status: "unavailable" }`.
+  - Implemented command adapters (`commands.ts`) checking exact single-row cardinality and handling domain-specific return codes.
+  - Implemented 7 Server Actions (`actions.ts`) with non-throwing `safeParse` validation returning `{ ok: false, error: { code: 'VALIDATION_FAILED' } }`, `requireSession` auth guard, role-based authorization, and scoped cache revalidation.
+- **Client Components (`src/components/shared/account-access/`):**
+  - Created `AccountSettingsForm`: user preferences form with Base UI Switch, IANA datalist input, character counter, read-only role badge, and state updating exclusively from server results.
+  - Created `BugReportForm`: authenticated bug intake with sensitive information warning banner, title/description character limits, and acknowledgement card.
+  - Created `AccountView`: orchestrator that gracefully isolates account settings errors while guaranteeing bug report accessibility.
+  - Created `UserDeactivationDialog`: accessible destructive alert dialog requiring exact full name typed confirmation phrase, preventing dismissals while pending, and keeping dialog open on self-lockout / last-manager errors.
+  - Created `UserReactivationDialog`: accessible confirmation dialog stating revoked invitations are not restored.
+  - Created `UserAccessDirectoryPanel`: responsive directory (mobile cards / desktop table) formatting timestamps with presentation context, omitting `createdAt` from the DOM, and handling keyset continuation.
+  - Created `StaleAccessPanel`: internal reminder tracker with individual pending states.
+  - Created `BugReportsPanel`: bug triage stream with non-optimistic status select and privacy preservation ensuring reporter identity never leaks to the DOM.
+  - Created `ManagerAccessConsole`: accessible 3-tab layout composing directory, stale access, and bug reports panels with panel-level error isolation.
+- **App Router Protected Routes (`src/app/[locale]/(protected)/`):**
+  - Mounted `/cuenta` accessible to all active authenticated roles (`admin`, `pm`, `operator`, `client`).
+  - Mounted `/admin/acceso` restricted to Admin role with cross-role redirects to `/admin` or `/en/admin`.
+  - Mounted `/pm/acceso` restricted to PM role with cross-role redirects to `/pm` or `/en/pm`.
+  - Added skeleton loading states for all three routes.
+- **Navigation & Localization:**
+  - Integrated `account` (all roles -> `/cuenta`) and `accessManagement` (Admin/PM -> `/admin/acceso`, `/pm/acceso`) into drawer navigation with `User` and `ShieldCheck` icons.
+  - Maintained 100% key parity across `messages/es-MX.json` and `messages/en-US.json` under `accountAccess` namespace and `shell.nav.links`.
+- **Automated Test Coverage:**
+  - Added test suites: `__tests__/account-access/schemas.test.ts`, `queries.test.ts`, `actions.test.ts`, `components.test.tsx`, `routes.test.tsx`.
+  - Updated `__tests__/app-shell/navigation.test.ts` and `__tests__/i18n/message-catalogs.test.ts`.
+  - Verified with `npm run typecheck`, `npm run lint`, and `npm run test` (137 tests passing across all 7 suites).
+
 ## [2026-09-02 @ 14:02]
 
 **🛠 Database: S10-04 Directory Keyset-Cursor Post-Repair & Type Regeneration**

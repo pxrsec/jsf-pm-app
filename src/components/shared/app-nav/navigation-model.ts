@@ -13,7 +13,9 @@ export type AppNavigationItemKey =
   | "metrics"
   | "operations"
   | "notifications"
-  | "notificationOperations";
+  | "notificationOperations"
+  | "accessManagement"
+  | "account";
 
 export type AppNavigationItem = {
   key: AppNavigationItemKey;
@@ -138,7 +140,7 @@ export function buildNavigationModel({
     });
   }
 
-  // 6. Link Incidents (Admin and PM only)
+  // 7. Link Incidents (Admin and PM only)
   if (role === "admin" || role === "pm") {
     const linkIncidentsLabel = t("links.linkIncidents");
     const linkIncidentsHref =
@@ -151,7 +153,7 @@ export function buildNavigationModel({
     });
   }
 
-  // 7. Metrics (Admin and PM only)
+  // 8. Metrics (Admin and PM only)
   if (role === "admin" || role === "pm") {
     const metricsLabel = t("links.metrics");
     const metricsHref = role === "admin" ? "/admin/metricas" : "/pm/metricas";
@@ -163,7 +165,7 @@ export function buildNavigationModel({
     });
   }
 
-  // 8. Operations (Admin only)
+  // 9. Operations (Admin only)
   if (role === "admin") {
     const operationsLabel = t("links.operations");
     items.push({
@@ -174,7 +176,20 @@ export function buildNavigationModel({
     });
   }
 
-  // 8. Notifications (All roles)
+  // 10. Access Management (Admin and PM only)
+  if (role === "admin" || role === "pm") {
+    const accessManagementLabel = t("links.accessManagement");
+    const accessManagementHref =
+      role === "admin" ? "/admin/acceso" : "/pm/acceso";
+    items.push({
+      key: "accessManagement",
+      href: accessManagementHref,
+      label: accessManagementLabel,
+      ariaLabel: accessManagementLabel,
+    });
+  }
+
+  // 11. Notifications (All roles)
   const notificationsLabel = t("links.notifications");
   const inboxAriaLabel =
     unreadCount > 0
@@ -188,7 +203,7 @@ export function buildNavigationModel({
     unreadCount,
   });
 
-  // 9. Notification Operations (Admin or PM with canAccessNotificationOperations)
+  // 12. Notification Operations (Admin or PM with canAccessNotificationOperations)
   if (canAccessNotificationOperations && (role === "admin" || role === "pm")) {
     const notifOpsLabel = t("links.notificationOperations");
     const notifOpsHref =
@@ -200,6 +215,15 @@ export function buildNavigationModel({
       ariaLabel: notifOpsLabel,
     });
   }
+
+  // 13. Account (All roles)
+  const accountLabel = t("links.account");
+  items.push({
+    key: "account",
+    href: "/cuenta",
+    label: accountLabel,
+    ariaLabel: accountLabel,
+  });
 
   return items;
 }

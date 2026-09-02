@@ -18,12 +18,14 @@ export const PROTECTED_PATH_PREFIXES: readonly string[] = [
   "/cliente",
   "/notificaciones",
   "/calendario",
+  "/cuenta",
 ];
 
 // Shared authenticated path prefixes accessible by any active authenticated role.
 export const SHARED_AUTHENTICATED_PATH_PREFIXES = [
   "/notificaciones",
   "/calendario",
+  "/cuenta",
 ] as const;
 
 // Allowlisted relative path prefixes for safe redirects (magic link / auth callback).

@@ -42,7 +42,9 @@
         "metrics": "Metrics",
         "operations": "Operations",
         "notifications": "Notifications",
-        "notificationOperations": "Notification Operations"
+        "notificationOperations": "Notification Operations",
+        "accessManagement": "Access Management",
+        "account": "Account"
       },
       "notifications": {
         "badgeLabel": "Unread notifications",
@@ -2663,6 +2665,180 @@
       "notFoundOrArchived": "The item was not found or is already archived.",
       "notFoundOrActive": "The item was not found or is already active.",
       "lifecycleUnavailable": "The lifecycle service is currently unavailable."
+    }
+  },
+  "accountAccess": {
+    "accountSettings": {
+      "title": "Account",
+      "description": "Manage your account information and personal preferences.",
+      "roleLabel": "System role",
+      "fullNameLabel": "Full name",
+      "fullNamePlaceholder": "Enter your full name",
+      "localeLabel": "Preferred language",
+      "timezoneLabel": "Timezone",
+      "timezonePlaceholder": "e.g. America/New_York",
+      "timezoneHelp": "Enter a valid IANA timezone.",
+      "emailNotifLabel": "Email notifications",
+      "emailNotifDescription": "Receive notices and important updates in your inbox.",
+      "saveButton": "Save changes",
+      "savingButton": "Saving...",
+      "successToast": "Account settings updated successfully.",
+      "errorToast": "Could not update account settings.",
+      "validationError": "Please verify that the fields are valid.",
+      "unavailableTitle": "Settings unavailable",
+      "unavailableDescription": "Could not load your account settings at this time.",
+      "retryButton": "Retry"
+    },
+    "bugReportForm": {
+      "title": "Report an issue",
+      "description": "Send a detailed report to the administration and support team.",
+      "formTitle": "Report a system bug",
+      "formDescription": "If you encounter an error or unexpected behavior, report it here. The technical team will review it.",
+      "titleLabel": "Report title",
+      "titlePlaceholder": "Brief summary of the issue",
+      "descLabel": "Detailed description",
+      "descPlaceholder": "Describe the steps to reproduce the issue or what happened...",
+      "warningTitle": "Security notice",
+      "warningBody": "Never include passwords, access tokens, API keys, or financial data in this report.",
+      "submitButton": "Submit report",
+      "submittingButton": "Submitting...",
+      "successTitle": "Report submitted successfully",
+      "successBody": "Your report has been recorded and is open for review by the management team.",
+      "submitAnotherButton": "Submit another report",
+      "errorToast": "Could not submit bug report.",
+      "validationError": "Title must be between 1 and 160 characters and description between 1 and 5000 characters."
+    },
+    "managerConsole": {
+      "title": "Access Management & Support",
+      "description": "Centralized management of user access, inactivity reminders, and bug report triage.",
+      "tabsAriaLabel": "Access management views",
+      "tabs": {
+        "users": "Users",
+        "stale": "Stale access",
+        "bugs": "Bug reports"
+      }
+    },
+    "directory": {
+      "title": "User Directory",
+      "description": "Oversight of user access states and active memberships.",
+      "emptyTitle": "No users found",
+      "emptyDescription": "No users were found in the system directory.",
+      "unavailableTitle": "Directory unavailable",
+      "unavailableDescription": "Could not load the user directory at this time.",
+      "retryButton": "Retry",
+      "loadMoreButton": "Load more",
+      "loadingMore": "Loading more...",
+      "loadMoreError": "Could not load more users.",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "lastAuthNever": "Never",
+      "lastActionNever": "No previous records",
+      "lastAccessActionAtLabel": "Last access action",
+      "lastSuccessfulAuthAtLabel": "Last successful sign in",
+      "columns": {
+        "fullName": "Name",
+        "role": "Role",
+        "status": "Status",
+        "lastAuth": "Last access",
+        "memberships": "Projects",
+        "tasks": "Tasks",
+        "deliverables": "Deliverables",
+        "invitations": "Invitations",
+        "lastAction": "Last action",
+        "actions": "Actions"
+      },
+      "actions": {
+        "deactivate": "Deactivate",
+        "reactivate": "Reactivate",
+        "deactivateAria": "Deactivate access for {name}",
+        "reactivateAria": "Reactivate access for {name}"
+      }
+    },
+    "deactivationDialog": {
+      "title": "Deactivate user access",
+      "description": "You are about to suspend platform access for {name}.",
+      "warningBanner": "The user will immediately lose platform access. All pending invitations will be revoked. Their activity and audit history will remain intact. This action does not delete the account.",
+      "nameConfirmationPrompt": "To confirm deactivation, type the user's full name ({name}):",
+      "nameConfirmationPlaceholder": "Type exact full name",
+      "nameMismatchError": "The entered name does not match the user's full name.",
+      "cancel": "Cancel",
+      "confirm": "Confirm deactivation",
+      "deactivating": "Deactivating...",
+      "errors": {
+        "selfLockout": "You cannot deactivate your own access account.",
+        "lastManagementAccount": "Cannot deactivate the system's last active management account.",
+        "notFound": "The user was not found or their status has already changed.",
+        "unavailable": "Could not complete deactivation at this time."
+      },
+      "successToast": "User access has been successfully deactivated."
+    },
+    "reactivationDialog": {
+      "title": "Reactivate user access",
+      "description": "Do you want to restore platform access for {name}?",
+      "warningNoInvitesRestored": "Previously revoked invitations will not be restored automatically.",
+      "cancel": "Cancel",
+      "confirm": "Confirm reactivation",
+      "reactivating": "Reactivating...",
+      "errors": {
+        "unavailable": "Could not reactivate user access at this time."
+      },
+      "successToast": "User access has been successfully reactivated."
+    },
+    "staleAccess": {
+      "title": "Stale Access Reminders",
+      "description": "Operational tracking for operators and clients with no activity in the last 45 days.",
+      "internalNotice": "This panel is for internal operational tracking only. Recording a reminder confirms human operator acknowledgement; no automated emails or notifications are sent.",
+      "emptyTitle": "No inactive users",
+      "emptyDescription": "All eligible operators and clients have had recent activity or already have a recorded reminder.",
+      "unavailableTitle": "Panel unavailable",
+      "unavailableDescription": "Could not load the stale access candidate list at this time.",
+      "retryButton": "Retry",
+      "periodStartedAtLabel": "Inactivity period started",
+      "recordReminderButton": "Record reminder",
+      "recordingButton": "Recording...",
+      "successToast": "Inactivity reminder recorded successfully.",
+      "notEligibleToast": "User is no longer eligible or the reminder has already been recorded."
+    },
+    "bugTriage": {
+      "title": "Bug Reports",
+      "description": "Triage and tracking of issues reported by authenticated users.",
+      "emptyTitle": "No bug reports",
+      "emptyDescription": "No bug reports have been submitted on the platform.",
+      "unavailableTitle": "Reports unavailable",
+      "unavailableDescription": "Could not load bug reports at this time.",
+      "retryButton": "Retry",
+      "loadMoreButton": "Load more reports",
+      "loadingMore": "Loading reports...",
+      "loadMoreError": "Could not load more bug reports.",
+      "reporterRoleLabel": "Reporter role",
+      "createdAtLabel": "Report date",
+      "statusChangedAtLabel": "Last status change",
+      "statusChangedUnavailable": "No status changes",
+      "statusControlAria": "Report status",
+      "updating": "Updating...",
+      "updatedToast": "Report status updated.",
+      "notFoundOrUnchangedToast": "Report not found or status already matched."
+    },
+    "bugStatuses": {
+      "open": "Open",
+      "triaged": "Triaged",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed"
+    },
+    "roles": {
+      "admin": "Admin",
+      "pm": "Project Manager",
+      "operator": "Operator",
+      "client": "Client"
+    },
+    "actionTypes": {
+      "deactivated": "Deactivated",
+      "reactivated": "Reactivated"
+    },
+    "commonErrors": {
+      "unauthorized": "You are not authorized to perform this action.",
+      "validationFailed": "The provided data is invalid.",
+      "unavailable": "The service is currently unavailable."
     }
   }
 }

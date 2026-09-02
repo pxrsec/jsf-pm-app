@@ -18,6 +18,8 @@ import {
   Link2,
   ChartNoAxesCombined,
   BellRing,
+  ShieldCheck,
+  User,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { AppRole, Profile } from "@/lib/auth/session";
@@ -83,6 +85,8 @@ const NAV_DRAWER_ICON_MAP: Record<AppNavigationItemKey, LucideIcon> = {
   operations: SlidersHorizontal,
   notifications: Bell,
   notificationOperations: BellRing,
+  accessManagement: ShieldCheck,
+  account: User,
 };
 
 export function MobileNavToggle({

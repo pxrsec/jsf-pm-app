@@ -1126,8 +1126,10 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         "/admin/incidentes-enlaces",
         "/admin/metricas",
         "/admin/operaciones",
+        "/admin/acceso",
         "/notificaciones",
         "/admin/notificaciones",
+        "/cuenta",
       ]);
 
       expect(
@@ -1579,6 +1581,67 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         t,
       });
       expect(clientItems.find((i) => i.key === "recycleBin")).toBeUndefined();
+    });
+
+    it("includes account for all four active roles with href /cuenta and label Cuenta", () => {
+      const t = getSpanishTranslation("shell.nav");
+
+      for (const role of ["admin", "pm", "operator", "client"] as const) {
+        const items = buildNavigationModel({
+          role,
+          unreadCount: 0,
+          canAccessNotificationOperations: false,
+          t,
+        });
+        const accountItem = items.find((i) => i.key === "account");
+        expect(accountItem).toBeDefined();
+        expect(accountItem?.href).toBe("/cuenta");
+        expect(accountItem?.label).toBe("Cuenta");
+      }
+    });
+
+    it("includes accessManagement for admin and pm, and excludes it for operator and client", () => {
+      const t = getSpanishTranslation("shell.nav");
+
+      const adminItems = buildNavigationModel({
+        role: "admin",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      const adminAccess = adminItems.find((i) => i.key === "accessManagement");
+      expect(adminAccess).toBeDefined();
+      expect(adminAccess?.href).toBe("/admin/acceso");
+      expect(adminAccess?.label).toBe("Gestión de Acceso");
+
+      const pmItems = buildNavigationModel({
+        role: "pm",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      const pmAccess = pmItems.find((i) => i.key === "accessManagement");
+      expect(pmAccess).toBeDefined();
+      expect(pmAccess?.href).toBe("/pm/acceso");
+      expect(pmAccess?.label).toBe("Gestión de Acceso");
+
+      const opItems = buildNavigationModel({
+        role: "operator",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      expect(opItems.find((i) => i.key === "accessManagement")).toBeUndefined();
+
+      const clientItems = buildNavigationModel({
+        role: "client",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      expect(
+        clientItems.find((i) => i.key === "accessManagement"),
+      ).toBeUndefined();
     });
   });
 });

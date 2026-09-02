@@ -42,7 +42,9 @@
         "metrics": "Métricas",
         "operations": "Operaciones",
         "notifications": "Notificaciones",
-        "notificationOperations": "Operaciones de Notificaciones"
+        "notificationOperations": "Operaciones de Notificaciones",
+        "accessManagement": "Gestión de Acceso",
+        "account": "Cuenta"
       },
       "notifications": {
         "badgeLabel": "Notificaciones no leídas",
@@ -2663,6 +2665,180 @@
       "notFoundOrArchived": "El elemento no fue encontrado o ya se encuentra archivado.",
       "notFoundOrActive": "El elemento no fue encontrado o se encuentra activo.",
       "lifecycleUnavailable": "El servicio de ciclo de vida no está disponible en este momento."
+    }
+  },
+  "accountAccess": {
+    "accountSettings": {
+      "title": "Cuenta",
+      "description": "Gestiona la información de tu cuenta y preferencias personales.",
+      "roleLabel": "Rol del sistema",
+      "fullNameLabel": "Nombre completo",
+      "fullNamePlaceholder": "Ingresa tu nombre completo",
+      "localeLabel": "Idioma preferido",
+      "timezoneLabel": "Zona horaria",
+      "timezonePlaceholder": "ej. America/Mexico_City",
+      "timezoneHelp": "Ingresa una zona horaria IANA válida.",
+      "emailNotifLabel": "Notificaciones por correo electrónico",
+      "emailNotifDescription": "Recibe avisos y actualizaciones importantes en tu correo.",
+      "saveButton": "Guardar cambios",
+      "savingButton": "Guardando...",
+      "successToast": "Configuración de cuenta actualizada correctamente.",
+      "errorToast": "No se pudo actualizar la configuración de la cuenta.",
+      "validationError": "Por favor, verifica que los campos sean válidos.",
+      "unavailableTitle": "Configuración no disponible",
+      "unavailableDescription": "No se pudo cargar la configuración de tu cuenta en este momento.",
+      "retryButton": "Reintentar"
+    },
+    "bugReportForm": {
+      "title": "Reportar un problema",
+      "description": "Envía un reporte detallado al equipo de administración y soporte.",
+      "formTitle": "Reportar un error del sistema",
+      "formDescription": "Si encuentras un error o comportamiento inesperado, repórtalo aquí. El equipo técnico lo revisará.",
+      "titleLabel": "Título del reporte",
+      "titlePlaceholder": "Breve descripción del problema",
+      "descLabel": "Descripción detallada",
+      "descPlaceholder": "Describe los pasos para reproducir el problema o qué ocurrió...",
+      "warningTitle": "Aviso de seguridad",
+      "warningBody": "Nunca incluyas contraseñas, tokens de acceso, claves de API ni datos financieros en este reporte.",
+      "submitButton": "Enviar reporte",
+      "submittingButton": "Enviando...",
+      "successTitle": "Reporte enviado con éxito",
+      "successBody": "Tu reporte ha sido registrado y está abierto para revisión por parte del equipo de gestión.",
+      "submitAnotherButton": "Enviar otro reporte",
+      "errorToast": "No se pudo enviar el reporte de error.",
+      "validationError": "El título debe tener entre 1 y 160 caracteres y la descripción entre 1 y 5000 caracteres."
+    },
+    "managerConsole": {
+      "title": "Gestión de Acceso y Soporte",
+      "description": "Control centralizado de usuarios, recordatorios de inactividad y seguimiento de reportes de error.",
+      "tabsAriaLabel": "Vistas de gestión de acceso",
+      "tabs": {
+        "users": "Usuarios",
+        "stale": "Acceso inactivo",
+        "bugs": "Reportes de error"
+      }
+    },
+    "directory": {
+      "title": "Directorio de Usuarios",
+      "description": "Supervisión de estados de acceso y membresías activas.",
+      "emptyTitle": "No hay usuarios registrados",
+      "emptyDescription": "No se encontraron usuarios en el directorio del sistema.",
+      "unavailableTitle": "Directorio no disponible",
+      "unavailableDescription": "No se pudo cargar el directorio de usuarios en este momento.",
+      "retryButton": "Reintentar",
+      "loadMoreButton": "Cargar más",
+      "loadingMore": "Cargando más...",
+      "loadMoreError": "No se pudieron cargar más usuarios.",
+      "statusActive": "Activo",
+      "statusInactive": "Inactivo",
+      "lastAuthNever": "Nunca",
+      "lastActionNever": "Sin registros previos",
+      "lastAccessActionAtLabel": "Última acción de acceso",
+      "lastSuccessfulAuthAtLabel": "Último inicio de sesión",
+      "columns": {
+        "fullName": "Nombre",
+        "role": "Rol",
+        "status": "Estado",
+        "lastAuth": "Último acceso",
+        "memberships": "Proyectos",
+        "tasks": "Tareas",
+        "deliverables": "Entregables",
+        "invitations": "Invitaciones",
+        "lastAction": "Última acción",
+        "actions": "Acciones"
+      },
+      "actions": {
+        "deactivate": "Desactivar",
+        "reactivate": "Reactivar",
+        "deactivateAria": "Desactivar acceso para {name}",
+        "reactivateAria": "Reactivar acceso para {name}"
+      }
+    },
+    "deactivationDialog": {
+      "title": "Desactivar acceso de usuario",
+      "description": "Estás a punto de suspender el acceso a la plataforma para {name}.",
+      "warningBanner": "El usuario perderá el acceso a la plataforma de inmediato. Todas sus invitaciones pendientes se revocarán. Su historial de actividad y auditoría se mantendrá intacto. Esta acción no elimina la cuenta.",
+      "nameConfirmationPrompt": "Para confirmar la desactivación, escribe el nombre completo del usuario ({name}):",
+      "nameConfirmationPlaceholder": "Escribe el nombre completo exacto",
+      "nameMismatchError": "El nombre ingresado no coincide con el nombre completo del usuario.",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar desactivación",
+      "deactivating": "Desactivando...",
+      "errors": {
+        "selfLockout": "No puedes desactivar tu propia cuenta de acceso.",
+        "lastManagementAccount": "No se puede desactivar la última cuenta de gestión activa del sistema.",
+        "notFound": "El usuario no fue encontrado o su estado ya fue modificado.",
+        "unavailable": "No se pudo completar la desactivación en este momento."
+      },
+      "successToast": "El acceso del usuario ha sido desactivado exitosamente."
+    },
+    "reactivationDialog": {
+      "title": "Reactivar acceso de usuario",
+      "description": "¿Deseas restaurar el acceso a la plataforma para {name}?",
+      "warningNoInvitesRestored": "Las invitaciones previamente revocadas no serán restauradas automáticamente.",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar reactivación",
+      "reactivating": "Reactivando...",
+      "errors": {
+        "unavailable": "No se pudo reactivar el acceso del usuario en este momento."
+      },
+      "successToast": "El acceso del usuario ha sido reactivado exitosamente."
+    },
+    "staleAccess": {
+      "title": "Recordatorios de Acceso Inactivo",
+      "description": "Seguimiento operativo para operadores y clientes sin actividad reciente en los últimos 45 días.",
+      "internalNotice": "Este panel es exclusivamente para registro operativo interno. Al registrar un recordatorio confirmas el seguimiento humano; no se envían correos ni notificaciones automáticas.",
+      "emptyTitle": "No hay usuarios inactivos",
+      "emptyDescription": "Todos los operadores y clientes elegibles han tenido actividad reciente o ya cuentan con recordatorio registrado.",
+      "unavailableTitle": "Panel no disponible",
+      "unavailableDescription": "No se pudo consultar la lista de acceso inactivo en este momento.",
+      "retryButton": "Reintentar",
+      "periodStartedAtLabel": "Período de inactividad iniciado",
+      "recordReminderButton": "Registrar recordatorio",
+      "recordingButton": "Registrando...",
+      "successToast": "Recordatorio de inactividad registrado con éxito.",
+      "notEligibleToast": "El usuario ya no es elegible o el recordatorio ya había sido registrado."
+    },
+    "bugTriage": {
+      "title": "Reportes de Error",
+      "description": "Triaje y seguimiento de problemas reportados por usuarios autenticados.",
+      "emptyTitle": "No hay reportes de error",
+      "emptyDescription": "No se han enviado reportes de error en la plataforma.",
+      "unavailableTitle": "Reportes no disponibles",
+      "unavailableDescription": "No se pudieron cargar los reportes de error en este momento.",
+      "retryButton": "Reintentar",
+      "loadMoreButton": "Cargar más reportes",
+      "loadingMore": "Cargando reportes...",
+      "loadMoreError": "No se pudieron cargar más reportes de error.",
+      "reporterRoleLabel": "Rol del informante",
+      "createdAtLabel": "Fecha del reporte",
+      "statusChangedAtLabel": "Último cambio de estado",
+      "statusChangedUnavailable": "Sin cambios de estado",
+      "statusControlAria": "Estado del reporte",
+      "updating": "Actualizando...",
+      "updatedToast": "Estado del reporte actualizado.",
+      "notFoundOrUnchangedToast": "El reporte no fue encontrado o el estado ya estaba asignado."
+    },
+    "bugStatuses": {
+      "open": "Abierto",
+      "triaged": "Triaje",
+      "resolved": "Resuelto",
+      "dismissed": "Descartado"
+    },
+    "roles": {
+      "admin": "Administrador",
+      "pm": "Project Manager",
+      "operator": "Operador",
+      "client": "Cliente"
+    },
+    "actionTypes": {
+      "deactivated": "Desactivado",
+      "reactivated": "Reactivado"
+    },
+    "commonErrors": {
+      "unauthorized": "No tienes autorización para realizar esta acción.",
+      "validationFailed": "Los datos proporcionados son inválidos.",
+      "unavailable": "El servicio no está disponible en este momento."
     }
   }
 }
