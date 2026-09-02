@@ -10,6 +10,8 @@ schema_baseline:
   - 20260902090000_s10_04_account_access_hygiene_bug_triage_and_s10_03_closure
 required_forward_migration:
   - supabase/migrations/20260902180000_s10-04-access-hygiene-completeness-repair.sql
+  - supabase/migrations/20260902130917_s10-04-directory-keyset-cursor-projection-repair.sql
+  - supabase/migrations/20260902190000_s10-04-directory-keyset-cursor-post-repair.sql
 generated_types: src/lib/database.types.ts
 ---
 
@@ -19,7 +21,7 @@ generated_types: src/lib/database.types.ts
 
 This is the complete implementation authority for **S10-04 only**. It implements bounded self-account settings, a global Admin/PM access-management surface, stale-access reminder recording, and authenticated bug intake/triage. It does not authorize S10-05, S10-06, provider activation, production work, authentication redesign, invitation administration redesign, user provisioning, or any S10-03 lifecycle change.
 
-The applied database baseline is `20260902090000_s10_04_account_access_hygiene_bug_triage_and_s10_03_closure` on `jsf-pm-dev`, confirmed by the remote migration ledger. Its generated declarations already contain the complete public S10-04 RPC surface and the reviewed forward repair preserves every exposed signature/return type; Antigravity may begin the application implementation against the existing generated declarations now. The named forward migration is review-complete and apply-ready for `jsf-pm-dev`; it must be applied before S10-04 is released or its database-dependent acceptance is claimed. Regenerate `src/lib/database.types.ts` after application under normal schema governance, but no manual generated-type edit or implementation-plan revision is expected when the unchanged public declarations produce no diff.
+The applied database baseline is `20260902090000_s10_04_account_access_hygiene_bug_triage_and_s10_03_closure` on `jsf-pm-dev`, followed by completeness repair `20260902180000_s10-04-access-hygiene-completeness-repair.sql`, cursor repair `20260902130917_s10-04-directory-keyset-cursor-projection-repair.sql`, and post-repair `20260902190000_s10-04-directory-keyset-cursor-post-repair.sql`, all confirmed applied in the remote migration ledger. TypeScript declarations in `src/lib/database.types.ts` are regenerated via Supabase MCP, with `list_user_access_directory` correctly exposing `created_at: string` for composite keyset pagination.
 
 Reason: M04 tracks assignment and membership changes but has no `auth.users.last_sign_in_at` trigger, and its qualifying-access/directory-count predicates did not exclude the S10-defined inactive `cancelled` project state or refresh state on a project status transition. The repair adds a narrowly scoped `auth.users` trigger, extends the existing project lifecycle trigger binding to `status`, aligns both trusted predicates, and performs a truthful post-M04-only data correction. It preserves M04’s rule that activity before M04 initialization cannot be invented as historical evidence.
 
@@ -212,7 +214,7 @@ Every field has a programmatic label. Required/error/help text is connected with
 
 ## 7. Required focused verification after implementation
 
-The owner requested no broad verification ceremony. Do not run an exhaustive suite, E2E, coverage, build, provider, production, or migration reset workflow. Application implementation may proceed now on the unchanged generated declarations. Before release, apply the reviewed migration to `jsf-pm-dev`, regenerate declarations through Supabase MCP, and then run only `npm run lint` and `npm run typecheck`, plus focused tests that are added/changed for this slice.
+The owner requested no broad verification ceremony. Do not run an exhaustive suite, E2E, coverage, build, provider, production, or migration reset workflow. The S10-04 migrations (`20260902180000_s10-04-access-hygiene-completeness-repair.sql`, `20260902130917_s10-04-directory-keyset-cursor-projection-repair.sql`, and `20260902190000_s10-04-directory-keyset-cursor-post-repair.sql`) are already applied to `jsf-pm-dev`, `src/lib/database.types.ts` has already been regenerated, and `list_user_access_directory` exposes `created_at: string`. No migration application or type regeneration is a remaining application-implementation step. Run only `npm run lint` and `npm run typecheck`, plus focused tests that are added/changed for this slice.
 
 Required focused assertions:
 
@@ -225,23 +227,22 @@ Required focused assertions:
 7. Navigation model contains account for all roles and access management only for Admin/PM; desktop and mobile icon maps remain exhaustive; fixed mobile quick access remains valid.
 8. en-US/es-MX key parity and the named mobile interactions: one-column form/cards, 44px controls, tab keyboard operation, dialog focus return, and no page-level horizontal overflow.
 
-The migration review is complete. Before application, preserve these verified invariants: no public RPC signature/return-shape/grant broadening; qualifying access and directory counts exclude deleted, archived, and `cancelled` project ancestry; project hygiene refresh fires on `status`, `archived_at`, and `deleted_at`; the new Auth trigger observes only `auth.users.last_sign_in_at`; private helper EXECUTE is revoked from browser roles; no Auth/profile role/deactivation mutation; valid `user_access_hygiene_state` check invariant; and no pre-M04 Auth timestamp is treated as historical activity.
+The migration review and application are complete. All verified invariants are active: no public RPC signature/return-shape/grant broadening; qualifying access and directory counts exclude deleted, archived, and `cancelled` project ancestry; project hygiene refresh fires on `status`, `archived_at`, and `deleted_at`; the Auth trigger observes only `auth.users.last_sign_in_at`; private helper EXECUTE is revoked from browser roles; no Auth/profile role/deactivation mutation; valid `user_access_hygiene_state` check invariant; and no pre-M04 Auth timestamp is treated as historical activity.
 
 ## 8. Implementation sequence and stop conditions
 
-1. Begin the server-only feature boundary and focused DTO validation against the existing generated declarations; no S10-04 public RPC signature changes in the reviewed repair.
+1. Implement the server-only feature boundary, strict schemas, and focused DTO validation against the regenerated declarations with `created_at: string`.
 2. Add protected routes, shared views, controlled actions, navigation model/icon maps, and catalog parity.
-3. Add only the focused tests named above.
-4. Before release or any claim of database-dependent acceptance, apply the reviewed forward migration to `jsf-pm-dev` with Project Owner authorization and regenerate `src/lib/database.types.ts` through Supabase MCP. Inspect the generated output but do not edit it manually; no diff is expected because all public signatures/returns remain unchanged.
-5. Run the required minimum checks and update `CHANGELOG.md` last, as required by `GEMINI.md` after coding completion.
+3. Add only the focused tests named above, including route-level guard tests.
+4. Run the required minimum checks and update `CHANGELOG.md` last, as required by `GEMINI.md` after coding completion.
 
-Stop and request a decision if: the migration cannot be applied or generated types differ from the stated signatures; an existing route/navigation map has materially changed; the Auth schema disallows the narrowly scoped trigger; the implementation requires reporter identity/history, a new report field, external delivery, role/provisioning changes, a direct table read/write, a new public endpoint, or an API/schema change beyond the named repair.
+Stop and request a decision if: an existing route/navigation map has materially changed; the implementation requires reporter identity/history, a new report field, external delivery, role/provisioning changes, a direct table read/write, a new public endpoint, or an API/schema change beyond the applied migrations.
 
 ## 9. Acceptance criteria
 
 S10-04 is complete only when all are true:
 
-- The review-complete forward access-hygiene repair is applied before release, and the migrated live schema retains every M04 public RPC contract; normal post-application type generation is recorded even if the unchanged public declarations produce no diff.
+- All S10-04 migrations are applied to `jsf-pm-dev`, `src/lib/database.types.ts` is regenerated, and `list_user_access_directory` exposes `created_at: string` for composite keyset pagination.
 - Every active role can edit only its own bounded account settings and submit one bounded report.
 - Admin and PM have equivalent discoverable global `/admin/acceso` and `/pm/acceso` consoles; Operator/Client are denied both in routing and actions.
 - The directory exposes only the declared role-safe projection, supports stable cursor pagination, correctly deactivates/reactivates another user, prevents self-lockout/last-manager loss, and never becomes a user delete/role-management surface.

@@ -1,5 +1,16 @@
 # JSF PM App Development Changelog
 
+## [2026-09-02 @ 14:02]
+
+**🛠 Database: S10-04 Directory Keyset-Cursor Post-Repair & Type Regeneration**
+
+- **Database Migration Applied (`supabase/migrations/20260902190000_s10-04-directory-keyset-cursor-post-repair.sql`):**
+  - Applied migration `20260902190000_s10_04_directory_keyset_cursor_post_repair` to remote Supabase development environment via MCP tool `apply_migration` (recorded as version `20260902200043`).
+  - Reapplied `created_at` column projection to `public.list_user_access_directory(timestamptz, uuid, integer)` following the access-hygiene completeness repair, satisfying composite keyset cursor contract (`profiles.created_at DESC, profiles.id DESC`).
+  - Preserved operational manager assertion, complete cursor validation, non-cancelled active lineage counts, owner (`postgres`), search path (`pg_catalog, public, auth`), and authenticated-only execution posture.
+- **TypeScript Types Regenerated (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript database definitions from remote Supabase schema via MCP tool `generate_typescript_types`.
+
 ## [2026-09-02 @ 12:54]
 
 **🛠 Database: S10-04 Access Hygiene Completeness Repair & Type Regeneration**
