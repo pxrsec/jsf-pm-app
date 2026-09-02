@@ -1,5 +1,16 @@
 # JSF PM App Development Changelog
 
+## [2026-09-02 @ 09:26]
+
+**🛠 Database: S10-03 Recycle Bin Deliverable Parent-State Correction & Type Regeneration**
+
+- **Database Migration Applied (`supabase/migrations/20260902100000_s10-03-recycle-bin-parent-state-correction.sql`):**
+  - Applied migration `20260902100000_s10_03_recycle_bin_parent_state_correction` via Supabase MCP `apply_migration` tool.
+  - Updated `public.list_operational_recycle_bin` to accurately evaluate `parent_is_archived` for archived deliverables against both task parent (`t.archived_at IS NOT NULL`) and project parent (`p.archived_at IS NOT NULL`).
+  - Preserved existing RPC signature, return shape, ownership, permissions, and sort ordering.
+- **TypeScript Types Regenerated (`src/lib/database.types.ts`):**
+  - Regenerated and updated TypeScript definitions via Supabase MCP `generate_typescript_types` tool.
+
 ## [2026-09-02 @ 08:36]
 
 **🚀 Features & 🛠 Database: S10-04 Migration Application, S10-03 Archive Visibility Closure, and Database Type Regeneration**

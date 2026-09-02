@@ -2,8 +2,8 @@
 document_id: S10-03-RECOVERABLE-LIFECYCLE-RECYCLE-BIN-AND-ADMIN-PERMANENT-DELETION-IMPLEMENTATION-SPEC-01
 sprint_id: S10
 work_items: [S10-03]
-status: implementation-ready-m04-applied
-updated_at: 2026-09-02T08:51:48-06:00
+status: blocked-on-s10-03-recycle-bin-parent-state-correction
+updated_at: 2026-09-02T09:20:58-06:00
 target_environment: jsf-pm-dev
 schema_baseline:
   - supabase/migrations/20260830110000_s10-direct-client-identity-and-invitation-administration.sql
@@ -15,6 +15,7 @@ schema_baseline:
   - supabase/migrations/20260901130000_s10-02-r1-cancelled-project-command-enforcement.sql
   - supabase/migrations/20260901140000_s10-03-archive-recycle-bin-and-admin-permanent-deletion.sql
   - supabase/migrations/20260902090000_s10-04-account-access-hygiene-bug-triage-and-s10-03-closure.sql
+  - supabase/migrations/20260902100000_s10-03-recycle-bin-parent-state-correction.sql
 generated_types: src/lib/database.types.ts
 ---
 
@@ -86,8 +87,17 @@ The UI must not try to reproduce this cascade algorithm. It calls the authoritat
 ### 4.0 Applied-baseline settlement — mandatory reading before implementation
 
 `20260902090000_s10_04_account_access_hygiene_bug_triage_and_s10_03_closure`
-is applied to `jsf-pm-dev`. `src/lib/database.types.ts` was regenerated from that
-deployed schema after application. This is the implementation baseline for S10-03.
+is applied to `jsf-pm-dev`. A required forward correction,
+`20260902100000_s10_03_recycle_bin_parent_state_correction`, is authored in the
+repository but is not yet applied. It preserves the recycle-bin RPC signature and
+security posture while making `parent_is_archived` true for an archived
+deliverable whose project **or task** parent is archived. Until that migration is
+applied to `jsf-pm-dev` and `src/lib/database.types.ts` is regenerated from the
+resulting deployed schema, this specification and the Antigravity plan are
+blocked from execution.
+
+After that application/type-refresh gate, the regenerated declaration remains the
+implementation baseline for S10-03.
 
 The M04 file includes two distinct, already-applied concerns:
 
@@ -271,21 +281,24 @@ Create one narrow recycle-bin adapter over `list_operational_recycle_bin`. It re
 type OperationalRecycleBinItem = {
   entityType: OperationalLifecycleEntityType;
   entityId: string;
-  projectId: string;
+  // Company milestones have no project parent.
+  projectId: string | null;
   title: string;
   archivedAt: string;
-  archivedBy: string;
-  archiveReason: string;
+  // Archive provenance is retained but not rendered by this S10-03 surface.
+  archivedBy: string | null;
+  // An archive reason is optional.
+  archiveReason: string | null;
   parentIsArchived: boolean;
 };
 ```
 
 The adapter validates every RPC row against the generated M04 declaration:
-nonempty known entity type, UUID `entityId`, UUID `projectId`, nonempty title, ISO
-timestamps, UUID `archivedBy`, string `archiveReason`, and boolean
-`parentIsArchived`. It returns `{ status: "unavailable" }` for RPC/error/shape
-failures and never substitutes `[]`. A valid empty list is
-`{ status: "available", data: [] }`.
+nonempty known entity type, UUID `entityId`, nullable UUID `projectId` only for a
+company milestone, nonempty title, ISO timestamps, nullable UUID `archivedBy`,
+nullable string `archiveReason`, and boolean `parentIsArchived`. It returns
+`{ status: "unavailable" }` for RPC/error/shape failures and never substitutes
+`[]`. A valid empty list is `{ status: "available", data: [] }`.
 
 Create one Admin-only deletion-preview adapter. It validates `entity_type`, UUID
 `entity_id`, nonempty title, boolean `can_delete`, and string `blocker_code`; it
@@ -425,7 +438,9 @@ Use stable deterministic sorting supplied by the RPC: newest archive first, then
 
 - Available to Admin and PM only.
 - Restore is an explicit button; it has a localized accessible label containing entity type/title context.
-- When `parentIsArchived` is true, disable restore and explain that the parent must be restored first. The server command still remains authoritative.
+- When `parentIsArchived` is true, disable restore and explain that the archived
+  project or task parent must be restored first. The post-correction RPC computes
+  this for every relevant parent; the server command still remains authoritative.
 - Pending state is per entity row. It disables only that row’s controls, not filtering, other rows, or the entire page.
 - Success refreshes the lifecycle page and affected active views. It announces localized success exactly once.
 - `not_found_or_parent_archived` maps to a safe unavailable/parent-not-restored message and refreshes the row list; it never claims success.
