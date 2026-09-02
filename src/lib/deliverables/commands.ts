@@ -235,25 +235,6 @@ export async function markDeliverableDelivered(
   }
 }
 
-export async function archiveDeliverable(
-  supabase: TypedSupabase,
-  deliverableId: string,
-  reason?: string,
-): Promise<CommandResult<{ success: boolean }>> {
-  try {
-    const { data, error } = await supabase.rpc("soft_delete_entity", {
-      p_entity_id: deliverableId,
-      p_entity_type: "deliverable",
-      p_reason: reason,
-    });
-
-    if (error) return { ok: false, error: mapSupabaseError(error) };
-    return { ok: true, data: { success: Boolean(data) } };
-  } catch (err) {
-    return { ok: false, error: mapSupabaseError(err as { message?: string }) };
-  }
-}
-
 export async function reportBrokenLink(
   supabase: TypedSupabase,
   input: ReportBrokenLinkInput,

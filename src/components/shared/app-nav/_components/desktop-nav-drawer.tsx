@@ -15,6 +15,7 @@ import {
   SlidersHorizontal,
   Bell,
   BellRing,
+  Trash2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ const ICON_MAP: Record<AppNavigationItemKey, LucideIcon> = {
   operatorProjects: FolderKanban,
   calendar: CalendarDays,
   archive: Archive,
+  recycleBin: Trash2,
   clients: Users,
   linkIncidents: Link2,
   metrics: ChartNoAxesCombined,

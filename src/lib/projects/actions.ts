@@ -272,58 +272,6 @@ export async function transitionProjectStatusAction(
   return result;
 }
 
-export async function archiveProjectAction(
-  projectId: string,
-  reason?: string,
-): Promise<CommandResult<{ success: boolean }>> {
-  const cookieStore = await cookies();
-  await requireSession(cookieStore);
-  const supabase = createClient(cookieStore);
-
-  const result = await projectCommands.archiveProject(
-    supabase,
-    projectId,
-    reason,
-  );
-
-  if (result.ok) {
-    revalidatePath("/[locale]/(protected)/admin/proyectos", "page");
-    revalidatePath("/[locale]/(protected)/pm/proyectos", "page");
-  }
-  return result;
-}
-
-export async function restoreProjectAction(
-  projectId: string,
-  reason?: string,
-): Promise<CommandResult<{ success: boolean }>> {
-  const cookieStore = await cookies();
-  const session = await requireSession(cookieStore);
-
-  if (session.role !== "admin") {
-    return {
-      ok: false,
-      error: {
-        code: "UNAUTHORIZED",
-        message: "Only admin can restore projects",
-      },
-    };
-  }
-
-  const supabase = createClient(cookieStore);
-  const result = await projectCommands.restoreProject(
-    supabase,
-    projectId,
-    reason,
-  );
-
-  if (result.ok) {
-    revalidatePath("/[locale]/(protected)/admin/proyectos", "page");
-    revalidatePath("/[locale]/(protected)/pm/proyectos", "page");
-  }
-  return result;
-}
-
 // ── Membership Actions ───────────────────────────────────────────────────────
 
 export async function addProjectMemberAction(

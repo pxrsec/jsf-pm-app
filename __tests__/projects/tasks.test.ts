@@ -212,7 +212,6 @@ import {
   createTaskWithDeliverablesAction,
   updateTaskAction,
   transitionTaskStatusAction,
-  archiveTaskAction,
   createTaskCommentAction,
   listTaskCommentsAction,
 } from "@/lib/projects/task-actions";
@@ -341,23 +340,6 @@ describe("Task Server Actions", () => {
       if (!result.ok) {
         expect(result.error.code).toBe("UNAUTHORIZED");
       }
-    });
-  });
-
-  describe("archiveTaskAction", () => {
-    it("archives task with optional reason", async () => {
-      const result = await archiveTaskAction(
-        "task-123",
-        "00000000-0000-0000-0000-000000000001",
-        "No longer needed",
-      );
-
-      expect(result.ok).toBe(true);
-      expect(mockRpc).toHaveBeenCalledWith("soft_delete_entity", {
-        p_entity_id: "task-123",
-        p_entity_type: "task",
-        p_reason: "No longer needed",
-      });
     });
   });
 

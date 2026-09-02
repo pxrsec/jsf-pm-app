@@ -45,6 +45,9 @@ export function CalendarCoordinator({
     milestoneId: string;
     title: string;
   } | null>(null);
+
+  const canArchiveMilestones = userRole === "admin" || userRole === "pm";
+
   const updateRange = (range: CalendarRangeState) => {
     if (onRangeChange) return onRangeChange(range);
     const next = new URLSearchParams(params.toString());
@@ -139,6 +142,7 @@ export function CalendarCoordinator({
         milestoneId={detailId}
         isOpen={Boolean(detailId)}
         canManage={canManageMilestones}
+        canArchive={canArchiveMilestones}
         userRole={userRole}
         onClose={() => setDetailId(undefined)}
         onEdit={(id, focusTasks) =>
@@ -158,7 +162,7 @@ export function CalendarCoordinator({
           onSuccess={() => router.refresh()}
         />
       )}{" "}
-      {canManageMilestones && deleting && (
+      {canArchiveMilestones && deleting && (
         <DeleteMilestoneDialog
           isOpen
           milestoneId={deleting.milestoneId}

@@ -1121,6 +1121,7 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         "/admin/proyectos",
         "/calendario",
         "/admin/archivo",
+        "/admin/papelera",
         "/admin/clientes",
         "/admin/incidentes-enlaces",
         "/admin/metricas",
@@ -1536,6 +1537,48 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         t,
       });
       expect(clientItems.find((i) => i.key === "clients")).toBeUndefined();
+    });
+
+    it("includes recycleBin for admin and pm with correct href and label, but not operator or client", () => {
+      const t = getSpanishTranslation("shell.nav");
+
+      const adminItems = buildNavigationModel({
+        role: "admin",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      const adminRecycle = adminItems.find((i) => i.key === "recycleBin");
+      expect(adminRecycle).toBeDefined();
+      expect(adminRecycle?.href).toBe("/admin/papelera");
+      expect(adminRecycle?.label).toBe("Papelera");
+
+      const pmItems = buildNavigationModel({
+        role: "pm",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      const pmRecycle = pmItems.find((i) => i.key === "recycleBin");
+      expect(pmRecycle).toBeDefined();
+      expect(pmRecycle?.href).toBe("/pm/papelera");
+      expect(pmRecycle?.label).toBe("Papelera");
+
+      const opItems = buildNavigationModel({
+        role: "operator",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      expect(opItems.find((i) => i.key === "recycleBin")).toBeUndefined();
+
+      const clientItems = buildNavigationModel({
+        role: "client",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      expect(clientItems.find((i) => i.key === "recycleBin")).toBeUndefined();
     });
   });
 });

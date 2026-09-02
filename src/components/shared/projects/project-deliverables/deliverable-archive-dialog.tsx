@@ -15,11 +15,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { archiveDeliverableAction } from "@/lib/deliverables/actions";
+import { archiveOperationalEntityAction } from "@/lib/operational-lifecycle/actions";
 
 interface DeliverableArchiveDialogProps {
   deliverableId: string | null;
-  projectId: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (message: string) => void;
@@ -27,7 +26,6 @@ interface DeliverableArchiveDialogProps {
 
 export function DeliverableArchiveDialog({
   deliverableId,
-  projectId,
   isOpen,
   onClose,
   onSuccess,
@@ -43,20 +41,25 @@ export function DeliverableArchiveDialog({
     setIsSubmitting(true);
     setError(null);
 
-    const result = await archiveDeliverableAction({
-      deliverableId,
-      projectId,
-      reason: reason.trim() || undefined,
-    });
+    try {
+      const result = await archiveOperationalEntityAction({
+        entityType: "deliverable",
+        entityId: deliverableId,
+        reason: reason.trim() || null,
+      });
 
-    setIsSubmitting(false);
+      setIsSubmitting(false);
 
-    if (result.ok) {
-      setReason("");
-      onClose();
-      onSuccess(t("successToast"));
-    } else {
-      setError(result.error.message);
+      if (result.ok) {
+        setReason("");
+        onClose();
+        onSuccess(t("successToast"));
+      } else {
+        setError(t("errorToast"));
+      }
+    } catch {
+      setIsSubmitting(false);
+      setError(t("errorToast"));
     }
   };
 
@@ -82,7 +85,7 @@ export function DeliverableArchiveDialog({
             onChange={(e) => setReason(e.target.value)}
             placeholder={t("reasonPlaceholder")}
             rows={2}
-            maxLength={500}
+            maxLength={1000}
             className="text-xs resize-none"
           />
         </div>
@@ -107,7 +110,7 @@ export function DeliverableArchiveDialog({
               handleArchive();
             }}
             disabled={isSubmitting}
-            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground text-xs gap-1.5"
+            className="text-xs gap-1.5"
           >
             {isSubmitting && <Loader2 className="size-3.5 animate-spin" />}
             <span>{isSubmitting ? t("submitting") : t("confirmAction")}</span>

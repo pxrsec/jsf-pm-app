@@ -36,6 +36,7 @@
         "agenda": "My Agenda",
         "calendar": "Calendar",
         "archive": "Archive",
+        "recycleBin": "Recycle Bin",
         "clients": "Clients",
         "linkIncidents": "Link Incidents",
         "metrics": "Metrics",
@@ -2584,8 +2585,70 @@
       "oneTimeWarning": "This link is single-use and will not be shown again. Once you close this window, you cannot view this link again.",
       "copyAction": "Copy Link to Clipboard",
       "copied": "Link Copied to Clipboard!",
-      "copyFailed": "Could not copy link. Please try again.",
-      "close": "Close and Dismiss"
+      "copyFailed": "Failed to copy link. Please try again.",
+      "close": "Close & Dismiss"
+    }
+  },
+  "operationalLifecycle": {
+    "recycleBin": {
+      "title": "Recycle Bin",
+      "description": "Manage archived items across the system. Administrators can restore or permanently delete; Project Managers can restore.",
+      "empty": "The recycle bin is empty",
+      "emptyDescription": "There are currently no archived projects, tasks, deliverables, or milestones.",
+      "unavailable": "Recycle bin unavailable",
+      "unavailableDescription": "An error occurred while loading recycle bin items. Please try again.",
+      "retryAction": "Retry",
+      "columns": {
+        "entityType": "Type",
+        "title": "Title",
+        "archivedAt": "Archived at",
+        "reason": "Reason",
+        "actions": "Actions"
+      },
+      "entityTypes": {
+        "project": "Project",
+        "task": "Task",
+        "deliverable": "Deliverable",
+        "milestone": "Milestone"
+      },
+      "parentArchivedBadge": "Parent container archived",
+      "parentArchivedTooltip": "Restore the parent container before restoring this item",
+      "parentArchivedInlineNotice": "The parent project or container is archived. You must restore it first.",
+      "restoreAction": "Restore",
+      "restoreSubmitting": "Restoring...",
+      "restoreSuccessToast": "Item restored successfully",
+      "restoreErrorToast": "Error restoring item",
+      "restoreAriaLabel": "Restore {type}: {title}",
+      "permanentDeleteAction": "Permanently delete",
+      "permanentDeleteAriaLabel": "Permanently delete {type}: {title}"
+    },
+    "permanentDeleteDialog": {
+      "title": "Permanent Deletion",
+      "warning": "This action is completely irreversible. All associated records and data will be permanently destroyed.",
+      "previewLoading": "Checking dependencies and permissions...",
+      "previewUnavailable": "Unable to verify permanent deletion. Please try again.",
+      "blockerDependenciesPresent": "Cannot be deleted because it contains active or unpurged dependent items. Purge or delete dependencies first.",
+      "blockerArchiveRequired": "Item must be archived before permanent deletion.",
+      "blockerNotFoundOrArchiveRequired": "Item was not found or is not archived.",
+      "blockerNotFound": "Item was not found.",
+      "blockerParentArchived": "Item or its parent container was not found.",
+      "cancelAction": "Cancel",
+      "archiveInsteadAction": "Keep archived",
+      "confirmAction": "Confirm permanent deletion",
+      "deleting": "Permanently deleting...",
+      "successToast": "Item permanently deleted",
+      "errorToast": "Error permanently deleting item"
+    },
+    "errors": {
+      "unauthorized": "You are not authorized to perform this operation.",
+      "forbidden": "You do not have the required permissions for this operation.",
+      "invalidInput": "The provided input data is invalid.",
+      "dependenciesPresent": "Cannot delete because associated dependencies exist.",
+      "archiveRequired": "The item must be archived before being permanently deleted.",
+      "notFoundOrParentArchived": "Cannot restore because the parent container is archived or item not found.",
+      "notFoundOrArchived": "The item was not found or is already archived.",
+      "notFoundOrActive": "The item was not found or is already active.",
+      "lifecycleUnavailable": "The lifecycle service is currently unavailable."
     }
   }
 }

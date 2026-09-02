@@ -2,8 +2,8 @@
 document_id: S10-03-RECOVERABLE-LIFECYCLE-RECYCLE-BIN-AND-ADMIN-PERMANENT-DELETION-IMPLEMENTATION-SPEC-01
 sprint_id: S10
 work_items: [S10-03]
-status: blocked-on-s10-03-recycle-bin-parent-state-correction
-updated_at: 2026-09-02T09:20:58-06:00
+status: implementation-ready-s10-03-parent-state-correction-applied
+updated_at: 2026-09-02T09:37:06-06:00
 target_environment: jsf-pm-dev
 schema_baseline:
   - supabase/migrations/20260830110000_s10-direct-client-identity-and-invitation-administration.sql
@@ -87,17 +87,13 @@ The UI must not try to reproduce this cascade algorithm. It calls the authoritat
 ### 4.0 Applied-baseline settlement — mandatory reading before implementation
 
 `20260902090000_s10_04_account_access_hygiene_bug_triage_and_s10_03_closure`
-is applied to `jsf-pm-dev`. A required forward correction,
-`20260902100000_s10_03_recycle_bin_parent_state_correction`, is authored in the
-repository but is not yet applied. It preserves the recycle-bin RPC signature and
-security posture while making `parent_is_archived` true for an archived
-deliverable whose project **or task** parent is archived. Until that migration is
-applied to `jsf-pm-dev` and `src/lib/database.types.ts` is regenerated from the
-resulting deployed schema, this specification and the Antigravity plan are
-blocked from execution.
-
-After that application/type-refresh gate, the regenerated declaration remains the
-implementation baseline for S10-03.
+is applied to `jsf-pm-dev`. The required forward correction,
+`20260902100000_s10_03_recycle_bin_parent_state_correction`, is also applied to
+`jsf-pm-dev`, and `src/lib/database.types.ts` was regenerated from that deployed
+baseline. It preserves the recycle-bin RPC signature and security posture while
+making `parent_is_archived` true for an archived deliverable whose project **or
+task** parent is archived. This specification is implementation-ready on that
+applied and regenerated baseline.
 
 The M04 file includes two distinct, already-applied concerns:
 

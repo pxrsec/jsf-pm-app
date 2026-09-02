@@ -1,5 +1,31 @@
 # JSF PM App Development Changelog
 
+## [2026-09-02 @ 10:56]
+
+**🚀 Features & 🛠 Architecture: S10-03 Recoverable Lifecycle, Recycle Bin, and Admin Permanent Deletion Implementation**
+
+- **Domain Layer (`src/lib/operational-lifecycle/`):**
+  - Implemented closed entity lifecycle types, outcome/failure codes, schema definitions, and input blank normalization.
+  - Implemented single Server Action boundary: `archiveOperationalEntityAction`, `restoreArchivedOperationalEntityAction`, `getOperationalDeletionPreviewAction`, `permanentlyDeleteOperationalEntityAction`.
+  - Implemented database command RPC callers (`archive_operational_entity`, `restore_archived_operational_entity`, `permanently_delete_operational_entity`) and query RPC callers (`list_operational_recycle_bin`, `get_operational_deletion_preview`).
+  - Implemented audit revalidation matrix across affected dynamic and list route paths.
+- **Obsolete Lifecycle Action Retirement:**
+  - Retired legacy exports across `src/lib/projects/`, `src/lib/deliverables/`, and `src/lib/calendar/` (`archiveProjectAction`, `restoreProjectAction`, `archiveTaskAction`, `archiveDeliverableAction`, `softDeleteMilestoneAction`).
+  - Updated active workspace dialogs and triggers to invoke the single lifecycle Server Action boundary directly.
+- **Active Query Tightening & Ancestry Invariants:**
+  - Enforced active-ancestry filtering on `listProjectsForAdmin` and `listProjectsForPm`.
+  - Updated `listProjectTasks` and `listProjectDeliverables` to enforce active parent joins (`projects!inner`, `tasks!inner`).
+- **Recycle Bin UI & App Navigation:**
+  - Created shared `RecycleBinView` component for Admin and PM with keyed restore pending state, accessible tooltip gating for parent-archived entities, and mobile-responsive card layout.
+  - Created `AdminRecycleBinView` composition boundary and `AdminPermanentDeleteDialog` with deletion preview, dependency blocker display, and safe deletion confirmation.
+  - Created `/admin/papelera` and `/pm/papelera` protected routes with loading skeletons.
+  - Added Papelera (`recycleBin`) to Admin and PM navigation models with `Trash2` drawer icon.
+  - Added localized strings for `operationalLifecycle` namespace across `es-MX.json` and `en-US.json`.
+- **Verification & Test Coverage:**
+  - Added 5 new comprehensive test suites covering schemas, normalization, commands, queries, actions, recycle bin UI, and permanent delete dialog.
+  - Updated all affected unit and integration tests across the repository.
+  - Verified 100% passage across all 103 test suites (922 tests), TypeScript typecheck, ESLint, and Prettier formatting.
+
 ## [2026-09-02 @ 09:26]
 
 **🛠 Database: S10-03 Recycle Bin Deliverable Parent-State Correction & Type Regeneration**

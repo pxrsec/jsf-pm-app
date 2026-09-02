@@ -23,6 +23,7 @@ interface MilestoneDetailDialogProps {
   milestoneId?: string;
   isOpen: boolean;
   canManage: boolean;
+  canArchive?: boolean;
   userRole: "admin" | "pm" | "operator" | "client";
   onClose: () => void;
   onEdit: (id: string, focusTasks?: boolean) => void;
@@ -126,6 +127,7 @@ function TaskList({
 function MilestoneDetailContent({
   milestoneId,
   canManage,
+  canArchive,
   userRole,
   onClose,
   onEdit,
@@ -258,13 +260,15 @@ function MilestoneDetailContent({
             >
               {t("actions.addTasks")}
             </Button>
-            <Button
-              variant="destructive"
-              onClick={() => onDelete(detail.milestoneId, detail.title)}
-            >
-              {t("actions.deleteMilestone")}
-            </Button>
           </>
+        )}
+        {(canArchive ?? canManage) && detail && (
+          <Button
+            variant="destructive"
+            onClick={() => onDelete(detail.milestoneId, detail.title)}
+          >
+            {t("actions.deleteMilestone")}
+          </Button>
         )}
         <Button onClick={onClose}>{t("actions.close")}</Button>
       </DialogFooter>

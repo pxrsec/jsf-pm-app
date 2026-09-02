@@ -231,36 +231,6 @@ export async function transitionTaskStatusAction(
   return result;
 }
 
-// ── Task Archival (Soft-Delete) ──────────────────────────────────────────────
-
-export async function archiveTaskAction(
-  taskId: string,
-  projectId: string,
-  reason?: string,
-): Promise<CommandResult<{ success: boolean }>> {
-  const cookieStore = await cookies();
-  const session = await requireSession(cookieStore);
-
-  if (session.role !== "admin" && session.role !== "pm") {
-    return {
-      ok: false,
-      error: { code: "UNAUTHORIZED", message: "Unauthorized role" },
-    };
-  }
-
-  const supabase = createClient(cookieStore);
-  const result = await projectCommands.archiveTask(supabase, taskId, reason);
-
-  if (result.ok) {
-    revalidatePath(
-      `/[locale]/(protected)/admin/proyectos/${projectId}`,
-      "page",
-    );
-    revalidatePath(`/[locale]/(protected)/pm/proyectos/${projectId}`, "page");
-  }
-  return result;
-}
-
 // ── Task Collaboration Comments ──────────────────────────────────────────────
 
 export async function createTaskCommentAction(

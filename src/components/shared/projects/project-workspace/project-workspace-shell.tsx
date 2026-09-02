@@ -137,6 +137,9 @@ export function ProjectWorkspaceShell({
     useState<ProjectStatusActionType | null>(null);
   const [openMilestoneId, setOpenMilestoneId] = useState<string>();
 
+  const canManageOperationalLifecycle =
+    actorRole === "admin" || actorRole === "pm";
+
   const canManageClientIdentity =
     project.project_type === "client" &&
     project.deleted_at === null &&
@@ -257,6 +260,7 @@ export function ProjectWorkspaceShell({
         clients={clients}
         effectiveCapacity={effectiveCapacity}
         actorRole={actorRole}
+        canManageOperationalLifecycle={canManageOperationalLifecycle}
         baseHref={baseHref}
         onOpenEditDialog={() => setIsEditOpen(true)}
         onOpenStatusDialog={handleStatusDialog}
@@ -311,6 +315,7 @@ export function ProjectWorkspaceShell({
             project={project}
             initialTasks={initialTasks}
             effectiveCapacity={effectiveCapacity}
+            canManageOperationalLifecycle={canManageOperationalLifecycle}
             locale={locale}
             milestoneOptions={milestoneOptions}
           />
@@ -322,6 +327,7 @@ export function ProjectWorkspaceShell({
             initialDeliverables={initialDeliverables}
             tasks={initialTasks}
             effectiveCapacity={effectiveCapacity}
+            canManageOperationalLifecycle={canManageOperationalLifecycle}
             currentUserId={currentUserId}
           />
         </TabsContent>

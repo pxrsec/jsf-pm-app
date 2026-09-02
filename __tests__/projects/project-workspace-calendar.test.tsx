@@ -17,6 +17,13 @@ vi.mock("@/config/app.config", () => ({
   },
 }));
 
+vi.mock("@/lib/operational-lifecycle/actions", () => ({
+  archiveOperationalEntityAction: vi.fn(),
+  restoreArchivedOperationalEntityAction: vi.fn(),
+  getOperationalDeletionPreviewAction: vi.fn(),
+  permanentlyDeleteOperationalEntityAction: vi.fn(),
+}));
+
 vi.mock(
   "@/components/shared/projects/project-workspace/project-overview-tab",
   () => ({

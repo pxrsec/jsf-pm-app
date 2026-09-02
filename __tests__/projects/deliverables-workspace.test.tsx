@@ -21,11 +21,14 @@ vi.mock("@/lib/deliverables/actions", () => ({
   getDeliverableDetailAction: vi.fn().mockResolvedValue(null),
   createDeliverableAction: vi.fn().mockResolvedValue({ ok: true }),
   updateDeliverableAction: vi.fn().mockResolvedValue({ ok: true }),
-  archiveDeliverableAction: vi.fn().mockResolvedValue({ ok: true }),
   submitDeliverableVersionAction: vi
     .fn()
     .mockResolvedValue({ ok: true, data: { version_number: 1 } }),
   reportDeliverableLinkAction: vi.fn().mockResolvedValue({ ok: true }),
+}));
+
+vi.mock("@/lib/operational-lifecycle/actions", () => ({
+  archiveOperationalEntityAction: vi.fn().mockResolvedValue({ ok: true }),
 }));
 
 vi.mock("@/lib/deliverables/review-actions", () => ({

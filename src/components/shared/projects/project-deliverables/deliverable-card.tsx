@@ -27,6 +27,7 @@ import type { DeliverableListItem } from "@/lib/deliverables/queries";
 interface DeliverableCardProps {
   deliverable: DeliverableListItem;
   effectiveCapacity: "admin" | "pm_lead" | "pm_watcher";
+  canArchiveDeliverables?: boolean;
   currentUserId?: string;
   onViewDetails: (d: DeliverableListItem) => void;
   onSubmitVersion: (d: DeliverableListItem) => void;
@@ -39,6 +40,7 @@ interface DeliverableCardProps {
 export function DeliverableCard({
   deliverable,
   effectiveCapacity,
+  canArchiveDeliverables,
   currentUserId,
   onViewDetails,
   onSubmitVersion,
@@ -69,7 +71,8 @@ export function DeliverableCard({
     deliverable.status === "awaiting_internal_review";
   const canDeliver =
     isProduction && isLeadOrAdmin && deliverable.status === "approved";
-  const canArchive = isLeadOrAdmin && deliverable.status !== "delivered";
+  const canArchive =
+    (canArchiveDeliverables ?? true) && deliverable.status !== "delivered";
 
   const assigneeName = deliverable.assignee?.full_name || t("unassigned");
   const assigneeInitials = assigneeName

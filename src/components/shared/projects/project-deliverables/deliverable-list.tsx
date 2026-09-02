@@ -33,6 +33,7 @@ import type { DeliverableListItem } from "@/lib/deliverables/queries";
 interface DeliverableListProps {
   deliverables: DeliverableListItem[];
   effectiveCapacity: "admin" | "pm_lead" | "pm_watcher";
+  canArchiveDeliverables?: boolean;
   currentUserId?: string;
   onViewDetails: (d: DeliverableListItem) => void;
   onSubmitVersion: (d: DeliverableListItem) => void;
@@ -45,6 +46,7 @@ interface DeliverableListProps {
 export function DeliverableList({
   deliverables,
   effectiveCapacity,
+  canArchiveDeliverables,
   currentUserId,
   onViewDetails,
   onSubmitVersion,
@@ -107,7 +109,8 @@ export function DeliverableList({
               isLeadOrAdmin &&
               deliverable.status === "approved";
             const canArchive =
-              isLeadOrAdmin && deliverable.status !== "delivered";
+              (canArchiveDeliverables ?? true) &&
+              deliverable.status !== "delivered";
 
             const assigneeName =
               deliverable.assignee?.full_name || t("unassigned");

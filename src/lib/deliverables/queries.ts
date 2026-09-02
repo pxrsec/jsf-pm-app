@@ -136,10 +136,15 @@ export async function listProjectDeliverables(
     let query = supabase
       .from("deliverables")
       .select(
-        `${DELIVERABLE_COLUMNS}, profiles(id, full_name, role, avatar_url)`,
+        `${DELIVERABLE_COLUMNS}, tasks!inner(deleted_at, archived_at, projects!inner(deleted_at, archived_at)), profiles(id, full_name, role, avatar_url)`,
       )
       .eq("project_id", projectId)
       .is("deleted_at", null)
+      .is("archived_at", null)
+      .is("tasks.deleted_at", null)
+      .is("tasks.archived_at", null)
+      .is("tasks.projects.deleted_at", null)
+      .is("tasks.projects.archived_at", null)
       .order("created_at", { ascending: false });
 
     if (filters?.status) {
@@ -203,10 +208,15 @@ export async function getDeliverableDetail(
     const { data: deliverable, error: delivError } = await supabase
       .from("deliverables")
       .select(
-        `${DELIVERABLE_COLUMNS}, profiles(id, full_name, role, avatar_url)`,
+        `${DELIVERABLE_COLUMNS}, tasks!inner(deleted_at, archived_at, projects!inner(deleted_at, archived_at)), profiles(id, full_name, role, avatar_url)`,
       )
       .eq("id", deliverableId)
       .is("deleted_at", null)
+      .is("archived_at", null)
+      .is("tasks.deleted_at", null)
+      .is("tasks.archived_at", null)
+      .is("tasks.projects.deleted_at", null)
+      .is("tasks.projects.archived_at", null)
       .single();
 
     if (delivError || !deliverable) {

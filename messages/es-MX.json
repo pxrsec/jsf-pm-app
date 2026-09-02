@@ -36,6 +36,7 @@
         "agenda": "Mi Agenda",
         "calendar": "Calendario",
         "archive": "Archivo",
+        "recycleBin": "Papelera",
         "clients": "Clientes",
         "linkIncidents": "Incidentes de Enlaces",
         "metrics": "Métricas",
@@ -2586,6 +2587,68 @@
       "copied": "¡Enlace Copiado al Portapapeles!",
       "copyFailed": "No se pudo copiar el enlace. Por favor, intenta de nuevo.",
       "close": "Cerrar y Descartar"
+    }
+  },
+  "operationalLifecycle": {
+    "recycleBin": {
+      "title": "Papelera de Reciclaje",
+      "description": "Gestiona los elementos archivados en el sistema. Los administradores pueden restaurar o eliminar permanentemente; los Project Managers pueden restaurar.",
+      "empty": "La papelera está vacía",
+      "emptyDescription": "No hay proyectos, tareas, entregables ni hitos archivados actualmente.",
+      "unavailable": "Papelera no disponible",
+      "unavailableDescription": "Ocurrió un error al cargar los elementos de la papelera. Por favor, intenta de nuevo.",
+      "retryAction": "Reintentar",
+      "columns": {
+        "entityType": "Tipo",
+        "title": "Nombre",
+        "archivedAt": "Fecha de archivo",
+        "reason": "Motivo",
+        "actions": "Acciones"
+      },
+      "entityTypes": {
+        "project": "Proyecto",
+        "task": "Tarea",
+        "deliverable": "Entregable",
+        "milestone": "Hito"
+      },
+      "parentArchivedBadge": "Contenedor archivado",
+      "parentArchivedTooltip": "Restaura primero el contenedor principal antes de restaurar este elemento",
+      "parentArchivedInlineNotice": "El proyecto o elemento contenedor principal está archivado. Debes restaurarlo primero.",
+      "restoreAction": "Restaurar",
+      "restoreSubmitting": "Restaurando...",
+      "restoreSuccessToast": "Elemento restaurado exitosamente",
+      "restoreErrorToast": "Error al restaurar el elemento",
+      "restoreAriaLabel": "Restaurar {type}: {title}",
+      "permanentDeleteAction": "Eliminar permanentemente",
+      "permanentDeleteAriaLabel": "Eliminar permanentemente {type}: {title}"
+    },
+    "permanentDeleteDialog": {
+      "title": "Eliminación Permanente",
+      "warning": "Esta acción es completamente irreversible. Todos los registros y datos asociados serán eliminados de forma definitiva.",
+      "previewLoading": "Verificando dependencias y permisos...",
+      "previewUnavailable": "No se pudo verificar la eliminación permanente. Por favor, intenta de nuevo.",
+      "blockerDependenciesPresent": "No se puede eliminar porque contiene elementos dependientes activos o no purgados. Elimina o purga primero sus dependencias.",
+      "blockerArchiveRequired": "El elemento debe estar archivado antes de poder ser eliminado permanentemente.",
+      "blockerNotFoundOrArchiveRequired": "El elemento no fue encontrado o no está archivado.",
+      "blockerNotFound": "El elemento no fue encontrado.",
+      "blockerParentArchived": "El elemento o su contenedor no fue encontrado.",
+      "cancelAction": "Cancelar",
+      "archiveInsteadAction": "Mantener archivado",
+      "confirmAction": "Confirmar eliminación definitiva",
+      "deleting": "Eliminando definitivamente...",
+      "successToast": "Elemento eliminado permanentemente",
+      "errorToast": "Error al eliminar el elemento"
+    },
+    "errors": {
+      "unauthorized": "No tienes autorización para realizar esta operación.",
+      "forbidden": "No tienes los permisos requeridos para esta operación.",
+      "invalidInput": "Los datos proporcionados son inválidos.",
+      "dependenciesPresent": "No se puede eliminar porque existen dependencias asociadas.",
+      "archiveRequired": "El elemento debe estar archivado antes de eliminarse permanentemente.",
+      "notFoundOrParentArchived": "No se puede restaurar porque el contenedor principal está archivado o el elemento no existe.",
+      "notFoundOrArchived": "El elemento no fue encontrado o ya se encuentra archivado.",
+      "notFoundOrActive": "El elemento no fue encontrado o se encuentra activo.",
+      "lifecycleUnavailable": "El servicio de ciclo de vida no está disponible en este momento."
     }
   }
 }

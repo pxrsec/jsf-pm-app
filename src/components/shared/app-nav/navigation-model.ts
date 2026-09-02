@@ -7,6 +7,7 @@ export type AppNavigationItemKey =
   | "operatorProjects"
   | "calendar"
   | "archive"
+  | "recycleBin"
   | "clients"
   | "linkIncidents"
   | "metrics"
@@ -112,7 +113,20 @@ export function buildNavigationModel({
     ariaLabel: archiveLabel,
   });
 
-  // 5. Clients (Admin and PM only)
+  // 5. Recycle Bin (Admin and PM only)
+  if (role === "admin" || role === "pm") {
+    const recycleBinLabel = t("links.recycleBin");
+    const recycleBinHref =
+      role === "admin" ? "/admin/papelera" : "/pm/papelera";
+    items.push({
+      key: "recycleBin",
+      href: recycleBinHref,
+      label: recycleBinLabel,
+      ariaLabel: recycleBinLabel,
+    });
+  }
+
+  // 6. Clients (Admin and PM only)
   if (role === "admin" || role === "pm") {
     const clientsLabel = t("links.clients");
     const clientsHref = role === "admin" ? "/admin/clientes" : "/pm/clientes";

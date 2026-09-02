@@ -18,7 +18,6 @@ import {
 import {
   createDeliverable,
   updateDeliverable,
-  archiveDeliverable,
   submitDeliverableVersion,
   reportBrokenLink,
   type SubmitVersionResult,
@@ -329,40 +328,6 @@ export async function updateDeliverableAction(params: {
     params.deliverableId,
     parsed.data,
     session.user.id,
-  );
-  if (result.ok) revalidateProjectWorkspaces(params.projectId);
-  return result;
-}
-
-export async function archiveDeliverableAction(params: {
-  deliverableId: string;
-  projectId: string;
-  reason?: string;
-}): Promise<CommandResult<{ success: boolean }>> {
-  const cookieStore = await cookies();
-  const session = await requireSession(cookieStore);
-  const supabase = createClient(cookieStore);
-
-  const isLead = await verifyPmLeadCapacity(
-    supabase,
-    session.user.id,
-    session.role,
-    params.projectId,
-  );
-  if (!isLead) {
-    return {
-      ok: false,
-      error: {
-        code: "UNAUTHORIZED",
-        message: "Only Admins and active PM Leads can archive deliverables",
-      },
-    };
-  }
-
-  const result = await archiveDeliverable(
-    supabase,
-    params.deliverableId,
-    params.reason,
   );
   if (result.ok) revalidateProjectWorkspaces(params.projectId);
   return result;

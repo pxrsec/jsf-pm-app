@@ -95,6 +95,7 @@ export async function listProjectsForAdmin(
       .select(
         "id, name, project_type, status, client_id, client_scope, internal_description, deadline_at, drive_folder_url, completed_at, archived_at, created_at, updated_at",
       )
+      .is("deleted_at", null)
       .is("archived_at", null)
       .order("created_at", { ascending: false });
 
@@ -112,29 +113,23 @@ export async function listProjectsForAdmin(
 
 export async function listProjectsForPm(
   supabase: TypedSupabase,
-  userId: string,
 ): Promise<ProjectListItem[]> {
   try {
     const { data, error } = await supabase
-      .from("project_members")
+      .from("projects")
       .select(
-        "projects!inner(id, name, project_type, status, client_id, client_scope, internal_description, deadline_at, drive_folder_url, completed_at, archived_at, created_at, updated_at)",
+        "id, name, project_type, status, client_id, client_scope, internal_description, deadline_at, drive_folder_url, completed_at, archived_at, created_at, updated_at",
       )
-      .eq("user_id", userId)
       .is("deleted_at", null)
-      .is("projects.archived_at", null);
+      .is("archived_at", null)
+      .order("created_at", { ascending: false });
 
     if (error || !data) {
       if (error)
         logger.debug("Error in listProjectsForPm", { error: error.message });
       return [];
     }
-
-    type RawRow = { projects: ProjectListItem | ProjectListItem[] };
-    const raw = data as unknown as RawRow[];
-    return raw.map((row) =>
-      Array.isArray(row.projects) ? row.projects[0] : row.projects,
-    );
+    return data;
   } catch (err) {
     logger.debug("Failed in listProjectsForPm", { err });
     return [];
@@ -150,6 +145,7 @@ export async function getProjectDetail(
       .from("projects")
       .select("*")
       .eq("id", projectId)
+      .is("deleted_at", null)
       .is("archived_at", null)
       .single();
 
@@ -452,9 +448,14 @@ export async function listProjectTasks(
   try {
     let query = supabase
       .from("tasks")
-      .select("*, profiles(id, full_name, role, avatar_url)")
+      .select(
+        "*, projects!inner(deleted_at, archived_at), profiles(id, full_name, role, avatar_url)",
+      )
       .eq("project_id", projectId)
       .is("deleted_at", null)
+      .is("archived_at", null)
+      .is("projects.deleted_at", null)
+      .is("projects.archived_at", null)
       .order("deadline_at", { ascending: true });
 
     if (filters?.status) {
@@ -479,16 +480,21 @@ export async function listProjectTasks(
     }
 
     type RawTask = Task & {
+      projects?: { deleted_at: string | null; archived_at: string | null };
       profiles: Pick<
         Profile,
         "id" | "full_name" | "role" | "avatar_url"
       > | null;
     };
 
-    return ((data ?? []) as unknown as RawTask[]).map((t) => ({
-      ...t,
-      assignee: t.profiles,
-    }));
+    return ((data ?? []) as unknown as RawTask[]).map((rawTask) => {
+      const { profiles, ...task } = rawTask;
+      delete (task as { projects?: unknown }).projects;
+      return {
+        ...task,
+        assignee: profiles,
+      };
+    });
   } catch (err) {
     logger.debug("Failed in listProjectTasks", { err });
     return [];
@@ -502,9 +508,14 @@ export async function getTaskDetail(
   try {
     const { data, error } = await supabase
       .from("tasks")
-      .select("*, profiles(id, full_name, role, avatar_url)")
+      .select(
+        "*, projects!inner(deleted_at, archived_at), profiles(id, full_name, role, avatar_url)",
+      )
       .eq("id", taskId)
       .is("deleted_at", null)
+      .is("archived_at", null)
+      .is("projects.deleted_at", null)
+      .is("projects.archived_at", null)
       .single();
 
     if (error || !data) {
@@ -514,16 +525,19 @@ export async function getTaskDetail(
     }
 
     type RawTask = Task & {
+      projects?: { deleted_at: string | null; archived_at: string | null };
       profiles: Pick<
         Profile,
         "id" | "full_name" | "role" | "avatar_url"
       > | null;
     };
-    const t = data as unknown as RawTask;
+    const rawTask = data as unknown as RawTask;
+    const { profiles, ...task } = rawTask;
+    delete (task as { projects?: unknown }).projects;
 
     return {
-      ...t,
-      assignee: t.profiles,
+      ...task,
+      assignee: profiles,
     };
   } catch (err) {
     logger.debug("Failed in getTaskDetail", { err });

@@ -16,11 +16,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { archiveTaskAction } from "@/lib/projects/task-actions";
+import { archiveOperationalEntityAction } from "@/lib/operational-lifecycle/actions";
 
 interface TaskArchiveDialogProps {
   taskId: string | null;
-  projectId: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
@@ -28,7 +27,6 @@ interface TaskArchiveDialogProps {
 
 export function TaskArchiveDialog({
   taskId,
-  projectId,
   isOpen,
   onClose,
   onSuccess,
@@ -42,14 +40,14 @@ export function TaskArchiveDialog({
   const handleArchive = async () => {
     setIsArchiving(true);
     try {
-      const result = await archiveTaskAction(
-        taskId,
-        projectId,
-        reason.trim() || undefined,
-      );
+      const result = await archiveOperationalEntityAction({
+        entityType: "task",
+        entityId: taskId,
+        reason: reason.trim() || null,
+      });
 
       if (!result.ok) {
-        toast.error(result.error.message || t("errorToast"));
+        toast.error(t("errorToast"));
       } else {
         toast.success(t("successToast"));
         setReason("");
@@ -89,7 +87,7 @@ export function TaskArchiveDialog({
             placeholder={t("reasonPlaceholder")}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            maxLength={500}
+            maxLength={1000}
             disabled={isArchiving}
           />
         </div>
@@ -99,7 +97,7 @@ export function TaskArchiveDialog({
             {t("cancelAction")}
           </AlertDialogCancel>
           <Button
-            variant="destructive"
+            variant="default"
             onClick={handleArchive}
             disabled={isArchiving}
           >
