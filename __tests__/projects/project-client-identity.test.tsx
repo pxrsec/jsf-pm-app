@@ -117,6 +117,8 @@ const baseMockProject: ProjectDetail = {
   deadline_at: "2026-12-31T00:00:00Z",
   completed_at: null,
   archived_at: null,
+  archived_by: null,
+  archive_reason: null,
   deleted_at: null,
   created_at: "2026-01-01T00:00:00Z",
   created_by: "00000000-0000-0000-0000-000000000000",

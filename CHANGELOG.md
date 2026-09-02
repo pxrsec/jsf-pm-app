@@ -1,5 +1,45 @@
 # JSF PM App Development Changelog
 
+## [2026-09-02 @ 08:36]
+
+**🚀 Features & 🛠 Database: S10-04 Migration Application, S10-03 Archive Visibility Closure, and Database Type Regeneration**
+
+- **Database Migration Applied (`supabase/migrations/20260902090000_s10-04-account-access-hygiene-bug-triage-and-s10-03-closure.sql`):**
+  - Applied migration to remote database via Supabase MCP `apply_migration` tool (`20260902090000_s10_04_account_access_hygiene_bug_triage_and_s10_03_closure`).
+  - Corrected PL/pgSQL multiple-item `INTO` clause with composite rowtype in `public.set_user_access_state`.
+  - Installed S10-04 account settings (`get_own_account_settings`, `update_own_account_settings`), user access hygiene and tracking triggers (`user_access_actions`, `user_access_hygiene_state`), stale access candidate and reminder administration (`stale_access_reminders`, `list_stale_access_reminder_candidates`, `record_stale_access_reminder`), and controlled bug report triage (`bug_reports`, `bug_report_status`, `submit_bug_report`, `list_bug_reports`, `set_bug_report_status`).
+  - Applied complete S10-03 archive visibility and active-ancestry forward closure across 49 database views, SECURITY DEFINER RPCs, private helper functions, and validation triggers.
+  - Enforced strict SECURITY DEFINER search paths, function ownership (`postgres`), and explicit role-safe execute grants.
+- **TypeScript Types Regenerated (`src/lib/database.types.ts`):**
+  - Regenerated comprehensive schema definitions and database types via Supabase MCP `generate_typescript_types` tool.
+- **Typecheck & Lint Verification:**
+  - Updated mock test fixtures to include new database columns (`archive_reason`, `archived_at`, `archived_by`, `archived_parent_project_id`).
+  - Verified `npm run typecheck` and `npm run lint` pass with 0 errors.
+
+## [2026-09-02 @ 07:48]
+
+**🛠 Database & 🔒 Security: Pre-M04 S10-03 Remediation and S10-04 Candidate Migration Refinement**
+
+- **Forward Migration File Refinement (`supabase/migrations/20260902090000_s10-04-account-access-hygiene-bug-triage-and-s10-03-closure.sql`):**
+  - Incorporated complete forward S10-03 archive visibility closure and active-ancestry predicates across all 49 objects enumerated in the Section 5 inventory:
+    - **5.1 Calendar RPC & View**: `list_role_safe_calendar_events`, `calendar_feed_view`.
+    - **5.2 Metrics/Reporting RPCs & Views**: `get_scoped_operations_metrics`, `list_scoped_operations_metric_trend`, `list_scoped_user_operations_metrics`, `list_scoped_metrics_project_filter_options`, `deliverable_cycle_metrics_view`, `project_completion_cycles_view`.
+    - **5.3 Milestone Selectors & Context**: `get_milestone_detail`, `list_project_milestone_summaries`, `list_milestone_tasks`, `list_task_milestone_options`, `list_milestone_management_targets`, `list_operator_task_milestone_context`.
+    - **5.4 Active Mutation Commands**: `create_milestone`, `update_milestone`, `create_task_with_deliverables`, `create_collaboration_comment`.
+    - **5.5 Workflow Mutation Commands**: `transition_project_status`, `recover_project_status`, `transition_task_status`, `mark_deliverable_delivered`, `reopen_client_deliverable`, `review_deliverable`, `submit_client_deliverable`, `submit_deliverable_version`, `report_broken_link`.
+    - **5.6 Completion, Incident, Notification, Invitation Projections**: `get_project_completion_readiness`, `list_role_safe_link_incidents`, `list_finalized_production_archive`, `list_my_in_app_notifications`, `list_suppressed_notification_operations`, `list_admin_user_invitation_state`, `list_ordinary_invitation_administration`.
+    - **5.7 Private Authorization & Readiness Helpers**: `private.is_task_assignee`, `private.is_client_task_assignee`, `private.is_deliverable_assignee`, `private.is_client_submission_assignee`, `private.project_has_client_readiness`.
+    - **5.8 Task & Deliverable Triggers**: `private.validate_task()`, `private.sync_and_validate_deliverable()`.
+    - **5.9 Milestone, Calendar, Version Triggers**: `private.validate_milestone_task_link()`, `private.validate_calendar_event_task_scope()`, `private.validate_production_google_drive_submission_url()`.
+    - **5.10 Role-Facing Views**: `client_deliverable_view`, `client_project_view`, `client_submission_view`, `client_task_view`, `operator_agenda_view`.
+  - Integrated S10-04 Account Access Hygiene, Stale-Access Reminders, and Bug Triage tables, types, triggers, and RPCs:
+    - Tables & Types: `bug_report_status` enum, `user_access_actions`, `user_access_hygiene_state`, `stale_access_reminders`, `bug_reports`.
+    - Trigger Family: `private.user_has_qualifying_access`, `private.refresh_user_access_hygiene_state`, assignment and project change triggers.
+    - RPCs: `get_own_account_settings`, `update_own_account_settings`, `list_user_access_directory`, `set_user_access_state`, `list_stale_access_reminder_candidates`, `record_stale_access_reminder`, `submit_bug_report`, `list_bug_reports`, `set_bug_report_status`.
+    - Retired generic profile soft-delete/restore in favor of `set_user_access_state` and dropped direct authenticated update policy on `profiles`.
+  - Enforced strict PostgreSQL 17 / Supabase security definer `search_path = pg_catalog, public`, complete ACL grants/revokes, and active-ancestry filters (`deleted_at IS NULL AND archived_at IS NULL`) across all joins.
+  - Performed zero remote database mutations (`apply_migration`, `supabase db push`, remote DDL strictly withheld pending explicit user authorization).
+
 ## [2026-09-01 @ 16:38]
 
 **🛠 Database & 🔒 Security: S10-03 Archive, Recycle Bin, and Admin Permanent Deletion Migration & Type Regeneration**

@@ -177,6 +177,8 @@ describe("Project Workspace Navigation and Calendar Integration", () => {
     drive_folder_url: null,
     completed_at: null,
     archived_at: null,
+    archived_by: null,
+    archive_reason: null,
     deleted_at: null,
     created_at: "2026-08-01T00:00:00-06:00",
     updated_at: "2026-08-01T00:00:00-06:00",

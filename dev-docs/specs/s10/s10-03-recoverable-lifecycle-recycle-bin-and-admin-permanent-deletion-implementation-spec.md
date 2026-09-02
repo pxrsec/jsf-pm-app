@@ -2,8 +2,8 @@
 document_id: S10-03-RECOVERABLE-LIFECYCLE-RECYCLE-BIN-AND-ADMIN-PERMANENT-DELETION-IMPLEMENTATION-SPEC-01
 sprint_id: S10
 work_items: [S10-03]
-status: implementation-ready-schema-baseline
-updated_at: 2026-09-01T16:29:29-06:00
+status: implementation-ready-m04-applied
+updated_at: 2026-09-02T08:51:48-06:00
 target_environment: jsf-pm-dev
 schema_baseline:
   - supabase/migrations/20260830110000_s10-direct-client-identity-and-invitation-administration.sql
@@ -14,6 +14,7 @@ schema_baseline:
   - supabase/migrations/20260901120000_s10-02-r1-invitation-completion-profile-authority.sql
   - supabase/migrations/20260901130000_s10-02-r1-cancelled-project-command-enforcement.sql
   - supabase/migrations/20260901140000_s10-03-archive-recycle-bin-and-admin-permanent-deletion.sql
+  - supabase/migrations/20260902090000_s10-04-account-access-hygiene-bug-triage-and-s10-03-closure.sql
 generated_types: src/lib/database.types.ts
 ---
 
@@ -82,6 +83,44 @@ The UI must not try to reproduce this cascade algorithm. It calls the authoritat
 
 ## 4. Applied database contract
 
+### 4.0 Applied-baseline settlement — mandatory reading before implementation
+
+`20260902090000_s10_04_account_access_hygiene_bug_triage_and_s10_03_closure`
+is applied to `jsf-pm-dev`. `src/lib/database.types.ts` was regenerated from that
+deployed schema after application. This is the implementation baseline for S10-03.
+
+The M04 file includes two distinct, already-applied concerns:
+
+1. S10-04 account-access-hygiene and bug-triage database capabilities, which are
+   out of scope for this S10-03 UI work; and
+2. the forward S10-03 active-ancestry closure across 49 existing trusted views,
+   RPCs, private helpers, and validation triggers.
+
+Contract ownership is deliberately split: M03 owns lifecycle metadata, cascade
+semantics, the five lifecycle RPC definitions, their ACL/ownership/security
+posture, retention behavior, and permanent-deletion dependency rules. M04 does
+not recreate those five functions. M04 owns the forward repair of all active
+surfaces that consume operational entities, the replacement behavior of generic
+`soft_delete_entity`/`restore_entity`, and S10-04 access-hygiene state. The
+application must consume both applied contracts as one baseline while preserving
+their distinct responsibilities.
+
+Do not author another archive-visibility migration, modify M04, reapply M03/M04,
+hand-edit `database.types.ts`, weaken RLS, or try to compensate for archive
+visibility in browser filtering. Consume the deployed RPC/view contract through
+the generated declaration. The application work replaces legacy callers and adds
+the authorized recycle-bin experience.
+
+The deployed M04 correction to `set_user_access_state` splits its locked
+`public.profiles` composite-row lookup from its `auth.users.email` lookup. That
+change is valid and unrelated to S10-03 lifecycle behavior. Do not revert,
+refactor, or test it as part of this work item.
+
+The public database enum is broader than the S10-03 product allowlist. Therefore
+`Database["public"]["Enums"]["entity_type"]` must never be exposed as the
+application's lifecycle input type. The narrow four-value Zod/TypeScript allowlist
+in this specification is mandatory even though the RPC accepts the broader enum.
+
 ### 4.1 Archive metadata
 
 The generated declaration exposes these applied columns:
@@ -139,7 +178,13 @@ public.permanently_delete_operational_entity(
 ) returns table (success boolean, code text)
 ```
 
-All execute only as `authenticated`; every public routine is `SECURITY DEFINER`, owned by `postgres`, has `search_path = pg_catalog, public`, revokes `public`, `anon`, and `service_role`, and independently verifies the active actor. Never add a client-side Supabase RPC call, direct table mutation, service-role route, arbitrary SQL, generic entity string, or browser-selected URL.
+These lifecycle routines are inherited from M03: all execute only as
+`authenticated`; every public routine is `SECURITY DEFINER`, owned by `postgres`,
+has `search_path = pg_catalog, public`, revokes `public`, `anon`, and
+`service_role`, and independently verifies the active actor. M04 does not change
+these lifecycle routine definitions or their grants. Never add a client-side
+Supabase RPC call, direct table mutation, service-role route, arbitrary SQL,
+generic entity string, or browser-selected URL.
 
 ### 4.3 Closed entity-type allowlist
 
@@ -226,18 +271,30 @@ Create one narrow recycle-bin adapter over `list_operational_recycle_bin`. It re
 type OperationalRecycleBinItem = {
   entityType: OperationalLifecycleEntityType;
   entityId: string;
-  projectId: string | null;
+  projectId: string;
   title: string;
   archivedAt: string;
-  archivedBy: string | null;
-  archiveReason: string | null;
+  archivedBy: string;
+  archiveReason: string;
   parentIsArchived: boolean;
 };
 ```
 
-The adapter validates every RPC row, including UUIDs, finite entity type, nonempty title, ISO timestamp, nullable values, and boolean. It returns `{ status: "unavailable" }` for RPC/error/shape failures and never substitutes `[]`. A valid empty list is `{ status: "available", data: [] }`.
+The adapter validates every RPC row against the generated M04 declaration:
+nonempty known entity type, UUID `entityId`, UUID `projectId`, nonempty title, ISO
+timestamps, UUID `archivedBy`, string `archiveReason`, and boolean
+`parentIsArchived`. It returns `{ status: "unavailable" }` for RPC/error/shape
+failures and never substitutes `[]`. A valid empty list is
+`{ status: "available", data: [] }`.
 
-Create one Admin-only deletion-preview adapter. It validates `entity_type`, `entity_id`, nonempty title, boolean `can_delete`, and nullable known `blocker_code`; it never accepts a browser title. No bulk preview endpoint is needed.
+Create one Admin-only deletion-preview adapter. It validates `entity_type`, UUID
+`entity_id`, nonempty title, boolean `can_delete`, and string `blocker_code`; it
+never accepts a browser title. The generated declaration represents
+`blocker_code` as `string`, while a deletable M03 SQL row can contain SQL `NULL`.
+After validating exactly one row, normalize only `(canDelete === true,
+blockerCode === null)` to the explicit application value `blockerCode: null`.
+For `canDelete === false`, require a nonempty known blocker code. Any other null,
+unknown code, or mismatch is unavailable. No bulk preview endpoint is needed.
 
 ### 5.4 Role matrix
 
@@ -336,9 +393,19 @@ Do not infer exclusion only from the route. Enforce it in the database feed/proj
 
 ### 7.1 Placement and routing
 
-Add one discoverable localized **Archived items** / recycle-bin destination for Admin and PM using the existing locale-aware protected navigation model. Extend the shared server-derived navigation model once; update every authorized renderer/icon map. Do not add it to Operator or Client navigation and do not use a hard-coded client-side role check as the authority source.
+Add one discoverable localized **Archived items** / recycle-bin destination for Admin
+and PM using the existing locale-aware protected navigation model. Extend
+`src/components/shared/app-nav/navigation-model.ts` once, then update every
+authorized desktop/mobile renderer and icon map. Do not add it to Operator or
+Client navigation and do not use a hard-coded client-side role check as the
+authority source.
 
-The exact path must follow actual repository route conventions and be shared by Admin/PM if their route topology permits. If existing role-specific roots require distinct locale-safe URLs, both must render the same role-safe reuse component and call the same server-only adapter. The destination is not `/archivo` and must not render `ArchiveListView`/`FinalizedArchivePage` as its data source.
+The exact routes are `/admin/papelera` and `/pm/papelera`. Each is under the
+existing `[locale]/(protected)` segment and must render the same role-safe reuse
+component backed by the same server-only adapter. The destination is not `/archivo`
+and must not import, render, relabel, or reuse `ArchiveListView`,
+`FinalizedArchivePage`, `fetchFinalizedArchivePage`, or finalized-production
+archive types as its data source.
 
 ### 7.2 Recycle-bin page
 
@@ -387,6 +454,12 @@ On command success, close dialog, clear preview state, refresh authorized recycl
 
 Replace current misnamed archive controls for projects, tasks, deliverables, and milestones with the new archive command and correct localized language. Existing task/deliverable controls currently styled/labelled as destructive must be reviewed: Archive must be visually distinguishable from irreversible deletion and must not use copy claiming permanent removal. Preserve an explicit archive confirmation when current component patterns supply one; do not make archive accidental.
 
+The existing active-workspace `restore` action in
+`ProjectStatusDialog`/`ProjectHeader` is obsolete and must be removed. An archived
+project must not render a normal active workspace from which it can be restored.
+Restore is initiated only by an Admin/PM recycle-bin row. Likewise, do not add
+restore buttons to task, deliverable, or milestone active surfaces.
+
 Archive controls are visible to Admin and global PM under the matrix, not only project leads. Preserve read-only limits for Operator/Client. The workspace must disappear/refresh safely when its enclosing project is archived.
 
 ## 8. Focused implementation file map
@@ -400,7 +473,7 @@ The following is a mandatory inspection map, not permission to refactor unrelate
 | Legacy deliverable lifecycle | `src/lib/deliverables/commands.ts` and `actions.ts` archive through `soft_delete_entity` and pre-gate by project-lead capacity; replace with global Admin/PM action and new command. |
 | Legacy milestone lifecycle | Current first-class milestone action uses `soft_delete_milestone`; replace with the new archive command. Do not alter legacy calendar-event deletion behavior as a substitute. |
 | Workspace loaders | `src/lib/projects/queries.ts`, `src/lib/deliverables/queries.ts`, role pages, headers, workspace shell, task and deliverable tabs must consume active-only data and hide management actions for archived scope. |
-| Database projections | Consume the M03-reconciled role-safe calendar, milestone, operator/client, metrics, alert, notification, and related SQL projection contracts. Application adapters must use those contracts and must not compensate with browser filtering, direct-table reads, service-role access, or a second migration. |
+| Database projections | Consume the applied M03 lifecycle contract plus M04-repaired role-safe calendar, milestone, operator/client, metrics, finalized-history, alert, notification, invitation, link-incident, and validation-trigger contracts. M04 is authoritative for active-ancestry exclusion. Application adapters must use those contracts and must not compensate with browser filtering, direct-table reads, service-role access, or a second migration. |
 | Navigation | Shared server-derived role navigation model and all renderers/icon maps receive one archive-bin entry for Admin/PM. |
 | Messages | `messages/en-US.json` and `messages/es-MX.json` receive identical key shape; no hard-coded strings in touched UI. |
 | Tests | Adapt only focused directly affected tests and add only focused coverage described in §10. |
@@ -509,7 +582,8 @@ Manual development-environment evidence, if performed, must remain separate from
 The implementation report must state only factual evidence:
 
 - exact changed files;
-- the M03 migration/type contract consumed;
+- the consumed M03 lifecycle migration contract and M04 forward-closure migration contract, with their distinct responsibilities;
+- generated-type/static-source evidence distinguished from actually executed hosted catalog, RLS, or runtime evidence;
 - focused tests changed/added and exact commands/outcomes;
 - archive cascade/restore behavior implemented;
 - active-surface query families reconciled;
@@ -520,3 +594,205 @@ The implementation report must state only factual evidence:
 - blockers or known limitations.
 
 Do not claim production deployment, provider activation, all-database RLS proof, permanent deletion of history, successful remote migration, or manual evidence that was not actually executed.
+
+## 13. Binding implementation sequence and current-file migration map
+
+Implement in this order. Do not begin with dialogs or routes before the typed
+server boundary exists.
+
+### 13.1 Step A — lifecycle domain boundary
+
+Create this narrow lifecycle module tree exactly:
+
+```text
+src/lib/operational-lifecycle/types.ts
+src/lib/operational-lifecycle/schemas.ts
+src/lib/operational-lifecycle/errors.ts
+src/lib/operational-lifecycle/commands.ts
+src/lib/operational-lifecycle/queries.ts
+src/lib/operational-lifecycle/actions.ts
+```
+
+`commands.ts` and `queries.ts` import `server-only`; `actions.ts` contains the
+minimal `"use server"` exports. The tree owns only:
+
+- the closed four-value entity-type union and Zod schemas;
+- exact RPC argument construction;
+- row parsing for archive, restore, recycle-bin list, deletion preview, and
+  permanent deletion;
+- finite safe result-code mapping;
+- the recycle-bin and preview DTOs; and
+- one server action boundary for each mutation/read interaction if this is the
+  repository's established action organization.
+
+It must not own generic project CRUD, final-production archive history, account
+settings, bug-triage, direct-client administration, notifications, or raw UI
+state. It must import `server-only` in query/command modules. No component may
+call Supabase RPC directly.
+
+Every lifecycle RPC result must be handled as a table-returning result. For each
+mutation, require exactly one row containing a boolean `success` and a known
+string `code`. `data === true`, `Boolean(data)`, `data?.[0]` without shape
+validation, and a successful PostgREST transport response are not success
+criteria. A malformed, empty, multi-row, unknown-code, or RPC-error result is a
+safe failure. Do not leak its database text.
+
+Preserve `src/lib/projects/commands.ts` project-member legacy soft deletion. It
+is not an S10-03 target and is not a license to retain generic operational
+project/task/deliverable lifecycle calls.
+
+### 13.2 Step B — retire actual legacy application call sites
+
+Replace, do not wrap, the following current paths:
+
+| Current file | Current behavior to retire | Required S10-03 result |
+| --- | --- | --- |
+| `src/lib/projects/commands.ts` | `archiveProject` calls `soft_delete_entity`; `restoreProject` calls `restore_entity`; `archiveTask` calls `soft_delete_entity`. | Use the new lifecycle adapter/RPCs. Remove active-workspace project restore ownership. |
+| `src/lib/projects/actions.ts` | Project archive/restore actions delegate to legacy project commands. | Archive through the new typed action. Remove/replace active-workspace restore action and preserve route-safe revalidation. |
+| `src/lib/projects/task-actions.ts` | `archiveTaskAction` delegates to legacy task archive. | Require active Admin/PM, validate input, call the new archive action, and revalidate the exact project/lifecycle surfaces after success only. |
+| `src/lib/deliverables/commands.ts` | `archiveDeliverable` calls `soft_delete_entity`. | Use the new archive lifecycle RPC and strict result parser. |
+| `src/lib/deliverables/actions.ts` | Archive pre-gates PM by `verifyPmLeadCapacity`. | Remove that capacity gate for this lifecycle action. Admin and every active PM are allowed; database remains authoritative. |
+| `src/lib/calendar/actions.ts` | `softDeleteMilestoneAction` calls `soft_delete_milestone`. | Replace with archive lifecycle behavior for first-class milestones only; preserve unrelated legacy calendar-event behavior. |
+| `src/components/shared/projects/project-workspace/project-status-dialog.tsx` | Includes an active-workspace restore branch and hard-coded pending copy. | Remove the restore branch; preserve archive confirmation; replace hard-coded copy with localized key; do not expose raw action errors. |
+| `src/components/shared/projects/project-workspace/project-header.tsx` | Offers active-surface restore affordance. | Remove restore affordance. Archive remains correctly role-gated. |
+| `src/components/shared/projects/project-tasks/task-archive-dialog.tsx` | Calls legacy task action and styles archive as destructive deletion. | Retain a bounded optional reason, use new action, distinguish archive from permanent delete, and map safe errors. |
+| `src/components/shared/projects/project-deliverables/deliverable-archive-dialog.tsx` | Calls legacy deliverable action, has 500-character UI cap, and destructive styling. | Align optional reason UX with database maximum 1000; call new action; accurate archive visual/copy; safe error handling. |
+| `src/app/[locale]/(protected)/calendario/_components/delete-milestone-dialog.tsx` | Calls `softDeleteMilestoneAction`. | Replace with archive terminology/action and a safe localized result flow. |
+| `src/app/[locale]/(protected)/calendario/_components/calendar-coordinator.tsx` | Hosts the milestone delete dialog/selection lifecycle. | Wire the renamed archive dialog, clear stale selection after success, and preserve non-milestone calendar behavior. |
+
+After implementation, no S10-03 operational caller may reference
+`soft_delete_entity`, `restore_entity`, or `soft_delete_milestone`. The legacy
+functions remain for non-S10-03 historical uses only. Do not remove them from
+the schema or change their non-operational allowlist.
+
+### 13.3 Step C — recycle-bin routes, page, and navigation
+
+Create the two route pages:
+
+```text
+src/app/[locale]/(protected)/admin/papelera/page.tsx
+src/app/[locale]/(protected)/admin/papelera/loading.tsx
+src/app/[locale]/(protected)/admin/papelera/error.tsx
+src/app/[locale]/(protected)/pm/papelera/page.tsx
+src/app/[locale]/(protected)/pm/papelera/loading.tsx
+src/app/[locale]/(protected)/pm/papelera/error.tsx
+```
+
+They must require their respective protected manager session before loading data,
+invoke the server-only recycle-bin adapter, and pass only its role-safe DTO to a
+shared lifecycle component. The PM route must not import an Admin-only preview or
+permanent-delete action into a client bundle. The Admin page may compose a narrow
+Admin-only deletion dialog around the shared rows.
+
+Update `src/components/shared/app-nav/navigation-model.ts` and each consuming
+desktop/mobile navigation renderer to add a single `recycleBin`/equivalent
+manager-only destination. Add a matching localized navigation key and icon-map
+entry. Do not rename, repoint, or remove the existing Admin/PM/Operator/Client
+`/archivo` routes; those remain finalized-production history.
+
+The required navigation edit set is
+`src/components/shared/app-nav/navigation-model.ts`,
+`src/components/shared/app-nav/_components/desktop-nav-drawer.tsx`, and
+`src/components/shared/app-nav/_components/mobile-nav-toggle.tsx`. Update the
+`AppNavigationItemKey`, desktop `ICON_MAP`, and mobile drawer icon map. The
+recycle bin is visible in the manager full navigation/drawer only; it is
+**excluded** from the fixed mobile quick-access row. No Operator or Client
+navigation model, quick-access item, icon mapping, or route may include it.
+
+Existing `project-workspace/project-archive-tab.tsx`,
+`ProjectArchiveTab`, and the `archive` workspace tab remain finalized-production
+history only. They must retain `fetchFinalizedArchivePage`/`ArchiveListView`
+behavior and must not receive recycle-bin data, recycle-bin controls, or a route
+link. The operational recycle bin is deliberately excluded from workspace tabs.
+
+### 13.4 Step D — active workspace and route reconciliation
+
+The database now excludes archived state at its trusted boundary. Application
+code must still respond safely when a user is holding a stale route, tab, sheet,
+or cached client selection:
+
+1. An active project route that no longer resolves must use the existing safe
+   unavailable/not-found behavior, not render a partial workspace or redirect
+   into a recycle-bin detail that does not exist.
+2. Close task/deliverable detail sheets and clear selected IDs after successful
+   archive/delete rather than retaining stale component state.
+3. Do not construct fresh deep links to archived entities from rows, toasts, or
+   callback results.
+4. Leave immutable finalized history and notification history intact. Their
+   current-target navigation must remain safe when the target is unavailable.
+5. Do not add browser filtering intended to conceal archived rows. It is only
+   permissible to defensively discard a stale already-authorized DTO after a
+   successful action; the next server render remains the source of truth.
+6. Preserve M04's access-hygiene behavior. Do not modify or regress
+   `private.user_has_qualifying_access`, assignment-change refresh behavior, or
+   project-change refresh behavior; archive/restore must retain their
+   trigger-driven effect on qualifying active access.
+
+### 13.5 Step E — localization and accessibility delivery
+
+Add structurally identical keys under a new dedicated `operationalLifecycle`
+namespace/subtree in `messages/en-US.json` and `messages/es-MX.json`. Do not
+overload the existing `archive` namespace because it describes finalized
+production history. The new subtree includes, at minimum:
+
+- manager navigation destination and description;
+- recycle-bin title, loading, empty, unavailable, entity labels, parent-archived
+  explanation, archive timestamp and optional reason presentation;
+- archive confirmation, optional-reason label/description, pending, success, and
+  finite safe failure states;
+- restore confirmation/action, pending, success, parent-archived/unavailable,
+  and generic unavailable states;
+- deletion-preview loading/unavailable; irreversible warning; confirmed success;
+  `Cancel`, `Archive instead`, and `Confirm permanent deletion`; and
+- accessible names for row actions, icon controls, and dialog controls.
+
+Do not use `Procesando...`, raw database messages, function names, or ad hoc
+English/Spanish literals in touched components. Archive is recoverable and must
+not use the destructive red visual treatment reserved for permanent deletion.
+Permanent deletion is visually destructive. Existing shared dialog primitives
+provide the focus semantics; use them rather than custom modal behavior.
+
+## 14. Focused test and evidence matrix
+
+Update only focused tests directly affected by the changed contract. Current
+tests that explicitly mock/assert legacy RPC names are required update points:
+
+| Test file | Required update |
+| --- | --- |
+| `__tests__/projects/actions.test.ts` | Assert project archive uses the new RPC/result row; remove active-workspace restore assertion and verify safe failure mapping. |
+| `__tests__/projects/tasks.test.ts` | Replace `soft_delete_entity` mock/assertion with new typed task archive contract; cover invalid input and PM authority. |
+| `__tests__/deliverables/deliverable-actions.test.ts` | Verify every active PM can archive without PM-lead pre-gating and no legacy RPC is called. |
+| `__tests__/projects/deliverables-workspace.test.tsx` | Update fixture/action mocks only as required by the new archive DTO/control behavior. |
+| `__tests__/projects/project-workspace-calendar.test.tsx` | Preserve final-production archive-tab behavior and add focused separation from the new recycle bin. |
+| `src/app/[locale]/(protected)/calendario/__tests__/calendar-coordinator.test.tsx` | Replace the soft-delete milestone mock/expectation with the new archive action and prove stale selection is cleared on success. |
+| `__tests__/app-shell/navigation.test.ts` | Assert Admin/PM full-navigation visibility, Operator/Client exclusion, icon-map completeness, and recycle-bin exclusion from fixed mobile quick access. |
+| `__tests__/database/schema-contract.test.ts` and `__tests__/database/security-definer-refactor.test.ts` | Preserve legacy-function assertions only for their retained non-operational scope; add/adjust the applied S10-03 RPC contract checks without weakening security assertions. |
+| `__tests__/i18n/message-catalogs.test.ts` | Assert exact key-shape parity for the new lifecycle namespace(s). |
+
+Add focused tests for the new server adapter/actions and recycle-bin UI. At a
+minimum prove all requirements in §10, plus:
+
+1. UI and server action reject an extra object property, unknown entity type,
+   invalid UUID, and a reason longer than 1000 before invoking RPC.
+2. Archive/restore/permanent-delete each reject `[]`, two rows, an unknown code,
+   a non-boolean success value, and an RPC error without a success toast or
+   optimistic state mutation.
+3. PM can see/use restore but has no permanent-delete import, button, dialog,
+   preview call, or action invocation path.
+4. `/admin/papelera` and `/pm/papelera` use lifecycle data; `/admin/archivo` and
+   `/pm/archivo` still use finalized-history data.
+5. The legacy operational RPC strings are absent from all new lifecycle actions
+   and UI paths.
+
+Run the smallest directly applicable checks only after implementation. The
+minimum acceptance commands are:
+
+```text
+npm run typecheck
+npm run lint
+npm run test -- __tests__/projects/actions.test.ts __tests__/projects/tasks.test.ts __tests__/deliverables/deliverable-actions.test.ts __tests__/projects/deliverables-workspace.test.tsx __tests__/projects/project-workspace-calendar.test.tsx __tests__/database/schema-contract.test.ts __tests__/database/security-definer-refactor.test.ts __tests__/i18n/message-catalogs.test.ts
+```
+
+Do not run coverage, browser E2E, provider checks, local Supabase/Docker, schema
+reset, `db:bootstrap`, or broad unrelated test suites for S10-03 unless the
+implementation changes those areas or the owner explicitly expands scope.
