@@ -29,5 +29,5 @@ export default async function PmRecycleBinPage() {
   const supabase = createClient(cookieStore);
   const recycleBinResult = await fetchOperationalRecycleBin(supabase);
 
-  return <RecycleBinView initialResult={recycleBinResult} />;
+  return <RecycleBinView initialResult={recycleBinResult} baseRolePath="/pm" />;
 }

@@ -2620,7 +2620,21 @@
       "restoreErrorToast": "Error restoring item",
       "restoreAriaLabel": "Restore {type}: {title}",
       "permanentDeleteAction": "Permanently delete",
-      "permanentDeleteAriaLabel": "Permanently delete {type}: {title}"
+      "permanentDeleteAriaLabel": "Permanently delete {type}: {title}",
+      "quickNav": {
+        "all": "All",
+        "searchPlaceholder": "Search recycle bin...",
+        "clearSearch": "Clear search",
+        "showingCount": "Showing {count} of {total}",
+        "noFilterResults": "No archived items in this category",
+        "noSearchResults": "No items match your search",
+        "clearFilters": "Reset filters",
+        "backToDashboard": "Back to dashboard",
+        "viewArchive": "View finalized archive",
+        "statsTotal": "{count} total",
+        "statsRestorable": "{count} recoverable",
+        "statsBlocked": "{count} blocked"
+      }
     },
     "permanentDeleteDialog": {
       "title": "Permanent Deletion",

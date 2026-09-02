@@ -29,6 +29,7 @@ export function AdminRecycleBinView({
     <>
       <RecycleBinView
         initialResult={initialResult}
+        baseRolePath="/admin"
         renderRowAction={(item) => (
           <Button
             variant="ghost"

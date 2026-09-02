@@ -1,5 +1,21 @@
 # JSF PM App Development Changelog
 
+## [2026-09-02 @ 11:28]
+
+**🐛 Hotfixes & 🚀 Features: S10-03 Recycle Bin SQL ORDER BY Remediation & Mobile-First UX/UI Enhancement**
+
+- **Database RPC Remediation (`supabase/migrations/20260902110000_s10-03-fix-recycle-bin-union-order-by.sql`):**
+  - Resolved `invalid UNION/INTERSECT/EXCEPT ORDER BY clause` in `public.list_operational_recycle_bin(uuid)` by wrapping the `UNION ALL` projection inside a clean subquery with explicit column aliases (`entity_type`, `entity_id`, `project_id`, `title`, `archived_at`, `archived_by`, `archive_reason`, `parent_is_archived`).
+  - Applied migration to remote Supabase development environment via MCP tool `apply_migration`.
+- **Mobile-First UX/UI & Quick Navigation:**
+  - Created `RecycleBinQuickNav` component providing responsive breadcrumbs (`Volver al panel`), direct access to finalized archive (`Ver archivo definitivo`), summary chips (total, recoverable, blocked), entity-type filter pills (All, Projects, Tasks, Deliverables, Milestones) with badge counters, and real-time title/reason search.
+  - Optimized mobile card presentation in `RecycleBinView` with colored entity badges, WCAG-compliant touch targets (min 44px), structured archive reason display, and prominent parent-archived warning banners.
+  - Enhanced `MobileNavToggle` with full Lucide icon mappings across all menu drawer routes (including `Trash2` for Papelera) and active menu indicator highlighting on the persistent mobile bottom bar when on drawer-only routes.
+  - Added localized strings for quick navigation and filtering across `es-MX.json` and `en-US.json`.
+- **Automated Verification:**
+  - Added test suites for `RecycleBinView` and `RecycleBinQuickNav` (`src/components/shared/operational-lifecycle/__tests__/recycle-bin-view.test.tsx`), query adapter error handling (`src/lib/operational-lifecycle/__tests__/queries.test.ts`), and mobile navigation active drawer routing (`src/components/shared/app-nav/_components/__tests__/mobile-nav-toggle.test.tsx`).
+  - Verified 100% test passage across all new and updated suites, clean ESLint (`npm run lint`), TypeScript check (`npm run typecheck`), and Prettier formatting (`npm run format:check`).
+
 ## [2026-09-02 @ 10:56]
 
 **🚀 Features & 🛠 Architecture: S10-03 Recoverable Lifecycle, Recycle Bin, and Admin Permanent Deletion Implementation**

@@ -2620,7 +2620,21 @@
       "restoreErrorToast": "Error al restaurar el elemento",
       "restoreAriaLabel": "Restaurar {type}: {title}",
       "permanentDeleteAction": "Eliminar permanentemente",
-      "permanentDeleteAriaLabel": "Eliminar permanentemente {type}: {title}"
+      "permanentDeleteAriaLabel": "Eliminar permanentemente {type}: {title}",
+      "quickNav": {
+        "all": "Todos",
+        "searchPlaceholder": "Buscar en papelera...",
+        "clearSearch": "Limpiar búsqueda",
+        "showingCount": "Mostrando {count} de {total}",
+        "noFilterResults": "No hay elementos archivados en esta categoría",
+        "noSearchResults": "No se encontraron elementos que coincidan con la búsqueda",
+        "clearFilters": "Restablecer filtros",
+        "backToDashboard": "Volver al panel",
+        "viewArchive": "Ver archivo definitivo",
+        "statsTotal": "{count} en total",
+        "statsRestorable": "{count} recuperables",
+        "statsBlocked": "{count} bloqueados"
+      }
     },
     "permanentDeleteDialog": {
       "title": "Eliminación Permanente",
