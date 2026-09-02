@@ -59,7 +59,7 @@ export function RecycleBinView({
   const tEntities = useTranslations(
     "operationalLifecycle.recycleBin.entityTypes",
   );
-  const tQuick = useTranslations("operationalLifecycle.recycleBin.quickNav");
+  const tQuick = useTranslations("operationalLifecycle.recycleBin.filters");
   const tErrors = useTranslations("operationalLifecycle.errors");
   const format = useFormatter();
   const router = useRouter();

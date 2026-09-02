@@ -63,7 +63,7 @@ vi.mock("next-intl", () => ({
         };
         return map[key] ?? key;
       }
-      if (namespace === "operationalLifecycle.recycleBin.quickNav") {
+      if (namespace === "operationalLifecycle.recycleBin.filters") {
         const map: Record<string, string> = {
           all: "Todos",
           searchPlaceholder: "Buscar en papelera...",

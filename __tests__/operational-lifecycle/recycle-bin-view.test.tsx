@@ -20,6 +20,26 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("@/i18n/routing", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: mockRefresh,
+  }),
+  usePathname: () => "/pm/papelera",
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
 vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),

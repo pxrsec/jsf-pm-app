@@ -2621,7 +2621,7 @@
       "restoreAriaLabel": "Restaurar {type}: {title}",
       "permanentDeleteAction": "Eliminar permanentemente",
       "permanentDeleteAriaLabel": "Eliminar permanentemente {type}: {title}",
-      "quickNav": {
+      "filters": {
         "all": "Todos",
         "searchPlaceholder": "Buscar en papelera...",
         "clearSearch": "Limpiar búsqueda",

@@ -2621,7 +2621,7 @@
       "restoreAriaLabel": "Restore {type}: {title}",
       "permanentDeleteAction": "Permanently delete",
       "permanentDeleteAriaLabel": "Permanently delete {type}: {title}",
-      "quickNav": {
+      "filters": {
         "all": "All",
         "searchPlaceholder": "Search recycle bin...",
         "clearSearch": "Clear search",

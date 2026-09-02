@@ -56,7 +56,7 @@ export function RecycleBinQuickNav({
   const tEntities = useTranslations(
     "operationalLifecycle.recycleBin.entityTypes",
   );
-  const tQuick = useTranslations("operationalLifecycle.recycleBin.quickNav");
+  const tQuick = useTranslations("operationalLifecycle.recycleBin.filters");
 
   const filterTabs: Array<{
     type: RecycleBinFilterType;
