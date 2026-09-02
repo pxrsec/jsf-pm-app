@@ -126,8 +126,34 @@
   },
   "privacy": {
     "title": "Política de Privacidad",
-    "placeholderNotice": "Este es un aviso provisional.",
-    "notLegalAdvice": "Esto no es asesoramiento legal."
+    "description": "Borrador preliminar de la política de privacidad de la aplicación de gestión de proyectos de Joya Star Films.",
+    "sections": {
+      "placeholderTitle": "Alcance y Estado de la Política",
+      "placeholderBody": "El contenido detallado de este borrador está pendiente de revisión legal y de las partes interesadas. Esta página no establece términos legales, avisos, obligaciones ni compromisos de cumplimiento aprobados."
+    }
+  },
+  "terms": {
+    "title": "Términos de Servicio",
+    "description": "Borrador preliminar de términos de servicio de la aplicación de gestión de proyectos de Joya Star Films.",
+    "sections": {
+      "placeholderTitle": "Términos y Estado del Servicio",
+      "placeholderBody": "El contenido detallado de este borrador está pendiente de revisión legal y de las partes interesadas. Esta página no establece términos legales, avisos, obligaciones ni compromisos de cumplimiento aprobados."
+    }
+  },
+  "legal": {
+    "footerNavLabel": "Aviso legal",
+    "links": {
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio"
+    },
+    "draftBadge": "Borrador / Pendiente de Aprobación",
+    "draftNotice": "Este documento es un borrador preliminar para fines de revisión y está pendiente de aprobación por las partes interesadas. No constituye asesoramiento legal vinculante, términos oficiales ni un aviso de cumplimiento aprobado.",
+    "backToSignIn": "Volver al inicio de sesión"
+  },
+  "landing": {
+    "title": "Plataforma de Gestión de Producción",
+    "description": "Espacio de trabajo centralizado para flujos de producción cinematográfica, coordinación de tareas, entregables y colaboración del equipo.",
+    "signInAction": "Iniciar Sesión"
   },
   "errors": {
     "title": "Algo salió mal",

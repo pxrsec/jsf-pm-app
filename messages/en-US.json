@@ -126,8 +126,34 @@
   },
   "privacy": {
     "title": "Privacy Policy",
-    "placeholderNotice": "This is a placeholder notice.",
-    "notLegalAdvice": "This is not legal advice."
+    "description": "Preliminary privacy policy draft for Joya Star Films project management application.",
+    "sections": {
+      "placeholderTitle": "Scope & Policy Status",
+      "placeholderBody": "Detailed content for this draft is pending stakeholder and legal review. This page does not establish approved legal terms, notices, obligations, or compliance commitments."
+    }
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "description": "Preliminary terms of service draft for Joya Star Films project management application.",
+    "sections": {
+      "placeholderTitle": "Terms & Service Status",
+      "placeholderBody": "Detailed content for this draft is pending stakeholder and legal review. This page does not establish approved legal terms, notices, obligations, or compliance commitments."
+    }
+  },
+  "legal": {
+    "footerNavLabel": "Legal",
+    "links": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    },
+    "draftBadge": "Draft / Pending Approval",
+    "draftNotice": "This document is a preliminary draft for review purposes only and is pending stakeholder approval. It does not constitute binding legal advice, official terms, or an approved compliance notice.",
+    "backToSignIn": "Back to Sign In"
+  },
+  "landing": {
+    "title": "Production Management Platform",
+    "description": "Centralized workspace for film production workflows, task coordination, deliverables, and team collaboration.",
+    "signInAction": "Sign In"
   },
   "errors": {
     "title": "Something went wrong",

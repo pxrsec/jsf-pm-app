@@ -1,5 +1,35 @@
 # JSF PM App Development Changelog
 
+## [2026-09-02 @ 16:20]
+
+**🚀 Features & 🛠 Architecture: S10-05 Public Legal Surface Implementation**
+
+- **Shared Public Legal Footer (`src/components/shared/public-shell/legal-footer.tsx`):**
+  - Implemented reusable presentational `LegalFooter` component consuming `useTranslations("legal")` and `Link` from `@/i18n/routing`.
+  - Structured with semantic `<footer>` and `<nav aria-label={...}>` with `flex-wrap` and 44px practical mobile touch targets (`inline-flex min-h-[44px] items-center px-2 py-3`).
+  - Isolated legal links exclusively to `/privacidad` and `/terminos` without props or token acceptance.
+- **Public Landing Page Replacement (`src/app/[locale]/page.tsx`):**
+  - Replaced unauthenticated redirect to sign-in with static public landing surface rendering localized brand badge, product heading, draft description, sign-in CTA button, language and theme switchers, and `LegalFooter`.
+  - Preserved existing active-session redirects to `${prefix}${ROLE_DEFAULT_PATHS[session.role]}` with headers-derived locale prefix.
+- **Localized Draft Legal Pages (`src/app/[locale]/privacidad/page.tsx`, `src/app/[locale]/terminos/page.tsx`):**
+  - Created symmetric structured pages for Privacy Policy and Terms of Service with server-side `generateMetadata`.
+  - Rendered static neutral draft notice (`role="note"`) and draft badge (`role="status"`) stating content is pending stakeholder approval without making compliance, IP, liability, or data processing claims.
+  - Included header with back-to-sign-in navigation, language/theme controls, and `LegalFooter`.
+- **Public Shell & Boundary Integration:**
+  - Integrated `LegalFooter` and full-height flex column layout (`min-h-screen flex flex-col`, `flex-1` content, `overflow-x-hidden`) across all 8 designated public/auth surfaces: landing, `iniciar-sesion`, `restablecer-contrasena`, `actualizar-contrasena`, `invitacion`, `sesion-expirada`, `privacidad`, and `terminos`.
+  - Preserved token boundary on `invitacion` ensuring legal navigation never preserves or carries tokens.
+  - Added `ThemeToggle` to public locale error boundary (`src/app/[locale]/error.tsx`) while preserving `captureException` and error retry handling.
+- **SEO & Metadata Routes (`src/app/sitemap.ts`, `src/app/robots.ts`):**
+  - Updated `sitemap.ts` to return exactly 6 canonical public routes (`/`, `/en/`, `/privacidad`, `/en/privacidad`, `/terminos`, `/en/terminos`) with reciprocal `alternates.languages`.
+  - Updated `robots.ts` to declare `sitemap` URL while maintaining strict non-production `disallow: "/"` crawl policy.
+- **Localization Parity (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Added matching `legal`, `terms`, and `landing` namespaces with neutral draft copy and purged stale unused strings (`placeholderNotice`, `notLegalAdvice`).
+- **Test Compatibility Updates:**
+  - Updated `__tests__/i18n/sitemap.test.ts` (6 canonical public paths and reciprocal alternates).
+  - Updated `__tests__/i18n/robots.test.ts` (asserted sitemap declaration with disallow-all).
+  - Updated `__tests__/i18n/key-naming.test.ts` (added `legal|terms|landing` namespaces and `footerNavLabel` segment exception).
+  - Verification: `npm run typecheck`, `npm run lint`, and all i18n test suites passed cleanly.
+
 ## [2026-09-02 @ 15:20]
 
 **🐛 Hotfixes: S10-04 Translation Key Naming and Test Whitelist Alignment**

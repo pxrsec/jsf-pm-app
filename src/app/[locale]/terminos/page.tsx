@@ -11,20 +11,20 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "privacy" });
+  const t = await getTranslations({ locale, namespace: "terms" });
   return {
     title: t("title"),
     description: t("description"),
   };
 }
 
-export default async function PrivacyPage({
+export default async function TermsPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "privacy" });
+  const t = await getTranslations({ locale, namespace: "terms" });
   const tLegal = await getTranslations({ locale, namespace: "legal" });
 
   return (
