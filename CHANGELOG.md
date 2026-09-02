@@ -1,5 +1,20 @@
 # JSF PM App Development Changelog
 
+## [2026-09-02 @ 12:54]
+
+**🛠 Database: S10-04 Access Hygiene Completeness Repair & Type Regeneration**
+
+- **Database Migration Applied (`supabase/migrations/20260902180000_s10-04-access-hygiene-completeness-repair.sql`):**
+  - Applied migration `20260902180000_s10_04_access_hygiene_completeness_repair` to the remote Supabase database via MCP tool `apply_migration` (recorded as version `20260902185345`).
+  - Closed three trusted-state gaps in account access hygiene without expanding browser-facing privilege:
+    1. Synchronized qualifying access evaluation with the S10 readiness model by excluding cancelled projects (`p.status <> 'cancelled'`) across project members, tasks, and deliverables in `private.user_has_qualifying_access`.
+    2. Implemented `private.refresh_access_hygiene_from_project_change()` trigger on `public.projects` to refresh hygiene state across affected assignees and members whenever project `status`, `archived_at`, or `deleted_at` changes.
+    3. Aligned `public.list_user_access_directory` counts (`active_project_membership_count`, `active_task_assignment_count`, `active_deliverable_assignment_count`) with the non-cancelled, active project ancestry predicate.
+    4. Observed successful Auth sign-ins via `private.refresh_access_hygiene_from_successful_auth()` and `s10_access_hygiene_successful_auth_trg` trigger on `auth.users (last_sign_in_at)` to reset stale-period tracking for active profiles.
+    5. Reconciled current active profiles and updated post-M04 sign-in timestamps.
+- **TypeScript Types Regenerated (`src/lib/database.types.ts`):**
+  - Regenerated and updated TypeScript database schema types via Supabase MCP `generate_typescript_types` tool.
+
 ## [2026-09-02 @ 11:28]
 
 **🐛 Hotfixes & 🚀 Features: S10-03 Recycle Bin SQL ORDER BY Remediation & Mobile-First UX/UI Enhancement**
