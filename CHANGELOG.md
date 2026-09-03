@@ -1,5 +1,45 @@
 # JSF PM App Development Changelog
 
+## [2026-09-03 @ 09:25]
+
+**🚀 Features & 🛠 Architecture: S10-06 Task Detail, Deliverable Context, and Calendar Navigation**
+
+- **Dedicated Manager Task Detail Route Surfaces (`/admin/tareas/[task-id]`, `/pm/tareas/[task-id]`):**
+  - Implemented secure server component routes with strict role guards (admin/pm) and active task/parent project validation.
+  - Safe absence fallback card with breadcrumb back to project workspace (`?tab=tasks`).
+  - Admin view binds `effectiveCapacity="admin"`; PM view safely resolves capacity via `getProjectMembershipCapacity(projectId, userId)`, defaulting to `"pm_watcher"` (least privilege fallback).
+- **Server-Only Manager Task Query Adapter (`src/lib/projects/manager-task-queries.ts`):**
+  - Implemented `getManagerTaskDetail(supabase, taskId)` enforcing strict UUID format, active ancestry on task and parent project, deterministic sorting on resources (`sort_order ASC, id ASC`) and deliverables (`submission_deadline_at ASC NULLS LAST, title ASC, id ASC`), and fail-closed error handling returning `null` on any query failure.
+  - Implemented `getProjectMembershipCapacity(supabase, projectId, userId)` defaulting safely to `"pm_watcher"` on query error or absent membership.
+- **Scoped Deliverable Detail Query & Action Layer (`src/lib/deliverables/`):**
+  - Added `ManagerTaskDeliverableDetailInputSchema` in `schemas.ts` validating UUID inputs.
+  - Implemented `getManagerTaskDeliverableDetail(supabase, deliverableId, scope)` in `queries.ts` with exact scope predicates (`id`, `task_id`, `project_id`, active ancestry) and fail-closed loading for versions and feedback history.
+  - Added thin server action `getManagerTaskDeliverableDetailAction` in `actions.ts` with session role authorization (admin/pm).
+- **Presentation Components (`src/components/shared/projects/manager-task-detail/`):**
+  - Implemented `ManagerTaskDetailView` owning all dialog and selection states (`selectedDetail`, `isDetailOpen`, `submittingDeliverable`, `reviewingDeliverable`, `deliveringDeliverable`, `reportingVersion`) with fail-closed detail fetching and state cleanup on mutation success.
+  - Implemented `ManagerTaskDeliverablesList` with summary metadata, status badges, version indicators, and view-detail sheet triggers (without lifecycle action buttons or version URLs).
+  - Implemented `ManagerTaskResources` with external links and localized empty state.
+- **Calendar Destination Resolver & Navigation Views (`src/lib/calendar/`, `src/app/[locale]/(protected)/calendario/`):**
+  - Updated `resolveCalendarEventDestination` with closed role × event matrix routing task deadlines to `/admin/tareas/[id]` / `/pm/tareas/[id]`, and missing `task_id` safely to `none`.
+  - Added destination-aware accessible strings (`eventAria.taskLink`, `eventAria.projectLink`, `detail.taskLinkAria`) in `EventBadge`, `CalendarListView`, and `MilestoneDetailDialog`.
+  - Separated project column link strictly to project overview in `CalendarListView`.
+- **Narrow Calendar State Isolation (`src/components/shared/projects/project-workspace/`):**
+  - Updated `ProjectCalendarTab` `handleRangeChange` to write only `tab=calendar, calendarView, calendarFrom, calendarTo` while purging global calendar parameters (`view, from, to, projectId`).
+  - Updated `ProjectWorkspaceShell` to initialize missing project calendar keys atomically and purge global keys on tab change.
+- **Shared Sheet Watcher Hardening & Submit Dialog Localization:**
+  - Hardened `DeliverableDetailSheet` `canSubmit` logic to require `!isWatcher`.
+  - Replaced hard-coded Spanish string in `DeliverableSubmitDialog` with `t("validationError")`.
+- **Localization Parity (`messages/en-US.json`, `messages/es-MX.json`):**
+  - Added `projects.managerTask` namespace with full English/Spanish parity.
+  - Added missing keys: `projects.workspace.deliverables.submitDialog.validationError`, `calendar.eventAria.taskLink`, `calendar.eventAria.projectLink`, `calendar.detail.taskLinkAria`.
+- **Comprehensive Automated Test Coverage:**
+  - Added `destination-resolver.test.ts` (21 tests).
+  - Added `manager-task-queries.test.ts` (9 tests).
+  - Added `project-calendar-tab.test.tsx` (1 test).
+  - Added `deliverable-detail-sheet.test.tsx` (3 tests).
+  - Added `manager-task-deliverable-detail-action.test.ts` (9 tests).
+  - Verified 43/43 tests passing, `npm run typecheck` passing (code 0), `npm run lint` passing (code 0), `npm run format:check` passing (code 0).
+
 ## [2026-09-02 @ 16:20]
 
 **🚀 Features & 🛠 Architecture: S10-05 Public Legal Surface Implementation**

@@ -46,9 +46,7 @@ export function DeliverableSubmitDialog({
 
     // Validate raw submissionUrl without trimming
     if (!isValidGoogleDriveUrl(submissionUrl)) {
-      setError(
-        "El enlace debe ser una URL válida de Google Drive (https://drive.google.com/... o https://docs.google.com/...) sin espacios ni puertos.",
-      );
+      setError(t("validationError"));
       return;
     }
 
@@ -69,7 +67,11 @@ export function DeliverableSubmitDialog({
       onClose();
       onSuccess(t("successToast", { version: String(nextVersion) }));
     } else {
-      setError(result.error.message);
+      setError(
+        result.error.code === "VALIDATION_FAILED"
+          ? t("validationError")
+          : t("errorToast"),
+      );
     }
   };
 

@@ -87,7 +87,7 @@ function TaskList({
 }) {
   const t = useTranslations("calendar.detail");
   const tStatus = useTranslations("projects.workspace.overview");
-  const basePath = userRole === "admin" ? "/admin/proyectos" : "/pm/proyectos";
+  const taskBasePath = userRole === "admin" ? "/admin/tareas" : "/pm/tareas";
   return (
     <section className="space-y-3" aria-labelledby="milestone-related-tasks">
       <h3
@@ -103,7 +103,11 @@ function TaskList({
           {tasks.map((task) => (
             <li key={task.taskId}>
               <Link
-                href={`${basePath}/${task.projectId}?tab=tasks`}
+                href={`${taskBasePath}/${task.taskId}`}
+                aria-label={t("taskLinkAria", {
+                  title: task.title,
+                  projectName: task.projectName,
+                })}
                 className="block rounded-md border border-border bg-card p-3 text-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <span className="block font-medium text-foreground">

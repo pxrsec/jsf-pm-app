@@ -80,10 +80,13 @@ export function CalendarListView({
               event,
               userRole,
             );
-            const projectHref =
-              "href" in destination
-                ? destination.href
-                : getSafeProjectLink(event);
+            const destinationHref =
+              "href" in destination ? destination.href : null;
+            const projectHref = getSafeProjectLink(event);
+            const isTaskDestination =
+              destination.kind === "manager-task" ||
+              destination.kind === "operator-task" ||
+              destination.kind === "client-task";
 
             const colorStyles = event.color_override
               ? CALENDAR_COLOR_CLASSES[event.color_override]
@@ -135,6 +138,20 @@ export function CalendarListView({
                       >
                         {event.title}
                       </Button>
+                    ) : destinationHref ? (
+                      <Link
+                        href={destinationHref}
+                        aria-label={
+                          isTaskDestination
+                            ? t("eventAria.taskLink", { title: event.title })
+                            : t("eventAria.projectLink", {
+                                title: event.project_name ?? event.title,
+                              })
+                        }
+                        className="font-semibold text-foreground hover:underline focus:outline-none focus:ring-1 focus:ring-ring"
+                      >
+                        {event.title}
+                      </Link>
                     ) : (
                       <span className="font-semibold text-foreground">
                         {event.title}
@@ -143,12 +160,15 @@ export function CalendarListView({
                   </div>
                 </td>
 
-                {/* Project Name (Safe display, no UUID label) */}
+                {/* Project Name (Safe display, links strictly to project overview) */}
                 <td className="px-4 py-3 text-muted-foreground">
                   {event.project_name ? (
                     projectHref ? (
                       <Link
                         href={projectHref}
+                        aria-label={t("eventAria.projectLink", {
+                          title: event.project_name,
+                        })}
                         className="font-medium text-foreground hover:underline focus:outline-none focus:ring-1 focus:ring-ring"
                       >
                         {event.project_name}

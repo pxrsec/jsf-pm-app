@@ -62,6 +62,14 @@ export function EventBadge({
   const isMilestone = event.event_type === "milestone";
   const showManagerActions = canManageMilestones && isMilestone;
 
+  const isTaskDestination =
+    destination.kind === "manager-task" ||
+    destination.kind === "operator-task" ||
+    destination.kind === "client-task";
+  const linkAriaLabel = isTaskDestination
+    ? t("eventAria.taskLink", { title: event.title })
+    : t("eventAria.projectLink", { title: event.project_name ?? event.title });
+
   if (compact) {
     return (
       <div
@@ -87,6 +95,7 @@ export function EventBadge({
               href={projectHref}
               className="truncate font-medium hover:underline focus:outline-none focus:ring-1 focus:ring-ring"
               title={event.title}
+              aria-label={linkAriaLabel}
             >
               {event.title}
             </Link>
@@ -169,6 +178,7 @@ export function EventBadge({
           ) : projectHref ? (
             <Link
               href={projectHref}
+              aria-label={linkAriaLabel}
               className="hover:underline focus:outline-none focus:ring-1 focus:ring-ring"
             >
               {event.title}

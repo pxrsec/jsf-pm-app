@@ -10,6 +10,7 @@ import {
   UpdateDeliverableSchema,
   SubmitDeliverableVersionSchema,
   ReportBrokenLinkSchema,
+  ManagerTaskDeliverableDetailInputSchema,
   type CreateDeliverableInput,
   type UpdateDeliverableInput,
   type SubmitDeliverableVersionInput,
@@ -25,6 +26,7 @@ import {
 } from "./commands";
 import {
   getDeliverableDetail,
+  getManagerTaskDeliverableDetail,
   type Deliverable,
   type DeliverableDetailView,
 } from "./queries";
@@ -493,4 +495,26 @@ export async function getDeliverableDetailAction(
   const supabase = createClient(cookieStore);
 
   return getDeliverableDetail(supabase, deliverableId);
+}
+
+export async function getManagerTaskDeliverableDetailAction(
+  input: unknown,
+): Promise<DeliverableDetailView | null> {
+  const parsed = ManagerTaskDeliverableDetailInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return null;
+  }
+
+  const cookieStore = await cookies();
+  const session = await requireSession(cookieStore);
+
+  if (session.role !== "admin" && session.role !== "pm") {
+    return null;
+  }
+
+  const supabase = createClient(cookieStore);
+  return getManagerTaskDeliverableDetail(supabase, parsed.data.deliverableId, {
+    taskId: parsed.data.taskId,
+    projectId: parsed.data.projectId,
+  });
 }

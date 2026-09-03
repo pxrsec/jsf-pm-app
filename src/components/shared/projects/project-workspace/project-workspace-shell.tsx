@@ -44,6 +44,7 @@ import type {
   MilestoneSummaryDto,
   CalendarRangeState,
 } from "@/lib/calendar/types";
+import { normalizeCalendarRange } from "@/lib/calendar/date-utils";
 import type {
   FinalizedArchivePage,
   FinalizedArchiveQuery,
@@ -155,14 +156,25 @@ export function ProjectWorkspaceShell({
     params.set("tab", tab);
 
     if (tab === "calendar") {
-      if (calendarRange) {
-        if (!params.has("calendarView"))
-          params.set("calendarView", calendarRange.view);
-        if (!params.has("calendarFrom"))
-          params.set("calendarFrom", calendarRange.from);
-        if (!params.has("calendarTo"))
-          params.set("calendarTo", calendarRange.to);
+      const hasAllCalendarKeys =
+        params.has("calendarView") &&
+        params.has("calendarFrom") &&
+        params.has("calendarTo");
+
+      if (!hasAllCalendarKeys) {
+        const defaultRange =
+          calendarRange ??
+          normalizeCalendarRange({}, undefined, { keyPrefix: "calendar" });
+        params.set("calendarView", defaultRange.view);
+        params.set("calendarFrom", defaultRange.from);
+        params.set("calendarTo", defaultRange.to);
       }
+
+      // Purge any stale global calendar keys
+      params.delete("view");
+      params.delete("from");
+      params.delete("to");
+      params.delete("projectId");
     } else if (tab === "archive") {
       if (archiveQuery) {
         if (!params.has("archiveFrom"))

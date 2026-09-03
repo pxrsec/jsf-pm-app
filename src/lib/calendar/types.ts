@@ -182,7 +182,9 @@ export type CalendarEventDestination =
         | "project-overview"
         | "project-tasks"
         | "project-deliverables"
-        | "operator-task";
+        | "manager-task"
+        | "operator-task"
+        | "client-task";
       href: string;
     }
   | { kind: "none" };
@@ -191,39 +193,63 @@ export function resolveCalendarEventDestination(
   event: CalendarEventDto,
   role: AppRole,
 ): CalendarEventDestination {
-  if (event.event_type === "milestone")
+  if (event.event_type === "milestone") {
     return role === "admin" || role === "pm"
       ? { kind: "milestone-detail", milestoneId: event.entity_id }
       : { kind: "none" };
-  if (role === "operator")
-    return event.task_id
-      ? { kind: "operator-task", href: `/operador/tareas/${event.task_id}` }
-      : { kind: "none" };
-  if (!event.project_id) return { kind: "none" };
-  const base =
-    role === "admin"
-      ? "/admin/proyectos"
-      : role === "pm"
-        ? "/pm/proyectos"
-        : role === "client"
-          ? "/cliente/proyectos"
-          : null;
-  if (!base) return { kind: "none" };
-  if (role === "client")
-    return { kind: "project-overview", href: `${base}/${event.project_id}` };
-  const tab =
-    event.event_type === "task_deadline"
-      ? "tasks"
-      : event.event_type === "internal_review_deadline" ||
-          event.event_type === "client_delivery_deadline"
-        ? "deliverables"
-        : null;
-  return tab
-    ? {
-        kind: tab === "tasks" ? "project-tasks" : "project-deliverables",
-        href: `${base}/${event.project_id}?tab=${tab}`,
-      }
-    : { kind: "project-overview", href: `${base}/${event.project_id}` };
+  }
+
+  if (
+    event.event_type === "task_deadline" ||
+    event.event_type === "internal_review_deadline" ||
+    event.event_type === "client_delivery_deadline"
+  ) {
+    if (!event.task_id) return { kind: "none" };
+    if (role === "admin") {
+      return { kind: "manager-task", href: `/admin/tareas/${event.task_id}` };
+    }
+    if (role === "pm") {
+      return { kind: "manager-task", href: `/pm/tareas/${event.task_id}` };
+    }
+    if (role === "operator") {
+      return {
+        kind: "operator-task",
+        href: `/operador/tareas/${event.task_id}`,
+      };
+    }
+    if (role === "client") {
+      return {
+        kind: "client-task",
+        href: `/cliente/tareas/${event.task_id}`,
+      };
+    }
+    return { kind: "none" };
+  }
+
+  if (event.event_type === "project_deadline") {
+    if (!event.project_id) return { kind: "none" };
+    if (role === "admin") {
+      return {
+        kind: "project-overview",
+        href: `/admin/proyectos/${event.project_id}`,
+      };
+    }
+    if (role === "pm") {
+      return {
+        kind: "project-overview",
+        href: `/pm/proyectos/${event.project_id}`,
+      };
+    }
+    if (role === "client") {
+      return {
+        kind: "project-overview",
+        href: `/cliente/proyectos/${event.project_id}`,
+      };
+    }
+    return { kind: "none" };
+  }
+
+  return { kind: "none" };
 }
 
 export const getCalendarEventKey = (event: CalendarEventDto) =>

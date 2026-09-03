@@ -150,3 +150,13 @@ export const ReportBrokenLinkSchema = z.object({
 });
 
 export type ReportBrokenLinkInput = z.infer<typeof ReportBrokenLinkSchema>;
+
+export const ManagerTaskDeliverableDetailInputSchema = z.object({
+  taskId: z.string().uuid("Invalid task ID"),
+  projectId: z.string().uuid("Invalid project ID"),
+  deliverableId: z.string().uuid("Invalid deliverable ID"),
+});
+
+export type ManagerTaskDeliverableDetailInput = z.infer<
+  typeof ManagerTaskDeliverableDetailInputSchema
+>;

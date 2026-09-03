@@ -652,7 +652,8 @@
           "cancelAction": "Cancel",
           "submitting": "Recording version...",
           "successToast": "Version v{version} recorded for internal review.",
-          "errorToast": "Could not record version. Please verify the entered link."
+          "errorToast": "Could not record version. Please verify the entered link.",
+          "validationError": "The link must be a valid Google Drive URL (https://drive.google.com/... or https://docs.google.com/...) without spaces or ports."
         },
         "reviewDialog": {
           "title": "Internal Deliverable Review",
@@ -1176,6 +1177,41 @@
         "description": "An unexpected error occurred while loading task information. Please try again.",
         "retryAction": "Try again",
         "returnAction": "Back to My Agenda"
+      }
+    },
+    "managerTask": {
+      "backToTasks": "Back to project tasks",
+      "taskContext": "Task details",
+      "projectLabel": "Project",
+      "viewProjectAria": "View project workspace for {projectName}",
+      "breadcrumbs": {
+        "projects": "Projects",
+        "tasks": "Tasks"
+      },
+      "descriptionTitle": "Description",
+      "noDescription": "No description provided for this task.",
+      "timeContext": "Timeline & Dates",
+      "assignedAt": "Assigned: {date}",
+      "deadlineAt": "Deadline: {date}",
+      "startedAt": "Started: {date}",
+      "completedAt": "Completed: {date}",
+      "resourcesTitle": "Task Resources",
+      "noResources": "No resources attached to this task.",
+      "externalResourceAria": "Open external resource: {name} (opens in a new tab)",
+      "deliverablesTitle": "Associated Deliverables",
+      "deliverablesCount": "{count, plural, =0 {No deliverables} =1 {1 deliverable} other {# deliverables}}",
+      "noDeliverables": "No deliverables associated with this task.",
+      "openDeliverableDetail": "View details",
+      "openDeliverableDetailAria": "View details for deliverable {title}",
+      "versionIndicator": "v{version}",
+      "currentVersion": "Current: v{version}",
+      "submissionDeadline": "Submission: {date}",
+      "internalReviewDeadline": "Internal review: {date}",
+      "clientDeliveryDeadline": "Client delivery: {date}",
+      "absence": {
+        "title": "Task unavailable",
+        "description": "The requested task was not found or is unavailable.",
+        "returnAction": "Back to projects"
       }
     },
     "operatorSubmission": {
@@ -1805,6 +1841,10 @@
       "client_delivery_deadline": "Client Delivery",
       "milestone": "Milestone"
     },
+    "eventAria": {
+      "taskLink": "View task details: {title}",
+      "projectLink": "View project workspace: {title}"
+    },
     "scope": {
       "allProjects": "All projects",
       "projectScope": "Project Scope",
@@ -1838,6 +1878,7 @@
       "milestoneTitle": "Milestone title",
       "milestoneType": "Milestone type",
       "relatedTasks": "Related tasks",
+      "taskLinkAria": "View task: {title} in {projectName}",
       "untracked": "No tasks associated with this milestone yet.",
       "progressLabel": "Milestone progress",
       "name": "Title",

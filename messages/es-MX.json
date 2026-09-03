@@ -652,7 +652,8 @@
           "cancelAction": "Cancelar",
           "submitting": "Registrando versión...",
           "successToast": "Versión v{version} registrada para revisión interna.",
-          "errorToast": "No se pudo registrar la versión. Verifica el enlace ingresado."
+          "errorToast": "No se pudo registrar la versión. Verifica el enlace ingresado.",
+          "validationError": "El enlace debe ser una URL válida de Google Drive (https://drive.google.com/... o https://docs.google.com/...) sin espacios ni puertos."
         },
         "reviewDialog": {
           "title": "Revisión Interna de Entregable",
@@ -1176,6 +1177,41 @@
         "description": "Ocurrió un error inesperado al cargar la información de la tarea. Inténtalo de nuevo.",
         "retryAction": "Intentar nuevamente",
         "returnAction": "Volver a Mi Agenda"
+      }
+    },
+    "managerTask": {
+      "backToTasks": "Volver a tareas del proyecto",
+      "taskContext": "Detalles de la tarea",
+      "projectLabel": "Proyecto",
+      "viewProjectAria": "Ver espacio de trabajo del proyecto {projectName}",
+      "breadcrumbs": {
+        "projects": "Proyectos",
+        "tasks": "Tareas"
+      },
+      "descriptionTitle": "Descripción",
+      "noDescription": "No se proporcionó descripción para esta tarea.",
+      "timeContext": "Cronograma y Fechas",
+      "assignedAt": "Asignada: {date}",
+      "deadlineAt": "Fecha límite: {date}",
+      "startedAt": "Iniciada: {date}",
+      "completedAt": "Completada: {date}",
+      "resourcesTitle": "Recursos de la Tarea",
+      "noResources": "No hay recursos adjuntos a esta tarea.",
+      "externalResourceAria": "Abrir recurso externo: {name} (se abre en nueva pestaña)",
+      "deliverablesTitle": "Entregables Asociados",
+      "deliverablesCount": "{count, plural, =0 {Sin entregables} =1 {1 entregable} other {# entregables}}",
+      "noDeliverables": "No hay entregables asociados a esta tarea.",
+      "openDeliverableDetail": "Ver detalle",
+      "openDeliverableDetailAria": "Ver detalle del entregable {title}",
+      "versionIndicator": "v{version}",
+      "currentVersion": "Actual: v{version}",
+      "submissionDeadline": "Entrega: {date}",
+      "internalReviewDeadline": "Revisión interna: {date}",
+      "clientDeliveryDeadline": "Entrega al cliente: {date}",
+      "absence": {
+        "title": "Tarea no disponible",
+        "description": "La tarea solicitada no fue encontrada o no está disponible.",
+        "returnAction": "Volver a proyectos"
       }
     },
     "operatorSubmission": {
@@ -1805,6 +1841,10 @@
       "client_delivery_deadline": "Entrega al Cliente",
       "milestone": "Meta"
     },
+    "eventAria": {
+      "taskLink": "Ver detalles de la tarea: {title}",
+      "projectLink": "Ver espacio de trabajo del proyecto: {title}"
+    },
     "scope": {
       "allProjects": "Todos los proyectos",
       "projectScope": "Nivel de Proyecto",
@@ -1838,6 +1878,7 @@
       "milestoneTitle": "Título de la meta",
       "milestoneType": "Tipo de meta",
       "relatedTasks": "Tareas relacionadas",
+      "taskLinkAria": "Ver tarea: {title} en {projectName}",
       "untracked": "Aún no hay tareas asociadas con esta meta.",
       "progressLabel": "Progreso de la meta",
       "name": "Título",
