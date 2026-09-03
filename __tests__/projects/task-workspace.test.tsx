@@ -25,6 +25,24 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("@/i18n/routing", () => ({
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => React.createElement("a", { href, ...props }, children),
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  usePathname: () => "/pm/proyectos/proj-1",
+  redirect: vi.fn(),
+}));
+
 vi.mock("next-intl", () => ({
   useTranslations: (namespace: string) => {
     return (key: string, params?: Record<string, unknown>) => {

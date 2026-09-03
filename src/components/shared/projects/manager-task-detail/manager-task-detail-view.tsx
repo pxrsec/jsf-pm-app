@@ -22,6 +22,8 @@ import { DeliverableSubmitDialog } from "@/components/shared/projects/project-de
 import { DeliverableReviewDialog } from "@/components/shared/projects/project-deliverables/deliverable-review-dialog";
 import { DeliverableDeliveryDialog } from "@/components/shared/projects/project-deliverables/deliverable-delivery-dialog";
 import { DeliverableLinkReportDialog } from "@/components/shared/projects/project-deliverables/deliverable-link-report-dialog";
+import { TaskStatusBadge } from "@/components/shared/projects/project-tasks/task-status-badge";
+import { TaskPriorityBadge } from "@/components/shared/projects/project-tasks/task-priority-badge";
 
 interface ManagerTaskDetailViewProps {
   task: ManagerTaskDetail;
@@ -39,8 +41,7 @@ export function ManagerTaskDetailView({
   safeReturnHref,
 }: ManagerTaskDetailViewProps) {
   const t = useTranslations("projects.managerTask");
-  const tWorkspace = useTranslations("projects.workspace.overview");
-  const tTasks = useTranslations("projects.workspace.tasks");
+  const tTasks = useTranslations("projects.tasks");
   const format = useFormatter();
   const router = useRouter();
 
@@ -172,32 +173,12 @@ export function ManagerTaskDetailView({
 
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline" className="capitalize">
-              {tTasks(`types.${task.taskType}`)}
+              {task.taskType === "internal_work"
+                ? tTasks("taskType.internalWork")
+                : tTasks("taskType.clientRequest")}
             </Badge>
-            <Badge
-              variant={
-                task.status === "completed"
-                  ? "default"
-                  : task.status === "in_progress"
-                    ? "secondary"
-                    : "outline"
-              }
-              className="capitalize"
-            >
-              {tTasks(`status.${task.status}`)}
-            </Badge>
-            <Badge
-              variant={
-                task.priority === "blocking"
-                  ? "destructive"
-                  : task.priority === "high"
-                    ? "default"
-                    : "secondary"
-              }
-              className="capitalize"
-            >
-              {tTasks(`priority.${task.priority}`)}
-            </Badge>
+            <TaskStatusBadge status={task.status} />
+            <TaskPriorityBadge priority={task.priority} />
           </div>
         </div>
       </div>
@@ -337,7 +318,7 @@ export function ManagerTaskDetailView({
                 className="size-4 text-muted-foreground"
                 aria-hidden="true"
               />
-              <span>{tWorkspace("members.roster.columns.member")}</span>
+              <span>{t("assigneeHeading")}</span>
             </h2>
 
             {task.assignee ? (
@@ -356,7 +337,7 @@ export function ManagerTaskDetailView({
               </div>
             ) : (
               <p className="text-xs text-muted-foreground italic">
-                {tWorkspace("unassigned")}
+                {t("unassigned")}
               </p>
             )}
           </section>

@@ -31,7 +31,7 @@ export function ManagerAccessConsole({
 
   return (
     <div
-      className="space-y-8 max-w-6xl px-4 py-6 sm:px-6 lg:px-8"
+      className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6"
       data-testid="manager-access-console"
     >
       {/* Page Header */}
@@ -50,21 +50,24 @@ export function ManagerAccessConsole({
       <Tabs defaultValue="users" className="space-y-6">
         <TabsList
           aria-label={t("managerConsole.tabsAriaLabel")}
-          className="grid w-full sm:w-auto grid-cols-3 h-auto p-1"
+          className="grid w-full sm:w-fit sm:min-w-[460px] grid-cols-3 h-auto p-1.5 rounded-xl bg-muted/70 border border-border/50 gap-1"
         >
           <TabsTrigger
             value="users"
-            className="min-h-[44px] text-xs sm:text-sm"
+            className="min-h-[40px] px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all data-active:bg-background data-active:shadow-sm"
           >
             {t("managerConsole.tabs.users")}
           </TabsTrigger>
           <TabsTrigger
             value="stale"
-            className="min-h-[44px] text-xs sm:text-sm"
+            className="min-h-[40px] px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all data-active:bg-background data-active:shadow-sm"
           >
             {t("managerConsole.tabs.stale")}
           </TabsTrigger>
-          <TabsTrigger value="bugs" className="min-h-[44px] text-xs sm:text-sm">
+          <TabsTrigger
+            value="bugs"
+            className="min-h-[40px] px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all data-active:bg-background data-active:shadow-sm"
+          >
             {t("managerConsole.tabs.bugs")}
           </TabsTrigger>
         </TabsList>

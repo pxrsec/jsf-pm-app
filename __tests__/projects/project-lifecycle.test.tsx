@@ -78,6 +78,24 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("@/i18n/routing", () => ({
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => React.createElement("a", { href, ...props }, children),
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  usePathname: () => "/pm/proyectos/proj-123",
+  redirect: vi.fn(),
+}));
+
 vi.mock("@/lib/auth/session", () => ({
   requireSession: vi
     .fn()

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getOptionalSession } from "@/lib/auth/session";
 import { ROLE_DEFAULT_PATHS } from "@/lib/auth/routes";
+import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { LanguageSwitcher } from "@/components/shared/language-switcher/language-switcher";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
@@ -50,7 +51,17 @@ export default async function HomePage() {
 
       {/* Main landing content */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 text-center max-w-3xl mx-auto space-y-6 min-w-0">
-        <div className="space-y-3">
+        <div className="space-y-4 flex flex-col items-center">
+          <div className="flex items-center justify-center mb-1">
+            <Image
+              src="/joyalogo-purple.svg"
+              alt={tBrand("name")}
+              width={160}
+              height={136}
+              priority
+              className="h-auto w-24 sm:w-32 drop-shadow-md transition-transform duration-300 hover:scale-105"
+            />
+          </div>
           <span className="inline-flex items-center rounded-full border border-border px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted/50">
             {tBrand("name")}
           </span>

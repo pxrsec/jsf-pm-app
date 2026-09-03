@@ -111,8 +111,8 @@ export function AccountSettingsForm({
     >
       {/* Read-only Role Badge */}
       <div className="space-y-2">
-        <Label htmlFor="account-role">{t("accountSettings.roleLabel")}</Label>
-        <div id="account-role" className="pt-1">
+        <Label>{t("accountSettings.roleLabel")}</Label>
+        <div className="pt-1">
           <Badge variant="outline" className="text-sm font-medium px-3 py-1">
             {t(`roles.${initialSettings.role}`)}
           </Badge>

@@ -220,14 +220,15 @@ export function ArchiveListView({
           return (
             <div
               key={item.deliverableId}
-              className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs"
+              className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs transition-colors hover:border-border/80"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h4 className="font-semibold text-foreground text-sm">
+              {/* Header: Title, project, status pill */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1 space-y-1">
+                  <h4 className="font-semibold text-foreground text-sm leading-snug">
                     {item.deliverableTitle}
                   </h4>
-                  <div className="mt-0.5 text-xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     {item.projectHref ? (
                       <Link
                         href={item.projectHref}
@@ -241,7 +242,7 @@ export function ArchiveListView({
                   </div>
                 </div>
                 <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold shrink-0 ${
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold shrink-0 ${
                     item.finalStatus === "delivered"
                       ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                       : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
@@ -253,21 +254,27 @@ export function ArchiveListView({
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/60">
-                <span className="font-mono">v{item.currentVersionNumber}</span>
+              {/* Version & Date meta line */}
+              <div className="flex items-center justify-between text-xs text-muted-foreground bg-muted/30 rounded-lg px-3 py-1.5 border border-border/40">
+                <span className="font-mono font-medium text-foreground/80">
+                  v{item.currentVersionNumber}
+                </span>
                 <time dateTime={item.finalizedAt}>{formattedDate}</time>
               </div>
 
-              <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border/60">
-                <ExternalLinkButton
-                  url={item.currentSubmissionUrl}
-                  variant="submission"
-                />
-                <ExternalLinkButton
-                  url={item.projectDriveFolderUrl}
-                  variant="drive"
-                />
-              </div>
+              {/* Single action toolbar */}
+              {(item.currentSubmissionUrl || item.projectDriveFolderUrl) && (
+                <div className="flex flex-wrap items-center justify-end gap-2 pt-1 border-t border-border/40">
+                  <ExternalLinkButton
+                    url={item.currentSubmissionUrl}
+                    variant="submission"
+                  />
+                  <ExternalLinkButton
+                    url={item.projectDriveFolderUrl}
+                    variant="drive"
+                  />
+                </div>
+              )}
             </div>
           );
         })}

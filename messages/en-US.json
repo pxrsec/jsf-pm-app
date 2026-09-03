@@ -747,6 +747,10 @@
         "watcherMode": {
           "readOnlyNotice": "Read-only — Watcher capacity",
           "cannotMutate": "PM Watchers can view history and comment, but cannot plan, edit, archive, or submit versions."
+        },
+        "workflows": {
+          "production": "Production deliverable",
+          "client_submission": "Client submission"
         }
       },
       "activity": {
@@ -933,7 +937,8 @@
         "hasDeliverables": "This task has linked production deliverables.",
         "editAction": "Edit",
         "closeAction": "Close",
-        "ariaLabel": "Task details: {title}"
+        "ariaLabel": "Task details: {title}",
+        "viewTaskDetails": "View task details"
       },
       "create": {
         "title": "New Task",
@@ -1212,7 +1217,9 @@
         "title": "Task unavailable",
         "description": "The requested task was not found or is unavailable.",
         "returnAction": "Back to projects"
-      }
+      },
+      "assigneeHeading": "Assigned member",
+      "unassigned": "Unassigned"
     },
     "operatorSubmission": {
       "dialogTitle": "Submit production version",
@@ -1972,6 +1979,13 @@
       "prevPeriod": "Go to previous period",
       "nextPeriod": "Go to next period",
       "todayButton": "Go to current date"
+    },
+    "legend": {
+      "title": "Legend",
+      "tasks": "Tasks",
+      "deliverables": "Deliverables",
+      "milestones": "Milestones",
+      "events": "Events"
     }
   },
   "archive": {

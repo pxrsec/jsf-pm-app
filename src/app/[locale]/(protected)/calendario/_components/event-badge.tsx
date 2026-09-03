@@ -35,6 +35,21 @@ interface EventBadgeProps {
   onOpenMilestoneDetail?: (eventId: string) => void;
 }
 
+export function getCalendarEventEmoji(eventType: string): string {
+  switch (eventType) {
+    case "task_deadline":
+      return "📋";
+    case "internal_review_deadline":
+    case "client_delivery_deadline":
+      return "📦";
+    case "milestone":
+      return "🚩";
+    case "project_deadline":
+    default:
+      return "📅";
+  }
+}
+
 export function EventBadge({
   event,
   canManageMilestones,
@@ -88,20 +103,32 @@ export function EventBadge({
               className="h-auto min-h-[32px] justify-start truncate px-0 font-medium hover:bg-transparent hover:underline"
               title={event.title}
             >
-              {event.title}
+              <span className="mr-1 shrink-0">
+                {getCalendarEventEmoji(event.event_type)}
+              </span>
+              <span className="truncate">{event.title}</span>
             </Button>
           ) : projectHref ? (
             <Link
               href={projectHref}
-              className="truncate font-medium hover:underline focus:outline-none focus:ring-1 focus:ring-ring"
+              className="truncate font-medium hover:underline focus:outline-none focus:ring-1 focus:ring-ring inline-flex items-center gap-1"
               title={event.title}
               aria-label={linkAriaLabel}
             >
-              {event.title}
+              <span className="shrink-0">
+                {getCalendarEventEmoji(event.event_type)}
+              </span>
+              <span className="truncate">{event.title}</span>
             </Link>
           ) : (
-            <span className="truncate font-medium" title={event.title}>
-              {event.title}
+            <span
+              className="truncate font-medium inline-flex items-center gap-1"
+              title={event.title}
+            >
+              <span className="shrink-0">
+                {getCalendarEventEmoji(event.event_type)}
+              </span>
+              <span className="truncate">{event.title}</span>
             </span>
           )}
         </div>
@@ -173,18 +200,25 @@ export function EventBadge({
               className="h-auto min-h-[32px] justify-start truncate px-0 font-medium hover:bg-transparent hover:underline"
               title={event.title}
             >
-              {event.title}
+              <span className="mr-1.5">
+                {getCalendarEventEmoji(event.event_type)}
+              </span>
+              <span>{event.title}</span>
             </Button>
           ) : projectHref ? (
             <Link
               href={projectHref}
               aria-label={linkAriaLabel}
-              className="hover:underline focus:outline-none focus:ring-1 focus:ring-ring"
+              className="hover:underline focus:outline-none focus:ring-1 focus:ring-ring inline-flex items-center gap-1.5"
             >
-              {event.title}
+              <span>{getCalendarEventEmoji(event.event_type)}</span>
+              <span>{event.title}</span>
             </Link>
           ) : (
-            <span>{event.title}</span>
+            <span className="inline-flex items-center gap-1.5">
+              <span>{getCalendarEventEmoji(event.event_type)}</span>
+              <span>{event.title}</span>
+            </span>
           )}
         </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -45,7 +45,22 @@ export function DeliverablesTab({
   const t = useTranslations("projects.workspace.deliverables");
   const router = useRouter();
 
-  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+  const isClientMobile = useSyncExternalStore(
+    (cb) => {
+      const mql = window.matchMedia("(max-width: 767px)");
+      mql.addEventListener("change", cb);
+      return () => mql.removeEventListener("change", cb);
+    },
+    () => window.innerWidth < 768,
+    () => false,
+  );
+
+  const [userViewMode, setUserViewMode] = useState<"table" | "cards" | null>(
+    null,
+  );
+  const viewMode = userViewMode ?? (isClientMobile ? "cards" : "table");
+  const setViewMode = (mode: "table" | "cards") => setUserViewMode(mode);
+
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
 

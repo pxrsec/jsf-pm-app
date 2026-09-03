@@ -1,5 +1,52 @@
 # JSF PM App Development Changelog
 
+## [2026-09-03 @ 12:49]
+
+**🐛 Hotfixes & 🧪 Tests: Resolve @/i18n/routing Resolution in Project Tests**
+
+- **Project Lifecycle & Task Workspace Unit Tests (`__tests__/projects/`):**
+  - Resolved `next-intl` unmocked import failure (`Cannot find module '.../next/navigation'`) in `__tests__/projects/project-lifecycle.test.tsx` and `__tests__/projects/task-workspace.test.tsx`.
+  - Added test doubles for `@/i18n/routing` (`Link`, `useRouter`, `usePathname`, `redirect`) consistent with other component test suites across the repository, matching the transitive dependency introduced by `TaskDetailSheet` in `TasksTab`.
+  - Verified focused Vitest execution passes cleanly without error (21/21 passing tests across both test suites).
+  - Verified `npm run typecheck` passes with 0 errors.
+
+## [2026-09-03 @ 11:45]
+
+**🚀 Features & 🎨 UX/UI: Global Mobile-First & Desktop Polish Suite**
+
+- **Main Landing Page Branding (`/`):**
+  - Integrated official Joya Star Films SVG logo asset (`/joyalogo-purple.svg`) into `src/app/[locale]/page.tsx` for brand identity.
+- **Access Console (`/pm/acceso`) Layout Fix:**
+  - Resolved `src/components/ui/tabs.tsx` height clipping and improved `ManagerAccessConsole` container sizing and alignment.
+- **Task Detail Side Drawer & Dedicated Navigation:**
+  - Expanded `TaskDetailSheet` on desktop to `35vw` (`min-w-[480px]`, `max-w-[650px]`) and `100vw` on mobile to accommodate all controls cleanly.
+  - Added role-scoped "Ver detalles de la tarea" / "View task details" button linking to `/admin/tareas/[id]` or `/pm/tareas/[id]`.
+- **Calendar Mobile Experience, Emoji Differentiation & Legend:**
+  - Exported `getCalendarEventEmoji` in `event-badge.tsx` categorizing events with distinct visual emojis: `📋` tasks, `📦` deliverables, `🚩` milestones, and `📅` project deadlines/events.
+  - Added sticky localized Legend bar in `calendar-coordinator.tsx` documenting event emoji meanings.
+  - Transformed Month View day cells on mobile (`sm:hidden`) into responsive compact squares (`min-h-[58px] sm:min-h-[120px]`) displaying clickable emoji action buttons linking to respective details.
+- **Navigation Hierarchy & Mobile Quick-Access Bar:**
+  - Reordered items in `buildNavigationModel` (`src/components/shared/app-nav/navigation-model.ts`) to exact requested hierarchy: `home`, `projects`/`agenda`, `calendar`, `notifications`, `clients`, `metrics`, `archive`, `recycleBin`, `accessManagement`, `linkIncidents`, `operations`, `notificationOperations`, `account`.
+  - Reconfigured bottom 5-slot persistent quick bar in `mobile-nav-toggle.tsx` so Notificaciones is placed centrally in Slot 3: `[Slot 1, Slot 2, Notificaciones, Slot 4, Menú]`.
+  - Removed container `min-w-[44px]` restrictions and added `max-w-[100vw] overflow-x-hidden` on bottom nav and drawer to ensure viewport stability on narrow devices (e.g. 360px viewport).
+- **Notifications Direct Task Navigation:**
+  - Created and applied migration `20260903120000_admin_pm_notification_task_navigation.sql` extending `list_my_in_app_notifications` to project `navigation_task_id` for admin and pm roles when target entity is a task.
+  - Updated `NotificationDestination` and notification parser (`schemas.ts`) to route admin and pm project task notifications directly to dedicated task detail views (`/admin/tareas/[id]` / `/pm/tareas/[id]`).
+- **Projects "Entregables" Mobile Cards View:**
+  - Configured `DeliverablesTab` (`deliverables-tab.tsx`) using `useSyncExternalStore` to automatically default to `"cards"` view on mobile screens (< 768px) while preserving user toggle preferences without hydration mismatches or effect cascading renders.
+- **Projects "Equipo del proyecto" (Members) Mobile Cards:**
+  - Added responsive `md:hidden` card list in `member-roster-tab.tsx` displaying member avatar, full name, role badge, email, notifications indicator, and management actions, paired with `hidden md:block` desktop table view.
+- **Archive Items Mobile Cards Polish:**
+  - Redesigned mobile card layout in `archive-list-view.tsx` across project workspace archive tab and dedicated `/admin/archivo`, `/pm/archivo`, `/operador/archivo`, `/cliente/archivo` pages.
+  - Eliminated stacked double borders and grouped version and date in a subtle pill container with clean action buttons.
+- **Form Accessibility & Internationalization Parity:**
+  - Fixed `<label for>` attribute in `account-settings-form.tsx`.
+  - Added missing keys in `messages/es-MX.json` and `messages/en-US.json` for task details, calendar legend, and member cards.
+- **Verification:**
+  - Verified `npm run typecheck` passing (code 0).
+  - Verified `npm run lint` passing (code 0, zero errors, zero warnings).
+  - Verified unit test suites passing (including `navigation.test.ts` 38/38, `calendar-views.test.tsx` 12/12, `destination-routes.test.ts` 14/14).
+
 ## [2026-09-03 @ 09:25]
 
 **🚀 Features & 🛠 Architecture: S10-06 Task Detail, Deliverable Context, and Calendar Navigation**

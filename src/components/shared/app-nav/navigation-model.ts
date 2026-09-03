@@ -98,7 +98,45 @@ export function buildNavigationModel({
     ariaLabel: calendarLabel,
   });
 
-  // 4. Archive
+  // 4. Notifications (All roles)
+  const notificationsLabel = t("links.notifications");
+  const inboxAriaLabel =
+    unreadCount > 0
+      ? t("notifications.inboxLinkAriaWithCount", { count: unreadCount })
+      : t("notifications.inboxLinkAria");
+  items.push({
+    key: "notifications",
+    href: "/notificaciones",
+    label: notificationsLabel,
+    ariaLabel: inboxAriaLabel,
+    unreadCount,
+  });
+
+  // 5. Clients (Admin and PM only)
+  if (role === "admin" || role === "pm") {
+    const clientsLabel = t("links.clients");
+    const clientsHref = role === "admin" ? "/admin/clientes" : "/pm/clientes";
+    items.push({
+      key: "clients",
+      href: clientsHref,
+      label: clientsLabel,
+      ariaLabel: clientsLabel,
+    });
+  }
+
+  // 6. Metrics (Admin and PM only)
+  if (role === "admin" || role === "pm") {
+    const metricsLabel = t("links.metrics");
+    const metricsHref = role === "admin" ? "/admin/metricas" : "/pm/metricas";
+    items.push({
+      key: "metrics",
+      href: metricsHref,
+      label: metricsLabel,
+      ariaLabel: metricsLabel,
+    });
+  }
+
+  // 7. Archive (All roles)
   const archiveLabel = t("links.archive");
   const archiveHref =
     role === "admin"
@@ -115,7 +153,7 @@ export function buildNavigationModel({
     ariaLabel: archiveLabel,
   });
 
-  // 5. Recycle Bin (Admin and PM only)
+  // 8. Recycle Bin (Admin and PM only)
   if (role === "admin" || role === "pm") {
     const recycleBinLabel = t("links.recycleBin");
     const recycleBinHref =
@@ -128,55 +166,7 @@ export function buildNavigationModel({
     });
   }
 
-  // 6. Clients (Admin and PM only)
-  if (role === "admin" || role === "pm") {
-    const clientsLabel = t("links.clients");
-    const clientsHref = role === "admin" ? "/admin/clientes" : "/pm/clientes";
-    items.push({
-      key: "clients",
-      href: clientsHref,
-      label: clientsLabel,
-      ariaLabel: clientsLabel,
-    });
-  }
-
-  // 7. Link Incidents (Admin and PM only)
-  if (role === "admin" || role === "pm") {
-    const linkIncidentsLabel = t("links.linkIncidents");
-    const linkIncidentsHref =
-      role === "admin" ? "/admin/incidentes-enlaces" : "/pm/incidentes-enlaces";
-    items.push({
-      key: "linkIncidents",
-      href: linkIncidentsHref,
-      label: linkIncidentsLabel,
-      ariaLabel: linkIncidentsLabel,
-    });
-  }
-
-  // 8. Metrics (Admin and PM only)
-  if (role === "admin" || role === "pm") {
-    const metricsLabel = t("links.metrics");
-    const metricsHref = role === "admin" ? "/admin/metricas" : "/pm/metricas";
-    items.push({
-      key: "metrics",
-      href: metricsHref,
-      label: metricsLabel,
-      ariaLabel: metricsLabel,
-    });
-  }
-
-  // 9. Operations (Admin only)
-  if (role === "admin") {
-    const operationsLabel = t("links.operations");
-    items.push({
-      key: "operations",
-      href: "/admin/operaciones",
-      label: operationsLabel,
-      ariaLabel: operationsLabel,
-    });
-  }
-
-  // 10. Access Management (Admin and PM only)
+  // 9. Access Management (Admin and PM only)
   if (role === "admin" || role === "pm") {
     const accessManagementLabel = t("links.accessManagement");
     const accessManagementHref =
@@ -189,19 +179,29 @@ export function buildNavigationModel({
     });
   }
 
-  // 11. Notifications (All roles)
-  const notificationsLabel = t("links.notifications");
-  const inboxAriaLabel =
-    unreadCount > 0
-      ? t("notifications.inboxLinkAriaWithCount", { count: unreadCount })
-      : t("notifications.inboxLinkAria");
-  items.push({
-    key: "notifications",
-    href: "/notificaciones",
-    label: notificationsLabel,
-    ariaLabel: inboxAriaLabel,
-    unreadCount,
-  });
+  // 10. Link Incidents (Admin and PM only)
+  if (role === "admin" || role === "pm") {
+    const linkIncidentsLabel = t("links.linkIncidents");
+    const linkIncidentsHref =
+      role === "admin" ? "/admin/incidentes-enlaces" : "/pm/incidentes-enlaces";
+    items.push({
+      key: "linkIncidents",
+      href: linkIncidentsHref,
+      label: linkIncidentsLabel,
+      ariaLabel: linkIncidentsLabel,
+    });
+  }
+
+  // 11. Operations (Admin only)
+  if (role === "admin") {
+    const operationsLabel = t("links.operations");
+    items.push({
+      key: "operations",
+      href: "/admin/operaciones",
+      label: operationsLabel,
+      ariaLabel: operationsLabel,
+    });
+  }
 
   // 12. Notification Operations (Admin or PM with canAccessNotificationOperations)
   if (canAccessNotificationOperations && (role === "admin" || role === "pm")) {

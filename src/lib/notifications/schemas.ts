@@ -187,10 +187,8 @@ export function parseAndValidateNotificationRow(
       break;
     }
     case "admin_project_overview":
-    case "admin_project_tasks":
     case "admin_project_deliverables":
     case "pm_project_overview":
-    case "pm_project_tasks":
     case "pm_project_deliverables":
     case "client_project": {
       if (!row.navigation_project_id) {
@@ -209,6 +207,23 @@ export function parseAndValidateNotificationRow(
       destination = {
         kind: row.navigation_kind,
         projectId: row.navigation_project_id,
+      };
+      break;
+    }
+    case "admin_project_tasks":
+    case "pm_project_tasks": {
+      if (!row.navigation_project_id) {
+        throw new Error(
+          `Missing required projectId for ${row.navigation_kind}`,
+        );
+      }
+      if (row.navigation_deliverable_id != null) {
+        throw new Error(`Unexpected deliverable ID for ${row.navigation_kind}`);
+      }
+      destination = {
+        kind: row.navigation_kind,
+        projectId: row.navigation_project_id,
+        ...(row.navigation_task_id ? { taskId: row.navigation_task_id } : {}),
       };
       break;
     }

@@ -969,15 +969,15 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(links[1]).toHaveAttribute("href", "/admin/proyectos");
       expect(within(links[1]).getByText("Proyectos")).toBeInTheDocument();
 
-      expect(links[2]).toHaveAttribute("href", "/admin/operaciones");
-      expect(within(links[2]).getByText("Operaciones")).toBeInTheDocument();
-
-      expect(links[3]).toHaveAttribute("href", "/notificaciones");
-      expect(links[3]).toHaveAttribute(
+      expect(links[2]).toHaveAttribute("href", "/notificaciones");
+      expect(links[2]).toHaveAttribute(
         "aria-label",
         "Bandeja de notificaciones, 3 no leídas",
       );
-      expect(within(links[3]).getByText("Notificaciones")).toBeInTheDocument();
+      expect(within(links[2]).getByText("Notificaciones")).toBeInTheDocument();
+
+      expect(links[3]).toHaveAttribute("href", "/admin/operaciones");
+      expect(within(links[3]).getByText("Operaciones")).toBeInTheDocument();
 
       const menuButton = within(quickNav).getByRole("button", {
         name: "Abrir menú de navegación",
@@ -1013,8 +1013,8 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(pmLinks.map((l) => l.getAttribute("href"))).toEqual([
         "/pm",
         "/pm/proyectos",
-        "/calendario",
         "/notificaciones",
+        "/calendario",
       ]);
       unmountPm();
 
@@ -1038,8 +1038,8 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(opLinks.map((l) => l.getAttribute("href"))).toEqual([
         "/operador",
         "/operador/agenda",
-        "/calendario",
         "/notificaciones",
+        "/calendario",
       ]);
       unmountOp();
 
@@ -1063,8 +1063,8 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(clLinks.map((l) => l.getAttribute("href"))).toEqual([
         "/cliente",
         "/cliente/proyectos",
-        "/calendario",
         "/notificaciones",
+        "/calendario",
       ]);
     });
 
@@ -1120,14 +1120,14 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         "/admin",
         "/admin/proyectos",
         "/calendario",
+        "/notificaciones",
+        "/admin/clientes",
+        "/admin/metricas",
         "/admin/archivo",
         "/admin/papelera",
-        "/admin/clientes",
-        "/admin/incidentes-enlaces",
-        "/admin/metricas",
-        "/admin/operaciones",
         "/admin/acceso",
-        "/notificaciones",
+        "/admin/incidentes-enlaces",
+        "/admin/operaciones",
         "/admin/notificaciones",
         "/cuenta",
       ]);

@@ -7,10 +7,14 @@ export type NotificationReadFilter = "all" | "unread" | "read";
 
 export type NotificationDestination =
   | Readonly<{ kind: "none" }>
-  | Readonly<{ kind: "admin_project_tasks"; projectId: string }>
+  | Readonly<{
+      kind: "admin_project_tasks";
+      projectId: string;
+      taskId?: string;
+    }>
   | Readonly<{ kind: "admin_project_deliverables"; projectId: string }>
   | Readonly<{ kind: "admin_project_overview"; projectId: string }>
-  | Readonly<{ kind: "pm_project_tasks"; projectId: string }>
+  | Readonly<{ kind: "pm_project_tasks"; projectId: string; taskId?: string }>
   | Readonly<{ kind: "pm_project_deliverables"; projectId: string }>
   | Readonly<{ kind: "pm_project_overview"; projectId: string }>
   | Readonly<{ kind: "operator_task"; taskId: string }>

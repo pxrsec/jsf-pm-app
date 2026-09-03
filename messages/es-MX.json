@@ -747,6 +747,10 @@
         "watcherMode": {
           "readOnlyNotice": "Solo lectura — Capacidad Observador",
           "cannotMutate": "Los observadores de PM pueden consultar el historial y comentar, pero no pueden planificar, editar, archivar ni enviar versiones."
+        },
+        "workflows": {
+          "production": "Entregable de producción",
+          "client_submission": "Entrega de cliente"
         }
       },
       "activity": {
@@ -933,7 +937,8 @@
         "hasDeliverables": "Esta tarea tiene entregables de producción vinculados.",
         "editAction": "Editar",
         "closeAction": "Cerrar",
-        "ariaLabel": "Detalles de la tarea: {title}"
+        "ariaLabel": "Detalles de la tarea: {title}",
+        "viewTaskDetails": "Ver detalles de la tarea"
       },
       "create": {
         "title": "Nueva Tarea",
@@ -1212,7 +1217,9 @@
         "title": "Tarea no disponible",
         "description": "La tarea solicitada no fue encontrada o no está disponible.",
         "returnAction": "Volver a proyectos"
-      }
+      },
+      "assigneeHeading": "Miembro asignado",
+      "unassigned": "Sin asignar"
     },
     "operatorSubmission": {
       "dialogTitle": "Entregar versión de producción",
@@ -1972,6 +1979,13 @@
       "prevPeriod": "Ir al período anterior",
       "nextPeriod": "Ir al período siguiente",
       "todayButton": "Ir a la fecha actual"
+    },
+    "legend": {
+      "title": "Leyenda",
+      "tasks": "Tareas",
+      "deliverables": "Entregables",
+      "milestones": "Hitos",
+      "events": "Eventos"
     }
   },
   "archive": {

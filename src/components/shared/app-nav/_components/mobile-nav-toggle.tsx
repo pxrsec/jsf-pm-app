@@ -219,11 +219,13 @@ export function MobileNavToggle({
       {/* Persistent Bottom Quick-Access Bar */}
       <nav
         aria-label={t("mobileQuickAccessAriaLabel")}
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur pb-[env(safe-area-inset-bottom,0px)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur pb-[env(safe-area-inset-bottom,0px)] md:hidden w-full max-w-[100vw] overflow-x-hidden"
       >
-        <div className="grid h-16 grid-cols-5">
-          {/* Quick Links (1 to 3) */}
-          {quickAccessItems.map((item) => {
+        <div className="grid h-16 grid-cols-5 w-full max-w-[100vw] overflow-x-hidden">
+          {/* Slot 1: Quick Link 1 */}
+          {(() => {
+            const item = quickAccessItems[0];
+            if (!item) return <div className="h-full w-full min-w-0" />;
             const Icon =
               QUICK_ACCESS_ICON_MAP[
                 item.key as keyof typeof QUICK_ACCESS_ICON_MAP
@@ -237,7 +239,7 @@ export function MobileNavToggle({
                 aria-label={item.ariaLabel}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "relative flex h-full w-full min-h-[44px] min-w-[44px] min-w-0 flex-col items-center justify-center gap-1 px-1 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  "relative flex h-full w-full min-h-[44px] min-w-0 flex-col items-center justify-center gap-1 px-0.5 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   isActive
                     ? "border-t-2 border-primary bg-primary/5 font-semibold text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -251,16 +253,49 @@ export function MobileNavToggle({
                 </span>
               </Link>
             );
-          })}
+          })()}
 
-          {/* Notifications Link (4) */}
+          {/* Slot 2: Quick Link 2 */}
+          {(() => {
+            const item = quickAccessItems[1];
+            if (!item) return <div className="h-full w-full min-w-0" />;
+            const Icon =
+              QUICK_ACCESS_ICON_MAP[
+                item.key as keyof typeof QUICK_ACCESS_ICON_MAP
+              ];
+            const isActive = isNavigationItemActive(item, pathname);
+            return (
+              <Link
+                key={item.key}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                aria-label={item.ariaLabel}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "relative flex h-full w-full min-h-[44px] min-w-0 flex-col items-center justify-center gap-1 px-0.5 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  isActive
+                    ? "border-t-2 border-primary bg-primary/5 font-semibold text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                {Icon && (
+                  <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                )}
+                <span className="block max-w-full truncate whitespace-nowrap text-[10px] leading-tight font-medium">
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })()}
+
+          {/* Slot 3: Notifications Link (In the middle) */}
           <Link
             href={notificationsItem.href}
             onClick={() => setIsOpen(false)}
             aria-label={notificationsItem.ariaLabel}
             aria-current={isNotificationsActive ? "page" : undefined}
             className={cn(
-              "relative flex h-full w-full min-h-[44px] min-w-[44px] min-w-0 flex-col items-center justify-center gap-1 px-1 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              "relative flex h-full w-full min-h-[44px] min-w-0 flex-col items-center justify-center gap-1 px-0.5 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               isNotificationsActive
                 ? "border-t-2 border-primary bg-primary/5 font-semibold text-primary"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -278,7 +313,40 @@ export function MobileNavToggle({
             </span>
           </Link>
 
-          {/* Menu Button (5) */}
+          {/* Slot 4: Quick Link 3 */}
+          {(() => {
+            const item = quickAccessItems[2];
+            if (!item) return <div className="h-full w-full min-w-0" />;
+            const Icon =
+              QUICK_ACCESS_ICON_MAP[
+                item.key as keyof typeof QUICK_ACCESS_ICON_MAP
+              ];
+            const isActive = isNavigationItemActive(item, pathname);
+            return (
+              <Link
+                key={item.key}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                aria-label={item.ariaLabel}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "relative flex h-full w-full min-h-[44px] min-w-0 flex-col items-center justify-center gap-1 px-0.5 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  isActive
+                    ? "border-t-2 border-primary bg-primary/5 font-semibold text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                {Icon && (
+                  <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                )}
+                <span className="block max-w-full truncate whitespace-nowrap text-[10px] leading-tight font-medium">
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })()}
+
+          {/* Slot 5: Menu Button */}
           <Button
             ref={toggleRef}
             type="button"
@@ -288,7 +356,7 @@ export function MobileNavToggle({
             aria-controls="mobile-nav-drawer"
             aria-label={isOpen ? t("closeMenu") : t("openMenu")}
             className={cn(
-              "h-full w-full min-h-[44px] min-w-[44px] min-w-0 flex-col gap-1 rounded-none px-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              "h-full w-full min-h-[44px] min-w-0 flex-col gap-1 rounded-none px-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               isOpen || isAnyDrawerOnlyItemActive
                 ? "border-t-2 border-primary bg-primary/5 font-semibold text-primary"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground",

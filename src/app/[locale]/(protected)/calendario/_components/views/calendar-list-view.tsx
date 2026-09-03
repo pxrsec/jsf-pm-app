@@ -13,6 +13,7 @@ import { formatCalendarDate } from "@/lib/calendar/date-utils";
 import type { CalendarViewProps } from "../types";
 import { CalendarEmptyState } from "../calendar-empty-state";
 import { Button } from "@/components/ui/button";
+import { getCalendarEventEmoji } from "../event-badge";
 
 export function CalendarListView({
   events,
@@ -134,9 +135,12 @@ export function CalendarListView({
                         onClick={() =>
                           onOpenMilestoneDetail?.(destination.milestoneId)
                         }
-                        className="h-auto px-0 font-semibold hover:bg-transparent hover:underline"
+                        className="h-auto px-0 font-semibold hover:bg-transparent hover:underline inline-flex items-center gap-1.5"
                       >
-                        {event.title}
+                        <span aria-hidden="true">
+                          {getCalendarEventEmoji(event.event_type)}
+                        </span>
+                        <span>{event.title}</span>
                       </Button>
                     ) : destinationHref ? (
                       <Link
@@ -148,13 +152,19 @@ export function CalendarListView({
                                 title: event.project_name ?? event.title,
                               })
                         }
-                        className="font-semibold text-foreground hover:underline focus:outline-none focus:ring-1 focus:ring-ring"
+                        className="font-semibold text-foreground hover:underline focus:outline-none focus:ring-1 focus:ring-ring inline-flex items-center gap-1.5"
                       >
-                        {event.title}
+                        <span aria-hidden="true">
+                          {getCalendarEventEmoji(event.event_type)}
+                        </span>
+                        <span>{event.title}</span>
                       </Link>
                     ) : (
-                      <span className="font-semibold text-foreground">
-                        {event.title}
+                      <span className="font-semibold text-foreground inline-flex items-center gap-1.5">
+                        <span aria-hidden="true">
+                          {getCalendarEventEmoji(event.event_type)}
+                        </span>
+                        <span>{event.title}</span>
                       </span>
                     )}
                   </div>
