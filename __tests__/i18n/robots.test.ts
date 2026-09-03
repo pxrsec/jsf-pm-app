@@ -44,4 +44,13 @@ describe("VC-I18N-006: Robots configuration with non-production posture", () => 
       expect(rule.disallow).toContain("/");
     }
   });
+
+  it("robots declares the sitemap URL", async () => {
+    const robotsModule = await import("../../src/app/robots");
+    const robots = (await robotsModule.default) || (robotsModule as any).robots;
+    const config = await robots();
+
+    expect(config).toHaveProperty("sitemap");
+    expect(config.sitemap).toMatch(/\/sitemap\.xml$/);
+  });
 });

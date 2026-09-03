@@ -8,12 +8,14 @@ import {
   groupEventsByDate,
   formatCalendarDate,
 } from "@/lib/calendar/date-utils";
+import { Link } from "@/i18n/routing";
 import type { CalendarViewProps } from "../types";
 import {
   getCalendarEventKey,
+  resolveCalendarEventDestination,
   type CalendarEventDto,
 } from "@/lib/calendar/types";
-import { EventBadge } from "../event-badge";
+import { EventBadge, getCalendarEventEmoji } from "../event-badge";
 import { CalendarEmptyState } from "../calendar-empty-state";
 
 type MonthDayCell =
@@ -151,7 +153,7 @@ export function CalendarMonthView({
             return (
               <div
                 key={day.key}
-                className="min-h-[110px] bg-muted/10 p-2 sm:min-h-[130px]"
+                className="min-h-[58px] sm:min-h-[120px] bg-muted/10 p-1 sm:p-2"
                 aria-hidden="true"
               />
             );
@@ -160,15 +162,15 @@ export function CalendarMonthView({
           return (
             <div
               key={day.dateKey}
-              className={`min-h-[110px] p-1.5 transition-colors sm:min-h-[130px] sm:p-2 ${
+              className={`min-h-[58px] sm:min-h-[120px] p-1 sm:p-2 transition-colors flex flex-col justify-between ${
                 day.isToday ? "bg-primary/5" : "bg-card hover:bg-muted/10"
               }`}
             >
               <div className="flex items-center justify-between">
                 <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
+                  className={`flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full text-[11px] sm:text-xs font-semibold ${
                     day.isToday
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-primary text-primary-foreground font-bold"
                       : "text-foreground"
                   }`}
                 >
@@ -181,7 +183,67 @@ export function CalendarMonthView({
                 )}
               </div>
 
-              <div className="mt-1.5 space-y-1 overflow-y-auto max-h-[90px] pr-0.5">
+              {/* Mobile View (< sm): Clickable emoji indicators */}
+              <div className="sm:hidden mt-0.5 flex flex-wrap gap-0.5 items-center justify-center">
+                {day.events.slice(0, 3).map((event) => {
+                  const destination = resolveCalendarEventDestination(
+                    event,
+                    userRole,
+                  );
+                  const projectHref =
+                    "href" in destination ? destination.href : null;
+                  const emoji = getCalendarEventEmoji(event.event_type);
+
+                  if (destination.kind === "milestone-detail") {
+                    return (
+                      <button
+                        key={getCalendarEventKey(event)}
+                        type="button"
+                        onClick={() =>
+                          onOpenMilestoneDetail?.(destination.milestoneId)
+                        }
+                        className="inline-flex size-5 items-center justify-center rounded text-[11px] hover:bg-muted/50 active:scale-95 transition-transform"
+                        title={`${emoji} ${event.title}`}
+                        aria-label={`${emoji} ${event.title}`}
+                      >
+                        {emoji}
+                      </button>
+                    );
+                  }
+
+                  if (projectHref) {
+                    return (
+                      <Link
+                        key={getCalendarEventKey(event)}
+                        href={projectHref}
+                        className="inline-flex size-5 items-center justify-center rounded text-[11px] hover:bg-muted/50 active:scale-95 transition-transform"
+                        title={`${emoji} ${event.title}`}
+                        aria-label={`${emoji} ${event.title}`}
+                      >
+                        {emoji}
+                      </Link>
+                    );
+                  }
+
+                  return (
+                    <span
+                      key={getCalendarEventKey(event)}
+                      className="inline-flex size-5 items-center justify-center text-[11px]"
+                      title={`${emoji} ${event.title}`}
+                    >
+                      {emoji}
+                    </span>
+                  );
+                })}
+                {day.events.length > 3 && (
+                  <span className="text-[9px] font-semibold text-muted-foreground">
+                    +{day.events.length - 3}
+                  </span>
+                )}
+              </div>
+
+              {/* Desktop View (>= sm): Full compact badges */}
+              <div className="hidden sm:block mt-1.5 space-y-1 overflow-y-auto max-h-[90px] pr-0.5">
                 {day.events.map((event) => (
                   <EventBadge
                     key={getCalendarEventKey(event)}

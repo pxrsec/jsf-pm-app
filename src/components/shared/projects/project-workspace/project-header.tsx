@@ -14,6 +14,7 @@ import {
   Archive,
   RotateCcw,
   CheckCircle2,
+  Building2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,9 +34,12 @@ interface ProjectHeaderProps {
   project: ProjectDetail;
   clients: ClientListItem[];
   effectiveCapacity: "admin" | "pm_lead" | "pm_watcher";
+  actorRole?: "admin" | "pm";
+  canManageOperationalLifecycle?: boolean;
   baseHref: string;
   onOpenEditDialog: () => void;
   onOpenStatusDialog: (action: ProjectStatusActionType) => void;
+  onOpenClientIdentity?: () => void;
   navigation?: React.ReactNode;
 }
 
@@ -43,9 +47,12 @@ export function ProjectHeader({
   project,
   clients,
   effectiveCapacity,
+  actorRole,
+  canManageOperationalLifecycle,
   baseHref,
   onOpenEditDialog,
   onOpenStatusDialog,
+  onOpenClientIdentity,
   navigation,
 }: ProjectHeaderProps) {
   const t = useTranslations("projects.workspace");
@@ -54,7 +61,11 @@ export function ProjectHeader({
   const format = useFormatter();
 
   const isWatcher = effectiveCapacity === "pm_watcher";
-  const isAdmin = effectiveCapacity === "admin";
+  const resolvedRole =
+    actorRole ?? (effectiveCapacity === "admin" ? "admin" : "pm");
+  const canArchive =
+    canManageOperationalLifecycle ??
+    (resolvedRole === "admin" || resolvedRole === "pm");
 
   const primaryLead = project.members.find(
     (m) => m.member_type === "pm_lead" && m.is_primary,
@@ -66,6 +77,14 @@ export function ProjectHeader({
     PROJECT_STATUS_MAP[project.status as ProjectStatus] ??
     PROJECT_STATUS_MAP.planning;
   const StatusIcon = statusConfig.icon;
+
+  const canManageClientIdentity =
+    project.project_type === "client" &&
+    project.deleted_at === null &&
+    project.archived_at === null &&
+    project.status !== "completed" &&
+    project.status !== "cancelled" &&
+    (resolvedRole === "admin" || resolvedRole === "pm");
 
   const deadlineDate = project.deadline_at
     ? new Date(project.deadline_at)
@@ -103,17 +122,33 @@ export function ProjectHeader({
             {project.name}
           </h1>
 
-          {!isWatcher && (
+          {(!isWatcher || canArchive) && (
             <div className="flex items-center gap-2 shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onOpenEditDialog}
-                className="h-8 gap-1.5 text-xs"
-              >
-                <Edit2 className="h-3.5 w-3.5" />
-                <span>{t("summary.editAction")}</span>
-              </Button>
+              {!isWatcher &&
+                canManageClientIdentity &&
+                onOpenClientIdentity && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onOpenClientIdentity}
+                    className="h-8 gap-1.5 text-xs cursor-pointer"
+                  >
+                    <Building2 className="h-3.5 w-3.5" />
+                    <span>{t("summary.clientIdentityAction")}</span>
+                  </Button>
+                )}
+
+              {!isWatcher && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onOpenEditDialog}
+                  className="h-8 gap-1.5 text-xs"
+                >
+                  <Edit2 className="h-3.5 w-3.5" />
+                  <span>{t("summary.editAction")}</span>
+                </Button>
+              )}
 
               <DropdownMenu>
                 <DropdownMenuTrigger className="inline-flex shrink-0 items-center justify-center rounded-md border border-input bg-input/20 px-2.5 py-1 text-xs font-medium transition-colors outline-none hover:bg-input/50 h-8 gap-1.5 cursor-pointer">
@@ -121,7 +156,7 @@ export function ProjectHeader({
                   <MoreVertical className="h-3.5 w-3.5" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 text-xs">
-                  {project.status === "in_progress" && (
+                  {!isWatcher && project.status === "in_progress" && (
                     <DropdownMenuItem
                       onClick={() => onOpenStatusDialog("pause")}
                       className="cursor-pointer gap-2"
@@ -131,7 +166,7 @@ export function ProjectHeader({
                     </DropdownMenuItem>
                   )}
 
-                  {project.status === "paused" && (
+                  {!isWatcher && project.status === "paused" && (
                     <DropdownMenuItem
                       onClick={() => onOpenStatusDialog("resume")}
                       className="cursor-pointer gap-2"
@@ -141,7 +176,8 @@ export function ProjectHeader({
                     </DropdownMenuItem>
                   )}
 
-                  {project.status !== "completed" &&
+                  {!isWatcher &&
+                    project.status !== "completed" &&
                     project.status !== "cancelled" && (
                       <DropdownMenuItem
                         onClick={() => onOpenStatusDialog("complete")}
@@ -152,7 +188,7 @@ export function ProjectHeader({
                       </DropdownMenuItem>
                     )}
 
-                  {project.status === "completed" && (
+                  {!isWatcher && project.status === "completed" && (
                     <DropdownMenuItem
                       onClick={() => onOpenStatusDialog("reopen")}
                       className="cursor-pointer gap-2 text-primary"
@@ -162,7 +198,8 @@ export function ProjectHeader({
                     </DropdownMenuItem>
                   )}
 
-                  {project.status !== "cancelled" &&
+                  {!isWatcher &&
+                    project.status !== "cancelled" &&
                     project.status !== "completed" && (
                       <DropdownMenuItem
                         onClick={() => onOpenStatusDialog("cancel")}
@@ -173,23 +210,15 @@ export function ProjectHeader({
                       </DropdownMenuItem>
                     )}
 
-                  <DropdownMenuSeparator />
+                  {!isWatcher && canArchive && <DropdownMenuSeparator />}
 
-                  <DropdownMenuItem
-                    onClick={() => onOpenStatusDialog("archive")}
-                    className="cursor-pointer gap-2 text-muted-foreground"
-                  >
-                    <Archive className="h-3.5 w-3.5" />
-                    <span>Archivar Proyecto</span>
-                  </DropdownMenuItem>
-
-                  {isAdmin && (
+                  {canArchive && (
                     <DropdownMenuItem
-                      onClick={() => onOpenStatusDialog("restore")}
-                      className="cursor-pointer gap-2 text-primary"
+                      onClick={() => onOpenStatusDialog("archive")}
+                      className="cursor-pointer gap-2 text-muted-foreground"
                     >
-                      <RotateCcw className="h-3.5 w-3.5" />
-                      <span>Restaurar Proyecto</span>
+                      <Archive className="h-3.5 w-3.5" />
+                      <span>Archivar Proyecto</span>
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -230,7 +259,7 @@ export function ProjectHeader({
             {project.project_type === "client"
               ? clientOrg
                 ? `Cliente: ${clientOrg.display_name}`
-                : `Cliente: ${tTypes("unassigned")}`
+                : `Cliente: ${tTypes("direct")}`
               : tTypes("internal")}
           </Badge>
 

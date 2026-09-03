@@ -124,42 +124,6 @@ export async function updateProject(
   }
 }
 
-export async function archiveProject(
-  supabase: TypedSupabase,
-  projectId: string,
-  reason?: string,
-): Promise<CommandResult<{ success: boolean }>> {
-  try {
-    const { data, error } = await supabase.rpc("soft_delete_entity", {
-      p_entity_id: projectId,
-      p_entity_type: "project",
-      p_reason: reason,
-    });
-    if (error) return { ok: false, error: mapSupabaseError(error) };
-    return { ok: true, data: { success: Boolean(data) } };
-  } catch (err) {
-    return { ok: false, error: mapSupabaseError(err as { message?: string }) };
-  }
-}
-
-export async function restoreProject(
-  supabase: TypedSupabase,
-  projectId: string,
-  reason?: string,
-): Promise<CommandResult<{ success: boolean }>> {
-  try {
-    const { data, error } = await supabase.rpc("restore_entity", {
-      p_entity_id: projectId,
-      p_entity_type: "project",
-      p_reason: reason,
-    });
-    if (error) return { ok: false, error: mapSupabaseError(error) };
-    return { ok: true, data: { success: Boolean(data) } };
-  } catch (err) {
-    return { ok: false, error: mapSupabaseError(err as { message?: string }) };
-  }
-}
-
 export async function transitionProjectStatus(
   supabase: TypedSupabase,
   input: TransitionProjectStatusInput,
@@ -436,24 +400,6 @@ export async function transitionTaskStatus(
     });
     if (error) return { ok: false, error: mapSupabaseError(error) };
     return { ok: true, data: data as unknown as TransitionResult };
-  } catch (err) {
-    return { ok: false, error: mapSupabaseError(err as { message?: string }) };
-  }
-}
-
-export async function archiveTask(
-  supabase: TypedSupabase,
-  taskId: string,
-  reason?: string,
-): Promise<CommandResult<{ success: boolean }>> {
-  try {
-    const { data, error } = await supabase.rpc("soft_delete_entity", {
-      p_entity_id: taskId,
-      p_entity_type: "task",
-      p_reason: reason,
-    });
-    if (error) return { ok: false, error: mapSupabaseError(error) };
-    return { ok: true, data: { success: Boolean(data) } };
   } catch (err) {
     return { ok: false, error: mapSupabaseError(err as { message?: string }) };
   }

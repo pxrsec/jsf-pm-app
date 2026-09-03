@@ -32,12 +32,19 @@ import type {
 import type { DeliverableListItem } from "@/lib/deliverables/queries";
 import type { ClientListItem } from "@/lib/clients/queries";
 import type {
+  AvailableResult,
+  DirectContactWorkspaceDto,
+  ClientOrganizationWorkspaceDto,
+} from "@/lib/clients/types";
+import { ProjectClientIdentityDialog } from "./project-client-identity-dialog";
+import type {
   CalendarEventDto,
   MilestoneManagementTargetDto,
   MilestoneOptionDto,
   MilestoneSummaryDto,
   CalendarRangeState,
 } from "@/lib/calendar/types";
+import { normalizeCalendarRange } from "@/lib/calendar/date-utils";
 import type {
   FinalizedArchivePage,
   FinalizedArchiveQuery,
@@ -66,9 +73,13 @@ interface ProjectWorkspaceShellProps {
     Profile,
     "id" | "full_name" | "role" | "avatar_url"
   >[];
-  eligibleClients: EligibleClientMember[];
+  eligibleClients:
+    AvailableResult<EligibleClientMember[]> | EligibleClientMember[];
   effectiveCapacity: "admin" | "pm_lead" | "pm_watcher";
   actorRole: "admin" | "pm";
+  directContacts?: AvailableResult<DirectContactWorkspaceDto[]>;
+  organizations?: AvailableResult<ClientOrganizationWorkspaceDto[]>;
+  associatedContactIds?: AvailableResult<string[]>;
   currentUserId?: string;
   initialTasks?: TaskWithAssignee[];
   initialDeliverables?: DeliverableListItem[];
@@ -92,6 +103,9 @@ export function ProjectWorkspaceShell({
   eligibleClients,
   effectiveCapacity,
   actorRole,
+  directContacts,
+  organizations,
+  associatedContactIds,
   currentUserId,
   initialTasks = [],
   initialDeliverables = [],
@@ -117,11 +131,23 @@ export function ProjectWorkspaceShell({
     getDesktopServerSnapshot,
   );
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isClientIdentityOpen, setIsClientIdentityOpen] = useState(false);
   const [isCompleteOpen, setIsCompleteOpen] = useState(false);
   const [isReopenOpen, setIsReopenOpen] = useState(false);
   const [statusAction, setStatusAction] =
     useState<ProjectStatusActionType | null>(null);
   const [openMilestoneId, setOpenMilestoneId] = useState<string>();
+
+  const canManageOperationalLifecycle =
+    actorRole === "admin" || actorRole === "pm";
+
+  const canManageClientIdentity =
+    project.project_type === "client" &&
+    project.deleted_at === null &&
+    project.archived_at === null &&
+    project.status !== "completed" &&
+    project.status !== "cancelled" &&
+    (actorRole === "admin" || actorRole === "pm");
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -130,14 +156,25 @@ export function ProjectWorkspaceShell({
     params.set("tab", tab);
 
     if (tab === "calendar") {
-      if (calendarRange) {
-        if (!params.has("calendarView"))
-          params.set("calendarView", calendarRange.view);
-        if (!params.has("calendarFrom"))
-          params.set("calendarFrom", calendarRange.from);
-        if (!params.has("calendarTo"))
-          params.set("calendarTo", calendarRange.to);
+      const hasAllCalendarKeys =
+        params.has("calendarView") &&
+        params.has("calendarFrom") &&
+        params.has("calendarTo");
+
+      if (!hasAllCalendarKeys) {
+        const defaultRange =
+          calendarRange ??
+          normalizeCalendarRange({}, undefined, { keyPrefix: "calendar" });
+        params.set("calendarView", defaultRange.view);
+        params.set("calendarFrom", defaultRange.from);
+        params.set("calendarTo", defaultRange.to);
       }
+
+      // Purge any stale global calendar keys
+      params.delete("view");
+      params.delete("from");
+      params.delete("to");
+      params.delete("projectId");
     } else if (tab === "archive") {
       if (archiveQuery) {
         if (!params.has("archiveFrom"))
@@ -234,9 +271,16 @@ export function ProjectWorkspaceShell({
         project={project}
         clients={clients}
         effectiveCapacity={effectiveCapacity}
+        actorRole={actorRole}
+        canManageOperationalLifecycle={canManageOperationalLifecycle}
         baseHref={baseHref}
         onOpenEditDialog={() => setIsEditOpen(true)}
         onOpenStatusDialog={handleStatusDialog}
+        onOpenClientIdentity={
+          canManageClientIdentity
+            ? () => setIsClientIdentityOpen(true)
+            : undefined
+        }
         navigation={isDesktop ? navigationContent : undefined}
       />
 
@@ -268,6 +312,11 @@ export function ProjectWorkspaceShell({
             milestoneSummaries={milestoneSummaries}
             canManageMilestones={canManageMilestones}
             onOpenEditDialog={() => setIsEditOpen(true)}
+            onOpenClientIdentity={
+              canManageClientIdentity
+                ? () => setIsClientIdentityOpen(true)
+                : undefined
+            }
             onSelectTab={(tab) => handleTabChange(tab)}
             onOpenMilestone={handleOpenMilestone}
           />
@@ -278,6 +327,7 @@ export function ProjectWorkspaceShell({
             project={project}
             initialTasks={initialTasks}
             effectiveCapacity={effectiveCapacity}
+            canManageOperationalLifecycle={canManageOperationalLifecycle}
             locale={locale}
             milestoneOptions={milestoneOptions}
           />
@@ -289,6 +339,7 @@ export function ProjectWorkspaceShell({
             initialDeliverables={initialDeliverables}
             tasks={initialTasks}
             effectiveCapacity={effectiveCapacity}
+            canManageOperationalLifecycle={canManageOperationalLifecycle}
             currentUserId={currentUserId}
           />
         </TabsContent>
@@ -379,6 +430,19 @@ export function ProjectWorkspaceShell({
         isOpen={isReopenOpen}
         onClose={() => setIsReopenOpen(false)}
       />
+
+      {/* Client Identity Dialog */}
+      {canManageClientIdentity && (
+        <ProjectClientIdentityDialog
+          isOpen={isClientIdentityOpen}
+          onClose={() => setIsClientIdentityOpen(false)}
+          project={project}
+          organizations={organizations}
+          directContacts={directContacts}
+          associatedContactIds={associatedContactIds}
+          actorRole={actorRole}
+        />
+      )}
     </Tabs>
   );
 }

@@ -84,10 +84,7 @@ export function DeliverableCreateDialog({
   const selectedTaskId = useWatch({ control, name: "task_id" });
   const selectedTask = availableTasks.find((t) => t.id === selectedTaskId);
   const taskType = selectedTask?.task_type ?? "internal_work";
-
   const isClientProject = project.project_type === "client";
-  const hasClientOrg = Boolean(project.client_id);
-  const isMissingClientOrg = isClientProject && !hasClientOrg;
 
   const allowedMemberTypes: MemberCapacity[] =
     taskType === "internal_work"
@@ -128,10 +125,6 @@ export function DeliverableCreateDialog({
   let blockedReason: string | null = null;
   if (availableTasks.length === 0) {
     blockedReason = tTasks("create.noEligibleTasksDescription");
-  } else if (taskType === "client_request" && isMissingClientOrg) {
-    blockedReason = tTasks("create.incompleteClientSetupForClientRequest");
-  } else if (taskType === "internal_work" && isMissingClientOrg) {
-    blockedReason = tTasks("create.incompleteClientSetupForClientRequest");
   } else if (taskType === "client_request" && compatibleMembers.length === 0) {
     blockedReason = tTasks("create.noCompatibleClientMembers");
   } else if (compatibleMembers.length === 0) {

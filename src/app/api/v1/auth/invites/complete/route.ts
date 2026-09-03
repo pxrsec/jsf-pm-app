@@ -1,11 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import crypto from "crypto";
+import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { appConfig } from "@/config/app.config";
 import { CompleteInviteSchema } from "@/lib/validation/auth";
 import { ROLE_DEFAULT_PATHS } from "@/lib/auth/routes";
+import { hashInvitationToken } from "@/lib/invitations/crypto";
+import { logger } from "@/lib/logger";
 
 function isValidOrigin(origin: string | null): boolean {
   if (!origin) return false;
@@ -27,29 +29,17 @@ function isValidOrigin(origin: string | null): boolean {
   }
 }
 
+const AcceptInviteRpcResultSchema = z.object({
+  success: z.literal(true),
+  role: z.enum(["client", "operator"]),
+  project_id: z.string().uuid().nullable().optional(),
+  client_id: z.string().uuid().nullable().optional(),
+});
+
 export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID();
 
-  // 1. Validate Idempotency-Key header
-  const idempotencyKey = request.headers.get("Idempotency-Key");
-  if (
-    !idempotencyKey ||
-    idempotencyKey.length < 16 ||
-    idempotencyKey.length > 128
-  ) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "validation_error",
-          message: "A valid Idempotency-Key header (16-128 chars) is required",
-        },
-        request_id: requestId,
-      },
-      { status: 400 },
-    );
-  }
-
-  // 2. Validate Origin header
+  // 1. Validate Origin header
   const origin = request.headers.get("Origin");
   if (origin && !isValidOrigin(origin)) {
     return NextResponse.json(
@@ -64,7 +54,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 3. Parse and validate request body
+  // 2. Parse and validate request body
   let body: unknown;
   try {
     body = await request.json();
@@ -102,13 +92,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { token, full_name, password, phone_e164 } = parseResult.data;
+  const { token, full_name, password, phone_e164, whatsapp_opt_in } =
+    parseResult.data;
 
-  // 4. Hash token server-side (SHA-256 -> bytea format)
-  const tokenHashHex = crypto.createHash("sha256").update(token).digest("hex");
-  const byteaHash = `\\x${tokenHashHex}`;
+  // 3. Hash token server-side via canonical helper
+  const byteaHash = hashInvitationToken(token);
 
-  // 5. Query invite_tokens row using server admin client
+  // 4. Query invite_tokens row using server admin client
   const adminClient = createAdminClient();
   const { data: invite, error: inviteError } = await adminClient
     .from("invite_tokens")
@@ -147,7 +137,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 6. Create Supabase Auth user via admin client
+  // 5. Create Supabase Auth user via admin client
   const { data: userData, error: createUserError } =
     await adminClient.auth.admin.createUser({
       email: invite.email,
@@ -156,23 +146,42 @@ export async function POST(request: NextRequest) {
       user_metadata: { full_name },
     });
 
-  if (createUserError || !userData.user) {
-    // If user already exists in auth.users
+  if (createUserError || !userData?.user?.id) {
+    const errorMsg = createUserError?.message?.toLowerCase() ?? "";
+    const isConflict =
+      errorMsg.includes("already registered") ||
+      errorMsg.includes("already been registered") ||
+      errorMsg.includes("already exists") ||
+      (createUserError as { status?: number })?.status === 422;
+
+    if (isConflict) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "conflict",
+            message: "An account with this email address already exists.",
+          },
+          request_id: requestId,
+        },
+        { status: 409 },
+      );
+    }
+
     return NextResponse.json(
       {
         error: {
-          code: "conflict",
-          message: "An account with this email address already exists.",
+          code: "unavailable",
+          message: "Unable to create authentication account.",
         },
         request_id: requestId,
       },
-      { status: 409 },
+      { status: 503 },
     );
   }
 
-  const userId = userData.user.id;
+  const createdUserId = userData.user.id;
 
-  // 7. Establish authenticated server session and call accept_invite RPC
+  // 6. Establish authenticated server session
   const cookieStore = await cookies();
   const userClient = createClient(cookieStore);
 
@@ -182,6 +191,19 @@ export async function POST(request: NextRequest) {
   });
 
   if (signInError) {
+    // Bounded compensation: delete newly created auth user only
+    try {
+      await adminClient.auth.admin.deleteUser(createdUserId);
+    } catch (cleanupErr) {
+      logger.error("Failed to clean up created auth user after sign-in error", {
+        requestId,
+        error: cleanupErr instanceof Error ? cleanupErr.message : "Unknown",
+      });
+    }
+    if (typeof userClient?.auth?.signOut === "function") {
+      await userClient.auth.signOut().catch(() => {});
+    }
+
     return NextResponse.json(
       {
         error: {
@@ -194,12 +216,31 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Call accept_invite RPC
-  const { error: rpcError } = await userClient.rpc("accept_invite", {
-    p_token_hash: byteaHash,
-  });
+  // 7. Invoke four-argument accept_invite RPC
+  const { data: rpcData, error: rpcError } = await userClient.rpc(
+    "accept_invite",
+    {
+      p_token_hash: byteaHash,
+      p_full_name: full_name,
+      p_phone_e164: phone_e164 ?? null,
+      p_whatsapp_opt_in: whatsapp_opt_in,
+    },
+  );
 
   if (rpcError) {
+    // Bounded compensation: delete newly created auth user only
+    try {
+      await adminClient.auth.admin.deleteUser(createdUserId);
+    } catch (cleanupErr) {
+      logger.error("Failed to clean up created auth user after RPC failure", {
+        requestId,
+        error: cleanupErr instanceof Error ? cleanupErr.message : "Unknown",
+      });
+    }
+    if (typeof userClient?.auth?.signOut === "function") {
+      await userClient.auth.signOut().catch(() => {});
+    }
+
     return NextResponse.json(
       {
         error: {
@@ -212,21 +253,41 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Update profile details (phone_e164, full_name)
-  if (phone_e164) {
-    await userClient
-      .from("profiles")
-      .update({ phone_e164, full_name })
-      .eq("id", userId);
+  // 8. Validate return payload shape and role
+  const validationResult = AcceptInviteRpcResultSchema.safeParse(rpcData);
+  if (!validationResult.success) {
+    // Bounded compensation
+    try {
+      await adminClient.auth.admin.deleteUser(createdUserId);
+    } catch (cleanupErr) {
+      logger.error(
+        "Failed to clean up created auth user after invalid RPC response",
+        {
+          requestId,
+          error: cleanupErr instanceof Error ? cleanupErr.message : "Unknown",
+        },
+      );
+    }
+    await userClient.auth.signOut().catch(() => {});
+
+    return NextResponse.json(
+      {
+        error: {
+          code: "unavailable",
+          message: "Invalid response from acceptance command.",
+        },
+        request_id: requestId,
+      },
+      { status: 503 },
+    );
   }
 
-  const role = invite.role as keyof typeof ROLE_DEFAULT_PATHS;
-  const redirectPath = ROLE_DEFAULT_PATHS[role] ?? "/iniciar-sesion";
+  const validatedRole = validationResult.data.role;
+  const redirectPath = ROLE_DEFAULT_PATHS[validatedRole] ?? "/iniciar-sesion";
 
   return NextResponse.json(
     {
       data: {
-        user_id: userId,
         redirect_path: redirectPath,
       },
     },

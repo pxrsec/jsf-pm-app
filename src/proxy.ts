@@ -6,6 +6,9 @@ import { updateSession } from "./lib/auth/middleware-session";
 const handleI18nRouting = createMiddleware(routing);
 
 export default async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/api")) {
+    return await updateSession(request);
+  }
   return await updateSession(request, (req) => handleI18nRouting(req));
 }
 

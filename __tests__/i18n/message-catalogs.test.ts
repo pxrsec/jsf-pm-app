@@ -42,12 +42,14 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
     expect(esCatalog).toHaveProperty("notificationOperations");
     expect(esCatalog).toHaveProperty("archive");
     expect(esCatalog).toHaveProperty("linkIncidents");
+    expect(esCatalog).toHaveProperty("accountAccess");
     expect(enCatalog).toHaveProperty("shell");
     expect(enCatalog).toHaveProperty("privacy");
     expect(enCatalog).toHaveProperty("notifications");
     expect(enCatalog).toHaveProperty("notificationOperations");
     expect(enCatalog).toHaveProperty("archive");
     expect(enCatalog).toHaveProperty("linkIncidents");
+    expect(enCatalog).toHaveProperty("accountAccess");
   });
 
   it("both catalogs contain active shell.nav.links.notifications, notificationOperations, and inbox aria keys", () => {
@@ -77,6 +79,18 @@ describe("VC-I18N-007: Message catalogs exist with identical JSON structure and 
     expect(enShell?.nav?.links?.notificationOperations).toBe(
       "Notification Operations",
     );
+    expect((esShell?.nav?.links as Record<string, string>)?.account).toBe(
+      "Cuenta",
+    );
+    expect((enShell?.nav?.links as Record<string, string>)?.account).toBe(
+      "Account",
+    );
+    expect(
+      (esShell?.nav?.links as Record<string, string>)?.accessManagement,
+    ).toBe("Gestión de Acceso");
+    expect(
+      (enShell?.nav?.links as Record<string, string>)?.accessManagement,
+    ).toBe("Access Management");
     expect(esShell?.nav?.notifications?.inboxLinkAria).toBe(
       "Bandeja de notificaciones",
     );

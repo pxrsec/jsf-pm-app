@@ -36,11 +36,15 @@
         "agenda": "My Agenda",
         "calendar": "Calendar",
         "archive": "Archive",
+        "recycleBin": "Recycle Bin",
+        "clients": "Clients",
         "linkIncidents": "Link Incidents",
         "metrics": "Metrics",
         "operations": "Operations",
         "notifications": "Notifications",
-        "notificationOperations": "Notification Operations"
+        "notificationOperations": "Notification Operations",
+        "accessManagement": "Access Management",
+        "account": "Account"
       },
       "notifications": {
         "badgeLabel": "Unread notifications",
@@ -122,8 +126,34 @@
   },
   "privacy": {
     "title": "Privacy Policy",
-    "placeholderNotice": "This is a placeholder notice.",
-    "notLegalAdvice": "This is not legal advice."
+    "description": "Preliminary privacy policy draft for Joya Star Films project management application.",
+    "sections": {
+      "placeholderTitle": "Scope & Policy Status",
+      "placeholderBody": "Detailed content for this draft is pending stakeholder and legal review. This page does not establish approved legal terms, notices, obligations, or compliance commitments."
+    }
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "description": "Preliminary terms of service draft for Joya Star Films project management application.",
+    "sections": {
+      "placeholderTitle": "Terms & Service Status",
+      "placeholderBody": "Detailed content for this draft is pending stakeholder and legal review. This page does not establish approved legal terms, notices, obligations, or compliance commitments."
+    }
+  },
+  "legal": {
+    "footerNavLabel": "Legal",
+    "links": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    },
+    "draftBadge": "Draft / Pending Approval",
+    "draftNotice": "This document is a preliminary draft for review purposes only and is pending stakeholder approval. It does not constitute binding legal advice, official terms, or an approved compliance notice.",
+    "backToSignIn": "Back to Sign In"
+  },
+  "landing": {
+    "title": "Production Management Platform",
+    "description": "Centralized workspace for film production workflows, task coordination, deliverables, and team collaboration.",
+    "signInAction": "Sign In"
   },
   "errors": {
     "title": "Something went wrong",
@@ -156,13 +186,25 @@
     },
     "invitation": {
       "title": "Set Up Your Account",
+      "fixedEmailNotice": "This account will be created for the email address associated with this invitation.",
       "fullNameLabel": "Full name",
       "phoneLabel": "Phone number (optional)",
+      "phoneHelp": "E.164 format (e.g. +525512345678)",
       "passwordLabel": "Password",
+      "passwordPolicyHelp": "Minimum 12 characters: uppercase, lowercase, numbers, and allowed symbols (!@#$%^&*()_+-=[]{};':\",.<>/?).",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
       "whatsappOptInLabel": "I wish to receive operational notifications via WhatsApp",
       "submitLabel": "Complete registration",
       "errorPolicy": "Password must be at least 12 characters and include uppercase, lowercase, numbers, and symbols.",
-      "errorGeneric": "We could not process your invitation. Please verify your details or request a new invite."
+      "errorGeneric": "We could not process your invitation. Please verify your details or request a new invite.",
+      "errors": {
+        "conflict": "An account with this email address already exists.",
+        "validation_error": "The submitted details do not meet security requirements.",
+        "invite_terminal": "This invitation has expired, was revoked, or has already been used.",
+        "authentication_failed": "Failed to establish an automatic session after creating the account.",
+        "unavailable": "The service is temporarily unavailable. Please try again."
+      }
     },
     "sessionExpired": {
       "title": "Invalid or Expired Link",
@@ -213,6 +255,7 @@
       "client": "Client",
       "internal": "Internal",
       "unassigned": "Unassigned",
+      "direct": "Direct",
       "clientDescription": "External client project with production deliverables.",
       "internalDescription": "Internal operational project without production deliverables."
     },
@@ -270,9 +313,53 @@
         "primaryLeadLabel": "Primary Lead",
         "deadlineLabel": "Deadline",
         "editAction": "Edit Information",
+        "clientIdentityAction": "Client Identity",
         "statusActions": "Status",
         "completeProject": "Complete Project",
         "reopenProject": "Reopen Project"
+      },
+      "clientIdentity": {
+        "dialogTitle": "Client Identity",
+        "dialogDescription": "Configure the client identity linked to this project (organization or direct contact).",
+        "modes": {
+          "organization": "Client Organization",
+          "directContact": "Direct Contact (No organization)",
+          "noIdentity": "No Identity Yet"
+        },
+        "fields": {
+          "mode": "Identity Mode",
+          "selectOrg": "Organization",
+          "selectContact": "Direct Contact"
+        },
+        "placeholders": {
+          "org": "Select an organization...",
+          "contact": "Select a direct contact..."
+        },
+        "noIdentityPlanningNotice": "The project will remain in planning without an associated client identity.",
+        "directContactNotice": "Direct-contact projects are only allowed during the planning phase. Advancing to active execution will require an organization.",
+        "nonPlanningNotice": "Active in-progress or paused projects strictly require a client organization.",
+        "linkedAccountBadge": "Linked Account",
+        "noAccountBadge": "No Account",
+        "linkedAccountMemberHint": "This contact already has a registered account. You can add them to the team in the Members tab.",
+        "confirmTransitionTitle": "Confirm Identity Change?",
+        "confirmTransitionDescription": "Changing client identity will clear the current project assignment. Do you wish to continue?",
+        "confirmTransitionAction": "Confirm & Save",
+        "inviteClientAction": "Invite Client",
+        "inviteClientTitle": "Invite Direct Contact",
+        "inviteClientDescription": "Generate a single-use registration link for this direct contact.",
+        "actions": {
+          "cancel": "Cancel",
+          "save": "Save Identity",
+          "close": "Close"
+        },
+        "errors": {
+          "unavailable": "Organization and contact data is unavailable. Please try again.",
+          "unauthorized": "You are not authorized to manage client identity.",
+          "validationFailed": "Please select a valid option.",
+          "readinessConflict": "The current project status does not allow this identity configuration.",
+          "saveFailed": "An error occurred while saving client identity. Please check the current state and try again."
+        },
+        "successToast": "Client identity updated successfully."
       },
       "completion": {
         "dialogTitle": "Complete Project",
@@ -565,7 +652,8 @@
           "cancelAction": "Cancel",
           "submitting": "Recording version...",
           "successToast": "Version v{version} recorded for internal review.",
-          "errorToast": "Could not record version. Please verify the entered link."
+          "errorToast": "Could not record version. Please verify the entered link.",
+          "validationError": "The link must be a valid Google Drive URL (https://drive.google.com/... or https://docs.google.com/...) without spaces or ports."
         },
         "reviewDialog": {
           "title": "Internal Deliverable Review",
@@ -659,6 +747,10 @@
         "watcherMode": {
           "readOnlyNotice": "Read-only — Watcher capacity",
           "cannotMutate": "PM Watchers can view history and comment, but cannot plan, edit, archive, or submit versions."
+        },
+        "workflows": {
+          "production": "Production deliverable",
+          "client_submission": "Client submission"
         }
       },
       "activity": {
@@ -734,7 +826,11 @@
         "notificationsLabel": "Receive project notifications",
         "submitAction": "Add Member",
         "cancelAction": "Cancel",
-        "successToast": "Member added successfully."
+        "successToast": "Member added successfully.",
+        "directPrerequisiteHint": "To add a client on a direct project, first associate their contact in Clients and ensure they have completed their invitation.",
+        "clientsUnavailable": "Client contacts are temporarily unavailable.",
+        "internalDisabledHint": "Not available on internal projects",
+        "noUsersAvailable": "No users available in this capacity."
       },
       "changeDialog": {
         "title": "Change Member Capacity",
@@ -841,7 +937,8 @@
         "hasDeliverables": "This task has linked production deliverables.",
         "editAction": "Edit",
         "closeAction": "Close",
-        "ariaLabel": "Task details: {title}"
+        "ariaLabel": "Task details: {title}",
+        "viewTaskDetails": "View task details"
       },
       "create": {
         "title": "New Task",
@@ -1086,6 +1183,43 @@
         "retryAction": "Try again",
         "returnAction": "Back to My Agenda"
       }
+    },
+    "managerTask": {
+      "backToTasks": "Back to project tasks",
+      "taskContext": "Task details",
+      "projectLabel": "Project",
+      "viewProjectAria": "View project workspace for {projectName}",
+      "breadcrumbs": {
+        "projects": "Projects",
+        "tasks": "Tasks"
+      },
+      "descriptionTitle": "Description",
+      "noDescription": "No description provided for this task.",
+      "timeContext": "Timeline & Dates",
+      "assignedAt": "Assigned: {date}",
+      "deadlineAt": "Deadline: {date}",
+      "startedAt": "Started: {date}",
+      "completedAt": "Completed: {date}",
+      "resourcesTitle": "Task Resources",
+      "noResources": "No resources attached to this task.",
+      "externalResourceAria": "Open external resource: {name} (opens in a new tab)",
+      "deliverablesTitle": "Associated Deliverables",
+      "deliverablesCount": "{count, plural, =0 {No deliverables} =1 {1 deliverable} other {# deliverables}}",
+      "noDeliverables": "No deliverables associated with this task.",
+      "openDeliverableDetail": "View details",
+      "openDeliverableDetailAria": "View details for deliverable {title}",
+      "versionIndicator": "v{version}",
+      "currentVersion": "Current: v{version}",
+      "submissionDeadline": "Submission: {date}",
+      "internalReviewDeadline": "Internal review: {date}",
+      "clientDeliveryDeadline": "Client delivery: {date}",
+      "absence": {
+        "title": "Task unavailable",
+        "description": "The requested task was not found or is unavailable.",
+        "returnAction": "Back to projects"
+      },
+      "assigneeHeading": "Assigned member",
+      "unassigned": "Unassigned"
     },
     "operatorSubmission": {
       "dialogTitle": "Submit production version",
@@ -1714,6 +1848,10 @@
       "client_delivery_deadline": "Client Delivery",
       "milestone": "Milestone"
     },
+    "eventAria": {
+      "taskLink": "View task details: {title}",
+      "projectLink": "View project workspace: {title}"
+    },
     "scope": {
       "allProjects": "All projects",
       "projectScope": "Project Scope",
@@ -1747,6 +1885,7 @@
       "milestoneTitle": "Milestone title",
       "milestoneType": "Milestone type",
       "relatedTasks": "Related tasks",
+      "taskLinkAria": "View task: {title} in {projectName}",
       "untracked": "No tasks associated with this milestone yet.",
       "progressLabel": "Milestone progress",
       "name": "Title",
@@ -1840,6 +1979,13 @@
       "prevPeriod": "Go to previous period",
       "nextPeriod": "Go to next period",
       "todayButton": "Go to current date"
+    },
+    "legend": {
+      "title": "Legend",
+      "tasks": "Tasks",
+      "deliverables": "Deliverables",
+      "milestones": "Milestones",
+      "events": "Events"
     }
   },
   "archive": {
@@ -2351,6 +2497,429 @@
       "attentionUnavailable": "Unable to load operational attention summary.",
       "auditUnavailable": "Unable to load audit history.",
       "userStateUnavailable": "Unable to load user and invitation state."
+    }
+  },
+  "clientAdministration": {
+    "title": "Client Administration",
+    "description": "Manage direct client directory, project associations, and system invitations.",
+    "unavailableTitle": "Client Administration Unavailable",
+    "unavailableDescription": "Unable to load client administration data at this time. Please try again later.",
+    "tabs": {
+      "contacts": "Contacts & Directory",
+      "invitations": "Invitations"
+    },
+    "contactsPanel": {
+      "title": "Client Directory",
+      "description": "Directory of client contacts, organization memberships, and project readiness associations.",
+      "createContact": "New Contact",
+      "projectAssociationTitle": "Project Association Toolbar",
+      "selectProjectPlaceholder": "Select a client project...",
+      "noProjectSelectedPlaceholder": "No project selected (View directory)",
+      "associationExplanationNotice": "Direct contact associations are used for project identity and deliverable readiness planning. Associating a direct contact does not send an invitation, grant access, or create project membership.",
+      "columns": {
+        "name": "Contact Name",
+        "organization": "Organization",
+        "jobTitle": "Job Title",
+        "email": "Email",
+        "accountStatus": "Linked Account",
+        "projectAssociated": "Associated with Project",
+        "actions": "Actions"
+      },
+      "directContactBadge": "Direct Contact",
+      "primaryBadge": "Primary",
+      "unknownOrg": "Unknown",
+      "accountLinked": "Account Linked",
+      "noAccount": "No Account",
+      "emptyState": "No client contacts found in directory.",
+      "orgContactNotToggled": "Organization contact",
+      "toggleAssociationAria": "Toggle project association for",
+      "editContactAria": "Edit contact",
+      "associationLoadFailed": "Failed to load project associations.",
+      "associatedSuccess": "Contact associated with project.",
+      "disassociatedSuccess": "Contact disassociated from project.",
+      "associationMutationFailed": "Failed to update project association."
+    },
+    "contactDialog": {
+      "createTitle": "New Client Contact",
+      "createDescription": "Add a new client contact to an organization or as a direct contact.",
+      "editTitle": "Edit Client Contact",
+      "editDescription": "Update client contact information and organization affiliation.",
+      "directContactOption": "No organization (Direct contact)",
+      "directContactNotice": "Direct contacts belong to no organization and can be associated with individual client projects.",
+      "fields": {
+        "fullName": "Full Name",
+        "email": "Email Address",
+        "organization": "Client Organization",
+        "jobTitle": "Job Title (Optional)",
+        "phone": "Phone (E.164, Optional)",
+        "isPrimary": "Designate as primary contact for organization"
+      },
+      "placeholders": {
+        "fullName": "e.g. Maria Gonzalez",
+        "email": "e.g. maria@example.com",
+        "organization": "Select organization...",
+        "jobTitle": "e.g. Creative Director"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create Contact",
+        "save": "Save Changes"
+      },
+      "errors": {
+        "fullNameRequired": "Full name is required.",
+        "emailRequired": "Valid email address is required.",
+        "invalidPhone": "Phone must be in E.164 format (e.g. +525512345678).",
+        "unauthorized": "You do not have permission to manage client contacts.",
+        "validationFailed": "Please check the entered values and try again.",
+        "unavailable": "Failed to save client contact. Please try again."
+      }
+    },
+    "invitationsPanel": {
+      "title": "Ordinary Invitations",
+      "description": "Issue, monitor, and revoke invitations for Clients and Operators.",
+      "createInvitation": "Issue Invitation",
+      "columns": {
+        "role": "Role",
+        "recipient": "Recipient / Contact",
+        "project": "Project",
+        "status": "Status",
+        "createdAt": "Issued",
+        "expiresAt": "Expires",
+        "resolvedAt": "Resolved",
+        "actions": "Actions"
+      },
+      "roles": {
+        "client": "Client",
+        "operator": "Operator"
+      },
+      "statuses": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "expired": "Expired",
+        "revoked": "Revoked"
+      },
+      "actions": {
+        "rotate": "Resend / Rotate Link",
+        "revoke": "Revoke Invitation"
+      },
+      "emptyState": "No invitations found.",
+      "terminalState": "Finalized",
+      "loadMore": "Load More Invitations",
+      "loadingMore": "Loading...",
+      "loadMoreFailed": "Failed to load more invitations.",
+      "rotateFailed": "Failed to rotate invitation link.",
+      "revokeSuccess": "Invitation revoked successfully.",
+      "revokeFailed": "Failed to revoke invitation.",
+      "actionFailed": "Action failed. Please try again."
+    },
+    "createInviteDialog": {
+      "title": "Issue Ordinary Invitation",
+      "description": "Generate a single-use onboarding link for a Client or Operator.",
+      "noProjectOption": "No project association",
+      "noUnlinkedContacts": "No unlinked contacts available",
+      "allContactsLinkedHint": "All existing contacts already have registered accounts. Create a new contact first.",
+      "fields": {
+        "role": "Recipient Role",
+        "contact": "Client Contact",
+        "recipientEmail": "Recipient Email",
+        "project": "Associated Project (Optional)",
+        "lifetime": "Link Expiration"
+      },
+      "roles": {
+        "client": "Client (External)",
+        "operator": "Operator (Internal)"
+      },
+      "placeholders": {
+        "contact": "Select client contact...",
+        "email": "e.g. operator@joyastarfilms.com",
+        "project": "Select project..."
+      },
+      "lifetimes": {
+        "hours24": "24 hours (1 day)",
+        "hours72": "72 hours (3 days)",
+        "days7": "7 days (Standard)",
+        "days14": "14 days (2 weeks)",
+        "days30": "30 days (1 month)"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Generate Link"
+      },
+      "errors": {
+        "contactRequired": "Client contact selection is required.",
+        "emailRequired": "Valid recipient email is required.",
+        "unauthorized": "You do not have permission to issue invitations.",
+        "validationFailed": "Invalid invitation parameters.",
+        "unavailable": "Failed to generate invitation link. Please try again."
+      }
+    },
+    "confirmDialog": {
+      "rotateTitle": "Resend & Rotate Invitation Link?",
+      "rotateDescription": "Generating a new link will immediately invalidate any previous link sent to this recipient.",
+      "revokeTitle": "Revoke Invitation?",
+      "revokeDescription": "This invitation link will be permanently revoked and can no longer be used for account registration.",
+      "cancel": "Cancel",
+      "rotateConfirm": "Generate New Link",
+      "revokeConfirm": "Revoke Link"
+    },
+    "copyDialog": {
+      "title": "Invitation Link Ready",
+      "description": "Copy this single-use invitation link and send it directly to the recipient.",
+      "oneTimeWarning": "This link is single-use and will not be shown again. Once you close this window, you cannot view this link again.",
+      "copyAction": "Copy Link to Clipboard",
+      "copied": "Link Copied to Clipboard!",
+      "copyFailed": "Failed to copy link. Please try again.",
+      "close": "Close & Dismiss"
+    }
+  },
+  "operationalLifecycle": {
+    "recycleBin": {
+      "title": "Recycle Bin",
+      "description": "Manage archived items across the system. Administrators can restore or permanently delete; Project Managers can restore.",
+      "empty": "The recycle bin is empty",
+      "emptyDescription": "There are currently no archived projects, tasks, deliverables, or milestones.",
+      "unavailable": "Recycle bin unavailable",
+      "unavailableDescription": "An error occurred while loading recycle bin items. Please try again.",
+      "retryAction": "Retry",
+      "columns": {
+        "entityType": "Type",
+        "title": "Title",
+        "archivedAt": "Archived at",
+        "reason": "Reason",
+        "actions": "Actions"
+      },
+      "entityTypes": {
+        "project": "Project",
+        "task": "Task",
+        "deliverable": "Deliverable",
+        "milestone": "Milestone"
+      },
+      "parentArchivedBadge": "Parent container archived",
+      "parentArchivedTooltip": "Restore the parent container before restoring this item",
+      "parentArchivedInlineNotice": "The parent project or container is archived. You must restore it first.",
+      "restoreAction": "Restore",
+      "restoreSubmitting": "Restoring...",
+      "restoreSuccessToast": "Item restored successfully",
+      "restoreErrorToast": "Error restoring item",
+      "restoreAriaLabel": "Restore {type}: {title}",
+      "permanentDeleteAction": "Permanently delete",
+      "permanentDeleteAriaLabel": "Permanently delete {type}: {title}",
+      "filters": {
+        "all": "All",
+        "searchPlaceholder": "Search recycle bin...",
+        "clearSearch": "Clear search",
+        "showingCount": "Showing {count} of {total}",
+        "noFilterResults": "No archived items in this category",
+        "noSearchResults": "No items match your search",
+        "clearFilters": "Reset filters",
+        "backToDashboard": "Back to dashboard",
+        "viewArchive": "View finalized archive",
+        "statsTotal": "{count} total",
+        "statsRestorable": "{count} recoverable",
+        "statsBlocked": "{count} blocked"
+      }
+    },
+    "permanentDeleteDialog": {
+      "title": "Permanent Deletion",
+      "warning": "This action is completely irreversible. All associated records and data will be permanently destroyed.",
+      "previewLoading": "Checking dependencies and permissions...",
+      "previewUnavailable": "Unable to verify permanent deletion. Please try again.",
+      "blockerDependenciesPresent": "Cannot be deleted because it contains active or unpurged dependent items. Purge or delete dependencies first.",
+      "blockerArchiveRequired": "Item must be archived before permanent deletion.",
+      "blockerNotFoundOrArchiveRequired": "Item was not found or is not archived.",
+      "blockerNotFound": "Item was not found.",
+      "blockerParentArchived": "Item or its parent container was not found.",
+      "cancelAction": "Cancel",
+      "archiveInsteadAction": "Keep archived",
+      "confirmAction": "Confirm permanent deletion",
+      "deleting": "Permanently deleting...",
+      "successToast": "Item permanently deleted",
+      "errorToast": "Error permanently deleting item"
+    },
+    "errors": {
+      "unauthorized": "You are not authorized to perform this operation.",
+      "forbidden": "You do not have the required permissions for this operation.",
+      "invalidInput": "The provided input data is invalid.",
+      "dependenciesPresent": "Cannot delete because associated dependencies exist.",
+      "archiveRequired": "The item must be archived before being permanently deleted.",
+      "notFoundOrParentArchived": "Cannot restore because the parent container is archived or item not found.",
+      "notFoundOrArchived": "The item was not found or is already archived.",
+      "notFoundOrActive": "The item was not found or is already active.",
+      "lifecycleUnavailable": "The lifecycle service is currently unavailable."
+    }
+  },
+  "accountAccess": {
+    "accountSettings": {
+      "title": "Account",
+      "description": "Manage your account information and personal preferences.",
+      "roleLabel": "System role",
+      "fullNameLabel": "Full name",
+      "fullNamePlaceholder": "Enter your full name",
+      "localeLabel": "Preferred language",
+      "timezoneLabel": "Timezone",
+      "timezonePlaceholder": "e.g. America/New_York",
+      "timezoneHelp": "Enter a valid IANA timezone.",
+      "emailNotifLabel": "Email notifications",
+      "emailNotifDescription": "Receive notices and important updates in your inbox.",
+      "saveButton": "Save changes",
+      "savingButton": "Saving...",
+      "successToast": "Account settings updated successfully.",
+      "errorToast": "Could not update account settings.",
+      "validationError": "Please verify that the fields are valid.",
+      "unavailableTitle": "Settings unavailable",
+      "unavailableDescription": "Could not load your account settings at this time.",
+      "retryButton": "Retry"
+    },
+    "bugReportForm": {
+      "title": "Report an issue",
+      "description": "Send a detailed report to the administration and support team.",
+      "formTitle": "Report a system bug",
+      "formDescription": "If you encounter an error or unexpected behavior, report it here. The technical team will review it.",
+      "titleLabel": "Report title",
+      "titlePlaceholder": "Brief summary of the issue",
+      "descLabel": "Detailed description",
+      "descPlaceholder": "Describe the steps to reproduce the issue or what happened...",
+      "warningTitle": "Security notice",
+      "warningBody": "Never include passwords, access tokens, API keys, or financial data in this report.",
+      "submitButton": "Submit report",
+      "submittingButton": "Submitting...",
+      "successTitle": "Report submitted successfully",
+      "successBody": "Your report has been recorded and is open for review by the management team.",
+      "submitAnotherButton": "Submit another report",
+      "errorToast": "Could not submit bug report.",
+      "validationError": "Title must be between 1 and 160 characters and description between 1 and 5000 characters."
+    },
+    "managerConsole": {
+      "title": "Access Management & Support",
+      "description": "Centralized management of user access, inactivity reminders, and bug report triage.",
+      "tabsAriaLabel": "Access management views",
+      "tabs": {
+        "users": "Users",
+        "stale": "Stale access",
+        "bugs": "Bug reports"
+      }
+    },
+    "directory": {
+      "title": "User Directory",
+      "description": "Oversight of user access states and active memberships.",
+      "emptyTitle": "No users found",
+      "emptyDescription": "No users were found in the system directory.",
+      "unavailableTitle": "Directory unavailable",
+      "unavailableDescription": "Could not load the user directory at this time.",
+      "retryButton": "Retry",
+      "loadMoreButton": "Load more",
+      "loadingMore": "Loading more...",
+      "loadMoreError": "Could not load more users.",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "lastAuthNever": "Never",
+      "lastActionNever": "No previous records",
+      "lastAccessActionAtLabel": "Last access action",
+      "lastSuccessfulAuthAtLabel": "Last successful sign in",
+      "columns": {
+        "fullName": "Name",
+        "role": "Role",
+        "status": "Status",
+        "lastAuth": "Last access",
+        "memberships": "Projects",
+        "tasks": "Tasks",
+        "deliverables": "Deliverables",
+        "invitations": "Invitations",
+        "lastAction": "Last action",
+        "actions": "Actions"
+      },
+      "actions": {
+        "deactivate": "Deactivate",
+        "reactivate": "Reactivate",
+        "deactivateAria": "Deactivate access for {name}",
+        "reactivateAria": "Reactivate access for {name}"
+      }
+    },
+    "deactivationDialog": {
+      "title": "Deactivate user access",
+      "description": "You are about to suspend platform access for {name}.",
+      "warningBanner": "The user will immediately lose platform access. All pending invitations will be revoked. Their activity and audit history will remain intact. This action does not delete the account.",
+      "nameConfirmationPrompt": "To confirm deactivation, type the user's full name ({name}):",
+      "nameConfirmationPlaceholder": "Type exact full name",
+      "nameMismatchError": "The entered name does not match the user's full name.",
+      "cancel": "Cancel",
+      "confirm": "Confirm deactivation",
+      "deactivating": "Deactivating...",
+      "errors": {
+        "selfLockout": "You cannot deactivate your own access account.",
+        "lastManagementAccount": "Cannot deactivate the system's last active management account.",
+        "notFound": "The user was not found or their status has already changed.",
+        "unavailable": "Could not complete deactivation at this time."
+      },
+      "successToast": "User access has been successfully deactivated."
+    },
+    "reactivationDialog": {
+      "title": "Reactivate user access",
+      "description": "Do you want to restore platform access for {name}?",
+      "warningNoInvitesRestored": "Previously revoked invitations will not be restored automatically.",
+      "cancel": "Cancel",
+      "confirm": "Confirm reactivation",
+      "reactivating": "Reactivating...",
+      "errors": {
+        "unavailable": "Could not reactivate user access at this time."
+      },
+      "successToast": "User access has been successfully reactivated."
+    },
+    "staleAccess": {
+      "title": "Stale Access Reminders",
+      "description": "Operational tracking for operators and clients with no activity in the last 45 days.",
+      "internalNotice": "This panel is for internal operational tracking only. Recording a reminder confirms human operator acknowledgement; no automated emails or notifications are sent.",
+      "emptyTitle": "No inactive users",
+      "emptyDescription": "All eligible operators and clients have had recent activity or already have a recorded reminder.",
+      "unavailableTitle": "Panel unavailable",
+      "unavailableDescription": "Could not load the stale access candidate list at this time.",
+      "retryButton": "Retry",
+      "periodStartedAtLabel": "Inactivity period started",
+      "recordReminderButton": "Record reminder",
+      "recordingButton": "Recording...",
+      "successToast": "Inactivity reminder recorded successfully.",
+      "notEligibleToast": "User is no longer eligible or the reminder has already been recorded."
+    },
+    "bugTriage": {
+      "title": "Bug Reports",
+      "description": "Triage and tracking of issues reported by authenticated users.",
+      "emptyTitle": "No bug reports",
+      "emptyDescription": "No bug reports have been submitted on the platform.",
+      "unavailableTitle": "Reports unavailable",
+      "unavailableDescription": "Could not load bug reports at this time.",
+      "retryButton": "Retry",
+      "loadMoreButton": "Load more reports",
+      "loadingMore": "Loading reports...",
+      "loadMoreError": "Could not load more bug reports.",
+      "reporterRoleLabel": "Reporter role",
+      "createdAtLabel": "Report date",
+      "statusChangedAtLabel": "Last status change",
+      "statusChangedUnavailable": "No status changes",
+      "statusControlAria": "Report status",
+      "updating": "Updating...",
+      "updatedToast": "Report status updated.",
+      "notFoundOrUnchangedToast": "Report not found or status already matched."
+    },
+    "bugStatuses": {
+      "open": "Open",
+      "triaged": "Triaged",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed"
+    },
+    "roles": {
+      "admin": "Admin",
+      "pm": "Project Manager",
+      "operator": "Operator",
+      "client": "Client"
+    },
+    "actionTypes": {
+      "deactivated": "Deactivated",
+      "reactivated": "Reactivated"
+    },
+    "commonErrors": {
+      "unauthorized": "You are not authorized to perform this action.",
+      "validationFailed": "The provided data is invalid.",
+      "unavailable": "The service is currently unavailable."
     }
   }
 }

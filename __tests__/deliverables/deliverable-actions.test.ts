@@ -52,7 +52,6 @@ vi.mock("@/lib/supabase/server", () => ({
 import {
   createDeliverableAction,
   updateDeliverableAction,
-  archiveDeliverableAction,
   submitDeliverableVersionAction,
   reportDeliverableLinkAction,
 } from "@/lib/deliverables/actions";
@@ -289,36 +288,6 @@ describe("Deliverable Server Actions", () => {
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error.code).toBe("INVALID_TRANSITION");
-      }
-    });
-  });
-
-  describe("archiveDeliverableAction", () => {
-    it("rejects PM Watcher from archiving deliverable", async () => {
-      mockSupabase.from.mockImplementation((table: string) => {
-        if (table === "project_members") {
-          const chain: MockChain = {
-            eq: vi.fn(() => chain),
-            is: vi.fn(() => chain),
-            maybeSingle: vi.fn().mockResolvedValue({
-              data: { member_type: "pm_watcher" },
-            }),
-          };
-          return {
-            select: vi.fn().mockReturnValue(chain),
-          };
-        }
-        return {};
-      });
-
-      const result = await archiveDeliverableAction({
-        deliverableId: validDeliverableId,
-        projectId: validProjectId,
-      });
-
-      expect(result.ok).toBe(false);
-      if (!result.ok) {
-        expect(result.error.code).toBe("UNAUTHORIZED");
       }
     });
   });

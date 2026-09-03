@@ -55,6 +55,16 @@ export const UpdateProjectSchema = z.object({
 
 export type UpdateProjectInput = z.infer<typeof UpdateProjectSchema>;
 
+export const UpdateProjectIdentitySchema = z
+  .object({
+    client_id: z.string().uuid("Invalid client ID").nullable(),
+  })
+  .strict();
+
+export type UpdateProjectIdentityInput = z.infer<
+  typeof UpdateProjectIdentitySchema
+>;
+
 export const TransitionProjectStatusSchema = z.object({
   project_id: z.string().uuid(),
   next_status: z.enum([

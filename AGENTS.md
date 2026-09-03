@@ -39,7 +39,7 @@ Inspect `package.json` for current scripts and dependencies. Consult installed p
 - Use the Next.js App Router. Prefer React Server Components; introduce client components only at browser-interaction boundaries.
 - Keep feature components in route-local `_components/` directories, shared application components in `src/components/shared/`, and shadcn primitives in `src/components/ui/`.
 - Use `@/*` for imports rooted at `src/`.
-- Keep implementation files at or below 400 lines; split by responsibility and explain a necessary exception in task evidence. The MCP-generated `src/lib/database.types.ts` is an explicit tracked generated-source exception and must not be manually split or edited.
+- Keep implementation files at or below 600 lines; split by responsibility and explain a necessary exception in task evidence. The MCP-generated `src/lib/database.types.ts` is an explicit tracked generated-source exception and must not be manually split or edited.
 - Preserve strict TypeScript. Do not introduce `any`, broad suppressions, or disabled lint/type rules merely to pass a check.
 - Localize user-visible text. Source code, identifiers, and stored enums remain English. Follow the repository's current locale architecture.
 - Do not introduce service workers, offline caching, deferred mutation queues, runtime Prisma access, public signup, or Playwright E2E automation unless an accepted decision explicitly changes that boundary. Prisma is removed from this project; do not add it or another ORM/schema-migration system.

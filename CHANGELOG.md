@@ -1,5 +1,477 @@
 # JSF PM App Development Changelog
 
+## [2026-09-03 @ 12:49]
+
+**🐛 Hotfixes & 🧪 Tests: Resolve @/i18n/routing Resolution in Project Tests**
+
+- **Project Lifecycle & Task Workspace Unit Tests (`__tests__/projects/`):**
+  - Resolved `next-intl` unmocked import failure (`Cannot find module '.../next/navigation'`) in `__tests__/projects/project-lifecycle.test.tsx` and `__tests__/projects/task-workspace.test.tsx`.
+  - Added test doubles for `@/i18n/routing` (`Link`, `useRouter`, `usePathname`, `redirect`) consistent with other component test suites across the repository, matching the transitive dependency introduced by `TaskDetailSheet` in `TasksTab`.
+  - Verified focused Vitest execution passes cleanly without error (21/21 passing tests across both test suites).
+  - Verified `npm run typecheck` passes with 0 errors.
+
+## [2026-09-03 @ 11:45]
+
+**🚀 Features & 🎨 UX/UI: Global Mobile-First & Desktop Polish Suite**
+
+- **Main Landing Page Branding (`/`):**
+  - Integrated official Joya Star Films SVG logo asset (`/joyalogo-purple.svg`) into `src/app/[locale]/page.tsx` for brand identity.
+- **Access Console (`/pm/acceso`) Layout Fix:**
+  - Resolved `src/components/ui/tabs.tsx` height clipping and improved `ManagerAccessConsole` container sizing and alignment.
+- **Task Detail Side Drawer & Dedicated Navigation:**
+  - Expanded `TaskDetailSheet` on desktop to `35vw` (`min-w-[480px]`, `max-w-[650px]`) and `100vw` on mobile to accommodate all controls cleanly.
+  - Added role-scoped "Ver detalles de la tarea" / "View task details" button linking to `/admin/tareas/[id]` or `/pm/tareas/[id]`.
+- **Calendar Mobile Experience, Emoji Differentiation & Legend:**
+  - Exported `getCalendarEventEmoji` in `event-badge.tsx` categorizing events with distinct visual emojis: `📋` tasks, `📦` deliverables, `🚩` milestones, and `📅` project deadlines/events.
+  - Added sticky localized Legend bar in `calendar-coordinator.tsx` documenting event emoji meanings.
+  - Transformed Month View day cells on mobile (`sm:hidden`) into responsive compact squares (`min-h-[58px] sm:min-h-[120px]`) displaying clickable emoji action buttons linking to respective details.
+- **Navigation Hierarchy & Mobile Quick-Access Bar:**
+  - Reordered items in `buildNavigationModel` (`src/components/shared/app-nav/navigation-model.ts`) to exact requested hierarchy: `home`, `projects`/`agenda`, `calendar`, `notifications`, `clients`, `metrics`, `archive`, `recycleBin`, `accessManagement`, `linkIncidents`, `operations`, `notificationOperations`, `account`.
+  - Reconfigured bottom 5-slot persistent quick bar in `mobile-nav-toggle.tsx` so Notificaciones is placed centrally in Slot 3: `[Slot 1, Slot 2, Notificaciones, Slot 4, Menú]`.
+  - Removed container `min-w-[44px]` restrictions and added `max-w-[100vw] overflow-x-hidden` on bottom nav and drawer to ensure viewport stability on narrow devices (e.g. 360px viewport).
+- **Notifications Direct Task Navigation:**
+  - Created and applied migration `20260903120000_admin_pm_notification_task_navigation.sql` extending `list_my_in_app_notifications` to project `navigation_task_id` for admin and pm roles when target entity is a task.
+  - Updated `NotificationDestination` and notification parser (`schemas.ts`) to route admin and pm project task notifications directly to dedicated task detail views (`/admin/tareas/[id]` / `/pm/tareas/[id]`).
+- **Projects "Entregables" Mobile Cards View:**
+  - Configured `DeliverablesTab` (`deliverables-tab.tsx`) using `useSyncExternalStore` to automatically default to `"cards"` view on mobile screens (< 768px) while preserving user toggle preferences without hydration mismatches or effect cascading renders.
+- **Projects "Equipo del proyecto" (Members) Mobile Cards:**
+  - Added responsive `md:hidden` card list in `member-roster-tab.tsx` displaying member avatar, full name, role badge, email, notifications indicator, and management actions, paired with `hidden md:block` desktop table view.
+- **Archive Items Mobile Cards Polish:**
+  - Redesigned mobile card layout in `archive-list-view.tsx` across project workspace archive tab and dedicated `/admin/archivo`, `/pm/archivo`, `/operador/archivo`, `/cliente/archivo` pages.
+  - Eliminated stacked double borders and grouped version and date in a subtle pill container with clean action buttons.
+- **Form Accessibility & Internationalization Parity:**
+  - Fixed `<label for>` attribute in `account-settings-form.tsx`.
+  - Added missing keys in `messages/es-MX.json` and `messages/en-US.json` for task details, calendar legend, and member cards.
+- **Verification:**
+  - Verified `npm run typecheck` passing (code 0).
+  - Verified `npm run lint` passing (code 0, zero errors, zero warnings).
+  - Verified unit test suites passing (including `navigation.test.ts` 38/38, `calendar-views.test.tsx` 12/12, `destination-routes.test.ts` 14/14).
+
+## [2026-09-03 @ 09:25]
+
+**🚀 Features & 🛠 Architecture: S10-06 Task Detail, Deliverable Context, and Calendar Navigation**
+
+- **Dedicated Manager Task Detail Route Surfaces (`/admin/tareas/[task-id]`, `/pm/tareas/[task-id]`):**
+  - Implemented secure server component routes with strict role guards (admin/pm) and active task/parent project validation.
+  - Safe absence fallback card with breadcrumb back to project workspace (`?tab=tasks`).
+  - Admin view binds `effectiveCapacity="admin"`; PM view safely resolves capacity via `getProjectMembershipCapacity(projectId, userId)`, defaulting to `"pm_watcher"` (least privilege fallback).
+- **Server-Only Manager Task Query Adapter (`src/lib/projects/manager-task-queries.ts`):**
+  - Implemented `getManagerTaskDetail(supabase, taskId)` enforcing strict UUID format, active ancestry on task and parent project, deterministic sorting on resources (`sort_order ASC, id ASC`) and deliverables (`submission_deadline_at ASC NULLS LAST, title ASC, id ASC`), and fail-closed error handling returning `null` on any query failure.
+  - Implemented `getProjectMembershipCapacity(supabase, projectId, userId)` defaulting safely to `"pm_watcher"` on query error or absent membership.
+- **Scoped Deliverable Detail Query & Action Layer (`src/lib/deliverables/`):**
+  - Added `ManagerTaskDeliverableDetailInputSchema` in `schemas.ts` validating UUID inputs.
+  - Implemented `getManagerTaskDeliverableDetail(supabase, deliverableId, scope)` in `queries.ts` with exact scope predicates (`id`, `task_id`, `project_id`, active ancestry) and fail-closed loading for versions and feedback history.
+  - Added thin server action `getManagerTaskDeliverableDetailAction` in `actions.ts` with session role authorization (admin/pm).
+- **Presentation Components (`src/components/shared/projects/manager-task-detail/`):**
+  - Implemented `ManagerTaskDetailView` owning all dialog and selection states (`selectedDetail`, `isDetailOpen`, `submittingDeliverable`, `reviewingDeliverable`, `deliveringDeliverable`, `reportingVersion`) with fail-closed detail fetching and state cleanup on mutation success.
+  - Implemented `ManagerTaskDeliverablesList` with summary metadata, status badges, version indicators, and view-detail sheet triggers (without lifecycle action buttons or version URLs).
+  - Implemented `ManagerTaskResources` with external links and localized empty state.
+- **Calendar Destination Resolver & Navigation Views (`src/lib/calendar/`, `src/app/[locale]/(protected)/calendario/`):**
+  - Updated `resolveCalendarEventDestination` with closed role × event matrix routing task deadlines to `/admin/tareas/[id]` / `/pm/tareas/[id]`, and missing `task_id` safely to `none`.
+  - Added destination-aware accessible strings (`eventAria.taskLink`, `eventAria.projectLink`, `detail.taskLinkAria`) in `EventBadge`, `CalendarListView`, and `MilestoneDetailDialog`.
+  - Separated project column link strictly to project overview in `CalendarListView`.
+- **Narrow Calendar State Isolation (`src/components/shared/projects/project-workspace/`):**
+  - Updated `ProjectCalendarTab` `handleRangeChange` to write only `tab=calendar, calendarView, calendarFrom, calendarTo` while purging global calendar parameters (`view, from, to, projectId`).
+  - Updated `ProjectWorkspaceShell` to initialize missing project calendar keys atomically and purge global keys on tab change.
+- **Shared Sheet Watcher Hardening & Submit Dialog Localization:**
+  - Hardened `DeliverableDetailSheet` `canSubmit` logic to require `!isWatcher`.
+  - Replaced hard-coded Spanish string in `DeliverableSubmitDialog` with `t("validationError")`.
+- **Localization Parity (`messages/en-US.json`, `messages/es-MX.json`):**
+  - Added `projects.managerTask` namespace with full English/Spanish parity.
+  - Added missing keys: `projects.workspace.deliverables.submitDialog.validationError`, `calendar.eventAria.taskLink`, `calendar.eventAria.projectLink`, `calendar.detail.taskLinkAria`.
+- **Comprehensive Automated Test Coverage:**
+  - Added `destination-resolver.test.ts` (21 tests).
+  - Added `manager-task-queries.test.ts` (9 tests).
+  - Added `project-calendar-tab.test.tsx` (1 test).
+  - Added `deliverable-detail-sheet.test.tsx` (3 tests).
+  - Added `manager-task-deliverable-detail-action.test.ts` (9 tests).
+  - Verified 43/43 tests passing, `npm run typecheck` passing (code 0), `npm run lint` passing (code 0), `npm run format:check` passing (code 0).
+
+## [2026-09-02 @ 16:20]
+
+**🚀 Features & 🛠 Architecture: S10-05 Public Legal Surface Implementation**
+
+- **Shared Public Legal Footer (`src/components/shared/public-shell/legal-footer.tsx`):**
+  - Implemented reusable presentational `LegalFooter` component consuming `useTranslations("legal")` and `Link` from `@/i18n/routing`.
+  - Structured with semantic `<footer>` and `<nav aria-label={...}>` with `flex-wrap` and 44px practical mobile touch targets (`inline-flex min-h-[44px] items-center px-2 py-3`).
+  - Isolated legal links exclusively to `/privacidad` and `/terminos` without props or token acceptance.
+- **Public Landing Page Replacement (`src/app/[locale]/page.tsx`):**
+  - Replaced unauthenticated redirect to sign-in with static public landing surface rendering localized brand badge, product heading, draft description, sign-in CTA button, language and theme switchers, and `LegalFooter`.
+  - Preserved existing active-session redirects to `${prefix}${ROLE_DEFAULT_PATHS[session.role]}` with headers-derived locale prefix.
+- **Localized Draft Legal Pages (`src/app/[locale]/privacidad/page.tsx`, `src/app/[locale]/terminos/page.tsx`):**
+  - Created symmetric structured pages for Privacy Policy and Terms of Service with server-side `generateMetadata`.
+  - Rendered static neutral draft notice (`role="note"`) and draft badge (`role="status"`) stating content is pending stakeholder approval without making compliance, IP, liability, or data processing claims.
+  - Included header with back-to-sign-in navigation, language/theme controls, and `LegalFooter`.
+- **Public Shell & Boundary Integration:**
+  - Integrated `LegalFooter` and full-height flex column layout (`min-h-screen flex flex-col`, `flex-1` content, `overflow-x-hidden`) across all 8 designated public/auth surfaces: landing, `iniciar-sesion`, `restablecer-contrasena`, `actualizar-contrasena`, `invitacion`, `sesion-expirada`, `privacidad`, and `terminos`.
+  - Preserved token boundary on `invitacion` ensuring legal navigation never preserves or carries tokens.
+  - Added `ThemeToggle` to public locale error boundary (`src/app/[locale]/error.tsx`) while preserving `captureException` and error retry handling.
+- **SEO & Metadata Routes (`src/app/sitemap.ts`, `src/app/robots.ts`):**
+  - Updated `sitemap.ts` to return exactly 6 canonical public routes (`/`, `/en/`, `/privacidad`, `/en/privacidad`, `/terminos`, `/en/terminos`) with reciprocal `alternates.languages`.
+  - Updated `robots.ts` to declare `sitemap` URL while maintaining strict non-production `disallow: "/"` crawl policy.
+- **Localization Parity (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Added matching `legal`, `terms`, and `landing` namespaces with neutral draft copy and purged stale unused strings (`placeholderNotice`, `notLegalAdvice`).
+- **Test Compatibility Updates:**
+  - Updated `__tests__/i18n/sitemap.test.ts` (6 canonical public paths and reciprocal alternates).
+  - Updated `__tests__/i18n/robots.test.ts` (asserted sitemap declaration with disallow-all).
+  - Updated `__tests__/i18n/key-naming.test.ts` (added `legal|terms|landing` namespaces and `footerNavLabel` segment exception).
+  - Verification: `npm run typecheck`, `npm run lint`, and all i18n test suites passed cleanly.
+
+## [2026-09-02 @ 15:20]
+
+**🐛 Hotfixes: S10-04 Translation Key Naming and Test Whitelist Alignment**
+
+- **Semantic Key Naming Alignment (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Converted `accountAccess.commonErrors` uppercase enum keys (`UNAUTHORIZED`, `VALIDATION_FAILED`, `UNAVAILABLE`) to camelCase (`unauthorized`, `validationFailed`, `unavailable`), satisfying dot-delimited lower camelCase segment constraints.
+- **Component Error Key Consumers:**
+  - Updated translation key invocations to lowercase `commonErrors.unauthorized` and `commonErrors.unavailable` across `account-settings-form.tsx`, `bug-report-form.tsx`, `stale-access-panel.tsx`, and `bug-reports-panel.tsx`.
+- **Test Whitelist Coverage (`__tests__/i18n/key-naming.test.ts`):**
+  - Added `accountAccess` to the valid domain namespaces regex.
+  - Added legitimate UI concept tokens (`localeLabel`, `statusChangedUnavailable`, `saveButton`, `savingButton`, `retryButton`, `bugReportForm`, `formTitle`, `formDescription`, `submitButton`, `submittingButton`, `submitAnotherButton`, `loadMoreButton`, `recordReminderButton`, `recordingButton`) to the segment allowlist.
+- **Focused Verification:**
+  - Ran `__tests__/i18n/key-naming.test.ts`: PASSED (3/3 tests).
+  - Ran related test suites `__tests__/i18n/message-catalogs.test.ts`, `__tests__/account-access/components.test.tsx`, and `__tests__/account-access/actions.test.ts`: PASSED (41/41 tests).
+  - Ran `npm run typecheck`: PASSED without errors.
+
+## [2026-09-02 @ 14:41]
+
+**🚀 Features & 🛠 Architecture: S10-04 Account, Access Hygiene, and Bug Triage Implementation**
+
+- **Domain Boundaries, Schemas & Actions (`src/lib/account-access/`):**
+  - Implemented strict Zod validation schemas (`schemas.ts`) enforcing `IsoTimestampSchema` and `NullableIsoTimestampSchema` with offset validation across all temporal attributes, eliminating `Date.parse`.
+  - Defined composite keyset cursor schemas (`UserAccessDirectoryCursorSchema`, `BugReportCursorSchema`) requiring inseparable `(beforeCreatedAt, beforeUserId)` and `(beforeCreatedAt, beforeReportId)` values.
+  - Defined `SetUserAccessStateInputSchema` discriminated union distinguishing deactivation (requiring exact `confirmationFullName`) and reactivation (strictly forbidding confirmation phrase).
+  - Built query adapters (`queries.ts`) with 26-row lookahead validation, slicing visible items to 25, deriving continuation cursors from item 25 without exposing item 26, and fail-safe `try/catch` isolation returning `{ status: "unavailable" }`.
+  - Implemented command adapters (`commands.ts`) checking exact single-row cardinality and handling domain-specific return codes.
+  - Implemented 7 Server Actions (`actions.ts`) with non-throwing `safeParse` validation returning `{ ok: false, error: { code: 'VALIDATION_FAILED' } }`, `requireSession` auth guard, role-based authorization, and scoped cache revalidation.
+- **Client Components (`src/components/shared/account-access/`):**
+  - Created `AccountSettingsForm`: user preferences form with Base UI Switch, IANA datalist input, character counter, read-only role badge, and state updating exclusively from server results.
+  - Created `BugReportForm`: authenticated bug intake with sensitive information warning banner, title/description character limits, and acknowledgement card.
+  - Created `AccountView`: orchestrator that gracefully isolates account settings errors while guaranteeing bug report accessibility.
+  - Created `UserDeactivationDialog`: accessible destructive alert dialog requiring exact full name typed confirmation phrase, preventing dismissals while pending, and keeping dialog open on self-lockout / last-manager errors.
+  - Created `UserReactivationDialog`: accessible confirmation dialog stating revoked invitations are not restored.
+  - Created `UserAccessDirectoryPanel`: responsive directory (mobile cards / desktop table) formatting timestamps with presentation context, omitting `createdAt` from the DOM, and handling keyset continuation.
+  - Created `StaleAccessPanel`: internal reminder tracker with individual pending states.
+  - Created `BugReportsPanel`: bug triage stream with non-optimistic status select and privacy preservation ensuring reporter identity never leaks to the DOM.
+  - Created `ManagerAccessConsole`: accessible 3-tab layout composing directory, stale access, and bug reports panels with panel-level error isolation.
+- **App Router Protected Routes (`src/app/[locale]/(protected)/`):**
+  - Mounted `/cuenta` accessible to all active authenticated roles (`admin`, `pm`, `operator`, `client`).
+  - Mounted `/admin/acceso` restricted to Admin role with cross-role redirects to `/admin` or `/en/admin`.
+  - Mounted `/pm/acceso` restricted to PM role with cross-role redirects to `/pm` or `/en/pm`.
+  - Added skeleton loading states for all three routes.
+- **Navigation & Localization:**
+  - Integrated `account` (all roles -> `/cuenta`) and `accessManagement` (Admin/PM -> `/admin/acceso`, `/pm/acceso`) into drawer navigation with `User` and `ShieldCheck` icons.
+  - Maintained 100% key parity across `messages/es-MX.json` and `messages/en-US.json` under `accountAccess` namespace and `shell.nav.links`.
+- **Automated Test Coverage:**
+  - Added test suites: `__tests__/account-access/schemas.test.ts`, `queries.test.ts`, `actions.test.ts`, `components.test.tsx`, `routes.test.tsx`.
+  - Updated `__tests__/app-shell/navigation.test.ts` and `__tests__/i18n/message-catalogs.test.ts`.
+  - Verified with `npm run typecheck`, `npm run lint`, and `npm run test` (137 tests passing across all 7 suites).
+
+## [2026-09-02 @ 14:02]
+
+**🛠 Database: S10-04 Directory Keyset-Cursor Post-Repair & Type Regeneration**
+
+- **Database Migration Applied (`supabase/migrations/20260902190000_s10-04-directory-keyset-cursor-post-repair.sql`):**
+  - Applied migration `20260902190000_s10_04_directory_keyset_cursor_post_repair` to remote Supabase development environment via MCP tool `apply_migration` (recorded as version `20260902200043`).
+  - Reapplied `created_at` column projection to `public.list_user_access_directory(timestamptz, uuid, integer)` following the access-hygiene completeness repair, satisfying composite keyset cursor contract (`profiles.created_at DESC, profiles.id DESC`).
+  - Preserved operational manager assertion, complete cursor validation, non-cancelled active lineage counts, owner (`postgres`), search path (`pg_catalog, public, auth`), and authenticated-only execution posture.
+- **TypeScript Types Regenerated (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript database definitions from remote Supabase schema via MCP tool `generate_typescript_types`.
+
+## [2026-09-02 @ 12:54]
+
+**🛠 Database: S10-04 Access Hygiene Completeness Repair & Type Regeneration**
+
+- **Database Migration Applied (`supabase/migrations/20260902180000_s10-04-access-hygiene-completeness-repair.sql`):**
+  - Applied migration `20260902180000_s10_04_access_hygiene_completeness_repair` to the remote Supabase database via MCP tool `apply_migration` (recorded as version `20260902185345`).
+  - Closed three trusted-state gaps in account access hygiene without expanding browser-facing privilege:
+    1. Synchronized qualifying access evaluation with the S10 readiness model by excluding cancelled projects (`p.status <> 'cancelled'`) across project members, tasks, and deliverables in `private.user_has_qualifying_access`.
+    2. Implemented `private.refresh_access_hygiene_from_project_change()` trigger on `public.projects` to refresh hygiene state across affected assignees and members whenever project `status`, `archived_at`, or `deleted_at` changes.
+    3. Aligned `public.list_user_access_directory` counts (`active_project_membership_count`, `active_task_assignment_count`, `active_deliverable_assignment_count`) with the non-cancelled, active project ancestry predicate.
+    4. Observed successful Auth sign-ins via `private.refresh_access_hygiene_from_successful_auth()` and `s10_access_hygiene_successful_auth_trg` trigger on `auth.users (last_sign_in_at)` to reset stale-period tracking for active profiles.
+    5. Reconciled current active profiles and updated post-M04 sign-in timestamps.
+- **TypeScript Types Regenerated (`src/lib/database.types.ts`):**
+  - Regenerated and updated TypeScript database schema types via Supabase MCP `generate_typescript_types` tool.
+
+## [2026-09-02 @ 11:28]
+
+**🐛 Hotfixes & 🚀 Features: S10-03 Recycle Bin SQL ORDER BY Remediation & Mobile-First UX/UI Enhancement**
+
+- **Database RPC Remediation (`supabase/migrations/20260902110000_s10-03-fix-recycle-bin-union-order-by.sql`):**
+  - Resolved `invalid UNION/INTERSECT/EXCEPT ORDER BY clause` in `public.list_operational_recycle_bin(uuid)` by wrapping the `UNION ALL` projection inside a clean subquery with explicit column aliases (`entity_type`, `entity_id`, `project_id`, `title`, `archived_at`, `archived_by`, `archive_reason`, `parent_is_archived`).
+  - Applied migration to remote Supabase development environment via MCP tool `apply_migration`.
+- **Mobile-First UX/UI & Quick Navigation:**
+  - Created `RecycleBinQuickNav` component providing responsive breadcrumbs (`Volver al panel`), direct access to finalized archive (`Ver archivo definitivo`), summary chips (total, recoverable, blocked), entity-type filter pills (All, Projects, Tasks, Deliverables, Milestones) with badge counters, and real-time title/reason search.
+  - Optimized mobile card presentation in `RecycleBinView` with colored entity badges, WCAG-compliant touch targets (min 44px), structured archive reason display, and prominent parent-archived warning banners.
+  - Enhanced `MobileNavToggle` with full Lucide icon mappings across all menu drawer routes (including `Trash2` for Papelera) and active menu indicator highlighting on the persistent mobile bottom bar when on drawer-only routes.
+  - Added localized strings for quick navigation and filtering across `es-MX.json` and `en-US.json`.
+- **Automated Verification:**
+  - Added test suites for `RecycleBinView` and `RecycleBinQuickNav` (`src/components/shared/operational-lifecycle/__tests__/recycle-bin-view.test.tsx`), query adapter error handling (`src/lib/operational-lifecycle/__tests__/queries.test.ts`), and mobile navigation active drawer routing (`src/components/shared/app-nav/_components/__tests__/mobile-nav-toggle.test.tsx`).
+  - Verified 100% test passage across all new and updated suites, clean ESLint (`npm run lint`), TypeScript check (`npm run typecheck`), and Prettier formatting (`npm run format:check`).
+
+## [2026-09-02 @ 10:56]
+
+**🚀 Features & 🛠 Architecture: S10-03 Recoverable Lifecycle, Recycle Bin, and Admin Permanent Deletion Implementation**
+
+- **Domain Layer (`src/lib/operational-lifecycle/`):**
+  - Implemented closed entity lifecycle types, outcome/failure codes, schema definitions, and input blank normalization.
+  - Implemented single Server Action boundary: `archiveOperationalEntityAction`, `restoreArchivedOperationalEntityAction`, `getOperationalDeletionPreviewAction`, `permanentlyDeleteOperationalEntityAction`.
+  - Implemented database command RPC callers (`archive_operational_entity`, `restore_archived_operational_entity`, `permanently_delete_operational_entity`) and query RPC callers (`list_operational_recycle_bin`, `get_operational_deletion_preview`).
+  - Implemented audit revalidation matrix across affected dynamic and list route paths.
+- **Obsolete Lifecycle Action Retirement:**
+  - Retired legacy exports across `src/lib/projects/`, `src/lib/deliverables/`, and `src/lib/calendar/` (`archiveProjectAction`, `restoreProjectAction`, `archiveTaskAction`, `archiveDeliverableAction`, `softDeleteMilestoneAction`).
+  - Updated active workspace dialogs and triggers to invoke the single lifecycle Server Action boundary directly.
+- **Active Query Tightening & Ancestry Invariants:**
+  - Enforced active-ancestry filtering on `listProjectsForAdmin` and `listProjectsForPm`.
+  - Updated `listProjectTasks` and `listProjectDeliverables` to enforce active parent joins (`projects!inner`, `tasks!inner`).
+- **Recycle Bin UI & App Navigation:**
+  - Created shared `RecycleBinView` component for Admin and PM with keyed restore pending state, accessible tooltip gating for parent-archived entities, and mobile-responsive card layout.
+  - Created `AdminRecycleBinView` composition boundary and `AdminPermanentDeleteDialog` with deletion preview, dependency blocker display, and safe deletion confirmation.
+  - Created `/admin/papelera` and `/pm/papelera` protected routes with loading skeletons.
+  - Added Papelera (`recycleBin`) to Admin and PM navigation models with `Trash2` drawer icon.
+  - Added localized strings for `operationalLifecycle` namespace across `es-MX.json` and `en-US.json`.
+- **Verification & Test Coverage:**
+  - Added 5 new comprehensive test suites covering schemas, normalization, commands, queries, actions, recycle bin UI, and permanent delete dialog.
+  - Updated all affected unit and integration tests across the repository.
+  - Verified 100% passage across all 103 test suites (922 tests), TypeScript typecheck, ESLint, and Prettier formatting.
+
+## [2026-09-02 @ 09:26]
+
+**🛠 Database: S10-03 Recycle Bin Deliverable Parent-State Correction & Type Regeneration**
+
+- **Database Migration Applied (`supabase/migrations/20260902100000_s10-03-recycle-bin-parent-state-correction.sql`):**
+  - Applied migration `20260902100000_s10_03_recycle_bin_parent_state_correction` via Supabase MCP `apply_migration` tool.
+  - Updated `public.list_operational_recycle_bin` to accurately evaluate `parent_is_archived` for archived deliverables against both task parent (`t.archived_at IS NOT NULL`) and project parent (`p.archived_at IS NOT NULL`).
+  - Preserved existing RPC signature, return shape, ownership, permissions, and sort ordering.
+- **TypeScript Types Regenerated (`src/lib/database.types.ts`):**
+  - Regenerated and updated TypeScript definitions via Supabase MCP `generate_typescript_types` tool.
+
+## [2026-09-02 @ 08:36]
+
+**🚀 Features & 🛠 Database: S10-04 Migration Application, S10-03 Archive Visibility Closure, and Database Type Regeneration**
+
+- **Database Migration Applied (`supabase/migrations/20260902090000_s10-04-account-access-hygiene-bug-triage-and-s10-03-closure.sql`):**
+  - Applied migration to remote database via Supabase MCP `apply_migration` tool (`20260902090000_s10_04_account_access_hygiene_bug_triage_and_s10_03_closure`).
+  - Corrected PL/pgSQL multiple-item `INTO` clause with composite rowtype in `public.set_user_access_state`.
+  - Installed S10-04 account settings (`get_own_account_settings`, `update_own_account_settings`), user access hygiene and tracking triggers (`user_access_actions`, `user_access_hygiene_state`), stale access candidate and reminder administration (`stale_access_reminders`, `list_stale_access_reminder_candidates`, `record_stale_access_reminder`), and controlled bug report triage (`bug_reports`, `bug_report_status`, `submit_bug_report`, `list_bug_reports`, `set_bug_report_status`).
+  - Applied complete S10-03 archive visibility and active-ancestry forward closure across 49 database views, SECURITY DEFINER RPCs, private helper functions, and validation triggers.
+  - Enforced strict SECURITY DEFINER search paths, function ownership (`postgres`), and explicit role-safe execute grants.
+- **TypeScript Types Regenerated (`src/lib/database.types.ts`):**
+  - Regenerated comprehensive schema definitions and database types via Supabase MCP `generate_typescript_types` tool.
+- **Typecheck & Lint Verification:**
+  - Updated mock test fixtures to include new database columns (`archive_reason`, `archived_at`, `archived_by`, `archived_parent_project_id`).
+  - Verified `npm run typecheck` and `npm run lint` pass with 0 errors.
+
+## [2026-09-02 @ 07:48]
+
+**🛠 Database & 🔒 Security: Pre-M04 S10-03 Remediation and S10-04 Candidate Migration Refinement**
+
+- **Forward Migration File Refinement (`supabase/migrations/20260902090000_s10-04-account-access-hygiene-bug-triage-and-s10-03-closure.sql`):**
+  - Incorporated complete forward S10-03 archive visibility closure and active-ancestry predicates across all 49 objects enumerated in the Section 5 inventory:
+    - **5.1 Calendar RPC & View**: `list_role_safe_calendar_events`, `calendar_feed_view`.
+    - **5.2 Metrics/Reporting RPCs & Views**: `get_scoped_operations_metrics`, `list_scoped_operations_metric_trend`, `list_scoped_user_operations_metrics`, `list_scoped_metrics_project_filter_options`, `deliverable_cycle_metrics_view`, `project_completion_cycles_view`.
+    - **5.3 Milestone Selectors & Context**: `get_milestone_detail`, `list_project_milestone_summaries`, `list_milestone_tasks`, `list_task_milestone_options`, `list_milestone_management_targets`, `list_operator_task_milestone_context`.
+    - **5.4 Active Mutation Commands**: `create_milestone`, `update_milestone`, `create_task_with_deliverables`, `create_collaboration_comment`.
+    - **5.5 Workflow Mutation Commands**: `transition_project_status`, `recover_project_status`, `transition_task_status`, `mark_deliverable_delivered`, `reopen_client_deliverable`, `review_deliverable`, `submit_client_deliverable`, `submit_deliverable_version`, `report_broken_link`.
+    - **5.6 Completion, Incident, Notification, Invitation Projections**: `get_project_completion_readiness`, `list_role_safe_link_incidents`, `list_finalized_production_archive`, `list_my_in_app_notifications`, `list_suppressed_notification_operations`, `list_admin_user_invitation_state`, `list_ordinary_invitation_administration`.
+    - **5.7 Private Authorization & Readiness Helpers**: `private.is_task_assignee`, `private.is_client_task_assignee`, `private.is_deliverable_assignee`, `private.is_client_submission_assignee`, `private.project_has_client_readiness`.
+    - **5.8 Task & Deliverable Triggers**: `private.validate_task()`, `private.sync_and_validate_deliverable()`.
+    - **5.9 Milestone, Calendar, Version Triggers**: `private.validate_milestone_task_link()`, `private.validate_calendar_event_task_scope()`, `private.validate_production_google_drive_submission_url()`.
+    - **5.10 Role-Facing Views**: `client_deliverable_view`, `client_project_view`, `client_submission_view`, `client_task_view`, `operator_agenda_view`.
+  - Integrated S10-04 Account Access Hygiene, Stale-Access Reminders, and Bug Triage tables, types, triggers, and RPCs:
+    - Tables & Types: `bug_report_status` enum, `user_access_actions`, `user_access_hygiene_state`, `stale_access_reminders`, `bug_reports`.
+    - Trigger Family: `private.user_has_qualifying_access`, `private.refresh_user_access_hygiene_state`, assignment and project change triggers.
+    - RPCs: `get_own_account_settings`, `update_own_account_settings`, `list_user_access_directory`, `set_user_access_state`, `list_stale_access_reminder_candidates`, `record_stale_access_reminder`, `submit_bug_report`, `list_bug_reports`, `set_bug_report_status`.
+    - Retired generic profile soft-delete/restore in favor of `set_user_access_state` and dropped direct authenticated update policy on `profiles`.
+  - Enforced strict PostgreSQL 17 / Supabase security definer `search_path = pg_catalog, public`, complete ACL grants/revokes, and active-ancestry filters (`deleted_at IS NULL AND archived_at IS NULL`) across all joins.
+  - Performed zero remote database mutations (`apply_migration`, `supabase db push`, remote DDL strictly withheld pending explicit user authorization).
+
+## [2026-09-01 @ 16:38]
+
+**🛠 Database & 🔒 Security: S10-03 Archive, Recycle Bin, and Admin Permanent Deletion Migration & Type Regeneration**
+
+- **Database Migration Applied (`20260901140000_s10-03-archive-recycle-bin-and-admin-permanent-deletion.sql`):**
+  - Executed migration via Supabase MCP tooling (`apply_migration`) establishing recoverable operational lifecycle metadata (`archived_at`, `archived_by`, `archive_reason`, `archived_parent_*_id`) and partial recycle-bin indexes across projects, tasks, deliverables, and milestones.
+  - Implemented authoritative lifecycle functions: `public.archive_operational_entity`, `public.restore_archived_operational_entity`, `public.list_operational_recycle_bin`, `public.get_operational_deletion_preview`, and `public.permanently_delete_operational_entity`.
+  - Enforced strict Admin-only permanent deletion boundary requiring pre-existing archive status and zero operational dependencies, while preserving immutable audit logs.
+  - Retired legacy generic soft-delete / restore routes for S10-03 operational entities (`soft_delete_entity`, `restore_entity`, `soft_delete_milestone`).
+  - Tightened RLS base-table select/update policies on `projects`, `tasks`, and `deliverables` to strictly filter out archived entities from active runtime queries.
+- **TypeScript Type Regeneration (`src/lib/database.types.ts`):**
+  - Regenerated Supabase schema definitions and database types via Supabase MCP tooling (`generate_typescript_types`).
+
+## [2026-09-01 @ 15:35]
+
+**🐛 Bug Fixes & 🧪 Test Suite Stabilization**
+
+- **Project Workspace Calendar Test Isolation (`__tests__/projects/project-workspace-calendar.test.tsx`):**
+  - Added mock for `ProjectClientIdentityDialog` to prevent client-side component test from resolving server-only project command modules.
+- **Invitation Completion Route Hardening (`src/app/api/v1/auth/invites/complete/route.ts`, `__tests__/auth/negative-path.test.ts`):**
+  - Added safe typeof guard for `userClient.auth.signOut` during error compensation paths to prevent TypeErrors when `signOut` is not present on client mocks.
+  - Added `signOut` mock to `mockUserClient` in negative path test suite.
+- **Invitation Validation Schema (`src/lib/validation/auth.ts`):**
+  - Updated `CompleteInviteSchema` to accept null or omitted `whatsapp_opt_in` (`z.boolean().nullish().default(false)`), fixing optional field payload validation.
+- **i18n Semantic Key Naming & Dialog Lifetimes (`messages/es-MX.json`, `messages/en-US.json`, `src/components/shared/client-administration/invitation-create-dialog.tsx`, `__tests__/i18n/key-naming.test.ts`, `__tests__/projects/project-client-identity.test.tsx`):**
+  - Added `clientAdministration` to the authorized domain namespaces regex in key naming validation.
+  - Migrated numeric invitation lifetime keys (`24h`, `72h`, `7d`, `14d`, `30d`) to camelCase identifiers (`hours24`, `hours72`, `days7`, `days14`, `days30`) across message catalogs and dialog components.
+  - Removed forbidden `triggerButton` key in `projects.workspace.clientIdentity`.
+  - Added allowlist entries for `clientsUnavailable`, `unavailableTitle`, `unavailableDescription`, `directContactOption`, and `noProjectOption` in semantic UI key validation.
+
+## [2026-09-01 @ 14:56]
+
+**🚀 Features, 🛠 Architecture & 🔒 Security: S10-02-R1 Invitation Completion and Direct-Client Project UX Implementation**
+
+- **Cryptographic Helper & Proxy Routing (`src/lib/invitations/crypto.ts`, `src/proxy.ts`):**
+  - Created canonical token hashing helper `hashInvitationToken` using `node:crypto` SHA-256 (`\x<hex>`).
+  - Configured proxy middleware to bypass `next-intl` localization for `/api/*` routes while executing Supabase session refresh.
+- **Hardened Invitation Completion Route (`src/app/api/v1/auth/invites/complete/route.ts`):**
+  - Updated completion endpoint to call 4-argument `accept_invite` RPC (`p_token_hash`, `p_full_name`, `p_phone_e164`, `p_whatsapp_opt_in`).
+  - Enforced Origin validation (403), strict body validation (400), terminal invitation check (410), existing user conflict (409), and bounded user deletion on post-creation failures.
+  - Ensured zero direct `profiles` mutations post-RPC and verified strict response schema.
+- **Public Invitation Form Refinements (`src/app/[locale]/invitacion/_components/invitation-form.tsx`):**
+  - Added fixed-email bound notice, phone help text, password policy aid, accessible show/hide password buttons, in-flight button disable, and error taxonomy mappings.
+- **Minimized Workspace Client Adapters (`src/lib/clients/types.ts`, `src/lib/clients/queries.ts`):**
+  - Created `DirectContactWorkspaceDto` and `ClientOrganizationWorkspaceDto` data-minimized types.
+  - Implemented `listDirectContactsForWorkspace`, `listClientOrganizationsForWorkspace`, and `listProjectDirectContactAssociations` (strictly direct-contact filtered).
+- **Narrow Project Identity Schema & Actions (`src/lib/projects/schemas.ts`, `src/lib/projects/actions.ts`):**
+  - Added strict `UpdateProjectIdentitySchema` and `updateProjectIdentityAction` delegating to `projectCommands.updateProject`.
+  - Enforced server-side status eligibility (`canManageClientIdentity`) and exact cache invalidations across Admin and PM paths.
+- **Client Identity Dialog & Shell Integration (`src/components/shared/projects/project-workspace/`):**
+  - Created `ProjectClientIdentityDialog` enforcing the 3-mode state machine (Organization, Direct Contact, No Identity Yet) with destructive transition confirmations and full partial-failure recovery with immediate DB state reconciliation via `router.refresh()`.
+  - Added constrained invitation support in `InvitationCreateDialog` for direct client contacts.
+  - Integrated header action button and setup banner CTA wired to client identity dialog on eligible Admin/PM client projects.
+- **Localization Parity (`messages/es-MX.json`, `messages/en-US.json`):**
+  - Added full translation sets for `auth.invitation` and `projects.workspace.clientIdentity` across English and Spanish catalogs.
+- **Testing & Verification:**
+  - Updated `__tests__/auth/complete-invite.test.ts` and `src/app/[locale]/invitacion/_components/invitation-form.test.tsx`.
+  - Added `__tests__/projects/project-client-identity.test.tsx` verifying eligibility gating, direct-contact association, and unavailable state handling.
+  - Verified `npm run typecheck`, `npm run lint`, and unit tests passing with 0 errors.
+
+## [2026-09-01 @ 14:03]
+
+**🛠 Database & 🔒 Security: S10-02-R1 Cancelled Project Command Enforcement Migration & Type Regeneration**
+
+- **Database Migration Applied (`20260901130000_s10-02-r1-cancelled-project-command-enforcement.sql`):**
+  - Executed migration via Supabase MCP tooling (`apply_migration`) to align direct-client association and invitation boundaries with the S10 readiness model.
+  - Hardened `public.set_project_client_contact`, `public.list_project_client_contact_associations`, `private.resolve_s10_ordinary_invitation`, and `public.accept_invite` to explicitly reject cancelled projects (`status <> 'cancelled'`).
+  - Preserved planning project eligibility while preventing direct association, association projection, invitation lifecycle actions, and membership creation on cancelled projects.
+- **TypeScript Type Regeneration (`src/lib/database.types.ts`):**
+  - Regenerated Supabase schema definitions and database types via Supabase MCP tooling (`generate_typescript_types`).
+
+## [2026-09-01 @ 11:18]
+
+**🎨 UI & 📱 Mobile First: Enterprise Brand Refinement for Invitation Route (`/invitacion`)**
+
+- **Joya Star Films Brand Identity & Layout (`src/app/[locale]/invitacion/page.tsx`):**
+  - Upgraded `/invitacion` entry page with responsive mobile-first container (`flex flex-col items-center justify-center p-4 sm:p-6 md:p-8`).
+  - Added ambient atmospheric glowing background accents (`bg-accent/15` and `bg-purple-500/10` with heavy blur filters) consistent with enterprise auth layouts.
+  - Positioned top-right utility controls pairing `LanguageSwitcher` with `ThemeToggle`.
+- **Branded Invitation Form Experience (`src/app/[locale]/invitacion/_components/invitation-form.tsx`):**
+  - Integrated official Joya Star Films brand header with purple logo asset (`/joyalogo-purple.svg`), responsive scaling, and smooth hover micro-animations.
+  - Enhanced form visual hierarchy using glassmorphism card styling (`bg-card/95 backdrop-blur-xl border-border/80 shadow-2xl`).
+  - Added visual iconography to all inputs (`User` for name, `Phone` for telephone, `Lock` for password).
+  - Added interactive password visibility toggle (`Eye`/`EyeOff`) with accessible ARIA label switching.
+  - Polished WhatsApp notification opt-in checkbox container with comfortable touch target and muted caption.
+  - Implemented loading state with spinning `Loader2` indicator on the primary submit button.
+  - Added accessible sign-in navigation link (`/iniciar-sesion`) for users with existing credentials.
+- **Testing & Verification (`src/app/[locale]/invitacion/_components/invitation-form.test.tsx`):**
+  - Added comprehensive Vitest suite verifying logo rendering, header copy, input fields, password toggle interaction, and API response flows (201 success redirect, 410 expired redirect, and error alert handling).
+  - Confirmed strict TypeScript check (`npm run typecheck`) and ESLint (`npm run lint`) passing with 0 errors.
+
+## [2026-09-01 @ 10:48]
+
+**🎨 UI & 📱 Mobile First: Client Administration Route & Responsive Polish**
+
+- **Primitive UI Fixes (`src/components/ui/`):**
+  - Resolved `Tabs` component flex orientation bug in Tailwind CSS v4, setting `group/tabs flex flex-col gap-2 data-[orientation=vertical]:flex-row` and updating data attribute selectors across `TabsList` and `TabsTrigger`.
+  - Corrected `Separator` data orientation selectors to `data-[orientation=...]`.
+  - Refined `Select` primitive with default `w-full` on `SelectTrigger`, `h-9` touch-friendly sizing, and `min-w-[280px]` with `max-w-[calc(100vw-2rem)]` on `SelectContent` to prevent clipping of long options (e.g. "Sin organización (contacto directo)").
+- **Client Administration Header & Tab Hierarchy (`src/components/shared/client-administration/client-administration-view.tsx`):**
+  - Restructured layout so tab triggers are positioned horizontally directly below page title and description.
+  - Implemented responsive tab bar (`grid grid-cols-2` on mobile, `inline-flex` on desktop) with `h-10` touch targets.
+- **Mobile-First Dual-View Architecture (`src/components/shared/client-administration/`):**
+  - **`ContactCard` (`contact-card.tsx`)**: Created dedicated mobile card representation showing contact icons, organization/direct status badges, job title, email, account linking badge, and touch-friendly project association checkbox.
+  - **`InvitationCard` (`invitation-card.tsx`)**: Created dedicated mobile card representation showing role badges, status badges, recipient label, project association, formatted timestamps, and quick action buttons (Rotate / Revoke).
+  - **`ContactsPanel` & `InvitationsPanel` (`contacts-panel.tsx`, `invitations-panel.tsx`)**: Refactored to seamlessly switch between mobile cards (`block sm:hidden`) and full data tables (`hidden sm:block`), preventing viewport overflow and keeping source files well under the 400-line limit.
+  - **Dialogs & Layouts**: Standardized select triggers and container padding across admin and PM client administration routes.
+- **Verification:**
+  - Verified `npm run typecheck` with 0 errors.
+  - Verified `npm run lint` with 0 errors/warnings.
+  - Created and ran focused unit tests in `client-administration-ui.test.tsx` and i18n parity tests (`client-administration-messages.test.ts`), all passing 100%.
+
+## [2026-08-31 @ 16:35]
+
+**🚀 Features & 🛠 Architecture: S10-01 & S10-02 Client Administration, Ordinary Invitations & Direct Eligibility**
+
+- **Client Administration Foundation & Server Actions (`src/lib/clients/`):**
+  - Implemented strict camelCase DTOs, `AvailableResult<T>`, and `ClientAdministrationActionResult<T>` in `types.ts`.
+  - Defined strict Zod schemas in `schemas.ts` enforcing `isPrimary: false` refinement for direct contacts.
+  - Implemented query modules in `queries.ts` including `listClientContactsForAdministration`, `listClientOrganizationsForAdministration`, and `listProjectClientContactAssociations`.
+  - Implemented secure server actions in `actions.ts` (`saveClientContactAction`, `setProjectClientContactAction`, `loadProjectClientContactAssociationsAction`) with `SaveClientContactRpcArgs` passing explicit `p_contact_id: null` on creation and strict `admin`/`pm` role boundaries.
+- **Ordinary Invitations Engine (`src/lib/invitations/`):**
+  - Implemented DTOs, schemas, query pagination, and lifecycle server actions (`loadOrdinaryInvitationPageAction`, `createOrdinaryInvitationAction`, `rotateOrdinaryInvitationAction`, `revokeOrdinaryInvitationAction`).
+  - Enforced keyset page validation over all rows before slicing, deriving `nextCursor` from the last visible item.
+  - Implemented canonical one-time URL construction with `InvitationLinkLocale` (`es-MX` / `en-US`), zero plaintext token storage, and strict UI copy dialog isolation.
+- **Direct-Contact Project-Member Eligibility (`src/lib/projects/queries.ts`, `src/lib/deliverables/auth-checks.ts`):**
+  - Replaced legacy query with two-step `listEligibleClientMembersForProject` querying `list_project_client_contact_associations` RPC for direct projects and `client_contacts` under RLS. Enforced strict prohibition on direct reads of `project_client_contacts`.
+  - Updated deliverable eligibility checks to support client tasks on direct client projects.
+- **Client Administration Surfaces & Global Navigation (`src/components/shared/client-administration/`, `src/app/[locale]/(protected)/`):**
+  - Built directory management panel, direct project association toolbar, keyset invitations list, and accessible modal dialogs (`ContactDialog`, `InvitationCreateDialog`, `InvitationConfirmDialog`, `InvitationCopyDialog`).
+  - Added `/admin/clientes` and `/pm/clientes` App Router pages and mapped `clients` into global desktop and mobile drawer navigation for `admin` and `pm`.
+- **Existing Surfaces Reconciliation (`src/components/shared/projects/`):**
+  - Reconciled `ProjectOverviewTab`, `ProjectHeader`, `DeliverablesTab`, `DeliverableCreateDialog`, and `AddMemberDialog` for direct client projects and added localized prerequisite guidance.
+- **Localization (`messages/en-US.json`, `messages/es-MX.json`):**
+  - Added bilingual `clientAdministration` namespace, navigation link translations, direct project type labels, and dialog guidance.
+- **Automated Verification:**
+  - Added 6 focused Vitest test suites (65 tests passing 100%), verified `npm run lint` with 0 errors/warnings, and confirmed `npm run typecheck` with 0 errors.
+
+## [2026-08-31 @ 15:31]
+
+**🛠 Database & Types: S10 Active Project Command Enforcement**
+
+- **Database Migration (`supabase/migrations/20260831153000_s10-active-project-command-enforcement.sql`):**
+  - Applied forward-only migration `20260831153000_s10_active_project_command_enforcement` cleanly via Supabase MCP tool.
+  - Updated `public.set_project_client_contact` and `public.list_project_client_contact_associations` RPCs to check `archived_at is null`, rejecting archived projects for contact associations.
+  - Updated `private.resolve_s10_ordinary_invitation` to require active (non-archived, non-deleted) projects when creating or rotating invitations for both client and operator roles.
+  - Updated `public.accept_invite` to verify project is active (`archived_at is null` and `deleted_at is null`) before accepting project-bound invitations.
+- **Database Types (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript database type definitions from remote Supabase schema via `generate_typescript_types` MCP tool.
+
+## [2026-08-31 @ 14:51]
+
+**🛠 Database & Types: S10 Association Projection Integrity and Invitation List Index**
+
+- **Database Migration (`supabase/migrations/20260831123000_s10-association-projection-integrity-and-invitation-list-index.sql`):**
+  - Applied migration `20260831123000_s10_association_projection_integrity_and_invitation_list_index` cleanly via Supabase MCP tool.
+  - Updated `public.list_project_client_contact_associations` RPC with inner join to `client_contacts` ensuring only active direct contacts (`deleted_at is null` and `client_id is null`) are projected to administration consumers.
+  - Updated `public.set_project_client_contact` RPC ensuring associations require active direct contacts while idempotent disassociations can remediate historical records.
+  - Added partial index `invite_tokens_s10_ordinary_administration_cursor_idx` on `public.invite_tokens(created_at desc, id desc)` filtered by `role in ('client', 'operator')` matching keyset pagination query predicates.
+- **Database Types (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript database type definitions from remote Supabase schema via `generate_typescript_types` MCP tool.
+
+
+## [2026-08-31 @ 11:54]
+
+**🛠 Database & Types: S10 Association Projection and Direct Contact Enforcement**
+
+- **Database Migration (`supabase/migrations/20260831114500_s10-association-projection-and-direct-contact-enforcement.sql`):**
+  - Applied migration `20260831114500_s10_association_projection_and_direct_contact_enforcement` cleanly via Supabase MCP tool.
+  - Implemented `public.set_project_client_contact` security definer RPC with direct-contact enforcement (disallowing new associations when `client_id` is set), audit logging, and disassociation support for historical remediation.
+  - Implemented `public.list_project_client_contact_associations` security definer RPC for purpose-limited administration projection returning contact IDs.
+  - Configured function ownership, revocation of public/anon/service_role execute, and granted execute privileges to authenticated users.
+- **Database Types (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript database definitions from remote Supabase schema to include `list_project_client_contact_associations` and `set_project_client_contact` functions.
+
+
+## [2026-08-31 @ 11:02]
+
+**🚀 Features: S10-02 Ordinary Invitation Lifecycle Migration & Database Types Generation**
+
+- **Database Migration (`supabase/migrations/20260831100000_s10-02-ordinary-invitation-lifecycle.sql`):**
+  - Applied migration `20260831100000_s10_02_ordinary_invitation_lifecycle` to active database environment via Supabase MCP tool.
+  - Implemented Model A ordinary invitation lifecycle database functions (`create_ordinary_invitation`, `rotate_ordinary_invitation`, `revoke_ordinary_invitation`, `list_ordinary_invitation_administration`) with private helper validations (`assert_s10_invitation_manager`, `new_s10_invitation_token`, `resolve_s10_ordinary_invitation`), atomic token revocation/supersession, audit logging, and authenticated role execute grants.
+- **Database Types (`src/lib/database.types.ts`):**
+  - Regenerated TypeScript database type definitions from remote Supabase schema to include `create_ordinary_invitation`, `rotate_ordinary_invitation`, `revoke_ordinary_invitation`, and `list_ordinary_invitation_administration` RPC function signatures and return types.
+
 ## [2026-08-29 @ 17:55]
 
 **🐛 Hotfixes: Test Suite Remediation for S09-06 Milestone Goals, Operator Milestone Context & UI Components**

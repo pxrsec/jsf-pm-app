@@ -33,6 +33,7 @@ import { AddMemberDialog } from "./add-member-dialog";
 import { ChangeCapacityDialog } from "./change-capacity-dialog";
 import { RemoveMemberDialog } from "./remove-member-dialog";
 import { SetPrimaryLeadDialog } from "./set-primary-lead-dialog";
+import type { AvailableResult } from "@/lib/clients/types";
 import type {
   ProjectDetail,
   ProjectMemberWithProfile,
@@ -48,7 +49,8 @@ interface MemberRosterTabProps {
     Profile,
     "id" | "full_name" | "role" | "avatar_url"
   >[];
-  eligibleClients: EligibleClientMember[];
+  eligibleClients:
+    AvailableResult<EligibleClientMember[]> | EligibleClientMember[];
 }
 
 export function MemberRosterTab({
@@ -128,8 +130,113 @@ export function MemberRosterTab({
         )}
       </div>
 
-      {/* Desktop Table View */}
-      <div className="rounded-md border border-border bg-card overflow-hidden">
+      {/* Mobile Cards View (< md) */}
+      <div className="md:hidden space-y-3">
+        {project.members.map((member) => {
+          const joinedDate = new Date(member.joined_at);
+
+          return (
+            <div
+              key={member.id}
+              className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs transition-colors"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                    {member.profile?.full_name?.charAt(0) ?? "U"}
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-semibold text-foreground text-sm truncate">
+                      {member.profile?.full_name ?? "Usuario"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {member.profile?.role
+                        ? tSystemRole(member.profile.role)
+                        : "—"}
+                    </span>
+                  </div>
+                </div>
+
+                {!isWatcher && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      className="inline-flex shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground h-8 w-8 cursor-pointer hover:bg-muted"
+                      aria-label={t("table.columns.actions")}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 text-xs">
+                      {member.member_type === "pm_lead" &&
+                        !member.is_primary && (
+                          <DropdownMenuItem
+                            onClick={() => setSelectedMemberForPrimary(member)}
+                            className="cursor-pointer gap-2"
+                          >
+                            <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+                            <span>{t("table.actions.setPrimaryLead")}</span>
+                          </DropdownMenuItem>
+                        )}
+
+                      <DropdownMenuItem
+                        onClick={() => setSelectedMemberForCapacity(member)}
+                        className="cursor-pointer gap-2"
+                      >
+                        <Settings className="h-3.5 w-3.5" />
+                        <span>{t("table.actions.changeCapacity")}</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuSeparator />
+
+                      <DropdownMenuItem
+                        onClick={() => setSelectedMemberForRemoval(member)}
+                        className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+                      >
+                        <UserX className="h-3.5 w-3.5" />
+                        <span>{t("table.actions.remove")}</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-2.5 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <MemberCapacityBadge
+                    capacity={member.member_type}
+                    isPrimary={member.is_primary}
+                  />
+                  {member.receives_notifications ? (
+                    <span
+                      title="Recibe notificaciones"
+                      className="inline-flex items-center gap-1 text-[11px] text-muted-foreground"
+                    >
+                      <Bell className="h-3.5 w-3.5" />
+                    </span>
+                  ) : (
+                    <span
+                      title="Notificaciones desactivadas"
+                      className="inline-flex items-center gap-1 text-[11px] text-muted-foreground/40"
+                    >
+                      <BellOff className="h-3.5 w-3.5" />
+                    </span>
+                  )}
+                </div>
+
+                <span>
+                  {format.dateTime(joinedDate, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop Table View (>= md) */}
+      <div className="hidden md:block rounded-md border border-border bg-card overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>

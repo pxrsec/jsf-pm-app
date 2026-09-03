@@ -13,14 +13,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  transitionProjectStatusAction,
-  archiveProjectAction,
-  restoreProjectAction,
-} from "@/lib/projects/actions";
+import { transitionProjectStatusAction } from "@/lib/projects/actions";
+import { archiveOperationalEntityAction } from "@/lib/operational-lifecycle/actions";
 
 export type ProjectStatusActionType =
-  "pause" | "resume" | "cancel" | "archive" | "restore" | "complete" | "reopen";
+  "pause" | "resume" | "cancel" | "archive" | "complete" | "reopen";
 
 interface ProjectStatusDialogProps {
   projectId: string;
@@ -70,12 +67,6 @@ export function ProjectStatusDialog({
         return {
           title: t("archiveTitle"),
           description: t("archiveDescription"),
-          isDestructive: true,
-        };
-      case "restore":
-        return {
-          title: t("restoreTitle"),
-          description: t("restoreDescription"),
           isDestructive: false,
         };
       default:
@@ -99,7 +90,7 @@ export function ProjectStatusDialog({
           confirm_unfinished: false,
         });
         if (!res.ok) {
-          setErrorMessage(res.error.message);
+          setErrorMessage(t("errorGeneric"));
           setIsSubmitting(false);
           return;
         }
@@ -110,7 +101,7 @@ export function ProjectStatusDialog({
           confirm_unfinished: false,
         });
         if (!res.ok) {
-          setErrorMessage(res.error.message);
+          setErrorMessage(t("errorGeneric"));
           setIsSubmitting(false);
           return;
         }
@@ -121,21 +112,18 @@ export function ProjectStatusDialog({
           confirm_unfinished: false,
         });
         if (!res.ok) {
-          setErrorMessage(res.error.message);
+          setErrorMessage(t("errorGeneric"));
           setIsSubmitting(false);
           return;
         }
       } else if (actionType === "archive") {
-        const res = await archiveProjectAction(projectId);
+        const res = await archiveOperationalEntityAction({
+          entityType: "project",
+          entityId: projectId,
+          reason: null,
+        });
         if (!res.ok) {
-          setErrorMessage(res.error.message);
-          setIsSubmitting(false);
-          return;
-        }
-      } else if (actionType === "restore") {
-        const res = await restoreProjectAction(projectId);
-        if (!res.ok) {
-          setErrorMessage(res.error.message);
+          setErrorMessage(t("errorGeneric"));
           setIsSubmitting(false);
           return;
         }
@@ -144,10 +132,8 @@ export function ProjectStatusDialog({
       onClose();
       onSuccess?.();
       router.refresh();
-    } catch (err) {
-      setErrorMessage(
-        err instanceof Error ? err.message : "Error executing action",
-      );
+    } catch {
+      setErrorMessage(t("errorGeneric"));
     } finally {
       setIsSubmitting(false);
     }
@@ -185,7 +171,7 @@ export function ProjectStatusDialog({
                 : ""
             }
           >
-            {isSubmitting ? "Procesando..." : t("confirmAction")}
+            {isSubmitting ? t("submitting") : t("confirmAction")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

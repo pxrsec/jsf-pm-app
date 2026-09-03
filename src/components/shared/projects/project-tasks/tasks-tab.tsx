@@ -24,6 +24,7 @@ interface TasksTabProps {
   project: ProjectDetail;
   initialTasks: TaskWithAssignee[];
   effectiveCapacity: "admin" | "pm_lead" | "pm_watcher";
+  canManageOperationalLifecycle?: boolean;
   locale: string;
   milestoneOptions?: MilestoneOptionDto[];
 }
@@ -32,6 +33,7 @@ export function TasksTab({
   project,
   initialTasks,
   effectiveCapacity,
+  canManageOperationalLifecycle,
   milestoneOptions,
 }: TasksTabProps) {
   const t = useTranslations("projects.tasks");
@@ -51,6 +53,7 @@ export function TasksTab({
   const [archivingTaskId, setArchivingTaskId] = useState<string | null>(null);
 
   const isWatcher = effectiveCapacity === "pm_watcher";
+  const canArchiveTasks = canManageOperationalLifecycle ?? true;
 
   // Client-side filtering
   const filteredTasks = useMemo(() => {
@@ -127,14 +130,14 @@ export function TasksTab({
             </Button>
           </div>
 
-          {/* New Task Button (PM Lead / Admin only, when project not completed) */}
+          {/* Create Task Button */}
           {!isWatcher && project.status !== "completed" && (
             <Button
               onClick={() => setIsCreateOpen(true)}
               size="sm"
-              className="h-9 text-xs gap-1.5 font-medium shadow-xs"
+              className="h-8 text-xs gap-1.5 cursor-pointer"
             >
-              <Plus className="size-4" />
+              <Plus className="size-3.5" />
               <span>{t("newTaskAction")}</span>
             </Button>
           )}
@@ -186,6 +189,7 @@ export function TasksTab({
         <TaskListView
           tasks={filteredTasks}
           isWatcher={isWatcher}
+          canArchiveTasks={canArchiveTasks}
           onViewDetails={(task) => setOpenTaskId(task.id)}
           onEdit={(task) => setEditingTask(task)}
           onArchive={(task) => setArchivingTaskId(task.id)}
@@ -213,7 +217,6 @@ export function TasksTab({
       {/* Archive Task Dialog */}
       <TaskArchiveDialog
         taskId={archivingTaskId}
-        projectId={project.id}
         isOpen={Boolean(archivingTaskId)}
         onClose={() => setArchivingTaskId(null)}
         onSuccess={handleMutationSuccess}

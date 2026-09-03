@@ -25,6 +25,24 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("@/i18n/routing", () => ({
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => React.createElement("a", { href, ...props }, children),
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  usePathname: () => "/pm/proyectos/proj-1",
+  redirect: vi.fn(),
+}));
+
 vi.mock("next-intl", () => ({
   useTranslations: (namespace: string) => {
     return (key: string, params?: Record<string, unknown>) => {
@@ -170,6 +188,8 @@ const mockProject: ProjectDetail = {
   drive_folder_url: null,
   completed_at: null,
   archived_at: null,
+  archived_by: null,
+  archive_reason: null,
   deleted_at: null,
   created_at: "2026-08-01T00:00:00Z",
   updated_at: "2026-08-01T00:00:00Z",
@@ -214,6 +234,10 @@ const mockTasks: TaskWithAssignee[] = [
     has_deliverables: false,
     started_at: null,
     completed_at: null,
+    archived_at: null,
+    archived_by: null,
+    archive_reason: null,
+    archived_parent_project_id: null,
     deleted_at: null,
     created_by: "user-1",
     updated_by: null,
@@ -240,6 +264,10 @@ const mockTasks: TaskWithAssignee[] = [
     has_deliverables: true,
     started_at: null,
     completed_at: null,
+    archived_at: null,
+    archived_by: null,
+    archive_reason: null,
+    archived_parent_project_id: null,
     deleted_at: null,
     created_by: "user-1",
     updated_by: null,

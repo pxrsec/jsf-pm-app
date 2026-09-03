@@ -10,6 +10,7 @@ import {
   UpdateDeliverableSchema,
   SubmitDeliverableVersionSchema,
   ReportBrokenLinkSchema,
+  ManagerTaskDeliverableDetailInputSchema,
   type CreateDeliverableInput,
   type UpdateDeliverableInput,
   type SubmitDeliverableVersionInput,
@@ -18,7 +19,6 @@ import {
 import {
   createDeliverable,
   updateDeliverable,
-  archiveDeliverable,
   submitDeliverableVersion,
   reportBrokenLink,
   type SubmitVersionResult,
@@ -26,6 +26,7 @@ import {
 } from "./commands";
 import {
   getDeliverableDetail,
+  getManagerTaskDeliverableDetail,
   type Deliverable,
   type DeliverableDetailView,
 } from "./queries";
@@ -334,40 +335,6 @@ export async function updateDeliverableAction(params: {
   return result;
 }
 
-export async function archiveDeliverableAction(params: {
-  deliverableId: string;
-  projectId: string;
-  reason?: string;
-}): Promise<CommandResult<{ success: boolean }>> {
-  const cookieStore = await cookies();
-  const session = await requireSession(cookieStore);
-  const supabase = createClient(cookieStore);
-
-  const isLead = await verifyPmLeadCapacity(
-    supabase,
-    session.user.id,
-    session.role,
-    params.projectId,
-  );
-  if (!isLead) {
-    return {
-      ok: false,
-      error: {
-        code: "UNAUTHORIZED",
-        message: "Only Admins and active PM Leads can archive deliverables",
-      },
-    };
-  }
-
-  const result = await archiveDeliverable(
-    supabase,
-    params.deliverableId,
-    params.reason,
-  );
-  if (result.ok) revalidateProjectWorkspaces(params.projectId);
-  return result;
-}
-
 export async function submitDeliverableVersionAction(
   input: SubmitDeliverableVersionInput,
 ): Promise<CommandResult<SubmitVersionResult>> {
@@ -528,4 +495,26 @@ export async function getDeliverableDetailAction(
   const supabase = createClient(cookieStore);
 
   return getDeliverableDetail(supabase, deliverableId);
+}
+
+export async function getManagerTaskDeliverableDetailAction(
+  input: unknown,
+): Promise<DeliverableDetailView | null> {
+  const parsed = ManagerTaskDeliverableDetailInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return null;
+  }
+
+  const cookieStore = await cookies();
+  const session = await requireSession(cookieStore);
+
+  if (session.role !== "admin" && session.role !== "pm") {
+    return null;
+  }
+
+  const supabase = createClient(cookieStore);
+  return getManagerTaskDeliverableDetail(supabase, parsed.data.deliverableId, {
+    taskId: parsed.data.taskId,
+    projectId: parsed.data.projectId,
+  });
 }

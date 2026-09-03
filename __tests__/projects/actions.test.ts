@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { mockSupabase, mockSession, mockInsert, mockRpc } = vi.hoisted(() => {
+const { mockSupabase, mockSession, mockInsert } = vi.hoisted(() => {
   const mockInsert = vi.fn().mockResolvedValue({ error: null });
   const mockDelete = vi.fn().mockReturnValue({
     eq: vi.fn().mockResolvedValue({ error: null }),
@@ -112,8 +112,6 @@ vi.mock("@/lib/supabase/server", () => ({
 import {
   createProjectAction,
   updateProjectAction,
-  archiveProjectAction,
-  restoreProjectAction,
   setPrimaryPmLeadAction,
 } from "@/lib/projects/actions";
 
@@ -166,44 +164,6 @@ describe("Project Server Actions", () => {
         internal_description: "Updated notes",
       });
       expect(result.ok).toBe(true);
-    });
-  });
-
-  describe("archiveProjectAction", () => {
-    it("archives project successfully", async () => {
-      const result = await archiveProjectAction("proj-123", "Project finished");
-      expect(result.ok).toBe(true);
-      expect(mockRpc).toHaveBeenCalledWith(
-        "soft_delete_entity",
-        expect.objectContaining({
-          p_entity_id: "proj-123",
-          p_entity_type: "project",
-        }),
-      );
-    });
-  });
-
-  describe("restoreProjectAction", () => {
-    it("allows admin to restore project", async () => {
-      mockSession.role = "admin";
-      const result = await restoreProjectAction("proj-123");
-      expect(result.ok).toBe(true);
-      expect(mockRpc).toHaveBeenCalledWith(
-        "restore_entity",
-        expect.objectContaining({
-          p_entity_id: "proj-123",
-          p_entity_type: "project",
-        }),
-      );
-    });
-
-    it("rejects non-admin from restoring project", async () => {
-      mockSession.role = "pm";
-      const result = await restoreProjectAction("proj-123");
-      expect(result.ok).toBe(false);
-      if (!result.ok) {
-        expect(result.error.code).toBe("UNAUTHORIZED");
-      }
     });
   });
 

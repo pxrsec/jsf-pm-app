@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Building2, Layers, FilterX, Plus } from "lucide-react";
+import { Building2, Layers, FilterX, Plus, FileBox } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DeliverablesFilterBar } from "./deliverables-filter-bar";
 import { DeliverableList } from "./deliverable-list";
@@ -30,6 +30,7 @@ interface DeliverablesTabProps {
   initialDeliverables: DeliverableListItem[];
   tasks: TaskWithAssignee[];
   effectiveCapacity: "admin" | "pm_lead" | "pm_watcher";
+  canManageOperationalLifecycle?: boolean;
   currentUserId?: string;
 }
 
@@ -38,13 +39,28 @@ export function DeliverablesTab({
   initialDeliverables,
   tasks,
   effectiveCapacity,
+  canManageOperationalLifecycle,
   currentUserId,
 }: DeliverablesTabProps) {
   const t = useTranslations("projects.workspace.deliverables");
   const router = useRouter();
-  const [, startTransition] = useTransition();
 
-  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+  const isClientMobile = useSyncExternalStore(
+    (cb) => {
+      const mql = window.matchMedia("(max-width: 767px)");
+      mql.addEventListener("change", cb);
+      return () => mql.removeEventListener("change", cb);
+    },
+    () => window.innerWidth < 768,
+    () => false,
+  );
+
+  const [userViewMode, setUserViewMode] = useState<"table" | "cards" | null>(
+    null,
+  );
+  const viewMode = userViewMode ?? (isClientMobile ? "cards" : "table");
+  const setViewMode = (mode: "table" | "cards") => setUserViewMode(mode);
+
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
 
@@ -69,10 +85,12 @@ export function DeliverablesTab({
     useState<DeliverableVersionView | null>(null);
 
   const hasTasks = tasks.some((t) => !t.deleted_at);
-  const isMissingClientOrg =
-    project.project_type === "client" && !project.client_id;
+  const isMissingClientMember =
+    project.project_type === "client" &&
+    !project.members.some((m) => m.member_type === "client" && !m.deleted_at);
   const isLeadOrAdmin =
     effectiveCapacity === "admin" || effectiveCapacity === "pm_lead";
+  const canArchiveDeliverables = canManageOperationalLifecycle ?? true;
 
   const filteredDeliverables = useMemo(() => {
     return initialDeliverables.filter((d) => {
@@ -97,55 +115,14 @@ export function DeliverablesTab({
   const handleRefresh = (msg?: string) => {
     if (msg) toast.success(msg);
     router.refresh();
-    startTransition(() => {
-      if (selectedDetail) {
-        getDeliverableDetailAction(selectedDetail.id)
-          .then((fresh) => {
-            if (fresh) setSelectedDetail(fresh);
-            else {
-              setIsDetailOpen(false);
-              setSelectedDetail(null);
-            }
-          })
-          .catch(() => {
-            setIsDetailOpen(false);
-            setSelectedDetail(null);
-          });
-      }
-    });
   };
 
-  const handleActionError = (code: string) => {
-    if (code === "NOT_FOUND") {
-      setIsDetailOpen(false);
-      setSelectedDetail(null);
-    }
-    router.refresh();
-    if (selectedDetail && code !== "NOT_FOUND") {
-      getDeliverableDetailAction(selectedDetail.id).then((fresh) => {
-        if (fresh) setSelectedDetail(fresh);
-        else {
-          setIsDetailOpen(false);
-          setSelectedDetail(null);
-        }
-      });
-    }
+  const handleActionError = (msg: string) => {
+    toast.error(msg);
   };
 
   return (
     <div className="space-y-6">
-      {isMissingClientOrg && (
-        <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200">
-          <Building2 className="size-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-          <div className="space-y-0.5 text-xs">
-            <p className="font-semibold">{t("incompleteClientSetupTitle")}</p>
-            <p className="text-amber-800/90 dark:text-amber-300/90 leading-relaxed">
-              {t("incompleteClientSetupDescription")}
-            </p>
-          </div>
-        </div>
-      )}
-
       <DeliverablesFilterBar
         project={project}
         statusFilter={statusFilter}
@@ -159,38 +136,80 @@ export function DeliverablesTab({
         onOpenCreate={() => setIsCreateOpen(true)}
       />
 
-      {initialDeliverables.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-dashed border-border/80 bg-muted/10 space-y-3">
-          <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <Layers className="size-6" />
-          </div>
-          <div className="space-y-1 max-w-sm">
-            <h3 className="text-base font-semibold text-foreground">
-              {t("emptyStateTitle")}
-            </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {t("emptyStateDescription")}
+      {isMissingClientMember && project.status !== "completed" && (
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl p-4 flex items-start gap-3">
+          <Building2 className="size-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+          <div className="space-y-1">
+            <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+              {t("incompleteClientSetupTitle")}
+            </h4>
+            <p className="text-xs text-amber-700 dark:text-amber-400">
+              {t("incompleteClientSetupDescription")}
             </p>
           </div>
-          {isLeadOrAdmin && hasTasks && (
-            <Button
-              onClick={() => setIsCreateOpen(true)}
-              size="sm"
-              className="text-xs gap-1.5 mt-2"
-            >
-              <Plus className="size-3.5" />
-              <span>{t("emptyStateAction")}</span>
-            </Button>
-          )}
+        </div>
+      )}
+
+      {!hasTasks && project.status !== "completed" && (
+        <div className="bg-muted/50 border border-border rounded-xl p-4 flex items-start gap-3">
+          <Layers className="size-5 text-muted-foreground mt-0.5 shrink-0" />
+          <div className="space-y-1">
+            <h4 className="text-sm font-semibold text-foreground">
+              {t("noTasksTitle", { defaultMessage: "Tareas requeridas" })}
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              {t("noTasksDescription", {
+                defaultMessage:
+                  "Debes crear al menos una tarea en el proyecto antes de poder añadir entregables.",
+              })}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {initialDeliverables.length === 0 ? (
+        <div className="text-center py-16 px-4 bg-card rounded-xl border border-border/80 shadow-2xs space-y-3">
+          <FileBox className="size-10 text-muted-foreground mx-auto" />
+          <h3 className="text-base font-semibold text-foreground">
+            {t("emptyStateTitle", {
+              defaultMessage: "No hay entregables planificados",
+            })}
+          </h3>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+            {t("emptyStateDescription", {
+              defaultMessage:
+                "Planifica entregables asociados a tareas para dar seguimiento al trabajo del cliente.",
+            })}
+          </p>
+          {isLeadOrAdmin &&
+            hasTasks &&
+            !isMissingClientMember &&
+            project.status !== "completed" && (
+              <Button
+                size="sm"
+                onClick={() => setIsCreateOpen(true)}
+                className="text-xs mt-2 gap-1.5 shadow-xs"
+              >
+                <Plus className="size-3.5" />
+                <span>
+                  {t("emptyStateAction", {
+                    defaultMessage: "Planificar primer entregable",
+                  })}
+                </span>
+              </Button>
+            )}
         </div>
       ) : filteredDeliverables.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-border/80 bg-muted/10 space-y-2">
-          <FilterX className="size-8 text-muted-foreground/60" />
-          <h4 className="text-sm font-semibold text-foreground">
-            {t("emptyFilterTitle")}
-          </h4>
-          <p className="text-xs text-muted-foreground">
-            {t("emptyFilterDescription")}
+        <div className="text-center py-16 px-4 bg-card rounded-xl border border-border/80 shadow-2xs space-y-3">
+          <FilterX className="size-10 text-muted-foreground mx-auto" />
+          <h3 className="text-base font-semibold text-foreground">
+            {t("noResultsTitle", { defaultMessage: "Sin resultados" })}
+          </h3>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+            {t("noResultsDescription", {
+              defaultMessage:
+                "No hay entregables que coincidan con los filtros seleccionados.",
+            })}
           </p>
           <Button
             variant="outline"
@@ -208,6 +227,7 @@ export function DeliverablesTab({
         <DeliverableList
           deliverables={filteredDeliverables}
           effectiveCapacity={effectiveCapacity}
+          canArchiveDeliverables={canArchiveDeliverables}
           currentUserId={currentUserId}
           onViewDetails={handleOpenDetail}
           onSubmitVersion={(d) => setSubmittingDeliverable(d)}
@@ -223,6 +243,7 @@ export function DeliverablesTab({
               key={d.id}
               deliverable={d}
               effectiveCapacity={effectiveCapacity}
+              canArchiveDeliverables={canArchiveDeliverables}
               currentUserId={currentUserId}
               onViewDetails={handleOpenDetail}
               onSubmitVersion={(deliv) => setSubmittingDeliverable(deliv)}
@@ -253,7 +274,6 @@ export function DeliverablesTab({
 
       <DeliverableArchiveDialog
         deliverableId={archivingDeliverableId}
-        projectId={project.id}
         isOpen={Boolean(archivingDeliverableId)}
         onClose={() => setArchivingDeliverableId(null)}
         onSuccess={handleRefresh}

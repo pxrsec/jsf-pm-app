@@ -78,6 +78,24 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("@/i18n/routing", () => ({
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => React.createElement("a", { href, ...props }, children),
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  usePathname: () => "/pm/proyectos/proj-123",
+  redirect: vi.fn(),
+}));
+
 vi.mock("@/lib/auth/session", () => ({
   requireSession: vi
     .fn()
@@ -162,6 +180,8 @@ const mockActiveProject: ProjectDetail = {
   drive_folder_url: null,
   completed_at: null,
   archived_at: null,
+  archived_by: null,
+  archive_reason: null,
   deleted_at: null,
   created_at: "2026-08-01T00:00:00Z",
   updated_at: "2026-08-01T00:00:00Z",
@@ -471,6 +491,10 @@ describe("S04-05 Project Completion, Reopening, and Visible Audit Context", () =
         assigned_at: "2026-08-01T00:00:00Z",
         started_at: null,
         completed_at: null,
+        archived_at: null,
+        archived_by: null,
+        archive_reason: null,
+        archived_parent_project_id: null,
         deleted_at: null,
         created_by: "user-1",
         updated_by: null,

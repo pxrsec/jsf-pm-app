@@ -3,12 +3,12 @@
 import { useTranslations } from "next-intl";
 import { format, isPast } from "date-fns";
 import {
+  Archive,
   Calendar,
   Edit2,
   Eye,
   MoreHorizontal,
   Paperclip,
-  Trash2,
   User,
 } from "lucide-react";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 interface TaskListRowProps {
   task: TaskWithAssignee;
   isWatcher: boolean;
+  canArchive?: boolean;
   onViewDetails: (task: TaskWithAssignee) => void;
   onEdit: (task: TaskWithAssignee) => void;
   onArchive: (task: TaskWithAssignee) => void;
@@ -37,6 +38,7 @@ interface TaskListRowProps {
 export function TaskListRow({
   task,
   isWatcher,
+  canArchive = true,
   onViewDetails,
   onEdit,
   onArchive,
@@ -51,6 +53,8 @@ export function TaskListRow({
   const isBlocked = task.status === "blocked";
   const typeKey =
     task.task_type === "internal_work" ? "internalWork" : "clientRequest";
+
+  const hasMenu = !isWatcher || canArchive;
 
   return (
     <TableRow
@@ -126,7 +130,7 @@ export function TaskListRow({
         className="py-3 text-right"
         onClick={(e) => e.stopPropagation()}
       >
-        {!isWatcher ? (
+        {hasMenu ? (
           <DropdownMenu>
             <DropdownMenuTrigger
               className="inline-flex shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground size-8 cursor-pointer hover:bg-muted"
@@ -139,18 +143,22 @@ export function TaskListRow({
                 <Eye className="mr-2 size-4" />
                 <span>{tList("viewDetails")}</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onEdit(task)}>
-                <Edit2 className="mr-2 size-4" />
-                <span>{tList("edit")}</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={() => onArchive(task)}
-              >
-                <Trash2 className="mr-2 size-4" />
-                <span>{tList("archive")}</span>
-              </DropdownMenuItem>
+              {!isWatcher && (
+                <DropdownMenuItem onClick={() => onEdit(task)}>
+                  <Edit2 className="mr-2 size-4" />
+                  <span>{tList("edit")}</span>
+                </DropdownMenuItem>
+              )}
+              {!isWatcher && canArchive && <DropdownMenuSeparator />}
+              {canArchive && (
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => onArchive(task)}
+                >
+                  <Archive className="mr-2 size-4" />
+                  <span>{tList("archive")}</span>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (

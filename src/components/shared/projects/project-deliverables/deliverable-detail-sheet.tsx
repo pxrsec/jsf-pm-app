@@ -63,6 +63,7 @@ export function DeliverableDetailSheet({
   const isLeadOrAdmin =
     effectiveCapacity === "admin" || effectiveCapacity === "pm_lead";
   const canSubmit =
+    !isWatcher &&
     isProduction &&
     (isAssignee || isLeadOrAdmin) &&
     (deliverable.status === "pending" ||

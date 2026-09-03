@@ -19,7 +19,7 @@ describe("VC-I18N-005: Sitemap reflects canonical public routes with non-product
     expect(sitemapContent).toMatch(/sitemap|Sitemap/);
   });
 
-  it("sitemap lists only canonical public routes: /, /privacidad, /en/, /en/privacidad", async () => {
+  it("sitemap lists only canonical public routes: /, /privacidad, /terminos, /en/, /en/privacidad, /en/terminos", async () => {
     const sitemapModule = await import("../../src/app/sitemap");
     const sitemap =
       (await sitemapModule.default) || (sitemapModule as any).sitemap;
@@ -28,20 +28,29 @@ describe("VC-I18N-005: Sitemap reflects canonical public routes with non-product
     const urls = entries
       .map((e: { url: string }) => new URL(e.url).pathname)
       .sort();
-    expect(urls).toEqual(["/", "/en/", "/en/privacidad", "/privacidad"]);
+    expect(urls).toEqual([
+      "/",
+      "/en/",
+      "/en/privacidad",
+      "/en/terminos",
+      "/privacidad",
+      "/terminos",
+    ]);
   });
 
-  it("sitemap entries have proper structure with lastModified", async () => {
+  it("sitemap entries have proper structure with lastModified and reciprocal alternates", async () => {
     const sitemapModule = await import("../../src/app/sitemap");
     const sitemap =
       (await sitemapModule.default) || (sitemapModule as any).sitemap;
     const entries = await sitemap();
 
-    expect(entries.length).toBe(4);
+    expect(entries.length).toBe(6);
     for (const entry of entries) {
       expect(entry).toHaveProperty("url");
       expect(entry).toHaveProperty("lastModified");
       expect(new Date(entry.lastModified as any).getTime()).not.toBeNaN();
+      expect(entry).toHaveProperty("alternates.languages.es-MX");
+      expect(entry).toHaveProperty("alternates.languages.en-US");
     }
   });
 });

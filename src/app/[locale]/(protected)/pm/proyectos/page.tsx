@@ -15,7 +15,7 @@ export default async function PmProjectsPage() {
   }
 
   const supabase = createClient(cookieStore);
-  const projects = await listProjectsForPm(supabase, session.user.id);
+  const projects = await listProjectsForPm(supabase);
 
   return <ProjectDirectoryView initialProjects={projects} actorRole="pm" />;
 }

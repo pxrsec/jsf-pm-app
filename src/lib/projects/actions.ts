@@ -8,11 +8,13 @@ import * as projectCommands from "@/lib/projects/commands";
 import {
   CreateProjectSchema,
   UpdateProjectSchema,
+  UpdateProjectIdentitySchema,
   TransitionProjectStatusSchema,
   AddProjectMemberSchema,
   UpdateProjectMemberSchema,
   type CreateProjectWithTeamInput,
   type UpdateProjectInput,
+  type UpdateProjectIdentityInput,
   type AddProjectMemberInput,
   type UpdateProjectMemberInput,
   type TransitionProjectStatusInput,
@@ -141,11 +143,91 @@ export async function updateProjectAction(
   );
 
   if (result.ok) {
-    revalidatePath(
-      `/[locale]/(protected)/admin/proyectos/${projectId}`,
-      "page",
-    );
-    revalidatePath(`/[locale]/(protected)/pm/proyectos/${projectId}`, "page");
+    revalidatePath(`/admin/proyectos/${projectId}`);
+    revalidatePath(`/en/admin/proyectos/${projectId}`);
+    revalidatePath(`/pm/proyectos/${projectId}`);
+    revalidatePath(`/en/pm/proyectos/${projectId}`);
+  }
+  return result;
+}
+
+export async function updateProjectIdentityAction(
+  projectId: string,
+  rawInput: UpdateProjectIdentityInput,
+): Promise<CommandResult<Project>> {
+  const cookieStore = await cookies();
+  const session = await requireSession(cookieStore);
+
+  if (session.role !== "admin" && session.role !== "pm") {
+    return {
+      ok: false,
+      error: { code: "UNAUTHORIZED", message: "Unauthorized role" },
+    };
+  }
+
+  const parseResult = UpdateProjectIdentitySchema.safeParse(rawInput);
+  if (!parseResult.success) {
+    return {
+      ok: false,
+      error: {
+        code: "VALIDATION_FAILED",
+        message:
+          parseResult.error.issues[0]?.message ?? "Invalid identity input",
+      },
+    };
+  }
+
+  const supabase = createClient(cookieStore);
+
+  // Server-side project eligibility check
+  const { data: project, error: fetchError } = await supabase
+    .from("projects")
+    .select("id, project_type, status, deleted_at, archived_at")
+    .eq("id", projectId)
+    .maybeSingle();
+
+  if (
+    fetchError ||
+    !project ||
+    project.project_type !== "client" ||
+    project.deleted_at !== null ||
+    project.archived_at !== null ||
+    project.status === "completed" ||
+    project.status === "cancelled"
+  ) {
+    return {
+      ok: false,
+      error: {
+        code: "INVALID_TRANSITION",
+        message: "Project is not eligible for client identity management",
+      },
+    };
+  }
+
+  // Enforce planning-only client_id: null
+  if (parseResult.data.client_id === null && project.status !== "planning") {
+    return {
+      ok: false,
+      error: {
+        code: "INVALID_TRANSITION",
+        message:
+          "Organization identity cannot be cleared for active non-planning projects",
+      },
+    };
+  }
+
+  const result = await projectCommands.updateProject(
+    supabase,
+    projectId,
+    { client_id: parseResult.data.client_id },
+    session.user.id,
+  );
+
+  if (result.ok) {
+    revalidatePath(`/admin/proyectos/${projectId}`);
+    revalidatePath(`/en/admin/proyectos/${projectId}`);
+    revalidatePath(`/pm/proyectos/${projectId}`);
+    revalidatePath(`/en/pm/proyectos/${projectId}`);
   }
   return result;
 }
@@ -184,58 +266,6 @@ export async function transitionProjectStatusAction(
       `/[locale]/(protected)/pm/proyectos/${rawInput.project_id}`,
       "page",
     );
-    revalidatePath("/[locale]/(protected)/admin/proyectos", "page");
-    revalidatePath("/[locale]/(protected)/pm/proyectos", "page");
-  }
-  return result;
-}
-
-export async function archiveProjectAction(
-  projectId: string,
-  reason?: string,
-): Promise<CommandResult<{ success: boolean }>> {
-  const cookieStore = await cookies();
-  await requireSession(cookieStore);
-  const supabase = createClient(cookieStore);
-
-  const result = await projectCommands.archiveProject(
-    supabase,
-    projectId,
-    reason,
-  );
-
-  if (result.ok) {
-    revalidatePath("/[locale]/(protected)/admin/proyectos", "page");
-    revalidatePath("/[locale]/(protected)/pm/proyectos", "page");
-  }
-  return result;
-}
-
-export async function restoreProjectAction(
-  projectId: string,
-  reason?: string,
-): Promise<CommandResult<{ success: boolean }>> {
-  const cookieStore = await cookies();
-  const session = await requireSession(cookieStore);
-
-  if (session.role !== "admin") {
-    return {
-      ok: false,
-      error: {
-        code: "UNAUTHORIZED",
-        message: "Only admin can restore projects",
-      },
-    };
-  }
-
-  const supabase = createClient(cookieStore);
-  const result = await projectCommands.restoreProject(
-    supabase,
-    projectId,
-    reason,
-  );
-
-  if (result.ok) {
     revalidatePath("/[locale]/(protected)/admin/proyectos", "page");
     revalidatePath("/[locale]/(protected)/pm/proyectos", "page");
   }

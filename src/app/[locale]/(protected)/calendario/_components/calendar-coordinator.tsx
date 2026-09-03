@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
 import { TZDate } from "@date-fns/tz";
@@ -30,6 +31,7 @@ export function CalendarCoordinator({
   keyPrefix = "",
   onRangeChange,
 }: CalendarCoordinatorProps) {
+  const t = useTranslations("calendar");
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -45,6 +47,9 @@ export function CalendarCoordinator({
     milestoneId: string;
     title: string;
   } | null>(null);
+
+  const canArchiveMilestones = userRole === "admin" || userRole === "pm";
+
   const updateRange = (range: CalendarRangeState) => {
     if (onRangeChange) return onRangeChange(range);
     const next = new URLSearchParams(params.toString());
@@ -131,6 +136,30 @@ export function CalendarCoordinator({
           canManageMilestones ? () => setForm({ mode: "create" }) : undefined
         }
       />
+      {/* Calendar Legend Bar */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-border/60 bg-muted/30 px-3.5 py-2 text-xs text-muted-foreground">
+        <span className="font-semibold text-foreground flex items-center gap-1.5">
+          <span>{t("legend.title")}:</span>
+        </span>
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+          <span className="inline-flex items-center gap-1.5">
+            <span aria-hidden="true">📋</span>
+            <span>{t("legend.tasks")}</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span aria-hidden="true">📦</span>
+            <span>{t("legend.deliverables")}</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span aria-hidden="true">🚩</span>
+            <span>{t("legend.milestones")}</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span aria-hidden="true">📅</span>
+            <span>{t("legend.events")}</span>
+          </span>
+        </div>
+      </div>
       {initialRange.view === "month" && <CalendarMonthView {...viewProps} />}{" "}
       {initialRange.view === "week" && <CalendarWeekView {...viewProps} />}{" "}
       {initialRange.view === "agenda" && <CalendarAgendaView {...viewProps} />}{" "}
@@ -139,6 +168,7 @@ export function CalendarCoordinator({
         milestoneId={detailId}
         isOpen={Boolean(detailId)}
         canManage={canManageMilestones}
+        canArchive={canArchiveMilestones}
         userRole={userRole}
         onClose={() => setDetailId(undefined)}
         onEdit={(id, focusTasks) =>
@@ -158,7 +188,7 @@ export function CalendarCoordinator({
           onSuccess={() => router.refresh()}
         />
       )}{" "}
-      {canManageMilestones && deleting && (
+      {canArchiveMilestones && deleting && (
         <DeleteMilestoneDialog
           isOpen
           milestoneId={deleting.milestoneId}

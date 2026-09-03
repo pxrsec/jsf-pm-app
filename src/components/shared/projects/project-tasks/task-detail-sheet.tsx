@@ -2,7 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { format, isPast, isToday } from "date-fns";
-import { Calendar, Edit2, Paperclip, User } from "lucide-react";
+import { Calendar, Edit2, ExternalLink, Paperclip, User } from "lucide-react";
+import { Link } from "@/i18n/routing";
 import {
   Sheet,
   SheetContent,
@@ -55,19 +56,23 @@ export function TaskDetailSheet({
   const isDueToday = deadlineDate && isToday(deadlineDate);
   const typeKey =
     task.task_type === "internal_work" ? "internalWork" : "clientRequest";
+  const detailUrl =
+    effectiveCapacity === "admin"
+      ? `/admin/tareas/${task.id}`
+      : `/pm/tareas/${task.id}`;
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-[540px] p-0 flex flex-col h-full bg-background"
+        className="w-full max-w-full sm:w-[35vw] sm:min-w-[480px] sm:max-w-[650px] p-0 flex flex-col h-full bg-background"
         aria-label={t("ariaLabel", { title: task.title })}
       >
         {/* Scrollable Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Header */}
           <SheetHeader className="space-y-3">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2">
                 <TaskStatusBadge status={task.status} />
                 <TaskPriorityBadge priority={task.priority} />
@@ -76,17 +81,27 @@ export function TaskDetailSheet({
                 </Badge>
               </div>
 
-              {!isWatcher && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onEditClick}
-                  className="h-8 text-xs gap-1.5 shrink-0"
+              <div className="flex items-center gap-2 shrink-0">
+                <Link
+                  href={detailUrl}
+                  className="inline-flex items-center justify-center gap-1.5 h-8 px-2.5 rounded-md border border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 text-xs font-medium transition-colors"
                 >
-                  <Edit2 className="size-3.5" />
-                  <span>{t("editAction")}</span>
-                </Button>
-              )}
+                  <ExternalLink className="size-3.5" />
+                  <span>{t("viewTaskDetails")}</span>
+                </Link>
+
+                {!isWatcher && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onEditClick}
+                    className="h-8 text-xs gap-1.5 shrink-0"
+                  >
+                    <Edit2 className="size-3.5" />
+                    <span>{t("editAction")}</span>
+                  </Button>
+                )}
+              </div>
             </div>
 
             <SheetTitle className="text-lg sm:text-xl font-bold text-foreground text-left leading-snug">

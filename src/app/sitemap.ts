@@ -44,5 +44,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
         },
       },
     },
+    {
+      url: `${baseUrl}/terminos`,
+      lastModified: new Date(),
+      alternates: {
+        languages: {
+          "es-MX": `${baseUrl}/terminos`,
+          "en-US": `${baseUrl}/en/terminos`,
+        },
+      },
+    },
+    {
+      url: `${baseUrl}/en/terminos`,
+      lastModified: new Date(),
+      alternates: {
+        languages: {
+          "es-MX": `${baseUrl}/terminos`,
+          "en-US": `${baseUrl}/en/terminos`,
+        },
+      },
+    },
   ];
 }

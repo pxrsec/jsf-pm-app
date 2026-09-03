@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { addProjectMemberAction } from "@/lib/projects/actions";
+import type { AvailableResult } from "@/lib/clients/types";
 import type {
   ProjectDetail,
   ProjectMemberType,
@@ -36,7 +37,8 @@ interface AddMemberDialogProps {
     Profile,
     "id" | "full_name" | "role" | "avatar_url"
   >[];
-  eligibleClients: EligibleClientMember[];
+  eligibleClients:
+    AvailableResult<EligibleClientMember[]> | EligibleClientMember[];
   isOpen: boolean;
   onClose: () => void;
 }
@@ -45,7 +47,7 @@ export function AddMemberDialog({
   project,
   eligiblePms,
   eligibleOperators,
-  eligibleClients,
+  eligibleClients: rawEligibleClients,
   isOpen,
   onClose,
 }: AddMemberDialogProps) {
@@ -63,6 +65,16 @@ export function AddMemberDialog({
 
   const existingMemberUserIds = new Set(project.members.map((m) => m.user_id));
 
+  const clientsAvailable = Array.isArray(rawEligibleClients)
+    ? true
+    : rawEligibleClients.status === "available";
+
+  const resolvedEligibleClients = Array.isArray(rawEligibleClients)
+    ? rawEligibleClients
+    : rawEligibleClients.status === "available"
+      ? rawEligibleClients.data
+      : [];
+
   // Filter candidates by excluding existing members
   const availablePms = eligiblePms.filter(
     (u) => !existingMemberUserIds.has(u.id),
@@ -70,12 +82,13 @@ export function AddMemberDialog({
   const availableOperators = eligibleOperators.filter(
     (u) => !existingMemberUserIds.has(u.id),
   );
-  const availableClients = eligibleClients.filter(
+  const availableClients = resolvedEligibleClients.filter(
     (c) => c.profile_id && !existingMemberUserIds.has(c.profile_id),
   );
 
   const isInternal = project.project_type === "internal";
-  const hasClientId = Boolean(project.client_id);
+  const isDirectClientProject =
+    project.project_type === "client" && project.client_id === null;
 
   const getUserOptions = () => {
     switch (capacity) {
@@ -159,13 +172,9 @@ export function AddMemberDialog({
                 { value: "operator", label: tCapacities("operator") },
                 {
                   value: "client",
-                  label: `${tCapacities("client")}${
-                    isInternal
-                      ? " (No disponible en proyectos internos)"
-                      : !hasClientId
-                        ? " (Requiere vincular cliente primero)"
-                        : ""
-                  }`,
+                  label: isInternal
+                    ? `${tCapacities("client")} (${t("internalDisabledHint")})`
+                    : tCapacities("client"),
                 },
               ]}
             >
@@ -182,15 +191,10 @@ export function AddMemberDialog({
                 <SelectItem value="operator">
                   {tCapacities("operator")}
                 </SelectItem>
-                <SelectItem
-                  value="client"
-                  disabled={isInternal || !hasClientId}
-                >
-                  {tCapacities("client")}
-                  {isInternal && " (No disponible en proyectos internos)"}
-                  {!isInternal &&
-                    !hasClientId &&
-                    " (Requiere vincular cliente primero)"}
+                <SelectItem value="client" disabled={isInternal}>
+                  {isInternal
+                    ? `${tCapacities("client")} (${t("internalDisabledHint")})`
+                    : tCapacities("client")}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -212,9 +216,18 @@ export function AddMemberDialog({
                 <SelectValue placeholder={t("userPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                {userOptions.length === 0 ? (
+                {capacity === "client" && !clientsAvailable ? (
+                  <div
+                    role="alert"
+                    className="p-2 text-xs text-amber-600 dark:text-amber-400 text-center"
+                  >
+                    {t("clientsUnavailable")}
+                  </div>
+                ) : userOptions.length === 0 ? (
                   <div className="p-2 text-xs text-muted-foreground text-center">
-                    No hay usuarios disponibles en esta capacidad.
+                    {capacity === "client" && isDirectClientProject
+                      ? t("directPrerequisiteHint")
+                      : t("noUsersAvailable")}
                   </div>
                 ) : (
                   userOptions.map((opt) => (

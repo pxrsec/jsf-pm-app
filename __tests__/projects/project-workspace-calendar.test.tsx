@@ -17,6 +17,13 @@ vi.mock("@/config/app.config", () => ({
   },
 }));
 
+vi.mock("@/lib/operational-lifecycle/actions", () => ({
+  archiveOperationalEntityAction: vi.fn(),
+  restoreArchivedOperationalEntityAction: vi.fn(),
+  getOperationalDeletionPreviewAction: vi.fn(),
+  permanentlyDeleteOperationalEntityAction: vi.fn(),
+}));
+
 vi.mock(
   "@/components/shared/projects/project-workspace/project-overview-tab",
   () => ({
@@ -91,6 +98,12 @@ vi.mock(
   "@/components/shared/projects/project-lifecycle/project-reopen-dialog",
   () => ({
     ProjectReopenDialog: () => null,
+  }),
+);
+vi.mock(
+  "@/components/shared/projects/project-workspace/project-client-identity-dialog",
+  () => ({
+    ProjectClientIdentityDialog: () => null,
   }),
 );
 
@@ -171,6 +184,8 @@ describe("Project Workspace Navigation and Calendar Integration", () => {
     drive_folder_url: null,
     completed_at: null,
     archived_at: null,
+    archived_by: null,
+    archive_reason: null,
     deleted_at: null,
     created_at: "2026-08-01T00:00:00-06:00",
     updated_at: "2026-08-01T00:00:00-06:00",

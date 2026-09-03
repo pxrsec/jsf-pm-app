@@ -67,6 +67,7 @@ describe("S02-E02-03: Static Schema Contract Verification", () => {
   describe("Schema Enums Verification (22 enums)", () => {
     const expectedEnums: Record<string, readonly string[]> = {
       app_role: ["admin", "pm", "operator", "client"],
+      bug_report_status: ["open", "triaged", "resolved", "dismissed"],
       calendar_event_type: [
         "project_deadline",
         "task_deadline",

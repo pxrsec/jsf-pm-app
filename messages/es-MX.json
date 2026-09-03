@@ -36,11 +36,15 @@
         "agenda": "Mi Agenda",
         "calendar": "Calendario",
         "archive": "Archivo",
+        "recycleBin": "Papelera",
+        "clients": "Clientes",
         "linkIncidents": "Incidentes de Enlaces",
         "metrics": "Métricas",
         "operations": "Operaciones",
         "notifications": "Notificaciones",
-        "notificationOperations": "Operaciones de Notificaciones"
+        "notificationOperations": "Operaciones de Notificaciones",
+        "accessManagement": "Gestión de Acceso",
+        "account": "Cuenta"
       },
       "notifications": {
         "badgeLabel": "Notificaciones no leídas",
@@ -122,8 +126,34 @@
   },
   "privacy": {
     "title": "Política de Privacidad",
-    "placeholderNotice": "Este es un aviso provisional.",
-    "notLegalAdvice": "Esto no es asesoramiento legal."
+    "description": "Borrador preliminar de la política de privacidad de la aplicación de gestión de proyectos de Joya Star Films.",
+    "sections": {
+      "placeholderTitle": "Alcance y Estado de la Política",
+      "placeholderBody": "El contenido detallado de este borrador está pendiente de revisión legal y de las partes interesadas. Esta página no establece términos legales, avisos, obligaciones ni compromisos de cumplimiento aprobados."
+    }
+  },
+  "terms": {
+    "title": "Términos de Servicio",
+    "description": "Borrador preliminar de términos de servicio de la aplicación de gestión de proyectos de Joya Star Films.",
+    "sections": {
+      "placeholderTitle": "Términos y Estado del Servicio",
+      "placeholderBody": "El contenido detallado de este borrador está pendiente de revisión legal y de las partes interesadas. Esta página no establece términos legales, avisos, obligaciones ni compromisos de cumplimiento aprobados."
+    }
+  },
+  "legal": {
+    "footerNavLabel": "Aviso legal",
+    "links": {
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio"
+    },
+    "draftBadge": "Borrador / Pendiente de Aprobación",
+    "draftNotice": "Este documento es un borrador preliminar para fines de revisión y está pendiente de aprobación por las partes interesadas. No constituye asesoramiento legal vinculante, términos oficiales ni un aviso de cumplimiento aprobado.",
+    "backToSignIn": "Volver al inicio de sesión"
+  },
+  "landing": {
+    "title": "Plataforma de Gestión de Producción",
+    "description": "Espacio de trabajo centralizado para flujos de producción cinematográfica, coordinación de tareas, entregables y colaboración del equipo.",
+    "signInAction": "Iniciar Sesión"
   },
   "errors": {
     "title": "Algo salió mal",
@@ -156,13 +186,25 @@
     },
     "invitation": {
       "title": "Configura tu Cuenta",
+      "fixedEmailNotice": "Esta cuenta será creada para el correo electrónico asociado a esta invitación.",
       "fullNameLabel": "Nombre completo",
       "phoneLabel": "Teléfono (opcional)",
+      "phoneHelp": "Formato E.164 (ej. +525512345678)",
       "passwordLabel": "Contraseña",
+      "passwordPolicyHelp": "Mínimo 12 caracteres: mayúsculas, minúsculas, números y símbolos permitidos (!@#$%^&*()_+-=[]{};':\",.<>/?).",
+      "showPassword": "Ver contraseña",
+      "hidePassword": "Ocultar contraseña",
       "whatsappOptInLabel": "Deseo recibir notificaciones operativas por WhatsApp",
       "submitLabel": "Completar registro",
       "errorPolicy": "La contraseña debe tener al menos 12 caracteres e incluir mayúsculas, minúsculas, números y símbolos.",
-      "errorGeneric": "No pudimos procesar tu invitación. Verifica tus datos o solicita una nueva."
+      "errorGeneric": "No pudimos procesar tu invitación. Verifica tus datos o solicita una nueva.",
+      "errors": {
+        "conflict": "Ya existe una cuenta registrada con este correo electrónico.",
+        "validation_error": "Los datos ingresados no cumplen con los requisitos de seguridad.",
+        "invite_terminal": "Esta invitación ha expirado, fue revocada o ya fue utilizada.",
+        "authentication_failed": "No se pudo iniciar sesión automáticamente tras crear la cuenta.",
+        "unavailable": "El servicio no está disponible temporalmente. Por favor, intenta de nuevo."
+      }
     },
     "sessionExpired": {
       "title": "Enlace No Válido o Expirado",
@@ -213,6 +255,7 @@
       "client": "Cliente",
       "internal": "Interno",
       "unassigned": "Sin asignar",
+      "direct": "Directo",
       "clientDescription": "Proyecto con cliente externo y entregables de producción.",
       "internalDescription": "Proyecto operativo interno sin entregables de producción."
     },
@@ -270,9 +313,53 @@
         "primaryLeadLabel": "Lead Principal",
         "deadlineLabel": "Entrega",
         "editAction": "Editar Información",
+        "clientIdentityAction": "Identidad del Cliente",
         "statusActions": "Estado",
         "completeProject": "Completar Proyecto",
         "reopenProject": "Reabrir Proyecto"
+      },
+      "clientIdentity": {
+        "dialogTitle": "Identidad del Cliente",
+        "dialogDescription": "Configura la identidad del cliente vinculada a este proyecto (organización o contacto directo).",
+        "modes": {
+          "organization": "Organización de Cliente",
+          "directContact": "Contacto Directo (Sin organización)",
+          "noIdentity": "Sin Identidad Aún"
+        },
+        "fields": {
+          "mode": "Modo de Identidad",
+          "selectOrg": "Organización",
+          "selectContact": "Contacto Directo"
+        },
+        "placeholders": {
+          "org": "Selecciona una organización...",
+          "contact": "Selecciona un contacto directo..."
+        },
+        "noIdentityPlanningNotice": "El proyecto permanecerá en fase de planeación sin una identidad de cliente asociada.",
+        "directContactNotice": "Los proyectos de contacto directo solo están permitidos en fase de planeación. Al avanzar a ejecución activa se requerirá una organización.",
+        "nonPlanningNotice": "Los proyectos activos en ejecución o pausados requieren obligatoriamente una organización de cliente.",
+        "linkedAccountBadge": "Cuenta Vinculada",
+        "noAccountBadge": "Sin Cuenta",
+        "linkedAccountMemberHint": "Este contacto ya cuenta con una cuenta registrada. Puedes agregarlo al equipo en la pestaña Miembros.",
+        "confirmTransitionTitle": "¿Confirmar Cambio de Identidad?",
+        "confirmTransitionDescription": "Cambiar la identidad del cliente desvinculará la asignación actual del proyecto. ¿Deseas continuar?",
+        "confirmTransitionAction": "Confirmar y Guardar",
+        "inviteClientAction": "Invitar Cliente",
+        "inviteClientTitle": "Invitar Contacto Directo",
+        "inviteClientDescription": "Genera un enlace de registro de un solo uso para este contacto directo.",
+        "actions": {
+          "cancel": "Cancelar",
+          "save": "Guardar Identidad",
+          "close": "Cerrar"
+        },
+        "errors": {
+          "unavailable": "Los datos de organizaciones y contactos no están disponibles. Intenta nuevamente.",
+          "unauthorized": "No tienes autorización para administrar la identidad del cliente.",
+          "validationFailed": "Por favor, selecciona una opción válida.",
+          "readinessConflict": "El estado actual del proyecto no permite esta configuración de identidad.",
+          "saveFailed": "Ocurrió un error al guardar la identidad del cliente. Por favor, verifica el estado actual e intenta de nuevo."
+        },
+        "successToast": "Identidad del cliente actualizada exitosamente."
       },
       "completion": {
         "dialogTitle": "Completar Proyecto",
@@ -565,7 +652,8 @@
           "cancelAction": "Cancelar",
           "submitting": "Registrando versión...",
           "successToast": "Versión v{version} registrada para revisión interna.",
-          "errorToast": "No se pudo registrar la versión. Verifica el enlace ingresado."
+          "errorToast": "No se pudo registrar la versión. Verifica el enlace ingresado.",
+          "validationError": "El enlace debe ser una URL válida de Google Drive (https://drive.google.com/... o https://docs.google.com/...) sin espacios ni puertos."
         },
         "reviewDialog": {
           "title": "Revisión Interna de Entregable",
@@ -659,6 +747,10 @@
         "watcherMode": {
           "readOnlyNotice": "Solo lectura — Capacidad Observador",
           "cannotMutate": "Los observadores de PM pueden consultar el historial y comentar, pero no pueden planificar, editar, archivar ni enviar versiones."
+        },
+        "workflows": {
+          "production": "Entregable de producción",
+          "client_submission": "Entrega de cliente"
         }
       },
       "activity": {
@@ -734,7 +826,11 @@
         "notificationsLabel": "Recibir notificaciones del proyecto",
         "submitAction": "Agregar Miembro",
         "cancelAction": "Cancelar",
-        "successToast": "Miembro agregado exitosamente."
+        "successToast": "Miembro agregado exitosamente.",
+        "directPrerequisiteHint": "Para agregar un cliente en un proyecto directo, primero asocia su contacto en Clientes y asegúrate de que haya completado su invitación.",
+        "clientsUnavailable": "Los contactos de clientes no están disponibles temporalmente.",
+        "internalDisabledHint": "No disponible en proyectos internos",
+        "noUsersAvailable": "No hay usuarios disponibles en esta capacidad."
       },
       "changeDialog": {
         "title": "Cambiar Capacidad de Miembro",
@@ -841,7 +937,8 @@
         "hasDeliverables": "Esta tarea tiene entregables de producción vinculados.",
         "editAction": "Editar",
         "closeAction": "Cerrar",
-        "ariaLabel": "Detalles de la tarea: {title}"
+        "ariaLabel": "Detalles de la tarea: {title}",
+        "viewTaskDetails": "Ver detalles de la tarea"
       },
       "create": {
         "title": "Nueva Tarea",
@@ -1086,6 +1183,43 @@
         "retryAction": "Intentar nuevamente",
         "returnAction": "Volver a Mi Agenda"
       }
+    },
+    "managerTask": {
+      "backToTasks": "Volver a tareas del proyecto",
+      "taskContext": "Detalles de la tarea",
+      "projectLabel": "Proyecto",
+      "viewProjectAria": "Ver espacio de trabajo del proyecto {projectName}",
+      "breadcrumbs": {
+        "projects": "Proyectos",
+        "tasks": "Tareas"
+      },
+      "descriptionTitle": "Descripción",
+      "noDescription": "No se proporcionó descripción para esta tarea.",
+      "timeContext": "Cronograma y Fechas",
+      "assignedAt": "Asignada: {date}",
+      "deadlineAt": "Fecha límite: {date}",
+      "startedAt": "Iniciada: {date}",
+      "completedAt": "Completada: {date}",
+      "resourcesTitle": "Recursos de la Tarea",
+      "noResources": "No hay recursos adjuntos a esta tarea.",
+      "externalResourceAria": "Abrir recurso externo: {name} (se abre en nueva pestaña)",
+      "deliverablesTitle": "Entregables Asociados",
+      "deliverablesCount": "{count, plural, =0 {Sin entregables} =1 {1 entregable} other {# entregables}}",
+      "noDeliverables": "No hay entregables asociados a esta tarea.",
+      "openDeliverableDetail": "Ver detalle",
+      "openDeliverableDetailAria": "Ver detalle del entregable {title}",
+      "versionIndicator": "v{version}",
+      "currentVersion": "Actual: v{version}",
+      "submissionDeadline": "Entrega: {date}",
+      "internalReviewDeadline": "Revisión interna: {date}",
+      "clientDeliveryDeadline": "Entrega al cliente: {date}",
+      "absence": {
+        "title": "Tarea no disponible",
+        "description": "La tarea solicitada no fue encontrada o no está disponible.",
+        "returnAction": "Volver a proyectos"
+      },
+      "assigneeHeading": "Miembro asignado",
+      "unassigned": "Sin asignar"
     },
     "operatorSubmission": {
       "dialogTitle": "Entregar versión de producción",
@@ -1714,6 +1848,10 @@
       "client_delivery_deadline": "Entrega al Cliente",
       "milestone": "Meta"
     },
+    "eventAria": {
+      "taskLink": "Ver detalles de la tarea: {title}",
+      "projectLink": "Ver espacio de trabajo del proyecto: {title}"
+    },
     "scope": {
       "allProjects": "Todos los proyectos",
       "projectScope": "Nivel de Proyecto",
@@ -1747,6 +1885,7 @@
       "milestoneTitle": "Título de la meta",
       "milestoneType": "Tipo de meta",
       "relatedTasks": "Tareas relacionadas",
+      "taskLinkAria": "Ver tarea: {title} en {projectName}",
       "untracked": "Aún no hay tareas asociadas con esta meta.",
       "progressLabel": "Progreso de la meta",
       "name": "Título",
@@ -1840,6 +1979,13 @@
       "prevPeriod": "Ir al período anterior",
       "nextPeriod": "Ir al período siguiente",
       "todayButton": "Ir a la fecha actual"
+    },
+    "legend": {
+      "title": "Leyenda",
+      "tasks": "Tareas",
+      "deliverables": "Entregables",
+      "milestones": "Hitos",
+      "events": "Eventos"
     }
   },
   "archive": {
@@ -2351,6 +2497,429 @@
       "attentionUnavailable": "No fue posible cargar el resumen de atención operativa.",
       "auditUnavailable": "No fue posible cargar el historial de auditoría.",
       "userStateUnavailable": "No fue posible cargar el estado de usuarios e invitaciones."
+    }
+  },
+  "clientAdministration": {
+    "title": "Administración de Clientes",
+    "description": "Administra el directorio de clientes directos, asociaciones de proyectos e invitaciones del sistema.",
+    "unavailableTitle": "Administración de Clientes no disponible",
+    "unavailableDescription": "No es posible cargar los datos de administración de clientes en este momento. Por favor, intenta de nuevo más tarde.",
+    "tabs": {
+      "contacts": "Contactos y Directorio",
+      "invitations": "Invitaciones"
+    },
+    "contactsPanel": {
+      "title": "Directorio de Clientes",
+      "description": "Directorio de contactos de clientes, afiliaciones de organización y asociaciones de proyectos.",
+      "createContact": "Nuevo Contacto",
+      "projectAssociationTitle": "Barra de Asociación de Proyectos",
+      "selectProjectPlaceholder": "Selecciona un proyecto de cliente...",
+      "noProjectSelectedPlaceholder": "Sin proyecto seleccionado (Ver directorio)",
+      "associationExplanationNotice": "Las asociaciones de contactos directos se usan para la planificación de identidad y preparación de entregables. Asociar un contacto directo no envía invitaciones, no otorga acceso ni crea membresía en el proyecto.",
+      "columns": {
+        "name": "Nombre de Contacto",
+        "organization": "Organización",
+        "jobTitle": "Puesto",
+        "email": "Correo Electrónico",
+        "accountStatus": "Cuenta Vinculada",
+        "projectAssociated": "Asociado al Proyecto",
+        "actions": "Acciones"
+      },
+      "directContactBadge": "Contacto Directo",
+      "primaryBadge": "Principal",
+      "unknownOrg": "Desconocido",
+      "accountLinked": "Cuenta Vinculada",
+      "noAccount": "Sin Cuenta",
+      "emptyState": "No se encontraron contactos de clientes en el directorio.",
+      "orgContactNotToggled": "Contacto de organización",
+      "toggleAssociationAria": "Alternar asociación al proyecto para",
+      "editContactAria": "Editar contacto",
+      "associationLoadFailed": "Error al cargar las asociaciones del proyecto.",
+      "associatedSuccess": "Contacto asociado al proyecto.",
+      "disassociatedSuccess": "Contacto desasociado del proyecto.",
+      "associationMutationFailed": "Error al actualizar la asociación del proyecto."
+    },
+    "contactDialog": {
+      "createTitle": "Nuevo Contacto de Cliente",
+      "createDescription": "Agrega un nuevo contacto de cliente a una organización o como contacto directo.",
+      "editTitle": "Editar Contacto de Cliente",
+      "editDescription": "Actualiza la información del contacto y su afiliación a la organización.",
+      "directContactOption": "Sin organización (Contacto directo)",
+      "directContactNotice": "Los contactos directos no pertenecen a una organización y pueden asociarse a proyectos de cliente individuales.",
+      "fields": {
+        "fullName": "Nombre Completo",
+        "email": "Correo Electrónico",
+        "organization": "Organización de Cliente",
+        "jobTitle": "Puesto (Opcional)",
+        "phone": "Teléfono (E.164, Opcional)",
+        "isPrimary": "Designar como contacto principal de la organización"
+      },
+      "placeholders": {
+        "fullName": "ej. María González",
+        "email": "ej. maria@example.com",
+        "organization": "Selecciona organización...",
+        "jobTitle": "ej. Directora Creativa"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "create": "Crear Contacto",
+        "save": "Guardar Cambios"
+      },
+      "errors": {
+        "fullNameRequired": "El nombre completo es requerido.",
+        "emailRequired": "Un correo electrónico válido es requerido.",
+        "invalidPhone": "El teléfono debe estar en formato E.164 (ej. +525512345678).",
+        "unauthorized": "No tienes permisos para administrar contactos de clientes.",
+        "validationFailed": "Por favor, verifica los datos ingresados e intenta de nuevo.",
+        "unavailable": "Error al guardar el contacto de cliente. Por favor, intenta de nuevo."
+      }
+    },
+    "invitationsPanel": {
+      "title": "Invitaciones Ordinarias",
+      "description": "Emite, monitorea y revoca invitaciones para Clientes y Operadores.",
+      "createInvitation": "Emitir Invitación",
+      "columns": {
+        "role": "Rol",
+        "recipient": "Destinatario / Contacto",
+        "project": "Proyecto",
+        "status": "Estado",
+        "createdAt": "Emitida",
+        "expiresAt": "Expira",
+        "resolvedAt": "Resuelta",
+        "actions": "Acciones"
+      },
+      "roles": {
+        "client": "Cliente",
+        "operator": "Operador"
+      },
+      "statuses": {
+        "pending": "Pendiente",
+        "accepted": "Aceptada",
+        "expired": "Expirada",
+        "revoked": "Revocada"
+      },
+      "actions": {
+        "rotate": "Reenviar / Rotar Enlace",
+        "revoke": "Revocar Invitación"
+      },
+      "emptyState": "No se encontraron invitaciones.",
+      "terminalState": "Finalizada",
+      "loadMore": "Cargar Más Invitaciones",
+      "loadingMore": "Cargando...",
+      "loadMoreFailed": "Error al cargar más invitaciones.",
+      "rotateFailed": "Error al rotar el enlace de invitación.",
+      "revokeSuccess": "Invitación revocada exitosamente.",
+      "revokeFailed": "Error al revocar la invitación.",
+      "actionFailed": "La acción falló. Por favor, intenta de nuevo."
+    },
+    "createInviteDialog": {
+      "title": "Emitir Invitación Ordinaria",
+      "description": "Genera un enlace de registro de un solo uso para un Cliente u Operador.",
+      "noProjectOption": "Sin asociación a proyecto",
+      "noUnlinkedContacts": "No hay contactos sin cuenta disponibles",
+      "allContactsLinkedHint": "Todos los contactos existentes ya tienen cuentas registradas. Crea un nuevo contacto primero.",
+      "fields": {
+        "role": "Rol del Destinatario",
+        "contact": "Contacto de Cliente",
+        "recipientEmail": "Correo del Destinatario",
+        "project": "Proyecto Asociado (Opcional)",
+        "lifetime": "Expiración del Enlace"
+      },
+      "roles": {
+        "client": "Cliente (Externo)",
+        "operator": "Operador (Interno)"
+      },
+      "placeholders": {
+        "contact": "Selecciona contacto de cliente...",
+        "email": "ej. operador@joyastarfilms.com",
+        "project": "Selecciona proyecto..."
+      },
+      "lifetimes": {
+        "hours24": "24 horas (1 día)",
+        "hours72": "72 horas (3 días)",
+        "days7": "7 días (Estándar)",
+        "days14": "14 días (2 semanas)",
+        "days30": "30 días (1 mes)"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "create": "Generar Enlace"
+      },
+      "errors": {
+        "contactRequired": "Es necesario seleccionar un contacto de cliente.",
+        "emailRequired": "Un correo electrónico válido es requerido.",
+        "unauthorized": "No tienes permisos para emitir invitaciones.",
+        "validationFailed": "Parámetros de invitación inválidos.",
+        "unavailable": "Error al generar el enlace de invitación. Por favor, intenta de nuevo."
+      }
+    },
+    "confirmDialog": {
+      "rotateTitle": "¿Reenviar y Rotar Enlace de Invitación?",
+      "rotateDescription": "Generar un nuevo enlace invalidará inmediatamente cualquier enlace anterior enviado a este destinatario.",
+      "revokeTitle": "¿Revocar Invitación?",
+      "revokeDescription": "Este enlace de invitación será revocado permanentemente y ya no podrá ser usado para registrar una cuenta.",
+      "cancel": "Cancelar",
+      "rotateConfirm": "Generar Nuevo Enlace",
+      "revokeConfirm": "Revocar Enlace"
+    },
+    "copyDialog": {
+      "title": "Enlace de Invitación Listo",
+      "description": "Copia este enlace de invitación de un solo uso y envíalo directamente al destinatario.",
+      "oneTimeWarning": "Este enlace es de un solo uso y no se volverá a mostrar. Una vez cerrada esta ventana, no podrás volver a verlo.",
+      "copyAction": "Copiar Enlace al Portapapeles",
+      "copied": "¡Enlace Copiado al Portapapeles!",
+      "copyFailed": "No se pudo copiar el enlace. Por favor, intenta de nuevo.",
+      "close": "Cerrar y Descartar"
+    }
+  },
+  "operationalLifecycle": {
+    "recycleBin": {
+      "title": "Papelera de Reciclaje",
+      "description": "Gestiona los elementos archivados en el sistema. Los administradores pueden restaurar o eliminar permanentemente; los Project Managers pueden restaurar.",
+      "empty": "La papelera está vacía",
+      "emptyDescription": "No hay proyectos, tareas, entregables ni hitos archivados actualmente.",
+      "unavailable": "Papelera no disponible",
+      "unavailableDescription": "Ocurrió un error al cargar los elementos de la papelera. Por favor, intenta de nuevo.",
+      "retryAction": "Reintentar",
+      "columns": {
+        "entityType": "Tipo",
+        "title": "Nombre",
+        "archivedAt": "Fecha de archivo",
+        "reason": "Motivo",
+        "actions": "Acciones"
+      },
+      "entityTypes": {
+        "project": "Proyecto",
+        "task": "Tarea",
+        "deliverable": "Entregable",
+        "milestone": "Hito"
+      },
+      "parentArchivedBadge": "Contenedor archivado",
+      "parentArchivedTooltip": "Restaura primero el contenedor principal antes de restaurar este elemento",
+      "parentArchivedInlineNotice": "El proyecto o elemento contenedor principal está archivado. Debes restaurarlo primero.",
+      "restoreAction": "Restaurar",
+      "restoreSubmitting": "Restaurando...",
+      "restoreSuccessToast": "Elemento restaurado exitosamente",
+      "restoreErrorToast": "Error al restaurar el elemento",
+      "restoreAriaLabel": "Restaurar {type}: {title}",
+      "permanentDeleteAction": "Eliminar permanentemente",
+      "permanentDeleteAriaLabel": "Eliminar permanentemente {type}: {title}",
+      "filters": {
+        "all": "Todos",
+        "searchPlaceholder": "Buscar en papelera...",
+        "clearSearch": "Limpiar búsqueda",
+        "showingCount": "Mostrando {count} de {total}",
+        "noFilterResults": "No hay elementos archivados en esta categoría",
+        "noSearchResults": "No se encontraron elementos que coincidan con la búsqueda",
+        "clearFilters": "Restablecer filtros",
+        "backToDashboard": "Volver al panel",
+        "viewArchive": "Ver archivo definitivo",
+        "statsTotal": "{count} en total",
+        "statsRestorable": "{count} recuperables",
+        "statsBlocked": "{count} bloqueados"
+      }
+    },
+    "permanentDeleteDialog": {
+      "title": "Eliminación Permanente",
+      "warning": "Esta acción es completamente irreversible. Todos los registros y datos asociados serán eliminados de forma definitiva.",
+      "previewLoading": "Verificando dependencias y permisos...",
+      "previewUnavailable": "No se pudo verificar la eliminación permanente. Por favor, intenta de nuevo.",
+      "blockerDependenciesPresent": "No se puede eliminar porque contiene elementos dependientes activos o no purgados. Elimina o purga primero sus dependencias.",
+      "blockerArchiveRequired": "El elemento debe estar archivado antes de poder ser eliminado permanentemente.",
+      "blockerNotFoundOrArchiveRequired": "El elemento no fue encontrado o no está archivado.",
+      "blockerNotFound": "El elemento no fue encontrado.",
+      "blockerParentArchived": "El elemento o su contenedor no fue encontrado.",
+      "cancelAction": "Cancelar",
+      "archiveInsteadAction": "Mantener archivado",
+      "confirmAction": "Confirmar eliminación definitiva",
+      "deleting": "Eliminando definitivamente...",
+      "successToast": "Elemento eliminado permanentemente",
+      "errorToast": "Error al eliminar el elemento"
+    },
+    "errors": {
+      "unauthorized": "No tienes autorización para realizar esta operación.",
+      "forbidden": "No tienes los permisos requeridos para esta operación.",
+      "invalidInput": "Los datos proporcionados son inválidos.",
+      "dependenciesPresent": "No se puede eliminar porque existen dependencias asociadas.",
+      "archiveRequired": "El elemento debe estar archivado antes de eliminarse permanentemente.",
+      "notFoundOrParentArchived": "No se puede restaurar porque el contenedor principal está archivado o el elemento no existe.",
+      "notFoundOrArchived": "El elemento no fue encontrado o ya se encuentra archivado.",
+      "notFoundOrActive": "El elemento no fue encontrado o se encuentra activo.",
+      "lifecycleUnavailable": "El servicio de ciclo de vida no está disponible en este momento."
+    }
+  },
+  "accountAccess": {
+    "accountSettings": {
+      "title": "Cuenta",
+      "description": "Gestiona la información de tu cuenta y preferencias personales.",
+      "roleLabel": "Rol del sistema",
+      "fullNameLabel": "Nombre completo",
+      "fullNamePlaceholder": "Ingresa tu nombre completo",
+      "localeLabel": "Idioma preferido",
+      "timezoneLabel": "Zona horaria",
+      "timezonePlaceholder": "ej. America/Mexico_City",
+      "timezoneHelp": "Ingresa una zona horaria IANA válida.",
+      "emailNotifLabel": "Notificaciones por correo electrónico",
+      "emailNotifDescription": "Recibe avisos y actualizaciones importantes en tu correo.",
+      "saveButton": "Guardar cambios",
+      "savingButton": "Guardando...",
+      "successToast": "Configuración de cuenta actualizada correctamente.",
+      "errorToast": "No se pudo actualizar la configuración de la cuenta.",
+      "validationError": "Por favor, verifica que los campos sean válidos.",
+      "unavailableTitle": "Configuración no disponible",
+      "unavailableDescription": "No se pudo cargar la configuración de tu cuenta en este momento.",
+      "retryButton": "Reintentar"
+    },
+    "bugReportForm": {
+      "title": "Reportar un problema",
+      "description": "Envía un reporte detallado al equipo de administración y soporte.",
+      "formTitle": "Reportar un error del sistema",
+      "formDescription": "Si encuentras un error o comportamiento inesperado, repórtalo aquí. El equipo técnico lo revisará.",
+      "titleLabel": "Título del reporte",
+      "titlePlaceholder": "Breve descripción del problema",
+      "descLabel": "Descripción detallada",
+      "descPlaceholder": "Describe los pasos para reproducir el problema o qué ocurrió...",
+      "warningTitle": "Aviso de seguridad",
+      "warningBody": "Nunca incluyas contraseñas, tokens de acceso, claves de API ni datos financieros en este reporte.",
+      "submitButton": "Enviar reporte",
+      "submittingButton": "Enviando...",
+      "successTitle": "Reporte enviado con éxito",
+      "successBody": "Tu reporte ha sido registrado y está abierto para revisión por parte del equipo de gestión.",
+      "submitAnotherButton": "Enviar otro reporte",
+      "errorToast": "No se pudo enviar el reporte de error.",
+      "validationError": "El título debe tener entre 1 y 160 caracteres y la descripción entre 1 y 5000 caracteres."
+    },
+    "managerConsole": {
+      "title": "Gestión de Acceso y Soporte",
+      "description": "Control centralizado de usuarios, recordatorios de inactividad y seguimiento de reportes de error.",
+      "tabsAriaLabel": "Vistas de gestión de acceso",
+      "tabs": {
+        "users": "Usuarios",
+        "stale": "Acceso inactivo",
+        "bugs": "Reportes de error"
+      }
+    },
+    "directory": {
+      "title": "Directorio de Usuarios",
+      "description": "Supervisión de estados de acceso y membresías activas.",
+      "emptyTitle": "No hay usuarios registrados",
+      "emptyDescription": "No se encontraron usuarios en el directorio del sistema.",
+      "unavailableTitle": "Directorio no disponible",
+      "unavailableDescription": "No se pudo cargar el directorio de usuarios en este momento.",
+      "retryButton": "Reintentar",
+      "loadMoreButton": "Cargar más",
+      "loadingMore": "Cargando más...",
+      "loadMoreError": "No se pudieron cargar más usuarios.",
+      "statusActive": "Activo",
+      "statusInactive": "Inactivo",
+      "lastAuthNever": "Nunca",
+      "lastActionNever": "Sin registros previos",
+      "lastAccessActionAtLabel": "Última acción de acceso",
+      "lastSuccessfulAuthAtLabel": "Último inicio de sesión",
+      "columns": {
+        "fullName": "Nombre",
+        "role": "Rol",
+        "status": "Estado",
+        "lastAuth": "Último acceso",
+        "memberships": "Proyectos",
+        "tasks": "Tareas",
+        "deliverables": "Entregables",
+        "invitations": "Invitaciones",
+        "lastAction": "Última acción",
+        "actions": "Acciones"
+      },
+      "actions": {
+        "deactivate": "Desactivar",
+        "reactivate": "Reactivar",
+        "deactivateAria": "Desactivar acceso para {name}",
+        "reactivateAria": "Reactivar acceso para {name}"
+      }
+    },
+    "deactivationDialog": {
+      "title": "Desactivar acceso de usuario",
+      "description": "Estás a punto de suspender el acceso a la plataforma para {name}.",
+      "warningBanner": "El usuario perderá el acceso a la plataforma de inmediato. Todas sus invitaciones pendientes se revocarán. Su historial de actividad y auditoría se mantendrá intacto. Esta acción no elimina la cuenta.",
+      "nameConfirmationPrompt": "Para confirmar la desactivación, escribe el nombre completo del usuario ({name}):",
+      "nameConfirmationPlaceholder": "Escribe el nombre completo exacto",
+      "nameMismatchError": "El nombre ingresado no coincide con el nombre completo del usuario.",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar desactivación",
+      "deactivating": "Desactivando...",
+      "errors": {
+        "selfLockout": "No puedes desactivar tu propia cuenta de acceso.",
+        "lastManagementAccount": "No se puede desactivar la última cuenta de gestión activa del sistema.",
+        "notFound": "El usuario no fue encontrado o su estado ya fue modificado.",
+        "unavailable": "No se pudo completar la desactivación en este momento."
+      },
+      "successToast": "El acceso del usuario ha sido desactivado exitosamente."
+    },
+    "reactivationDialog": {
+      "title": "Reactivar acceso de usuario",
+      "description": "¿Deseas restaurar el acceso a la plataforma para {name}?",
+      "warningNoInvitesRestored": "Las invitaciones previamente revocadas no serán restauradas automáticamente.",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar reactivación",
+      "reactivating": "Reactivando...",
+      "errors": {
+        "unavailable": "No se pudo reactivar el acceso del usuario en este momento."
+      },
+      "successToast": "El acceso del usuario ha sido reactivado exitosamente."
+    },
+    "staleAccess": {
+      "title": "Recordatorios de Acceso Inactivo",
+      "description": "Seguimiento operativo para operadores y clientes sin actividad reciente en los últimos 45 días.",
+      "internalNotice": "Este panel es exclusivamente para registro operativo interno. Al registrar un recordatorio confirmas el seguimiento humano; no se envían correos ni notificaciones automáticas.",
+      "emptyTitle": "No hay usuarios inactivos",
+      "emptyDescription": "Todos los operadores y clientes elegibles han tenido actividad reciente o ya cuentan con recordatorio registrado.",
+      "unavailableTitle": "Panel no disponible",
+      "unavailableDescription": "No se pudo consultar la lista de acceso inactivo en este momento.",
+      "retryButton": "Reintentar",
+      "periodStartedAtLabel": "Período de inactividad iniciado",
+      "recordReminderButton": "Registrar recordatorio",
+      "recordingButton": "Registrando...",
+      "successToast": "Recordatorio de inactividad registrado con éxito.",
+      "notEligibleToast": "El usuario ya no es elegible o el recordatorio ya había sido registrado."
+    },
+    "bugTriage": {
+      "title": "Reportes de Error",
+      "description": "Triaje y seguimiento de problemas reportados por usuarios autenticados.",
+      "emptyTitle": "No hay reportes de error",
+      "emptyDescription": "No se han enviado reportes de error en la plataforma.",
+      "unavailableTitle": "Reportes no disponibles",
+      "unavailableDescription": "No se pudieron cargar los reportes de error en este momento.",
+      "retryButton": "Reintentar",
+      "loadMoreButton": "Cargar más reportes",
+      "loadingMore": "Cargando reportes...",
+      "loadMoreError": "No se pudieron cargar más reportes de error.",
+      "reporterRoleLabel": "Rol del informante",
+      "createdAtLabel": "Fecha del reporte",
+      "statusChangedAtLabel": "Último cambio de estado",
+      "statusChangedUnavailable": "Sin cambios de estado",
+      "statusControlAria": "Estado del reporte",
+      "updating": "Actualizando...",
+      "updatedToast": "Estado del reporte actualizado.",
+      "notFoundOrUnchangedToast": "El reporte no fue encontrado o el estado ya estaba asignado."
+    },
+    "bugStatuses": {
+      "open": "Abierto",
+      "triaged": "Triaje",
+      "resolved": "Resuelto",
+      "dismissed": "Descartado"
+    },
+    "roles": {
+      "admin": "Administrador",
+      "pm": "Project Manager",
+      "operator": "Operador",
+      "client": "Cliente"
+    },
+    "actionTypes": {
+      "deactivated": "Desactivado",
+      "reactivated": "Reactivado"
+    },
+    "commonErrors": {
+      "unauthorized": "No tienes autorización para realizar esta acción.",
+      "validationFailed": "Los datos proporcionados son inválidos.",
+      "unavailable": "El servicio no está disponible en este momento."
     }
   }
 }

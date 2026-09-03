@@ -13,8 +13,12 @@ const mockRefresh = vi.fn();
 vi.mock("@/lib/calendar/actions", () => ({
   createMilestoneAction: vi.fn(),
   updateMilestoneAction: vi.fn(),
-  softDeleteMilestoneAction: vi.fn(),
   getMilestoneDetailAction: vi.fn(),
+}));
+
+vi.mock("@/lib/operational-lifecycle/actions", () => ({
+  archiveOperationalEntityAction: vi.fn(),
+  restoreArchivedOperationalEntityAction: vi.fn(),
 }));
 
 vi.mock("sonner", () => ({

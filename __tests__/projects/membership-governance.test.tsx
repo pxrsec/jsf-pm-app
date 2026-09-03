@@ -94,6 +94,8 @@ describe("Project Membership Governance Components", () => {
       client_scope: "Scope",
       drive_folder_url: null,
       archived_at: null,
+      archived_by: null,
+      archive_reason: null,
       deleted_at: null,
       completed_at: null,
       created_at: "2026-08-01T00:00:00.000Z",

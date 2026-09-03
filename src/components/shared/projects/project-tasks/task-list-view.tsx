@@ -10,7 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { TaskListRow } from "./task-list-row";
 import type { TaskWithAssignee } from "@/lib/projects/queries";
 
@@ -35,6 +34,7 @@ const STATUS_WEIGHTS: Record<string, number> = {
 interface TaskListViewProps {
   tasks: TaskWithAssignee[];
   isWatcher: boolean;
+  canArchiveTasks?: boolean;
   onViewDetails: (task: TaskWithAssignee) => void;
   onEdit: (task: TaskWithAssignee) => void;
   onArchive: (task: TaskWithAssignee) => void;
@@ -43,6 +43,7 @@ interface TaskListViewProps {
 export function TaskListView({
   tasks,
   isWatcher,
+  canArchiveTasks = true,
   onViewDetails,
   onEdit,
   onArchive,
@@ -64,89 +65,71 @@ export function TaskListView({
 
   const sortedTasks = useMemo(() => {
     return [...tasks].sort((a, b) => {
-      let comparison = 0;
+      let aVal: string | number = a[sortField] ?? "";
+      let bVal: string | number = b[sortField] ?? "";
 
-      if (sortField === "title") {
-        comparison = a.title.localeCompare(b.title);
-      } else if (sortField === "priority") {
-        comparison =
-          (PRIORITY_WEIGHTS[b.priority] ?? 0) -
-          (PRIORITY_WEIGHTS[a.priority] ?? 0);
+      if (sortField === "priority") {
+        aVal = PRIORITY_WEIGHTS[a.priority] ?? 0;
+        bVal = PRIORITY_WEIGHTS[b.priority] ?? 0;
       } else if (sortField === "status") {
-        comparison =
-          (STATUS_WEIGHTS[a.status] ?? 0) - (STATUS_WEIGHTS[b.status] ?? 0);
-      } else if (sortField === "deadline_at") {
-        const dateA = a.deadline_at ? new Date(a.deadline_at).getTime() : 0;
-        const dateB = b.deadline_at ? new Date(b.deadline_at).getTime() : 0;
-        comparison = dateA - dateB;
+        aVal = STATUS_WEIGHTS[a.status] ?? 0;
+        bVal = STATUS_WEIGHTS[b.status] ?? 0;
       }
 
-      return sortDirection === "asc" ? comparison : -comparison;
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+      return 0;
     });
   }, [tasks, sortField, sortDirection]);
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xs">
+    <div className="bg-card rounded-xl border border-border overflow-hidden shadow-2xs">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40">
-              <TableHead className="w-[30%]">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSort("title")}
-                  className="-ml-3 h-8 text-xs font-semibold"
-                >
+              <TableHead
+                className="cursor-pointer select-none text-xs font-semibold"
+                onClick={() => handleSort("title")}
+              >
+                <div className="flex items-center gap-1">
                   <span>{tColumns("title")}</span>
-                  <ArrowUpDown className="ml-1 size-3.5" />
-                </Button>
+                  <ArrowUpDown className="size-3 text-muted-foreground" />
+                </div>
               </TableHead>
-
-              <TableHead className="w-[12%] text-xs font-semibold">
+              <TableHead className="text-xs font-semibold">
                 {tColumns("type")}
               </TableHead>
-
-              <TableHead className="w-[15%]">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSort("status")}
-                  className="-ml-3 h-8 text-xs font-semibold"
-                >
+              <TableHead
+                className="cursor-pointer select-none text-xs font-semibold"
+                onClick={() => handleSort("status")}
+              >
+                <div className="flex items-center gap-1">
                   <span>{tColumns("status")}</span>
-                  <ArrowUpDown className="ml-1 size-3.5" />
-                </Button>
+                  <ArrowUpDown className="size-3 text-muted-foreground" />
+                </div>
               </TableHead>
-
-              <TableHead className="w-[15%]">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSort("priority")}
-                  className="-ml-3 h-8 text-xs font-semibold"
-                >
+              <TableHead
+                className="cursor-pointer select-none text-xs font-semibold"
+                onClick={() => handleSort("priority")}
+              >
+                <div className="flex items-center gap-1">
                   <span>{tColumns("priority")}</span>
-                  <ArrowUpDown className="ml-1 size-3.5" />
-                </Button>
+                  <ArrowUpDown className="size-3 text-muted-foreground" />
+                </div>
               </TableHead>
-
-              <TableHead className="w-[15%] text-xs font-semibold">
+              <TableHead className="text-xs font-semibold">
                 {tColumns("assignee")}
               </TableHead>
-
-              <TableHead className="w-[13%]">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSort("deadline_at")}
-                  className="-ml-3 h-8 text-xs font-semibold"
-                >
+              <TableHead
+                className="cursor-pointer select-none text-xs font-semibold"
+                onClick={() => handleSort("deadline_at")}
+              >
+                <div className="flex items-center gap-1">
                   <span>{tColumns("deadline")}</span>
-                  <ArrowUpDown className="ml-1 size-3.5" />
-                </Button>
+                  <ArrowUpDown className="size-3 text-muted-foreground" />
+                </div>
               </TableHead>
-
               <TableHead className="w-[50px] text-right text-xs font-semibold">
                 {tColumns("actions")}
               </TableHead>
@@ -169,6 +152,7 @@ export function TaskListView({
                   key={task.id}
                   task={task}
                   isWatcher={isWatcher}
+                  canArchive={canArchiveTasks}
                   onViewDetails={onViewDetails}
                   onEdit={onEdit}
                   onArchive={onArchive}

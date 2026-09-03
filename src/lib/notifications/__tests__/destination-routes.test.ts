@@ -17,13 +17,24 @@ describe("TC-NOTIF-ROUTE: Destination Routes Helper", () => {
     );
   });
 
-  it("2. Maps admin_project_tasks to /admin/proyectos/{projectId}?tab=tasks", () => {
+  it("2. Maps admin_project_tasks to /admin/proyectos/{projectId}?tab=tasks when taskId is omitted", () => {
     const destination: NotificationDestination = {
       kind: "admin_project_tasks",
       projectId,
     };
     expect(resolveNotificationDestinationHref(destination)).toBe(
       `/admin/proyectos/${projectId}?tab=tasks`,
+    );
+  });
+
+  it("2b. Maps admin_project_tasks to dedicated /admin/tareas/{taskId} when taskId is present", () => {
+    const destination: NotificationDestination = {
+      kind: "admin_project_tasks",
+      projectId,
+      taskId,
+    };
+    expect(resolveNotificationDestinationHref(destination)).toBe(
+      `/admin/tareas/${taskId}`,
     );
   });
 
@@ -54,6 +65,17 @@ describe("TC-NOTIF-ROUTE: Destination Routes Helper", () => {
     };
     expect(resolveNotificationDestinationHref(destination)).toBe(
       `/pm/proyectos/${projectId}?tab=tasks`,
+    );
+  });
+
+  it("5b. Maps pm_project_tasks to dedicated /pm/tareas/{taskId} when taskId is present", () => {
+    const destination: NotificationDestination = {
+      kind: "pm_project_tasks",
+      projectId,
+      taskId,
+    };
+    expect(resolveNotificationDestinationHref(destination)).toBe(
+      `/pm/tareas/${taskId}`,
     );
   });
 

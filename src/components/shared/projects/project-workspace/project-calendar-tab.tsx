@@ -39,6 +39,11 @@ export function ProjectCalendarTab({
     params.set("calendarView", newRange.view);
     params.set("calendarFrom", newRange.from);
     params.set("calendarTo", newRange.to);
+    // Explicitly purge stale global calendar keys
+    params.delete("view");
+    params.delete("from");
+    params.delete("to");
+    params.delete("projectId");
     router.push(`${pathname}?${params.toString()}`);
   };
 

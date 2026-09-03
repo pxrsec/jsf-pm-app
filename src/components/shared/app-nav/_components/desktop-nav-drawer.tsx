@@ -9,11 +9,15 @@ import {
   CalendarCheck,
   CalendarDays,
   Archive,
+  Users,
   Link2,
   ChartNoAxesCombined,
   SlidersHorizontal,
   Bell,
   BellRing,
+  Trash2,
+  ShieldCheck,
+  User,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,11 +44,15 @@ const ICON_MAP: Record<AppNavigationItemKey, LucideIcon> = {
   operatorProjects: FolderKanban,
   calendar: CalendarDays,
   archive: Archive,
+  recycleBin: Trash2,
+  clients: Users,
   linkIncidents: Link2,
   metrics: ChartNoAxesCombined,
   operations: SlidersHorizontal,
   notifications: Bell,
   notificationOperations: BellRing,
+  accessManagement: ShieldCheck,
+  account: User,
 };
 
 export interface DesktopNavDrawerProps {

@@ -8,11 +8,21 @@ import {
   getCompletionCycles,
   listEligiblePmUsers,
   listEligibleOperators,
-  listEligibleClientMembers,
+  listEligibleClientMembersForProject,
   listProjectTasks,
 } from "@/lib/projects/queries";
 import { listProjectDeliverables } from "@/lib/deliverables/queries";
-import { listActiveClients } from "@/lib/clients/queries";
+import {
+  listActiveClients,
+  listDirectContactsForWorkspace,
+  listClientOrganizationsForWorkspace,
+  listProjectDirectContactAssociations,
+} from "@/lib/clients/queries";
+import type {
+  AvailableResult,
+  DirectContactWorkspaceDto,
+  ClientOrganizationWorkspaceDto,
+} from "@/lib/clients/types";
 import {
   fetchCalendarFeed,
   fetchMilestoneManagementTargets,
@@ -68,6 +78,13 @@ export default async function AdminProjectDetailPage({
     notFound();
   }
 
+  const canManageClientIdentity =
+    project.project_type === "client" &&
+    project.deleted_at === null &&
+    project.archived_at === null &&
+    project.status !== "completed" &&
+    project.status !== "cancelled";
+
   const isCalendarTab = tab === "calendar";
   const calendarRange: CalendarRangeState | undefined = isCalendarTab
     ? normalizeCalendarRange(resolvedSearchParams, undefined, {
@@ -96,12 +113,18 @@ export default async function AdminProjectDetailPage({
     milestoneSummaries,
     milestoneOptions,
     initialArchivePage,
+    directContacts,
+    organizations,
+    associatedContactIds,
   ] = await Promise.all([
     listActiveClients(supabase),
     getCompletionCycles(supabase, id),
     listEligiblePmUsers(supabase),
     listEligibleOperators(supabase),
-    listEligibleClientMembers(supabase, project.client_id),
+    listEligibleClientMembersForProject(supabase, {
+      id: project.id,
+      client_id: project.client_id,
+    }),
     listProjectTasks(supabase, id),
     listProjectDeliverables(supabase, id),
     isCalendarTab && calendarRange
@@ -119,6 +142,19 @@ export default async function AdminProjectDetailPage({
     isArchiveTab && archiveQuery
       ? fetchFinalizedArchivePage(supabase, archiveQuery, null, "admin")
       : Promise.resolve<FinalizedArchivePage | undefined>(undefined),
+    canManageClientIdentity
+      ? listDirectContactsForWorkspace(supabase)
+      : Promise.resolve<
+          AvailableResult<DirectContactWorkspaceDto[]> | undefined
+        >(undefined),
+    canManageClientIdentity
+      ? listClientOrganizationsForWorkspace(supabase)
+      : Promise.resolve<
+          AvailableResult<ClientOrganizationWorkspaceDto[]> | undefined
+        >(undefined),
+    canManageClientIdentity
+      ? listProjectDirectContactAssociations(supabase, id)
+      : Promise.resolve<AvailableResult<string[]> | undefined>(undefined),
   ]);
 
   return (
@@ -131,6 +167,9 @@ export default async function AdminProjectDetailPage({
       eligibleClients={eligibleClients}
       effectiveCapacity="admin"
       actorRole="admin"
+      directContacts={directContacts}
+      organizations={organizations}
+      associatedContactIds={associatedContactIds}
       currentUserId={session.user.id}
       initialTasks={initialTasks}
       initialDeliverables={initialDeliverables}

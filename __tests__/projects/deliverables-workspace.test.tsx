@@ -21,11 +21,14 @@ vi.mock("@/lib/deliverables/actions", () => ({
   getDeliverableDetailAction: vi.fn().mockResolvedValue(null),
   createDeliverableAction: vi.fn().mockResolvedValue({ ok: true }),
   updateDeliverableAction: vi.fn().mockResolvedValue({ ok: true }),
-  archiveDeliverableAction: vi.fn().mockResolvedValue({ ok: true }),
   submitDeliverableVersionAction: vi
     .fn()
     .mockResolvedValue({ ok: true, data: { version_number: 1 } }),
   reportDeliverableLinkAction: vi.fn().mockResolvedValue({ ok: true }),
+}));
+
+vi.mock("@/lib/operational-lifecycle/actions", () => ({
+  archiveOperationalEntityAction: vi.fn().mockResolvedValue({ ok: true }),
 }));
 
 vi.mock("@/lib/deliverables/review-actions", () => ({
@@ -244,6 +247,8 @@ describe("Deliverables Workspace UI", () => {
     client_scope: null,
     drive_folder_url: null,
     archived_at: null,
+    archived_by: null,
+    archive_reason: null,
     created_by: "user-pm-1",
     updated_by: null,
     created_at: "2026-08-20T10:00:00.000Z",
@@ -264,6 +269,8 @@ describe("Deliverables Workspace UI", () => {
     client_scope: null,
     drive_folder_url: null,
     archived_at: null,
+    archived_by: null,
+    archive_reason: null,
     created_by: "user-pm-1",
     updated_by: null,
     created_at: "2026-08-20T10:00:00.000Z",
@@ -305,6 +312,8 @@ describe("Deliverables Workspace UI", () => {
     client_scope: null,
     drive_folder_url: null,
     archived_at: null,
+    archived_by: null,
+    archive_reason: null,
     created_by: "user-pm-1",
     updated_by: null,
     created_at: "2026-08-20T10:00:00.000Z",
@@ -370,6 +379,10 @@ describe("Deliverables Workspace UI", () => {
       deadline_at: "",
       started_at: null,
       completed_at: null,
+      archived_at: null,
+      archived_by: null,
+      archive_reason: null,
+      archived_parent_project_id: null,
       created_by: "user-pm-1",
       updated_by: null,
       created_at: "2026-08-20T10:00:00.000Z",

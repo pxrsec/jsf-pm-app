@@ -6,7 +6,6 @@ import { requireSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import {
   CreateMilestoneSchema,
-  DeleteMilestoneSchema,
   MilestoneIdSchema,
   UpdateMilestoneSchema,
 } from "./schemas";
@@ -83,20 +82,6 @@ export async function updateMilestoneAction(
   if (error || !data?.[0]?.milestone_id) return unavailable();
   revalidateMilestones();
   return { ok: true, data: { milestoneId: data[0].milestone_id } };
-}
-export async function softDeleteMilestoneAction(
-  raw: unknown,
-): Promise<MilestoneActionResult<true>> {
-  const supabase = await getManagerClient();
-  if (!supabase) return unavailable("UNAUTHORIZED");
-  const parsed = DeleteMilestoneSchema.safeParse(raw);
-  if (!parsed.success) return unavailable("VALIDATION_FAILED");
-  const { data, error } = await supabase.rpc("soft_delete_milestone", {
-    p_milestone_id: parsed.data.milestoneId,
-  });
-  if (error || data !== true) return unavailable();
-  revalidateMilestones();
-  return { ok: true, data: true };
 }
 export async function getMilestoneDetailAction(
   raw: unknown,

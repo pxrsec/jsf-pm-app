@@ -969,15 +969,15 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(links[1]).toHaveAttribute("href", "/admin/proyectos");
       expect(within(links[1]).getByText("Proyectos")).toBeInTheDocument();
 
-      expect(links[2]).toHaveAttribute("href", "/admin/operaciones");
-      expect(within(links[2]).getByText("Operaciones")).toBeInTheDocument();
-
-      expect(links[3]).toHaveAttribute("href", "/notificaciones");
-      expect(links[3]).toHaveAttribute(
+      expect(links[2]).toHaveAttribute("href", "/notificaciones");
+      expect(links[2]).toHaveAttribute(
         "aria-label",
         "Bandeja de notificaciones, 3 no leídas",
       );
-      expect(within(links[3]).getByText("Notificaciones")).toBeInTheDocument();
+      expect(within(links[2]).getByText("Notificaciones")).toBeInTheDocument();
+
+      expect(links[3]).toHaveAttribute("href", "/admin/operaciones");
+      expect(within(links[3]).getByText("Operaciones")).toBeInTheDocument();
 
       const menuButton = within(quickNav).getByRole("button", {
         name: "Abrir menú de navegación",
@@ -1013,8 +1013,8 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(pmLinks.map((l) => l.getAttribute("href"))).toEqual([
         "/pm",
         "/pm/proyectos",
-        "/calendario",
         "/notificaciones",
+        "/calendario",
       ]);
       unmountPm();
 
@@ -1038,8 +1038,8 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(opLinks.map((l) => l.getAttribute("href"))).toEqual([
         "/operador",
         "/operador/agenda",
-        "/calendario",
         "/notificaciones",
+        "/calendario",
       ]);
       unmountOp();
 
@@ -1063,8 +1063,8 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
       expect(clLinks.map((l) => l.getAttribute("href"))).toEqual([
         "/cliente",
         "/cliente/proyectos",
-        "/calendario",
         "/notificaciones",
+        "/calendario",
       ]);
     });
 
@@ -1120,12 +1120,16 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         "/admin",
         "/admin/proyectos",
         "/calendario",
-        "/admin/archivo",
-        "/admin/incidentes-enlaces",
-        "/admin/metricas",
-        "/admin/operaciones",
         "/notificaciones",
+        "/admin/clientes",
+        "/admin/metricas",
+        "/admin/archivo",
+        "/admin/papelera",
+        "/admin/acceso",
+        "/admin/incidentes-enlaces",
+        "/admin/operaciones",
         "/admin/notificaciones",
+        "/cuenta",
       ]);
 
       expect(
@@ -1493,6 +1497,151 @@ describe("Global Navigation (AppNav & Subcomponents)", () => {
         name: "Operaciones de Notificaciones",
       });
       expect(notifOps).toHaveAttribute("href", "/pm/notificaciones");
+    });
+
+    it("includes Clientes in navigation model for admin and pm, and excludes it for operator and client", () => {
+      const t = getSpanishTranslation("shell.nav");
+
+      const adminItems = buildNavigationModel({
+        role: "admin",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      const adminClients = adminItems.find((i) => i.key === "clients");
+      expect(adminClients).toBeDefined();
+      expect(adminClients?.href).toBe("/admin/clientes");
+      expect(adminClients?.label).toBe("Clientes");
+
+      const pmItems = buildNavigationModel({
+        role: "pm",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      const pmClients = pmItems.find((i) => i.key === "clients");
+      expect(pmClients).toBeDefined();
+      expect(pmClients?.href).toBe("/pm/clientes");
+      expect(pmClients?.label).toBe("Clientes");
+
+      const opItems = buildNavigationModel({
+        role: "operator",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      expect(opItems.find((i) => i.key === "clients")).toBeUndefined();
+
+      const clientItems = buildNavigationModel({
+        role: "client",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      expect(clientItems.find((i) => i.key === "clients")).toBeUndefined();
+    });
+
+    it("includes recycleBin for admin and pm with correct href and label, but not operator or client", () => {
+      const t = getSpanishTranslation("shell.nav");
+
+      const adminItems = buildNavigationModel({
+        role: "admin",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      const adminRecycle = adminItems.find((i) => i.key === "recycleBin");
+      expect(adminRecycle).toBeDefined();
+      expect(adminRecycle?.href).toBe("/admin/papelera");
+      expect(adminRecycle?.label).toBe("Papelera");
+
+      const pmItems = buildNavigationModel({
+        role: "pm",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      const pmRecycle = pmItems.find((i) => i.key === "recycleBin");
+      expect(pmRecycle).toBeDefined();
+      expect(pmRecycle?.href).toBe("/pm/papelera");
+      expect(pmRecycle?.label).toBe("Papelera");
+
+      const opItems = buildNavigationModel({
+        role: "operator",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      expect(opItems.find((i) => i.key === "recycleBin")).toBeUndefined();
+
+      const clientItems = buildNavigationModel({
+        role: "client",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      expect(clientItems.find((i) => i.key === "recycleBin")).toBeUndefined();
+    });
+
+    it("includes account for all four active roles with href /cuenta and label Cuenta", () => {
+      const t = getSpanishTranslation("shell.nav");
+
+      for (const role of ["admin", "pm", "operator", "client"] as const) {
+        const items = buildNavigationModel({
+          role,
+          unreadCount: 0,
+          canAccessNotificationOperations: false,
+          t,
+        });
+        const accountItem = items.find((i) => i.key === "account");
+        expect(accountItem).toBeDefined();
+        expect(accountItem?.href).toBe("/cuenta");
+        expect(accountItem?.label).toBe("Cuenta");
+      }
+    });
+
+    it("includes accessManagement for admin and pm, and excludes it for operator and client", () => {
+      const t = getSpanishTranslation("shell.nav");
+
+      const adminItems = buildNavigationModel({
+        role: "admin",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      const adminAccess = adminItems.find((i) => i.key === "accessManagement");
+      expect(adminAccess).toBeDefined();
+      expect(adminAccess?.href).toBe("/admin/acceso");
+      expect(adminAccess?.label).toBe("Gestión de Acceso");
+
+      const pmItems = buildNavigationModel({
+        role: "pm",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      const pmAccess = pmItems.find((i) => i.key === "accessManagement");
+      expect(pmAccess).toBeDefined();
+      expect(pmAccess?.href).toBe("/pm/acceso");
+      expect(pmAccess?.label).toBe("Gestión de Acceso");
+
+      const opItems = buildNavigationModel({
+        role: "operator",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      expect(opItems.find((i) => i.key === "accessManagement")).toBeUndefined();
+
+      const clientItems = buildNavigationModel({
+        role: "client",
+        unreadCount: 0,
+        canAccessNotificationOperations: false,
+        t,
+      });
+      expect(
+        clientItems.find((i) => i.key === "accessManagement"),
+      ).toBeUndefined();
     });
   });
 });

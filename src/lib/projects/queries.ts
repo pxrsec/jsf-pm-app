@@ -2,6 +2,10 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import { logger } from "@/lib/logger";
+import type {
+  AvailableResult,
+  ClientManagementProjectDto,
+} from "@/lib/clients/types";
 
 export type Project = Database["public"]["Tables"]["projects"]["Row"];
 export type ProjectInsert = Database["public"]["Tables"]["projects"]["Insert"];
@@ -91,6 +95,7 @@ export async function listProjectsForAdmin(
       .select(
         "id, name, project_type, status, client_id, client_scope, internal_description, deadline_at, drive_folder_url, completed_at, archived_at, created_at, updated_at",
       )
+      .is("deleted_at", null)
       .is("archived_at", null)
       .order("created_at", { ascending: false });
 
@@ -108,29 +113,23 @@ export async function listProjectsForAdmin(
 
 export async function listProjectsForPm(
   supabase: TypedSupabase,
-  userId: string,
 ): Promise<ProjectListItem[]> {
   try {
     const { data, error } = await supabase
-      .from("project_members")
+      .from("projects")
       .select(
-        "projects!inner(id, name, project_type, status, client_id, client_scope, internal_description, deadline_at, drive_folder_url, completed_at, archived_at, created_at, updated_at)",
+        "id, name, project_type, status, client_id, client_scope, internal_description, deadline_at, drive_folder_url, completed_at, archived_at, created_at, updated_at",
       )
-      .eq("user_id", userId)
       .is("deleted_at", null)
-      .is("projects.archived_at", null);
+      .is("archived_at", null)
+      .order("created_at", { ascending: false });
 
     if (error || !data) {
       if (error)
         logger.debug("Error in listProjectsForPm", { error: error.message });
       return [];
     }
-
-    type RawRow = { projects: ProjectListItem | ProjectListItem[] };
-    const raw = data as unknown as RawRow[];
-    return raw.map((row) =>
-      Array.isArray(row.projects) ? row.projects[0] : row.projects,
-    );
+    return data;
   } catch (err) {
     logger.debug("Failed in listProjectsForPm", { err });
     return [];
@@ -146,6 +145,7 @@ export async function getProjectDetail(
       .from("projects")
       .select("*")
       .eq("id", projectId)
+      .is("deleted_at", null)
       .is("archived_at", null)
       .single();
 
@@ -264,29 +264,144 @@ export async function listEligibleOperators(
   }
 }
 
-export async function listEligibleClientMembers(
+export async function listClientManagementProjects(
   supabase: TypedSupabase,
-  clientId?: string | null,
-): Promise<EligibleClientMember[]> {
-  if (!clientId) return [];
+): Promise<AvailableResult<ClientManagementProjectDto[]>> {
   try {
     const { data, error } = await supabase
-      .from("client_contacts")
-      .select("id, full_name, email, profile_id, job_title")
-      .eq("client_id", clientId)
-      .is("deleted_at", null);
+      .from("projects")
+      .select("id, name")
+      .eq("project_type", "client")
+      .is("deleted_at", null)
+      .is("archived_at", null)
+      .order("name", { ascending: true })
+      .order("id", { ascending: true });
 
     if (error || !data) {
-      if (error)
-        logger.debug("Error in listEligibleClientMembers", {
+      if (error) {
+        logger.debug("Error in listClientManagementProjects", {
           error: error.message,
         });
-      return [];
+      }
+      return { status: "unavailable" };
     }
-    return data;
+
+    return { status: "available", data };
   } catch (err) {
-    logger.debug("Failed in listEligibleClientMembers", { err });
-    return [];
+    logger.debug("Failed in listClientManagementProjects", { err });
+    return { status: "unavailable" };
+  }
+}
+
+export async function listEligibleClientMembersForProject(
+  supabase: TypedSupabase,
+  project: { id: string; client_id: string | null },
+): Promise<AvailableResult<EligibleClientMember[]>> {
+  try {
+    if (project.client_id !== null) {
+      const { data, error } = await supabase
+        .from("client_contacts")
+        .select(
+          "id, full_name, email, profile_id, job_title, profiles!inner(role, is_active, deleted_at)",
+        )
+        .eq("client_id", project.client_id)
+        .is("deleted_at", null)
+        .not("profile_id", "is", null)
+        .eq("profiles.role", "client")
+        .eq("profiles.is_active", true)
+        .is("profiles.deleted_at", null);
+
+      if (error || !data) {
+        if (error)
+          logger.debug("Error in listEligibleClientMembersForProject (org)", {
+            error: error.message,
+          });
+        return { status: "unavailable" };
+      }
+
+      return {
+        status: "available",
+        data: data.map((c) => ({
+          id: c.id,
+          full_name: c.full_name,
+          email: c.email,
+          profile_id: c.profile_id,
+          job_title: c.job_title,
+        })),
+      };
+    }
+
+    // Direct path: Step 1 - Call trusted association RPC (never query project_client_contacts table)
+    const { data: assocData, error: assocError } = await supabase.rpc(
+      "list_project_client_contact_associations",
+      { p_project_id: project.id },
+    );
+
+    if (assocError || !assocData) {
+      if (assocError) {
+        logger.debug(
+          "Error in list_project_client_contact_associations for project eligibility",
+          { error: assocError.message },
+        );
+      }
+      return { status: "unavailable" };
+    }
+
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    const contactIds: string[] = [];
+    for (const row of assocData) {
+      if (
+        typeof row.contact_id !== "string" ||
+        !uuidRegex.test(row.contact_id)
+      ) {
+        return { status: "unavailable" };
+      }
+      contactIds.push(row.contact_id);
+    }
+
+    if (contactIds.length === 0) {
+      return { status: "available", data: [] };
+    }
+
+    // Step 2: Query client_contacts for the trusted associated contact IDs
+    const { data, error } = await supabase
+      .from("client_contacts")
+      .select(
+        "id, full_name, email, profile_id, job_title, profiles!inner(role, is_active, deleted_at)",
+      )
+      .in("id", contactIds)
+      .is("client_id", null)
+      .is("deleted_at", null)
+      .not("profile_id", "is", null)
+      .eq("profiles.role", "client")
+      .eq("profiles.is_active", true)
+      .is("profiles.deleted_at", null);
+
+    if (error || !data) {
+      if (error) {
+        logger.debug(
+          "Error in listEligibleClientMembersForProject (direct contacts query)",
+          { error: error.message },
+        );
+      }
+      return { status: "unavailable" };
+    }
+
+    return {
+      status: "available",
+      data: data.map((c) => ({
+        id: c.id,
+        full_name: c.full_name,
+        email: c.email,
+        profile_id: c.profile_id,
+        job_title: c.job_title,
+      })),
+    };
+  } catch (err) {
+    logger.debug("Failed in listEligibleClientMembersForProject", { err });
+    return { status: "unavailable" };
   }
 }
 
@@ -333,9 +448,14 @@ export async function listProjectTasks(
   try {
     let query = supabase
       .from("tasks")
-      .select("*, profiles(id, full_name, role, avatar_url)")
+      .select(
+        "*, projects!inner(deleted_at, archived_at), profiles(id, full_name, role, avatar_url)",
+      )
       .eq("project_id", projectId)
       .is("deleted_at", null)
+      .is("archived_at", null)
+      .is("projects.deleted_at", null)
+      .is("projects.archived_at", null)
       .order("deadline_at", { ascending: true });
 
     if (filters?.status) {
@@ -360,16 +480,21 @@ export async function listProjectTasks(
     }
 
     type RawTask = Task & {
+      projects?: { deleted_at: string | null; archived_at: string | null };
       profiles: Pick<
         Profile,
         "id" | "full_name" | "role" | "avatar_url"
       > | null;
     };
 
-    return ((data ?? []) as unknown as RawTask[]).map((t) => ({
-      ...t,
-      assignee: t.profiles,
-    }));
+    return ((data ?? []) as unknown as RawTask[]).map((rawTask) => {
+      const { profiles, ...task } = rawTask;
+      delete (task as { projects?: unknown }).projects;
+      return {
+        ...task,
+        assignee: profiles,
+      };
+    });
   } catch (err) {
     logger.debug("Failed in listProjectTasks", { err });
     return [];
@@ -383,9 +508,14 @@ export async function getTaskDetail(
   try {
     const { data, error } = await supabase
       .from("tasks")
-      .select("*, profiles(id, full_name, role, avatar_url)")
+      .select(
+        "*, projects!inner(deleted_at, archived_at), profiles(id, full_name, role, avatar_url)",
+      )
       .eq("id", taskId)
       .is("deleted_at", null)
+      .is("archived_at", null)
+      .is("projects.deleted_at", null)
+      .is("projects.archived_at", null)
       .single();
 
     if (error || !data) {
@@ -395,16 +525,19 @@ export async function getTaskDetail(
     }
 
     type RawTask = Task & {
+      projects?: { deleted_at: string | null; archived_at: string | null };
       profiles: Pick<
         Profile,
         "id" | "full_name" | "role" | "avatar_url"
       > | null;
     };
-    const t = data as unknown as RawTask;
+    const rawTask = data as unknown as RawTask;
+    const { profiles, ...task } = rawTask;
+    delete (task as { projects?: unknown }).projects;
 
     return {
-      ...t,
-      assignee: t.profiles,
+      ...task,
+      assignee: profiles,
     };
   } catch (err) {
     logger.debug("Failed in getTaskDetail", { err });

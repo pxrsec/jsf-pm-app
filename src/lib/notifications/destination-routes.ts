@@ -14,13 +14,17 @@ export function resolveNotificationDestinationHref(
     case "admin_project_overview":
       return `/admin/proyectos/${destination.projectId}`;
     case "admin_project_tasks":
-      return `/admin/proyectos/${destination.projectId}?tab=tasks`;
+      return destination.taskId
+        ? `/admin/tareas/${destination.taskId}`
+        : `/admin/proyectos/${destination.projectId}?tab=tasks`;
     case "admin_project_deliverables":
       return `/admin/proyectos/${destination.projectId}?tab=deliverables`;
     case "pm_project_overview":
       return `/pm/proyectos/${destination.projectId}`;
     case "pm_project_tasks":
-      return `/pm/proyectos/${destination.projectId}?tab=tasks`;
+      return destination.taskId
+        ? `/pm/tareas/${destination.taskId}`
+        : `/pm/proyectos/${destination.projectId}?tab=tasks`;
     case "pm_project_deliverables":
       return `/pm/proyectos/${destination.projectId}?tab=deliverables`;
     case "operator_task":

@@ -13,6 +13,7 @@ import { formatCalendarDate } from "@/lib/calendar/date-utils";
 import type { CalendarViewProps } from "../types";
 import { CalendarEmptyState } from "../calendar-empty-state";
 import { Button } from "@/components/ui/button";
+import { getCalendarEventEmoji } from "../event-badge";
 
 export function CalendarListView({
   events,
@@ -80,10 +81,13 @@ export function CalendarListView({
               event,
               userRole,
             );
-            const projectHref =
-              "href" in destination
-                ? destination.href
-                : getSafeProjectLink(event);
+            const destinationHref =
+              "href" in destination ? destination.href : null;
+            const projectHref = getSafeProjectLink(event);
+            const isTaskDestination =
+              destination.kind === "manager-task" ||
+              destination.kind === "operator-task" ||
+              destination.kind === "client-task";
 
             const colorStyles = event.color_override
               ? CALENDAR_COLOR_CLASSES[event.color_override]
@@ -131,24 +135,50 @@ export function CalendarListView({
                         onClick={() =>
                           onOpenMilestoneDetail?.(destination.milestoneId)
                         }
-                        className="h-auto px-0 font-semibold hover:bg-transparent hover:underline"
+                        className="h-auto px-0 font-semibold hover:bg-transparent hover:underline inline-flex items-center gap-1.5"
                       >
-                        {event.title}
+                        <span aria-hidden="true">
+                          {getCalendarEventEmoji(event.event_type)}
+                        </span>
+                        <span>{event.title}</span>
                       </Button>
+                    ) : destinationHref ? (
+                      <Link
+                        href={destinationHref}
+                        aria-label={
+                          isTaskDestination
+                            ? t("eventAria.taskLink", { title: event.title })
+                            : t("eventAria.projectLink", {
+                                title: event.project_name ?? event.title,
+                              })
+                        }
+                        className="font-semibold text-foreground hover:underline focus:outline-none focus:ring-1 focus:ring-ring inline-flex items-center gap-1.5"
+                      >
+                        <span aria-hidden="true">
+                          {getCalendarEventEmoji(event.event_type)}
+                        </span>
+                        <span>{event.title}</span>
+                      </Link>
                     ) : (
-                      <span className="font-semibold text-foreground">
-                        {event.title}
+                      <span className="font-semibold text-foreground inline-flex items-center gap-1.5">
+                        <span aria-hidden="true">
+                          {getCalendarEventEmoji(event.event_type)}
+                        </span>
+                        <span>{event.title}</span>
                       </span>
                     )}
                   </div>
                 </td>
 
-                {/* Project Name (Safe display, no UUID label) */}
+                {/* Project Name (Safe display, links strictly to project overview) */}
                 <td className="px-4 py-3 text-muted-foreground">
                   {event.project_name ? (
                     projectHref ? (
                       <Link
                         href={projectHref}
+                        aria-label={t("eventAria.projectLink", {
+                          title: event.project_name,
+                        })}
                         className="font-medium text-foreground hover:underline focus:outline-none focus:ring-1 focus:ring-ring"
                       >
                         {event.project_name}
